@@ -1,0 +1,40 @@
+MkInclude = ${R_HOME}/etc${R_ARCH}/Makeconf
+
+IEXTLIBS = -ISuiteSparse_config -ICAMD/Include 
+LEXTLIBS =	
+E_LIBS = CAMD.a SuiteSparse_config.a 
+SUBDIRS = CAMD SuiteSparse_config
+
+PKG_CFLAGS = $(SHLIB_OPENMP_CFLAGS) $(IEXTLIBS)
+PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) $(IEXTLIBS)
+PKG_LD = $(CXX)
+PKG_LDFLAGS = $(ALL_CXXFLAGS) 
+
+PKG_LIBS = $(E_LIBS) ${LAPACK_LIBS} ${BLAS_LIBS} ${FLIBS} -lm
+
+all : $(SHLIB)
+
+$(SHLIB): $(OBJECTS) sublibs
+
+sublibs: subclean sublibraries
+
+sublibraries: $(E_LIBS)
+
+CAMD.a:
+	(cd CAMD && CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
+		MkInclude="$(MkInclude)" $(MAKE) library)
+
+SuiteSparse_config.a:
+	(cd SuiteSparse_config && CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
+		MkInclude="$(MkInclude)" $(MAKE) library)
+
+clean: subclean
+	@-rm -f *.o 
+
+subclean:
+	@-rm -f *.a
+	@for d in $(SUBDIRS); do \
+	  (cd $${d} && MkInclude="" $(MAKE) clean) || exit 0; \
+	done
+
+.PHONY: all clean subclean

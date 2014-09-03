@@ -1,31 +1,67 @@
-/* integration.cpp
- *
- *   Copyright (C) 2012, 2013 David Bolin, Finn Lindgren
- *
- *   This program is free software: you can redistribute it and/or modify
- *   it under the terms of the GNU General Public License as published by
- *   the Free Software Foundation, either version 3 of the License, or
- *   (at your option) any later version.
- *
- *   This program is distributed in the hope that it will be useful,
- *   but WITHOUT ANY WARRANTY; without even the implied warranty of
- *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *   GNU General Public License for more details.
- *
- *   You should have received a copy of the GNU General Public License
- *   along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+#include <fcntl.h>
+#include <iostream>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+#include <vector>
+#include <map>
+#include <algorithm>
+#include <limits>
+#include <time.h>
+#include "gsl_fix.h"
 
-#include "integration.h"
+/* Needed on Linux: */
+#include <unistd.h>
 
-void shapeInt(vector< map<int,double> > * L, double * a,double * b,int K, const int n,double lim,double * Pv, double * Ev, int max_size, int n_threads){
-	//	return [Pv Ev x F]
+#ifdef _OPENMP
+	#include<omp.h>
+#endif
+
+extern "C"{
+	#include "RngStream.h"
+}
+
+#define max(a,b) (((a)>(b))?(a):(b))
+#define min(a,b) (((a)<(b))?(a):(b))
+
+using namespace std;
+
+extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in){
+	
+	int n = opts[0];
+	int K = opts[1];
+	int max_size = opts[2];
+	int n_threads = opts[3];
+	int seed_provided = opts[4];
+	
+	double lim = lim_in[0];
+	
+	vector< map<int,double> > L;
+	
+	int i,row,col;
+
+
+  for (i=0; i<n; i++) {
+    map<int,double> m;
+    L.push_back(m);
+  }
+	
+	col = 0;
+	for(i=0;i<Mp[n];i++){	  
+	  row = Mi[i]; 
+	  if (i>=Mp[col+1]) {
+		  col++;
+	  } 
+	  L[row][col] = Mv[i]; 
+  }
+  
+	
 	
 	double *al, *bl,*f,*s,*Li;
 	double ** x;
 	double fsum,fsum2,Pi,Ei;
 	double ai,bi,c,d,rtmp;
-	int i,j;
+	int j;
 
 	al = new double[n];
 	bl = new double[n];
@@ -35,7 +71,7 @@ void shapeInt(vector< map<int,double> > * L, double * a,double * b,int K, const 
 	
 	x = new double*[n];
 	for (i=0; i<n; i++) {
-		Li[i] = (*L)[i][i];
+		Li[i] = L[i][i];
 		al[i] = Li[i]*a[i];
 		bl[i] = Li[i]*b[i];
 		x[i] = new double[K];
@@ -48,8 +84,8 @@ void shapeInt(vector< map<int,double> > * L, double * a,double * b,int K, const 
 	for (i=0; i<K; i++) {
 		f[i] = 1.0;
 	}
-
-	
+  
+  
 	#ifdef _OPENMP
 		const int max_nP = omp_get_num_procs();
 		int nPtmp;
@@ -69,29 +105,27 @@ void shapeInt(vector< map<int,double> > * L, double * a,double * b,int K, const 
 	unsigned long m_2 = 4294944443U;
 	unsigned long seed[6];
 
-	/* On Linux, reading from /dev/random is a blocking event if
-	 * there is not enough entropy, so we use /dev/urandom
-	 * instead.  We are not doing cryptography.
-	 * For systems that don't have /dev/urandom, fall back to
-	 * seeding based on time(0).
-	 * http://man7.org/linux/man-pages/man4/random.4.html
-	 * https://developer.apple.com/library/mac/documentation/Darwin/Reference/ManPages/man4/random.4.html
-	 */
-	ssize_t seed_read = 0;
-#if defined (__APPLE__) && defined (__linux__)
-	int randomSrc = open("/dev/urandom", O_RDONLY);
-	if (randomSrc > 0) {
-	   seed_read = read(randomSrc, seed, sizeof(seed));
-	   close(randomSrc);
-	}
-#endif
-	if (seed_read != (ssize_t) sizeof(seed)) {
-	  srand(time(0));
-	  for(i=0;i<6;i++){
-	    seed[i] = rand(); 
+  if(seed_provided == 1){
+    for(i=0;i<6;i++){
+      seed[i] = (unsigned long) seed_in[i];
+    }
+  } else {
+	  ssize_t seed_read = 0;
+    #if defined (__APPLE__) && defined (__linux__)
+	    int randomSrc = open("/dev/urandom", O_RDONLY);
+	    if (randomSrc > 0) {
+	    seed_read = read(randomSrc, seed, sizeof(seed));
+	    close(randomSrc);
+	    }
+    #endif
+	  if (seed_read != (ssize_t) sizeof(seed)) {
+	    srand(time(0));
+	    for(i=0;i<6;i++){
+	      seed[i] = rand(); 
+	    }
 	  }
-	}
-    
+  } 
+
 	seed[0] = seed[0] % m_1;
 	seed[1] = seed[1] % m_1;
 	seed[2] = seed[2] % m_1;
@@ -115,20 +149,12 @@ void shapeInt(vector< map<int,double> > * L, double * a,double * b,int K, const 
 		fsum = 0;
 		fsum2 = 0;
 		
-		for(map<int,double>::iterator iter = ((*L)[i]).begin(); iter != ((*L)[i]).end(); iter++ ) {
+		for(map<int,double>::iterator iter = (L[i]).begin(); iter != (L[i]).end(); iter++ ) {
 			for (j=0; j<K; j++) {
 				s[j] += (iter->second)*x[iter->first][j];
 			}
 		}	
 		
-		/*
-		 #pragma omp parallel for
-		 for (int j=0; j<K; j++) {
-		 for(map<int,double>::iterator iter = ((*L)[i]).begin(); iter != ((*L)[i]).end(); iter++ ) {
-		 s[j] += (iter->second)*x[iter->first][j];	
-		 }
-		 }	
-		 */
 		
 		#pragma omp parallel private(myrank,ai,bi,c,d,j,rtmp)
 		{
@@ -226,5 +252,5 @@ void shapeInt(vector< map<int,double> > * L, double * a,double * b,int K, const 
 	}
 	delete[] x;
 	delete[] RngArray;
-	
+
 }

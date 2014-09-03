@@ -1,4 +1,4 @@
-Package: excursions
+Package: excursions2
 Type: Package
 Title: Functions that compute probabilistic excursion sets and contour credibility regions for latent Gaussian random processes and fields.
 Version: 0.0-00000000

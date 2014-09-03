@@ -1,127 +1,197 @@
-## utils.R 
-##
-##   Copyright (C) 2013 Håvard Rue, David Bolin, Finn Lindgren
-##
-##   This program is free software: you can redistribute it and/or modify
-##   it under the terms of the GNU General Public License as published by
-##   the Free Software Foundation, either version 3 of the License, or
-##   (at your option) any later version.
-##
-##   This program is distributed in the hope that it will be useful,
-##   but WITHOUT ANY WARRANTY; without even the implied warranty of
-##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-##   GNU General Public License for more details.
-##
-##   You should have received a copy of the GNU General Public License
-##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-.onLoad <- function(lib,pkg){
-	#Set environment variable to find BLAS, LAPACK and MATRIX on windows
-	if(.Platform$OS.type == "windows"){
-		rhome = Sys.getenv("R_HOME")
-		rbin = paste(c(rhome,"/bin/",.Platform$r_arch),collapse="")
-		path = Sys.getenv("PATH")
-		newpath = paste(c(path,rbin),collapse=";")
-		Sys.setenv(PATH=newpath)
-	}
+excursions.integration <- function(L, a, b, lim = 0, n.iter = 10000, max.size, n.threads=0,seed)
+{
+
+  if (!is(L, "dtCMatrix"))
+      stop("L needs to be in ccs format for now.")
+    
+  n = dim(L)[1]
+  Mp = L@p
+  Mi = L@i
+  Mv = L@x
+  
+  if(missing(max.size))
+    max.size = n
+  
+
+  if(missing(seed)){
+    seed_provided = 0
+    seed.in = as.integer(rep(0,6))
+  } else {
+    seed_provided = 1
+    seed.in = seed
+  }
+
+  Pv = rep(0,n)
+  Ev = rep(0,n)
+  
+  opts = c(n,n.iter,max.size,n.threads,seed_provided)
+
+  out <- .C("shapeInt", Mp = as.integer(Mp), Mi = as.integer(Mi), 
+              Mv = as.double(Mv), a = as.double(a), b = as.double(b), 
+              opts = as.integer(opts), lim = as.double(lim),
+              Pv = as.double(Pv), Ev = as.double(Ev),seed_in=seed.in)
+
+  return(list(P = out$Pv, E = out$Ev)) 
 }
 
-
-private.link.function <-
-    function(x, link, inv=FALSE)
+excursions.variances<-function(L)
 {
-    if (is.na(link)) {
-        link = "identity"
+  if (!is(L, "dtCMatrix"))
+      stop("L needs to be in ccs format for now.")
+  Mp = L@p
+  Mi = L@i
+  Mv = L@x 
+  n = dim(L)[1]
+
+  out<- .C("Qinv",Rir = as.integer(L@i), Rjc = as.integer(L@p), 
+           Rpr = as.double(L@x), variances=double(n), n = as.integer(n))
+
+  return(out$variances)
+}
+
+excursions.marginals <- function(type, rho,vars, mu, u, QC = FALSE, ind)	
+{  
+  rl = list()
+  if(type == "=" || type == "!="){
+    if(QC){
+      rl$rho_ngu = rho
+      rl$rho_l = pnorm(mu-u,sd=sqrt(vars), lower.tail=FALSE)
+			rl$rho_u = 1-rl$rho_l
+			rl$rho = pmax(rl$rho_u,rl$rho_l)
+			rl$rho_ng = pmax(rl$rho_ngu,1-rl$rho_ngu)
+    } else {
+      if(!missing(rho)){
+        rl$rho_u = rho  
+      } else {
+        rl$rho_u = 1 - pnorm(mu-u,sd=sqrt(vars), lower.tail=FALSE)	
+		  }
+		  rl$rho_l = 1-rl$rho_u
+		  rl$rho = pmax(rl$rho_u,rl$rho_l)
     }
-    return(do.call(paste("inla.link.", link, sep=""),list(x=x, inv=inv)))
+  } else {
+    if(QC) {
+      rl$rho_ng = rho
+      if(type == ">"){
+			  rl$rho = pnorm(mu-u,sd=sqrt(vars))
+			} else {
+				rl$rho = pnorm(mu-u,sd=sqrt(vars), lower.tail=FALSE)
+			}
+    } else {
+      if(missing(rho)){
+       if(type == ">"){
+  				rl$rho = pnorm(mu-u,sd=sqrt(vars))
+       } else {
+  				rl$rho = pnorm(mu-u,sd=sqrt(vars), lower.tail=FALSE)
+        }
+      } 
+    }
+  } 
+  if(!missing(ind)){
+    rl$rho[ind==0] = -1
+    if(QC)
+     rl$rho_ng[ind==0] = -1
+  }
+  return(rl)
 }
 
-private.excursions.call = function (path,func)
+	
+excursions.permutation <- function(rho, ind, use.camd = TRUE,alpha,Q)
 {
-	if(private.os.type() == "mac"){
-		binpath = file.path(system.file("bin",package="excursions"),"mac")
-	} else if(private.os.type() == "linux"){
-		binpath = file.path(system.file("bin",package="excursions"),"linux")
-	} else if(private.os.type() == "windows"){
-		if(R.Version()$arch == "i386"){
-			binpath = file.path(system.file("bin",package="excursions"),
-												"windows/i386")
-		} else {
-			binpath = file.path(system.file("bin",package="excursions"),
-												"windows/x64")
+  n = length(rho)
+  v.s = sort(rho,index.return=TRUE)  
+  reo = v.s$ix
+  rho_sort = v.s$x
+  ireo = integer(n)
+  ireo[reo] = 1:n
+  if(use.camd){
+    k=0
+    i = n-1
+    #add nodes to lower bound
+    cindr = cind = rep(0,n)
+    while(rho_sort[i]> 1 - alpha && i>0){
+      cindr[i] = k 
+			i = i-1
+			k=k+1
+    }
+    if(i>0){
+      #reorder nodes below the lower bound for sparsity
+      while (i>0) {
+				cindr[i] = k;
+				i = i-1
+			}
+      #change back to original ordering
+      for (i in 1:n) {
+				cind[i] = k - cindr[ireo[i]]
+			}
+			#call CAMD
+			out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p), 
+		                        Mi = as.integer(Q@i), reo = as.integer(reo), 
+		                        cind = as.integer(cind))
+		  reo = out$reo+1  
+    } 
+  }
+  return(reo)
+}
+	
+	
+excursions.setlimits <- function(marg, vars,type,QC,u,mu)
+{
+	if(QC){
+		if (type=="<") { 
+		  uv = sqrt(vars)*qnorm(marg$rho_ng)	  
+		} else if (type==">"){
+			uv = sqrt(vars)*qnorm(marg$rho_ng,lower.tail=FALSE)
+		} else if (type=="=" || type == "!="){
+			uv = sqrt(vars)*qnorm(marg$rho_ngu,lower.tail=FALSE)
 		}
 	} else {
-		stop("OS type not supported")
-	}
-	system(paste(file.path(binpath,func), file.path(path,"")))
+		uv = u-mu
+	}	
+	if (type == "=" || type == "!=") {
+	  if(QC){
+	    a = b = uv
+	    a[marg$rho_ngu<=0.5] = -Inf
+	    b[marg$rho_ngu>0.5] = Inf
+		} else {
+		  a = b = uv
+		  a[marg$rho_u<=0.5] = -Inf
+      b[marg$rho_u>0.5] = Inf
+		}
+	} else if (type == ">") {
+	  a = uv
+	  b = rep(Inf,length(mu))
+	} else if (type == "<"){
+    a = rep(-Inf,length(mu))
+    b = uv
+  } 
+  return(list(a=a,b=b))
 }
 
-#from INLA
-private.as.dgTMatrix = function (A, unique = TRUE)
+	
+excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threads, seed = seed)
 {
-    if (unique) {
-        return(as(as(as(A, "CsparseMatrix"), "dgCMatrix"), "dgTMatrix"))
-    }
-    else {
-        if (is(A, "dgTMatrix")) {
-            return(A)
-        }
-        else {
-            return(as(as(A, "TsparseMatrix"), "dgTMatrix"))
-        }
-    }
+  if(is.chol == FALSE){
+    a.sort = a[reo]
+    b.sort = b[reo]
+  
+    #calculate cholesky here
+    L = chol(Q[reo,reo])
+    a.sort[a.sort==Inf]  = .Machine$double.xmax
+    b.sort[b.sort==Inf]  = .Machine$double.xmax
+    a.sort[a.sort==-Inf] = -.Machine$double.xmax
+    b.sort[b.sort==-Inf] = -.Machine$double.xmax
+
+    res = excursions.integration(L, a.sort, b.sort, lim, K, max.size, n.threads, seed)
+  } else {
+    #assume that everything already is ordered
+    a[a==Inf]  = .Machine$double.xmax
+    b[b==Inf]  = .Machine$double.xmax
+    a[a==-Inf] = -.Machine$double.xmax
+    b[b==-Inf] = -.Machine$double.xmax
+    res = excursions.integration(Q, a, b, lim, K, max.size, n.threads,seed)
+  }
+  return(res)
 }
-
-private.tempfile = function (pattern = "file", tmpdir = tempdir())
-{
-    return(gsub("\\\\", "/", tempfile(pattern, tmpdir)))
-}
-private.tempdir = function ()
-{
-    return(gsub("\\\\", "/", tempdir()))
-}
-
-private.make.tempdir = function (dir = NULL)
-{
-    if (is.null(dir)) {
-        dir = private.tempfile("exctmp")
-    }
-    dir.create(dir)
-    return(dir)
-}
-
-private.binpath = function ()
-{
-    return("../excursions_v2/")
-}
-
-private.os = function(type = c("linux", "mac", "windows", "else"))
-{
-    if (missing(type))
-        stop("Type of OS is required.")
-    type = match.arg(type)
-
-    if (type == "windows")
-        return (.Platform$OS.type == "windows")
-    else if (type == "mac")
-        return (length(grep("mac", .Platform$pkgType)) > 0)
-    else if (type == "linux")
-        return ((.Platform$OS.type == "unix") && !private.os("mac"))
-    else if (type == "else")
-        return (TRUE)
-    else
-        stop("This shouldn't happen.")
-}
-private.os.type = function()
-{
-    for (os in c("windows", "mac", "linux", "else"))
-        if (private.os(os))
-            return (os)
-    stop("This shouldn't happen.")
-}
-
-
-
-
-
-
+	
+	
