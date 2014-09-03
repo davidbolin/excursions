@@ -1,39 +1,20 @@
+## utils.R 
+##
+##   Copyright (C) 2013 David Bolin, Finn Lindgren
+##
+##   This program is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version.
+##
+##   This program is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-excursions.integration <- function(L, a, b, lim = 0, n.iter = 10000, max.size, n.threads=0,seed)
-{
-
-  if (!is(L, "dtCMatrix"))
-      stop("L needs to be in ccs format for now.")
-    
-  n = dim(L)[1]
-  Mp = L@p
-  Mi = L@i
-  Mv = L@x
-  
-  if(missing(max.size))
-    max.size = n
-  
-
-  if(missing(seed)){
-    seed_provided = 0
-    seed.in = as.integer(rep(0,6))
-  } else {
-    seed_provided = 1
-    seed.in = seed
-  }
-
-  Pv = rep(0,n)
-  Ev = rep(0,n)
-  
-  opts = c(n,n.iter,max.size,n.threads,seed_provided)
-
-  out <- .C("shapeInt", Mp = as.integer(Mp), Mi = as.integer(Mi), 
-              Mv = as.double(Mv), a = as.double(a), b = as.double(b), 
-              opts = as.integer(opts), lim = as.double(lim),
-              Pv = as.double(Pv), Ev = as.double(Ev),seed_in=seed.in)
-
-  return(list(P = out$Pv, E = out$Ev)) 
-}
 
 excursions.variances<-function(L)
 {
@@ -182,16 +163,18 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
     a.sort[a.sort==-Inf] = -.Machine$double.xmax
     b.sort[b.sort==-Inf] = -.Machine$double.xmax
 
-    res = excursions.integration(L, a.sort, b.sort, lim, K, max.size, n.threads, seed)
+    res = gaussint(Q.chol = L, a = a.sort, b = b.sort, lim = lim,
+                                 n.iter = K, max.size = max.size, 
+                                 max.threads = n.threads, seed = seed)
   } else {
     #assume that everything already is ordered
     a[a==Inf]  = .Machine$double.xmax
     b[b==Inf]  = .Machine$double.xmax
     a[a==-Inf] = -.Machine$double.xmax
     b[b==-Inf] = -.Machine$double.xmax
-    res = excursions.integration(Q, a, b, lim, K, max.size, n.threads,seed)
+    res = gaussint(Q = Q, a= a, b = b, lim = lim, n.iter = K,
+                   max.size = max.size, max.threads = n.threads,seed = seeed)
   }
   return(res)
 }
-	
 	

@@ -1,6 +1,6 @@
 ## excursions.inla.R
 ##
-##   Copyright (C) 2012, 2013 David Bolin, Finn Lindgren
+##   Copyright (C) 2012, 2013, 2014, David Bolin, Finn Lindgren, Håvard Rue
 ##
 ##   This program is free software: you can redistribute it and/or modify
 ##   it under the terms of the GNU General Public License as published by
@@ -220,3 +220,13 @@ if(method == 'EB' || method == 'QC' ){
 return(list(F=F,mean=mean.field,rho=marginal.prob))
 }
 
+
+
+private.link.function <-
+    function(x, link, inv=FALSE)
+{
+    if (is.na(link)) {
+        link = "identity"
+    }
+    return(do.call(paste("inla.link.", link, sep=""),list(x=x, inv=inv)))
+}
