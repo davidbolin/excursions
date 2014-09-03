@@ -1,0 +1,74 @@
+The excursions package contains a small subset of GSL.
+The specific authorships and copyrights are detailed in
+src/gsl_fix.c
+src/gsl_fix.h
+
+GSL - GNU Scientific Library
+============================
+
+This is GSL, the GNU Scientific Library, a collection of numerical
+routines for scientific computing.
+
+GSL is free software, you can redistribute it and/or modify it under
+the terms of the GNU General Public License.
+
+The GNU General Public License does not permit this software to be
+redistributed in proprietary programs.
+
+This library is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+More information about GSL
+==========================
+
+The project homepage is http://www.gnu.org/software/gsl/
+
+See the NEWS file for recent changes to the library.
+
+The GSL Manual has been published and can be ordered from most
+bookstores. The publication details are,
+
+  GNU Scientific Library Reference Manual - Revised Second Edition, 
+  M. Galassi et al, ISBN 0954161734 (620 pages, paperback).
+
+The money raised from sales of the manual helps support the
+development of GSL.
+
+A Japanese translation of the reference manual is available from the
+GSL website above (thanks to Daisuke TOMINAGA).
+
+Authors
+=======
+
+Mark Galassi (rosalia@lanl.gov) - overall design, simulated annealing
+Jim Davies (jimmyd@nis.lanl.gov) - statistics library
+James Theiler (jt@lanl.gov) - random number generators
+Brian Gough (bjg@network-theory.co.uk) -
+  FFTs, numerical integration, random number generators and distributions,
+  root finding, minimization and fitting, polynomial solvers, complex
+  numbers, physical constants, permutations, vector and matrix functions,
+  histograms, statistics, ieee-utils, revised CBLAS Level 2 & 3, matrix
+  decompositions and eigensystems.
+Reid Priedhorsky (rp@lanl.gov) - root finding
+Gerard Jungman (jungman@lanl.gov) special functions, interpolation, 
+  series acceleration, ODEs, BLAS, Linear Algebra, Eigensystems,
+  Hankel Transforms.
+Michael Booth (booth@debian.org (email address not working)) - Monte 
+  Carlo integration
+Fabrice Rossi (rossi@ufrmd.dauphine.fr) - Multidimensional minimization
+Simone Piccardi (piccardi@fi.infn.it) - Ntuples
+Carlo Perassi (carlo@linux.it) - Additional random number generators
+Dan, Ho-Jin (hjdan@sys713.kaist.ac.kr) - divided differences interpolation
+Szymon Jaroszewicz (sj@cs.umb.edu) - combinations
+Nicolas Darnis (ndarnis@cvf.fr) - cyclic functions and the initial functions for
+ canonical permutations.
+Tuomo Keskitalo (tuomo.keskitalo@iki.fi) - multidimensional minimization and 
+ ode-initval2 routines for ordinary differential equations
+Ivo Alxneit (ivo.alxneit@psi.ch) - multidimensional minimization, wavelet 
+  transforms
+Jason H. Stover (jason@sakla.net) - cumulative distribution functions
+Patrick Alken <patrick.alken@colorado.edu> - nonsymmetric and generalized eigensystems, B-splines
+Rhys Ulerich (rhys.ulerich@gmail.com) - multisets
+Pavel Holoborodko <pavel@holoborodko.com> - fixed order Gauss-Legendre quadrature
+Pedro Gonnet <gonnet@maths.ox.ac.uk> - CQUAD integration routines.

@@ -1,0 +1,3 @@
+MkInclude = ${R_HOME}/etc${R_ARCH}/Makeconf
+include $(MkInclude)
+include Makefile
