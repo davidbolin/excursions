@@ -29,7 +29,7 @@ gaussint <- function(mu,Q.chol, Q, a, b, lim = 0, n.iter = 10000,
   if(missing(b))
     stop('Must specify upper integration limit')
   
-  if(!missing(ind)){
+  if(!missing(ind) && !is.null(ind)){
     a[!ind] = Inf
     b[!ind] = -Inf
   }
@@ -57,12 +57,12 @@ gaussint <- function(mu,Q.chol, Q, a, b, lim = 0, n.iter = 10000,
     max.size = n
   
 
-  if(missing(seed)){
+  if(!missing(seed) && !is.null(seed)){
+    seed_provided = 1
+    seed.in = seed  
+  } else {
     seed_provided = 0
     seed.in = as.integer(rep(0,6))
-  } else {
-    seed_provided = 1
-    seed.in = seed
   }
 
   Pv = rep(0,n)
@@ -75,5 +75,5 @@ gaussint <- function(mu,Q.chol, Q, a, b, lim = 0, n.iter = 10000,
               opts = as.integer(opts), lim = as.double(lim),
               Pv = as.double(Pv), Ev = as.double(Ev),seed_in=seed.in)
 
-  return(list(P = out$Pv, E = out$Ev)) 
+  return(list(Pv = out$Pv, Ev = out$Ev, P = out$Pv[1], E = out$Ev[1])) 
 }

@@ -84,12 +84,12 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
                          n.threads = max.threads,seed = seed)
 
   n = length(mu)
-  ii = which(res$P[1:n] > 0)
+  ii = which(res$Pv[1:n] > 0)
   if (length(ii) == 0) i=n+1 else i=min(ii)
 
   F = Fe  = rep(0,n)
-  F[reo] = res$P
-  Fe[reo] = res$E
+  F[reo] = res$Pv
+  Fe[reo] = res$Ev
 
   ireo = NULL
   ireo[reo] = 1:n
