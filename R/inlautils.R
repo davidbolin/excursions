@@ -25,6 +25,9 @@ inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, ...)
 
     ## Find variables
     if (!is.null(name)) {
+        if (!(name %in% result$misc$configs$contents$tag)) {
+          stop("'name' not found in result.")
+        }
         nameindex <- which(result$misc$configs$contents$tag == name)
         index <- (result$misc$configs$contents$start[nameindex] - 1L +
                   seq_len(result$misc$configs$contents$length[nameindex]))
