@@ -17,9 +17,7 @@
 
 
 
-library(sp)
 library(rgeos)
-library(INLA)
 
 
 ## Trace a length 2 contour segment through pixels
@@ -394,10 +392,12 @@ outline.on.grid <- function(z, x=NULL, y=NULL)
 
     ## Extract diagonal segment locations;
     ## Quadruples with three 1, one 0
-    zz <- z[-ni,-nj,drop=FALSE] + z[-1,-nj,drop=FALSE] + z[-ni,-1,drop=FALSE] + z[-1,-1,drop=FALSE]
+    zz <- (z[-ni,-nj,drop=FALSE] + z[-1,-nj,drop=FALSE] +
+           z[-ni,-1,drop=FALSE] + z[-1,-1,drop=FALSE])
     ## Which element was 0?
     zz <- (zz == 3) *
-        (15 - (z[-ni,-nj,drop=FALSE]*1 + z[-1,-nj,drop=FALSE]*2 + z[-ni,-1,drop=FALSE]*4 + z[-1,-1,drop=FALSE]*8))
+        (15 - (z[-ni,-nj,drop=FALSE]*1 + z[-1,-nj,drop=FALSE]*2 +
+               z[-ni,-1,drop=FALSE]*4 + z[-1,-1,drop=FALSE]*8))
     ## zz=0 : No diagonal
     ## zz=1 : (0,0), zz=2 : (1,0), zz=4 : (0,1), zz=8 : (1,1)
     ijv <- triplet(as.spam(zz == 1), tri=TRUE)
@@ -495,17 +495,23 @@ outline.to.inla.mesh.segment <- function(outline,
                                          grp.cw=integer(0),
                                          ...)
 {
-   ik.ccw = outline$grp %in% grp.ccw
-   ik.cw = outline$grp %in% grp.cw
-   inla.mesh.segment(loc=outline$loc,
-                     idx=rbind(outline$idx[ik.ccw,],
-                               outline$idx[ik.cw, 2:1]),
-                     grp=c(outline$grp[ik.ccw], outline$grp[ik.cw]))
+    if (!require(INLA)) {
+        stop("The 'INLA' package is needed.")
+    }
+    ik.ccw = outline$grp %in% grp.ccw
+    ik.cw = outline$grp %in% grp.cw
+    inla.mesh.segment(loc=outline$loc,
+                      idx=rbind(outline$idx[ik.ccw,],
+                      outline$idx[ik.cw, 2:1]),
+                      grp=c(outline$grp[ik.ccw], outline$grp[ik.cw]))
 }
 
 
 
 as.SpatialPolygons.raw <- function(sequences, ID=" ") {
+    if (!require(sp)) {
+        stop("The 'sp' package is needed.")
+    }
     polys <- lapply(sequences,
                     function(x) {
                         if (is.list(x)) {
@@ -524,6 +530,9 @@ as.SpatialPolygons.raw <- function(sequences, ID=" ") {
 }
 
 as.SpatialLines.raw <- function(cl, ID=" ") {
+    if (!require(sp)) {
+        stop("The 'sp' package is needed.")
+    }
     polys <- lapply(cl,
                     function(x) {
                         if (is.list(x)) {
@@ -545,17 +554,19 @@ as.SpatialLines.raw <- function(cl, ID=" ") {
 
 
 
-tricontour <- function(x, z, nlevels = 10,
-                       levels = pretty(range(z, na.rm = TRUE), nlevels),
-                       ...)
+tricontour <-
+    function(x, z, nlevels = 10,
+             levels = pretty(range(z, na.rm = TRUE), nlevels),
+             ...)
 {
     message("tricontour")
     UseMethod("tricontour")
 }
 
-tricontour.inla.mesh <- function(x, z, nlevels = 10,
-                       levels = pretty(range(z, na.rm = TRUE), nlevels),
-                                 ...)
+tricontour.inla.mesh <-
+    function(x, z, nlevels = 10,
+             levels = pretty(range(z, na.rm = TRUE), nlevels),
+             ...)
 {
     message("tricontour.inla.mesh")
     tricontour.list(x$graph, z=z,
@@ -563,9 +574,10 @@ tricontour.inla.mesh <- function(x, z, nlevels = 10,
                     loc=x$loc, ...)
 }
 
-tricontour.matrix <- function(x, z, nlevels = 10,
-                              levels = pretty(range(z, na.rm = TRUE), nlevels),
-                              loc, ...)
+tricontour.matrix <-
+    function(x, z, nlevels = 10,
+             levels = pretty(range(z, na.rm = TRUE), nlevels),
+             loc, ...)
 {
     message("tricontour.matrix")
     tricontour.list(list(tv=x), z=z,
@@ -576,7 +588,11 @@ tricontour.matrix <- function(x, z, nlevels = 10,
 
 
 ## Generate triangulation graph properties
+## Nt,Ne,Nv,ev,et,eti,ee,te,tt,tti
 generate.trigraph.properties <- function(x, Nv=NULL) {
+    if (!require(spam)) {
+        stop("The 'spam' package is needed.")
+    }
     stopifnot(is.list(x))
     stopifnot("tv" %in% names(x))
 
@@ -593,11 +609,19 @@ generate.trigraph.properties <- function(x, Nv=NULL) {
     x$et <- rep(seq_len(x$Nt), times=3)
     x$eti <- rep(1:3, each=x$Nt) ## Opposing vertex within-triangle-indices
     x$te <- matrix(seq_len(x$Ne), x$Nt, 3)
+    ev <- spam(list(i=rep(seq_len(x$Ne), times=2),
+                    j=as.vector(x$ev),
+                    values=rep(1,x$Ne*2)),
+               nrow=x$Ne, ncol=x$Nv)
+    ev.tr <- triplet(ev%*%t(ev))
+    ee <- ev.tr$ind[(ev.tr$values==2) & (ev.tr$ind[,1]!=ev.tr$ind[,2]),]
+    x$ee <- rep(NA, x$Ne)
+    x$ee[ee[,1]] <- ee[,2]
     if (is.null(x$tt)) {
-        stop("TODO: generate missing graph property 'tt'")
+        x$tt <- x$et[x$ee]
     }
     if (is.null(x$tti)) {
-        stop("TODO: generate missing graph property 'tti'")
+        x$tti <- x$eti[x$ee+(x$eti-1)*x$Ne+1]
     }
     x
 }
@@ -870,8 +894,6 @@ tricontourmap.matrix <-
 ## and, for odd k=1,3,...,nlevels*2-1,nlevels*2+1,
 ##   seg <- outline.to.inla.mesh.segment(val, grp.ccw=c(k-1,k), grp.cw=c(k+1))
 ##   sp <- outline.to.sp(val, grp.ccw=c(k-1,k), grp.cw=c(k+1), ccw=FALSE)
-
-
 tricontourmap.list <-
     function(x, z, nlevels = 10,
              levels = pretty(range(z, na.rm = TRUE), nlevels),
@@ -930,27 +952,55 @@ tricontourmap.list <-
 ## gaussint
 
 
-
-
-
-check.geometrytype <- function(geometry) {
+## Input: One of
+##   inla.mesh
+##   inla.mesh.lattice
+##   list(loc, dims, ...)
+##   list(x, y, ...)
+## The last 3 are all treated as topological lattices, and code in
+## build.lattice.mesh() assumes that the lattice boxes are convex.
+## Output:
+##   list(loc, dims, geometry, manifold)
+get.geometry <- function(geometry) {
     geometrytype <- ""
     manifoldtype <- ""
-    if (inherits(geometry, "inla.mesh") ||
-        inherits(geometry, "inla.mesh.1d")) {
+    if (inherits(geometry, "inla.mesh")) {
+        loc <- geometry$loc
+        dims <- nrow(loc)
         geometrytype <- "mesh"
         manifoldtype <- geometry$manifold
     } else if (inherits(geometry, "inla.mesh.lattice") ||
-               (is.list(geometry) && ("x" %in% names(geometry)))) {
-        geometrytype = "lattice"
-        manifoldtype <- c("R1", "R2")[1+("y" %in% names(geometry))]
+               is.list(geometry)) {
+        if (("loc" %in% names(geometry)) && ("dims" %in% names(geometry))) {
+            loc <- geometry$loc
+            dims <- geometry$dims
+            geometrytype = "lattice"
+            manifoldtype <- "R2"
+        } else if ("x" %in% names(geometry)) {
+            geometrytype = "lattice"
+            if ("y" %in% names(geometry)) {
+                loc <- as.matrix(expand.grid(geometry$x, geometry$y))
+                dims <- c(length(geometry$x), length(geometry$y))
+                manifoldtype <- "R2"
+            } else {
+                loc <- geometry$x
+                dims <- length(loc)
+                manifoldtype <- "R1"
+            }
+        }
     }
     geometrytype <- match.arg(geometrytype, c("mesh", "lattice"))
     manifoldtype <- match.arg(manifoldtype, c("R1", "R2", "S2"))
-        list(geometry=geometrytype, manifold=manifoldtype)
+    list(loc=loc, dims=dims, geometry=geometrytype, manifold=manifoldtype)
 }
 
-build.lattice.mesh <- function(x, y, ...) {
+## Input: One of
+##   loc, dims
+## The input is treated as a topological lattice, and the
+## the lattice boxes are assumed to be convex.
+## Output:
+##   list(loc, graph=list(tv, tt, tti))
+build.lattice.mesh <- function(loc, dims, z=NULL) {
     ## Index to node in main lattice or inbetween,
     ## main=TRUE: i,j in 1...nx,ny
     ## main=FALSE: i,j in 1...nx-1,ny-1
@@ -973,16 +1023,21 @@ build.lattice.mesh <- function(x, y, ...) {
         tij(ki,kj,index=(index-1+2) %% 4 + 1)
     }
 
-    nx <- length(x)
-    ny <- length(y)
+    nx <- dims[1]
+    ny <- dims[2]
 
     i0 <- seq_len(nx-1)
     j0 <- seq_len(ny-1)
     ii0 <- rep(i0, times=ny-1)
     jj0 <- rep(j0, each=nx-1)
-    loc <- rbind(as.matrix(expand.grid(x=x, y=y)),
-                 as.matrix(expand.grid(x=(x[i0]+x[i0+1])/2,
-                                       y=(y[j0]+y[j0+1])/2)))
+    loc <- rbind(loc,
+                 (loc[ij(ii0,jj0),] + loc[ij(ii0+1,jj0),] +
+                  loc[ij(ii0,jj0+1),] + loc[ij(ii0+1,jj0+1),])/4)
+    if (!is.null(z)) {
+        z <- c(z,
+               (z[ij(ii0,jj0)] + z[ij(ii0+1,jj0)] +
+                z[ij(ii0,jj0+1)] + z[ij(ii0+1,jj0+1)])/4)
+    }
     tv <- rbind(cbind(ij(ii0,jj0,FALSE), ij(ii0,jj0),     ij(ii0+1,jj0)),
                 cbind(ij(ii0,jj0,FALSE), ij(ii0+1,jj0),   ij(ii0+1,jj0+1)),
                 cbind(ij(ii0,jj0,FALSE), ij(ii0+1,jj0+1), ij(ii0,jj0+1)),
@@ -998,7 +1053,7 @@ build.lattice.mesh <- function(x, y, ...) {
                  cbind(kk+1, kk+3, kk+2))
     tti[is.na(tt)] <- NA
 
-    list(loc=loc, graph=list(tv=tv, tt=tt, tti=tti))
+    list(loc=loc, graph=list(tv=tv, tt=tt, tti=tti), misc=list(z=z))
 }
 
 
@@ -1018,24 +1073,28 @@ spatialexcursions <- function(ex,
                               alpha=0.1,
                               method=c("interp", "conservative"))
 {
-
     method <- match.arg(method)
-    type <- check.geometrytype(geometry)
+    info <- get.geometry(geometry)
 
-    if (!(type$manifold %in% c("R2"))) {
-     stop(paste("Unsupported manifold type '", type$manifold, "'.", sep=""))
+    if (!(info$manifold %in% c("R2"))) {
+     stop(paste("Unsupported manifold type '", info$manifold, "'.", sep=""))
     }
 
-    if (type$geometry == "mesh") {
+    F <- ex$F
+    if (info$geometry == "mesh") {
         mesh.graph <- geometry$graph
         loc <- geometry$loc
         lattice <- NULL
     }
-    if (type$geometry == "lattice") {
-        lattice <- list(x=geometry$x, y=geometry$y,
-                        nx=length(geometry$x), ny=length(geometry$y))
-        mesh <- build.lattice.mesh(lattice$x, lattice$y)
+    if (info$geometry == "lattice") {
+        mesh <- build.lattice.mesh(info$loc, info$dims, z=F)
         mesh.graph <- mesh$graph
         loc <- mesh$loc
+        F <- mesh$misc$z
+    }
+
+    if (method == "interp") {
+        tricontourmap(x=mesh.graph, z=F, levels=alpha, loc=loc)
+    } else if (method == "conservative") {
     }
 }
