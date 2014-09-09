@@ -1,5 +1,5 @@
 import(Matrix)
 
 # Export only the main functions
-export("excursions","excursions.inla", "gaussint", "excursions.variances","simconf")
+export("excursions","excursions.inla", "gaussint", "excursions.variances","simconf", "spatialexcursions")
 useDynLib(excursions2, .registration=TRUE)

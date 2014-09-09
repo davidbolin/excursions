@@ -1,3 +1,22 @@
+## geometry.R
+##
+##   Copyright (C) 2014 Finn Lindgren, David Bolin
+##
+##   This program is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version.
+##
+##   This program is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+
+
 library(sp)
 library(rgeos)
 library(INLA)
@@ -104,8 +123,8 @@ contour.segment.pixels <- function(c.x, c.y,
 ##' .. content for \details{} ..
 ##' @title Discretise line segments
 ##' @param contourlines contourLines
-##' @param pixelgrid 
-##' @param do.plot 
+##' @param pixelgrid
+##' @param do.plot
 ##' @return Pixel index vector
 ##' @author Finn Lindgren
 contour.pixels <- function(contourlines, pixelgrid, do.plot=0)
@@ -556,6 +575,35 @@ tricontour.matrix <- function(x, z, nlevels = 10,
 
 
 
+## Generate triangulation graph properties
+generate.trigraph.properties <- function(x, Nv=NULL) {
+    stopifnot(is.list(x))
+    stopifnot("tv" %in% names(x))
+
+    x$Nt <- nrow(x$tv)
+    x$Ne <- 3*x$Nt ## number of unidirectional edges
+    if (is.null(Nv)) {
+        x$Nv <- max(as.vector(x$tv))
+    } else {
+        x$Nv <- Nv
+    }
+
+    x$ev <- cbind(as.vector(x$tv[,c(2,3,1)]),
+                  as.vector(x$tv[,c(3,1,2)]))
+    x$et <- rep(seq_len(x$Nt), times=3)
+    x$eti <- rep(1:3, each=x$Nt) ## Opposing vertex within-triangle-indices
+    x$te <- matrix(seq_len(x$Ne), x$Nt, 3)
+    if (is.null(x$tt)) {
+        stop("TODO: generate missing graph property 'tt'")
+    }
+    if (is.null(x$tti)) {
+        stop("TODO: generate missing graph property 'tti'")
+    }
+    x
+}
+
+
+
 ## Returns val=list(loc, idx, grp), where
 ##   grp = 1,...,nlevels*2+1, level groups are even, 2,4,...
 ## Suitable for
@@ -587,22 +635,7 @@ tricontour.list <- function(x, z, nlevels = 10,
     type <- match.arg(type)
     nlevels <- length(levels)
 
-    ## Generate graph properties
-    x$Nt <- nrow(x$tv)
-    x$Ne <- 3*x$Nt
-    x$Nt <- max(as.vector(x$tv))
-    x <- generate.graph.properties(x)
-    x$ev <- cbind(as.vector(x$tv[,c(2,3,1)]),
-                  as.vector(x$tv[,c(3,1,2)]))
-    x$et <- rep(seq_len(x$Nt), times=3)
-    x$eti <- rep(1:3, each=x$Nt) ## Opposing vertex within-triangle-indices
-    x$te <- matrix(seq_len(x$Ne), x$Nt, 3)
-    if (is.null(x$tt)) {
-        stop("TODO: generate missing graph property 'tt'")
-    }
-    if (is.null(x$tti)) {
-        stop("TODO: generate missing graph property 'tti'")
-    }
+    x <- generate.trigraph.properties(x)
     Nv <- x$Nv
 
     ## Find vertices on levels
@@ -895,3 +928,114 @@ tricontourmap.list <-
 ## simconf
 ## continterp(excurobj, grid or mesh, outputgrid(opt), alpha, method)
 ## gaussint
+
+
+
+
+
+check.geometrytype <- function(geometry) {
+    geometrytype <- ""
+    manifoldtype <- ""
+    if (inherits(geometry, "inla.mesh") ||
+        inherits(geometry, "inla.mesh.1d")) {
+        geometrytype <- "mesh"
+        manifoldtype <- geometry$manifold
+    } else if (inherits(geometry, "inla.mesh.lattice") ||
+               (is.list(geometry) && ("x" %in% names(geometry)))) {
+        geometrytype = "lattice"
+        manifoldtype <- c("R1", "R2")[1+("y" %in% names(geometry))]
+    }
+    geometrytype <- match.arg(geometrytype, c("mesh", "lattice"))
+    manifoldtype <- match.arg(manifoldtype, c("R1", "R2", "S2"))
+        list(geometry=geometrytype, manifold=manifoldtype)
+}
+
+build.lattice.mesh <- function(x, y, ...) {
+    ## Index to node in main lattice or inbetween,
+    ## main=TRUE: i,j in 1...nx,ny
+    ## main=FALSE: i,j in 1...nx-1,ny-1
+    ij <- function(i,j,main=TRUE) {
+        ((j-1)*nx+i)*main + (!main)*(nx*ny+(j-1)*(nx-1)+i)
+    }
+    ## Index to triangle, our index=1...4, i,j in 1...nx-1,ny-1
+    tij <- function(i,j,index=1) {
+        (nx-1)*(ny-1)*(index-1)+(j-1)*(nx-1)+i
+    }
+    ## Index to neighbour triangle, our index=1...4, i,j in 1...nx-1,ny-1
+    ## index CCW from lower triangle.
+    tijn <- function(i,j,index=1) {
+        ki <- i+c(0,+1,0,-1)[index]
+        kj <- j+c(-1,0,+1,0)[index]
+        ki[ki<1] <- NA
+        ki[ki>=nx] <- NA
+        kj[kj<1] <- NA
+        kj[kj>=ny] <- NA
+        tij(ki,kj,index=(index-1+2) %% 4 + 1)
+    }
+
+    nx <- length(x)
+    ny <- length(y)
+
+    i0 <- seq_len(nx-1)
+    j0 <- seq_len(ny-1)
+    ii0 <- rep(i0, times=ny-1)
+    jj0 <- rep(j0, each=nx-1)
+    loc <- rbind(as.matrix(expand.grid(x=x, y=y)),
+                 as.matrix(expand.grid(x=(x[i0]+x[i0+1])/2,
+                                       y=(y[j0]+y[j0+1])/2)))
+    tv <- rbind(cbind(ij(ii0,jj0,FALSE), ij(ii0,jj0),     ij(ii0+1,jj0)),
+                cbind(ij(ii0,jj0,FALSE), ij(ii0+1,jj0),   ij(ii0+1,jj0+1)),
+                cbind(ij(ii0,jj0,FALSE), ij(ii0+1,jj0+1), ij(ii0,jj0+1)),
+                cbind(ij(ii0,jj0,FALSE), ij(ii0,jj0+1),   ij(ii0,jj0)))
+    tt <- rbind(cbind(tijn(ii0,jj0,1), tij(ii0,jj0,2), tij(ii0,jj0,4)),
+                cbind(tijn(ii0,jj0,2), tij(ii0,jj0,3), tij(ii0,jj0,1)),
+                cbind(tijn(ii0,jj0,3), tij(ii0,jj0,4), tij(ii0,jj0,2)),
+                cbind(tijn(ii0,jj0,4), tij(ii0,jj0,1), tij(ii0,jj0,3)))
+    kk <- rep(0, (nx-1)*(ny-1))
+    tti <- rbind(cbind(kk+1, kk+3, kk+2),
+                 cbind(kk+1, kk+3, kk+2),
+                 cbind(kk+1, kk+3, kk+2),
+                 cbind(kk+1, kk+3, kk+2))
+    tti[is.na(tt)] <- NA
+
+    list(loc=loc, graph=list(tv=tv, tt=tt, tti=tti))
+}
+
+
+
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title Spatial interpretation of excursions and contourmaps
+##' @param ex
+##' @param geometry
+##' @param alpha
+##' @param method
+##' @return A list with ...
+##' @author Finn Lindgren
+spatialexcursions <- function(ex,
+                              geometry,
+                              alpha=0.1,
+                              method=c("interp", "conservative"))
+{
+
+    method <- match.arg(method)
+    type <- check.geometrytype(geometry)
+
+    if (!(type$manifold %in% c("R2"))) {
+     stop(paste("Unsupported manifold type '", type$manifold, "'.", sep=""))
+    }
+
+    if (type$geometry == "mesh") {
+        mesh.graph <- geometry$graph
+        loc <- geometry$loc
+        lattice <- NULL
+    }
+    if (type$geometry == "lattice") {
+        lattice <- list(x=geometry$x, y=geometry$y,
+                        nx=length(geometry$x), ny=length(geometry$y))
+        mesh <- build.lattice.mesh(lattice$x, lattice$y)
+        mesh.graph <- mesh$graph
+        loc <- mesh$loc
+    }
+}
