@@ -1000,7 +1000,7 @@ get.geometry <- function(geometry) {
 ## the lattice boxes are assumed to be convex.
 ## Output:
 ##   list(loc, graph=list(tv, tt, tti))
-build.lattice.mesh <- function(loc, dims, z=NULL) {
+build.lattice.mesh <- function(loc, dims) {
     ## Index to node in main lattice or inbetween,
     ## main=TRUE: i,j in 1...nx,ny
     ## main=FALSE: i,j in 1...nx-1,ny-1
@@ -1030,14 +1030,15 @@ build.lattice.mesh <- function(loc, dims, z=NULL) {
     j0 <- seq_len(ny-1)
     ii0 <- rep(i0, times=ny-1)
     jj0 <- rep(j0, each=nx-1)
-    loc <- rbind(loc,
-                 (loc[ij(ii0,jj0),] + loc[ij(ii0+1,jj0),] +
-                  loc[ij(ii0,jj0+1),] + loc[ij(ii0+1,jj0+1),])/4)
-    if (!is.null(z)) {
-        z <- c(z,
-               (z[ij(ii0,jj0)] + z[ij(ii0+1,jj0)] +
-                z[ij(ii0,jj0+1)] + z[ij(ii0+1,jj0+1)])/4)
-    }
+    ## Mapping matrix from lattice nodes to sublattice nodes
+    A <- sparseMatrix(i=rep(seq_len((nx-1)*(ny-1)), 4),
+                      j=(c(ij(ii0,jj0),
+                           ij(ii0+1,jj0),
+                           ij(ii0,jj0+1),
+                           ij(ii0+1,jj0+1))),
+                      x=rep(1/4, (nx-1)*(ny-1)),
+                      dims=c((nx-1)*(ny-1), nx*ny))
+    loc <- rbind(loc, as.matrix(A %*% loc))
     tv <- rbind(cbind(ij(ii0,jj0,FALSE), ij(ii0,jj0),     ij(ii0+1,jj0)),
                 cbind(ij(ii0,jj0,FALSE), ij(ii0+1,jj0),   ij(ii0+1,jj0+1)),
                 cbind(ij(ii0,jj0,FALSE), ij(ii0+1,jj0+1), ij(ii0,jj0+1)),
@@ -1053,7 +1054,7 @@ build.lattice.mesh <- function(loc, dims, z=NULL) {
                  cbind(kk+1, kk+3, kk+2))
     tti[is.na(tt)] <- NA
 
-    list(loc=loc, graph=list(tv=tv, tt=tt, tti=tti), misc=list(z=z))
+    list(loc=loc, graph=list(tv=tv, tt=tt, tti=tti), misc=list(A=A))
 }
 
 
@@ -1087,10 +1088,10 @@ spatialexcursions <- function(ex,
         lattice <- NULL
     }
     if (info$geometry == "lattice") {
-        mesh <- build.lattice.mesh(info$loc, info$dims, z=F)
+        mesh <- build.lattice.mesh(info$loc, info$dims)
         mesh.graph <- mesh$graph
         loc <- mesh$loc
-        F <- mesh$misc$z
+        F <- c(F, as.vector(mesh$misc$A %*% F))
     }
 
     if (method == "interp") {
