@@ -46,7 +46,10 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
     vars <- excursions.variances(L)
   }
 
-  marg <- excursions.marginals(type, rho,vars, mu, u, QC = qc, ind)
+  if(verbose)
+    cat("Calculate marginals\n")
+  marg <- excursions.marginals(type = type, rho = rho,vars = vars, 
+                               mu = mu, u = u, QC = qc, ind = ind)
 
   if (missing(max.size)){
 	  m.size = length(mu)
@@ -63,20 +66,19 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
 	  }
   }
 
+  if(verbose)
+    cat("Calculate permutation\n")
   if(missing(reo)){
     use.camd = !missing(ind) || alpha < 1
     if(qc){
-      reo <- excursions.permutation(marg$rho_ng, ind, use.camd = TRUE,alpha,Q)
+      reo <- excursions.permutation(marg$rho_ng, indices, use.camd = TRUE,alpha,Q)
     } else {
-      reo <- excursions.permutation(marg$rho, ind, use.camd = TRUE,alpha,Q)
+      reo <- excursions.permutation(marg$rho, indices, use.camd = TRUE,alpha,Q)
     }
   }
 
-  if (!missing(ind)){
-    marg$rho[ind==0] = 0
-    marg$rho_ng[ind==0] = 0
-  }
-
+  if(verbose)
+    cat("Calculate limits\n")
   limits <- excursions.setlimits(marg, vars,type,QC=qc,u,mu)
 
   res <- excursions.call(limits$a,limits$b,reo,Q, is.chol = is.chol, 

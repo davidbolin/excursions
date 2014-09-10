@@ -175,6 +175,11 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
   } else {
   	stop('Method must be one of EB, QC, NI, NIQC, iNIQC')
   }
-
+  if(type == "="){
+    rho.ind = 1-pmax(rho.ind,1-rho.ind)
+  }
+  if(type == "!="){
+    rho.ind = pmax(rho.ind,1-rho.ind)
+  }    
   return(list(F=F,mean=config$mu[ind],rho=rho.ind))
 }

@@ -68,17 +68,13 @@ excursions.marginals <- function(type, rho,vars, mu, u, QC = FALSE, ind)
       } 
     }
   } 
-  if(!missing(ind)){
-    rl$rho[ind==0] = -1
-    if(QC)
-     rl$rho_ng[ind==0] = -1
-  }
   return(rl)
 }
 
 	
 excursions.permutation <- function(rho, ind, use.camd = TRUE,alpha,Q)
 {
+  rho[!ind] = -1
   n = length(rho)
   v.s = sort(rho,index.return=TRUE)  
   reo = v.s$ix
@@ -173,7 +169,8 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
     a[a==-Inf] = -.Machine$double.xmax
     b[b==-Inf] = -.Machine$double.xmax
     res = gaussint(Q = Q, a= a, b = b, lim = lim, n.iter = K,
-                   max.size = max.size, max.threads = n.threads,seed = seeed)
+                                 max.size = max.size, 
+                                 max.threads = n.threads,seed = seeed)
   }
   return(res)
 }
