@@ -746,9 +746,9 @@ tricontour.list <- function(x, z, nlevels = 10,
     ##   if boundary edge, store new split edges
     e.crossing <- which(e.lower < e.upper)
     e.bndcrossing <- e.on.bnd[ e.lower[e.on.bnd] < e.upper[e.on.bnd] ]
-    n$newv <- (sum(e.upper[e.crossing]-e.lower[e.crossing])/2 +
+    Nnewv <- (sum(e.upper[e.crossing]-e.lower[e.crossing])/2 +
                sum(e.upper[e.bndcrossing]-e.lower[e.bndcrossing])/2)/2
-    loc.new <- matrix(NA, n$newv, ncol(loc))
+    loc.new <- matrix(NA, Nnewv, ncol(loc))
     loc.last <- 0L
     e.newv <- sparseMatrix(i=integer(0), j=integer(0), x=double(0),
                            dims=c(x$Ne, length(levels)))
@@ -1094,8 +1094,25 @@ spatialexcursions <- function(ex,
         F <- c(F, as.vector(mesh$misc$A %*% F))
     }
 
+    ## Placeholder code that just finds an F-levelset assuming "!="
     if (method == "interp") {
-        tricontourmap(x=mesh.graph, z=F, levels=alpha, loc=loc)
+        output <- tricontourmap(x=mesh.graph, z=F, levels=1-alpha, loc=loc)
     } else if (method == "conservative") {
+        t.avoid <- which(rowSums(matrix((F >= 1-alpha)[mesh.graph$tv],
+                                        nrow(mesh.graph$tv), 3)) == 3)
+        t.contour <- which(rowSums(matrix((F >= 1-alpha)[mesh.graph$tv],
+                                          nrow(mesh.graph$tv), 3)) < 3)
+        avoid.graph <-
+            generate.trigraph.properties(
+                list(tv=mesh.graph$tv[t.avoid,,drop=FALSE]),
+                Nv=nrow(loc))
+        contour.graph <-
+            generate.trigraph.properties(
+                list(tv=mesh.graph$tv[t.contour,,drop=FALSE]),
+                Nv=nrow(loc))
+        output <- list(avoid.graph=avoid.graph,
+                       contour.graph=contour.graph,
+                       loc=loc)
     }
+    invisible(output)
 }
