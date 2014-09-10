@@ -1087,6 +1087,7 @@ spatialexcursions <- function(ex,
                        ex$meta$type, "'.", sep=""))
         }
     }
+    invert <- (type != ex$meta$type)
 
     if (!(info$manifold %in% c("R2"))) {
      stop(paste("Unsupported manifold type '", info$manifold, "'.", sep=""))
@@ -1121,22 +1122,25 @@ spatialexcursions <- function(ex,
                       " > inputalpha = ", ex$meta$alpha, sep=""))
     }
 
+    message("TODO: handle level avoiding sets properly")
     if (method == "interp") {
-        message("TODO: handle level avoiding sets properly")
         regions <- tricontourmap(x=mesh.graph, z=F, levels=1-alpha, loc=loc)
+        message("TODO: handle output type")
         output <- regions$map
     } else if (method == "conservative") {
         t.count <- rowSums(matrix((F >= 1-alpha)[mesh.graph$tv],
                                   nrow(mesh.graph$tv), 3))
-        if (type == "=") {
+        if ((type == "=" && !invert) || (type != "=" && invert)) {
             t.keep <- which(t.count < 3)
         } else {
-            t.keep <- which(t.count > 0)
+            t.keep <- which(t.count == 3)
         }
         result.graph <-
             generate.trigraph.properties(
                 list(tv=mesh.graph$tv[t.keep,,drop=FALSE]),
                 Nv=nrow(loc))
+
+        message("TODO: extract boundary edges from triangle graph and convert to output objects, and move all this to a helper function, possibly tricontourmap itself!")
 
         output <- list(graph=result.graph,
                        loc=loc)
