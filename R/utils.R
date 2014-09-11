@@ -74,7 +74,9 @@ excursions.marginals <- function(type, rho,vars, mu, u, QC = FALSE, ind)
 	
 excursions.permutation <- function(rho, ind, use.camd = TRUE,alpha,Q)
 {
-  rho[!ind] = -1
+  if(!missing(ind) && !is.null(ind))
+    rho[!ind] = -1
+  
   n = length(rho)
   v.s = sort(rho,index.return=TRUE)  
   reo = v.s$ix
@@ -154,20 +156,12 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
   
     #calculate cholesky here
     L = chol(Q[reo,reo])
-    a.sort[a.sort==Inf]  = .Machine$double.xmax
-    b.sort[b.sort==Inf]  = .Machine$double.xmax
-    a.sort[a.sort==-Inf] = -.Machine$double.xmax
-    b.sort[b.sort==-Inf] = -.Machine$double.xmax
-
+    
     res = gaussint(Q.chol = L, a = a.sort, b = b.sort, lim = lim,
                                  n.iter = K, max.size = max.size, 
                                  max.threads = n.threads, seed = seed)
   } else {
     #assume that everything already is ordered
-    a[a==Inf]  = .Machine$double.xmax
-    b[b==Inf]  = .Machine$double.xmax
-    a[a==-Inf] = -.Machine$double.xmax
-    b[b==-Inf] = -.Machine$double.xmax
     res = gaussint(Q = Q, a= a, b = b, lim = lim, n.iter = K,
                                  max.size = max.size, 
                                  max.threads = n.threads,seed = seeed)

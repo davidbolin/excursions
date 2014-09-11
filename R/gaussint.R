@@ -33,7 +33,7 @@ gaussint <- function(mu,Q.chol, Q, a, b, lim = 0, n.iter = 10000,
     a[!ind] = Inf
     b[!ind] = -Inf
   }
-  
+    
   if (!missing(Q.chol) && !is.null(Q.chol)) {
       L = Q.chol
   } else {
@@ -45,6 +45,11 @@ gaussint <- function(mu,Q.chol, Q, a, b, lim = 0, n.iter = 10000,
     b = b - mu
   }   
 
+  a[a==Inf]  = .Machine$double.xmax
+  b[b==Inf]  = .Machine$double.xmax
+  a[a==-Inf] = -.Machine$double.xmax
+  b[b==-Inf] = -.Machine$double.xmax
+  
   if (!is(L, "dtCMatrix"))
       stop("L needs to be in ccs format for now.")
     
