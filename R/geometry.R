@@ -1065,35 +1065,34 @@ build.lattice.mesh <- function(loc, dims) {
 ##' @title Spatial interpretation of excursions and contourmaps
 ##' @param ex
 ##' @param geometry
+##' @param invert
 ##' @param alpha
 ##' @param method
 ##' @return A list with ...
 ##' @author Finn Lindgren
-spatialexcursions <- function(ex,
-                              geometry,
-                              type=ex$meta$type,
-                              alpha=0.1,
-                              method=c("interp", "conservative"))
+continuous <- function(ex,
+                       geometry,
+                       invert=FALSE,
+                       alpha=0.1,
+                       method=c("interp", "conservative"))
 {
     stopifnot(inherits(ex, "excurobj"))
     method <- match.arg(method)
-    info <- get.geometry(geometry)
-    if (type != ex$meta$type) {
-        if (((type %in% c("=", "!=")) &&
-             (ex$meta$type %in% c(">", "<"))) ||
-            ((type %in% c(">", "<")) &&
-             (ex$meta$type %in% c("=", "!=")))) {
-            stop(paste("Incompatible excursion types '", type, "' and '",
-                       ex$meta$type, "'.", sep=""))
-        }
-    }
-    invert <- (type != ex$meta$type)
 
+    info <- get.geometry(geometry)
     if (!(info$manifold %in% c("R2"))) {
      stop(paste("Unsupported manifold type '", info$manifold, "'.", sep=""))
     }
 
-    F <- ex$F
+    if (ex$meta$type == "=") {
+        ex.type <- "!="
+        invert <- !invert
+        ex.F <- 1-ex$F
+    } else {
+        ex.type <- ex$meta$type
+        ex.F <- ex$F
+    }
+
     if (info$geometry == "mesh") {
         mesh.graph <- geometry$graph
         loc <- geometry$loc
@@ -1103,16 +1102,11 @@ spatialexcursions <- function(ex,
         mesh <- build.lattice.mesh(info$loc, info$dims)
         mesh.graph <- mesh$graph
         loc <- mesh$loc
-        F <- c(F, as.vector(mesh$misc$A %*% F))
+        ex.F <- c(ex.F, as.vector(mesh$misc$A %*% ex.F))
     }
 
-    if (ex$meta$calculation == "excursions") {
-        if (ex$meta$type == "=") {
-            F <- 1-F
-        }
-    } else if (ex$meta$calculation == "contourmap") {
-        ## Do nothing
-    } else {
+    if (!(ex$meta$calculation %in% c("excursions",
+                                     "contourmap"))) {
         stop(paste("Unsupported calculation '",
                    ex$meta$calculation, "'.", sep=""))
     }
@@ -1124,13 +1118,13 @@ spatialexcursions <- function(ex,
 
     message("TODO: handle level avoiding sets properly")
     if (method == "interp") {
-        regions <- tricontourmap(x=mesh.graph, z=F, levels=1-alpha, loc=loc)
+        regions <- tricontourmap(x=mesh.graph, z=ex.F, levels=1-alpha, loc=loc)
         message("TODO: handle output type")
         output <- regions$map
     } else if (method == "conservative") {
-        t.count <- rowSums(matrix((F >= 1-alpha)[mesh.graph$tv],
+        t.count <- rowSums(matrix((ex.F >= 1-alpha)[mesh.graph$tv],
                                   nrow(mesh.graph$tv), 3))
-        if ((type == "=" && !invert) || (type != "=" && invert)) {
+        if (invert) {
             t.keep <- which(t.count < 3)
         } else {
             t.keep <- which(t.count == 3)
