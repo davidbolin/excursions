@@ -75,7 +75,7 @@ contourmap <- function(mu,Q,vars,n.levels,ind,levels,
 		                               n.levels = n.levels, measure = opt.measure,
 		                               use.marginals = use.marginals,ind = ind)
 	} else {
-		stop('type not supported (use standard, equalarea, or P0/1/2-optimal)')
+		stop('type not supported (use standard, equalarea, or P0/P1/P2-optimal)')
 	}
 
 	F.calculated = FALSE
@@ -87,17 +87,14 @@ contourmap <- function(mu,Q,vars,n.levels,ind,levels,
       if(measure[i]==1) {
         if(verbose) cat('Calculating P1-measure\n')
         lp$P1 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=measure[i])
-
       } else if(measure[i] == 2) {
-                if(verbose) cat('Calculating P2-measure\n')
+        if(verbose) cat('Calculating P2-measure\n')
         lp$P2 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=measure[i])
-
 	 	  } else if (measure[i] == 0) {
 	 	    if(verbose) cat('Calculating P0-measure and contour map function\n')
 
 	 	    p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
-	 	                                    alpha=alpha, n.iter=n.iter,
-	 	                                    max.threads=max.threads)
+	 	                         alpha=alpha, n.iter=n.iter,max.threads=max.threads)
 
 	 	    lp$P0 = mean(p$F)
 	 	    lp$F = p$F
@@ -110,8 +107,7 @@ contourmap <- function(mu,Q,vars,n.levels,ind,levels,
 	if(contour.map.function == TRUE && F.calculated == FALSE){
     if(verbose) cat('Calculating contour map function\n')
     p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
-	 	                                alpha=alpha, n.iter=n.iter,
-	 	                                max.threads=max.threads)
+	 	                     alpha=alpha, n.iter=n.iter, max.threads=max.threads)
 	 	lp$P0 = mean(p$F)
 	 	lp$F = p$F
 	}
