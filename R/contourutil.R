@@ -1,6 +1,6 @@
 ## Calculate the contour map function
-contourfunction <- function(lp,mu,Q,vars,ind, alpha=1, n.iter=10000, 
-                                       Q.chol,max.threads=0) 
+contourfunction <- function(lp,mu,Q,vars,ind, alpha=1, n.iter=10000,
+                                       Q.chol,max.threads=0)
 {
 	if (!missing(Q.chol) && !is.null(Q.chol)) {
       Q = Q.chol
@@ -10,19 +10,19 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha=1, n.iter=10000,
   } else {
     stop('Must supply Q or Q.chol')
   }
-  
+
   if(missing(mu))
     stop('Must supply mu')
-    
+
   if(missing(lp))
     stop('Must supply level plot')
-  
+
 	lim <- excursions.limits(lp=lp,mu=mu,measure=0,ind=ind)
-    
+
   if (missing(vars)) {
     if(is.chol) {
       vars <- excursions.variances(Q)
-    } else {  
+    } else {
       L = chol(Q)
       vars <- excursions.variances(L)
     }
@@ -31,7 +31,7 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha=1, n.iter=10000,
 
   lim$a <- lim$a - mu
 	lim$b <- lim$b - mu
-	  
+
 	m.size = length(mu)
   indices = NULL
   if (!missing(ind)) {
@@ -39,15 +39,15 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha=1, n.iter=10000,
 	  indices[ind] = 1
 		m.size = length(ind)
   }
-  
+
   use.camd = !missing(ind) || alpha < 1
-  reo <- excursions.permutation(rho = rho, ind = indices, 
+  reo <- excursions.permutation(rho = rho, ind = indices,
                                 use.camd = use.camd,alpha = alpha,Q = Q)
-  
-  res <- excursions.call(lim$a,lim$b,reo,Q, is.chol = is.chol, 
+
+  res <- excursions.call(lim$a,lim$b,reo,Q, is.chol = is.chol,
                          1-alpha, K = n.iter, max.size = m.size,
                          n.threads = max.threads,seed = seed)
-                 
+
   n = length(mu)
   ii = which(res$Pv[1:n] > 0)
   if (length(ii) == 0) i=n+1 else i=min(ii)
@@ -61,7 +61,7 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha=1, n.iter=10000,
 
 	D = rep(0,n)
 	if(i<n+1) D[reo[i:n]] = 1
-	
+
   return(list(F=F, Fe=Fe, D=D, rho=rho))
 }
 
@@ -71,10 +71,10 @@ contourmap.marginals <- function(mu,vars,lim,ind)
 {
   if(!missing(ind) && !is.null(ind)){
 	  marg = rep(0,length(mu))
-	  marg[ind] = pnorm(lim$b[ind], mu[ind], sqrt(vars[ind])) - 
-	              pnorm(lim$a[ind], mu[ind], sqrt(vars[ind])) 
+	  marg[ind] = pnorm(lim$b[ind], mu[ind], sqrt(vars[ind])) -
+	              pnorm(lim$a[ind], mu[ind], sqrt(vars[ind]))
 	} else {
-	  marg = pnorm(lim$b, mu, sqrt(vars)) - pnorm(lim$a, mu, sqrt(vars)) 
+	  marg = pnorm(lim$b, mu, sqrt(vars)) - pnorm(lim$a, mu, sqrt(vars))
 	}
 	return(marg)
 }
@@ -108,13 +108,13 @@ excursions.levelplot <- function(mu,n.levels,ind,levels,equal.area=FALSE)
 			n.levels = length(levels)
 		}
 	}
-	
+
 	u.e = NULL
 	E = vector("list",n.levels+1)
 	l1 = c(r[1],levels,r[2])
 	for(i in 1:(n.levels+1)) u.e[i] = (l1[i]+l1[i+1])/2
-	
-	for(i in 1:(n.levels)){ 
+
+	for(i in 1:(n.levels)){
 		E[[i]] = which((l1[i] <= x.mean) & (x.mean < l1[i+1]))
 	}
 	E[[n.levels+1]] = which((l1[n.levels+1] <= x.mean))
@@ -124,22 +124,22 @@ excursions.levelplot <- function(mu,n.levels,ind,levels,equal.area=FALSE)
 	return(list(u = levels, n.levels = n.levels, u.e = u.e, E=E,map=map))
 }
 
-## Create a P-optimal levelplot. 
-## The function will take A LOT of time to run if use.marginals=FALSE.	
+## Create a P-optimal levelplot.
+## The function will take A LOT of time to run if use.marginals=FALSE.
 excursions.opt.levelplot <- function(mu,vars,Q,n.levels, measure=2, use.marginals=TRUE, ind)
 {
 	if( (measure != 1) && (measure != 2) && (measure != 0))
 		stop('only measure 0, 1, or 2 allowed')
-	
+
 	if(missing(ind)) ind=1:length(mu)
-	
+
 	r = range(mu[ind])
-	
+
 	start.v <- seq(from=r[1],to=r[2],length.out = (n.levels+2))[2:(n.levels+1)]
-	
-	u = optim(start.v,excursions.lim.func,mu=mu,vars=vars,Q=Q,
-			  measure=measure,use.marginals = use.marginals,ind=ind)
-	
+  Q.chol = chol(Q)
+	u = optim(start.v,excursions.lim.func,mu=mu,vars=vars,Q.chol=Q.chol,
+			  measure=measure,use.marginals = use.marginals,ind=ind,Q=Q)
+
 	lp = excursions.levelplot(mu,levels = u$par,ind=ind)
 	if(measure==2){
 		if(use.marginals){
@@ -164,32 +164,47 @@ excursions.opt.levelplot <- function(mu,vars,Q,n.levels, measure=2, use.marginal
 }
 
 ## Internal function for optimization of P-optimal contour map
-excursions.lim.func <- function(u,mu,vars,Q,measure,use.marginals,ind=ind)
-{	
+excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
+                                use.marginals, ind=ind)
+{
 	lp = excursions.levelplot(mu,levels = u,ind=ind)
 	if( min(u)<range(mu[ind])[1] | max(u) > range(mu[ind])[2]){
-	 val = 0
+	  # levels should be in (min(mu),max(mu))
+	  val = 0
+	} else if (max(sort(u,index.return=TRUE)$ix - seq_len(length(u)))>0) {
+	  # levels should be sorted
+	  val = 0
 	} else {
-		if(use.marginals){
-			limits = excursions.limits(lp,mu,measure=measure)
-			val = -min(contourmap.marginals(mu,vars,limits,ind)[ind])
-		} else {
-			val = -(Pmeasure(lp,mu=mu,Q=Q,type=measure,ind=ind))$P		
+	  v = TRUE;
+	  for(i in 1:(length(u)-1)){
+	    v = v & sum(mu[ind]<u[i+1] & mu[ind] > u[i])>0
+	  }
+	  if(v == FALSE) {
+	    # all sets E should be non-empty
+	    val = 0
+	  } else {
+  		if(use.marginals){
+	  		limits = excursions.limits(lp,mu,measure=measure)
+		  	val = -min(contourmap.marginals(mu,vars,limits,ind)[ind])
+		  } else {
+			  val = -Pmeasure(lp,mu=mu,Q=Q,Q.chol=Q.chol,type=measure,
+			                ind=ind,vars=vars)
+	      cat(u, ': ', -val, '\n')
+		  }
 		}
 	}
-	cat(u, ': ', val, '\n')
 	return(val)
 }
 
-## Function that calculates the P measure for a given contour map. 
-Pmeasure <- function(lp,mu,Q,Q.chol, ind=NULL,type,verbose=FALSE)
+## Function that calculates the P measure for a given contour map.
+Pmeasure <- function(lp,mu,Q,Q.chol, ind=NULL,type,vars=vars)
 {
   if(type==0){
-    res <- contourfunction(lp,mu,Q,vars,ind, Q.chol,verbose=verbose)
+    res <- contourfunction(lp=lp,mu=mu,Q=Q,vars=vars,ind=ind)
     p = mean(res$F)
   } else {
-    limits = excursions.limits(lp,mu,measure=type)
-	  res = gaussint(mu = mu, Q=Q, Q.chol = Q.chol, a=limits$a, 
+    limits = excursions.limits(lp=lp,mu=mu,measure=type)
+	  res = gaussint(mu = mu, Q=Q, Q.chol = Q.chol, a=limits$a,
 	                b=limits$b,ind=ind)
 	  p = res$P[1]
   }
@@ -207,13 +222,13 @@ excursions.limits <- function(lp,mu,measure,ind)
 
 	a = rep(-Inf,n)
 	b = rep(Inf,n)
-	
+
 	if(measure==2){
 		b[lp$E[[1]]] = lp$u.e[2]
 		a[lp$E[[n.l+1]]] = lp$u.e[n.l]
 
 		if(n.l>1){
-			for(i in 2:n.l){ 
+			for(i in 2:n.l){
 				a[lp$E[[i]]] = lp$u.e[i-1]
 				b[lp$E[[i]]] = lp$u.e[i+1]
 			}
@@ -223,23 +238,23 @@ excursions.limits <- function(lp,mu,measure,ind)
 			b[lp$E[[1]]] = lp$u[2]
 			a[lp$E[[n.l+1]]] = lp$u[n.l-1]
 		}
-		if(n.l>2){ 
+		if(n.l>2){
 			b[lp$E[[2]]] = lp$u[3]
 			a[lp$E[[n.l]]] = lp$u[n.l-2]
 		}
 		if(n.l>3){
-			for(i in 3:(n.l-1)){ 
+			for(i in 3:(n.l-1)){
 				a[lp$E[[i]]] = lp$u[i-2]
 				b[lp$E[[i]]] = lp$u[i+1]
 			}
 		}
 	} else if(measure==0){
-		
+
 		b[lp$E[[1]]] = lp$u[1]
 		a[lp$E[[n.l+1]]] = lp$u[n.l]
-		
+
 		if(n.l>1){
-			for(i in 2:n.l){ 
+			for(i in 2:n.l){
 				a[lp$E[[i]]] = lp$u[i-1]
 				b[lp$E[[i]]] = lp$u[i]
 			}
@@ -247,5 +262,5 @@ excursions.limits <- function(lp,mu,measure,ind)
 	} else {
 		stop('Measure must be 0, 1, or 2')
 	}
-	return(list(a=a,b=b))	
+	return(list(a=a,b=b))
 }

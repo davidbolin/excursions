@@ -17,9 +17,22 @@ models
   \code{excursions.inla} can be used.
 }
 \usage{
-excursions(alpha, u, mu, Q, type, n.iter=10000, Q.chol, vars,
-           rho, reo, method='EB', ind, max.size, verbose=0, 
-           keep=FALSE, max.threads=0)
+excursions <- function(alpha,
+                       u,
+                       mu,
+                       Q,
+                       type,
+                       n.iter=10000,
+                       Q.chol,
+                       vars,
+                       rho,
+                       reo,
+                       method='EB',
+                       ind,
+                       max.size,
+                       verbose=0,
+                       max.threads=0,
+                       seed)
 }
 \arguments{
   \item{alpha}{Error probability. The excursion function is calculated
@@ -40,18 +53,16 @@ excursions(alpha, u, mu, Q, type, n.iter=10000, Q.chol, vars,
   \item{rho}{Marginal excursion probabilities (optional).  For contour
     regions, provide \eqn{P(X>u)}.}
   \item{reo}{Reordering (optional)}
-  \item{ind}{Indices of the nodes that should be analyzed (optional)} 
+  \item{ind}{Indices of the nodes that should be analyzed (optional)}
   \item{max.size}{Maximum number of nodes to include in the set of
     interest (optional)}
   \item{method}{Method for handeling the latent Gaussian structure:
   \itemize{
-  	\item{'EB' }{Empirical Bayes (default)}
-  	\item{'QC' }{Quantile correction, rho must be provided if QC is
-	  used.}
+    \item{'EB' }{Empirical Bayes (default)}
+    \item{'QC' }{Quantile correction, rho must be provided if QC is used.}
   }
   }
   \item{verbose}{Set to TRUE for verbose mode (optional)}
-  \item{keep}{Set to TRUE to keep the temporary binary I/O files}
   \item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
 }
 \value{
@@ -65,8 +76,6 @@ excursions(alpha, u, mu, Q, type, n.iter=10000, Q.chol, vars,
   \item{reo }{Reordering used for excursion function}
   \item{ireo }{Inverse reordering}
   \item{vars }{Marginal variances}
-  \item{tmppath }{If \code{keep} is TRUE, the location of the temporary
-    binary I/O files}
 }
 \author{
   David Bolin \email{davidbolin@gmail.com} and
