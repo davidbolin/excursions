@@ -1,4 +1,4 @@
-## utils.R 
+## utils.R
 ##
 ##   Copyright (C) 2013 David Bolin, Finn Lindgren
 ##
@@ -22,17 +22,18 @@ excursions.variances<-function(L)
       stop("L needs to be in ccs format for now.")
   Mp = L@p
   Mi = L@i
-  Mv = L@x 
+  Mv = L@x
   n = dim(L)[1]
 
-  out<- .C("Qinv",Rir = as.integer(L@i), Rjc = as.integer(L@p), 
+  out<- .C("Qinv",Rir = as.integer(L@i), Rjc = as.integer(L@p),
            Rpr = as.double(L@x), variances=double(n), n = as.integer(n))
 
   return(out$variances)
 }
 
-excursions.marginals <- function(type, rho,vars, mu, u, QC = FALSE, ind)	
-{  
+
+excursions.marginals <- function(type, rho,vars, mu, u, QC = FALSE, ind)
+{
   rl = list()
   if(type == "=" || type == "!="){
     if(QC){
@@ -43,9 +44,9 @@ excursions.marginals <- function(type, rho,vars, mu, u, QC = FALSE, ind)
 			rl$rho_ng = pmax(rl$rho_ngu,1-rl$rho_ngu)
     } else {
       if(!missing(rho)){
-        rl$rho_u = rho  
+        rl$rho_u = rho
       } else {
-        rl$rho_u = 1 - pnorm(mu-u,sd=sqrt(vars), lower.tail=FALSE)	
+        rl$rho_u = 1 - pnorm(mu-u,sd=sqrt(vars), lower.tail=FALSE)
 		  }
 		  rl$rho_l = 1-rl$rho_u
 		  rl$rho = pmax(rl$rho_u,rl$rho_l)
@@ -65,20 +66,19 @@ excursions.marginals <- function(type, rho,vars, mu, u, QC = FALSE, ind)
        } else {
   				rl$rho = pnorm(mu-u,sd=sqrt(vars), lower.tail=FALSE)
         }
-      } 
+      }
     }
-  } 
+  }
   return(rl)
 }
 
-	
+
 excursions.permutation <- function(rho, ind, use.camd = TRUE,alpha,Q)
 {
   if(!missing(ind) && !is.null(ind))
     rho[!ind] = -1
-  
   n = length(rho)
-  v.s = sort(rho,index.return=TRUE)  
+  v.s = sort(rho,index.return=TRUE)
   reo = v.s$ix
   rho_sort = v.s$x
   ireo = integer(n)
@@ -89,7 +89,7 @@ excursions.permutation <- function(rho, ind, use.camd = TRUE,alpha,Q)
     #add nodes to lower bound
     cindr = cind = rep(0,n)
     while(rho_sort[i]> 1 - alpha && i>0){
-      cindr[i] = k 
+      cindr[i] = k
 			i = i-1
 			k=k+1
     }
@@ -104,21 +104,21 @@ excursions.permutation <- function(rho, ind, use.camd = TRUE,alpha,Q)
 				cind[i] = k - cindr[ireo[i]]
 			}
 			#call CAMD
-			out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p), 
-		                        Mi = as.integer(Q@i), reo = as.integer(reo), 
+			out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p),
+		                        Mi = as.integer(Q@i), reo = as.integer(reo),
 		                        cind = as.integer(cind))
-		  reo = out$reo+1  
-    } 
+		  reo = out$reo+1
+    }
   }
   return(reo)
 }
-	
-	
+
+
 excursions.setlimits <- function(marg, vars,type,QC,u,mu)
 {
 	if(QC){
-		if (type=="<") { 
-		  uv = sqrt(vars)*qnorm(marg$rho_ng)	  
+		if (type=="<") {
+		  uv = sqrt(vars)*qnorm(marg$rho_ng)
 		} else if (type==">"){
 			uv = sqrt(vars)*qnorm(marg$rho_ng,lower.tail=FALSE)
 		} else if (type=="=" || type == "!="){
@@ -126,7 +126,7 @@ excursions.setlimits <- function(marg, vars,type,QC,u,mu)
 		}
 	} else {
 		uv = u-mu
-	}	
+	}
 	if (type == "=" || type == "!=") {
 	  if(QC){
 	    a = b = uv
@@ -143,29 +143,30 @@ excursions.setlimits <- function(marg, vars,type,QC,u,mu)
 	} else if (type == "<"){
     a = rep(-Inf,length(mu))
     b = uv
-  } 
+  }
   return(list(a=a,b=b))
 }
 
-	
+
 excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threads, seed = seed)
 {
   if(is.chol == FALSE){
     a.sort = a[reo]
     b.sort = b[reo]
-  
+
     #calculate cholesky here
     L = chol(Q[reo,reo])
-    
+
     res = gaussint(Q.chol = L, a = a.sort, b = b.sort, lim = lim,
-                                 n.iter = K, max.size = max.size, 
+                                 n.iter = K, max.size = max.size,
                                  max.threads = n.threads, seed = seed)
   } else {
     #assume that everything already is ordered
     res = gaussint(Q = Q, a= a, b = b, lim = lim, n.iter = K,
-                                 max.size = max.size, 
-                                 max.threads = n.threads,seed = seeed)
+                    max.size = max.size,
+                    max.threads = n.threads,seed = seeed)
   }
   return(res)
 }
-	
+
+

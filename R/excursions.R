@@ -65,7 +65,7 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
 
   if(verbose)
     cat("Calculate marginals\n")
-  marg <- excursions.marginals(type = type, rho = rho,vars = vars, 
+  marg <- excursions.marginals(type = type, rho = rho,vars = vars,
                                mu = mu, u = u, QC = qc, ind = ind)
 
   if (missing(max.size)){
@@ -74,13 +74,15 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
 	  m.size = max.size
   }
   if (!missing(ind)) {
-	  indices = rep(0,length(mu))
-	  indices[ind] = 1
+	  indices = rep(FALSE,length(mu))
+	  indices[ind] = TRUE
 	  if(missing(max.size)){
 		  m.size = length(ind)
 	  } else {
 		  m.size = min(length(ind),m.size)
 	  }
+  } else {
+    indices = rep(TRUE,length(mu))
   }
 
   if(verbose)

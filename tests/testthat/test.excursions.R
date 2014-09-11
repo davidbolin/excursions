@@ -4,8 +4,8 @@ context("Excursions")
 test_that("Excursions, alpha = 1, type = >", {
   data <- integration.testdata1()
   res = excursions(alpha=1, u=0, mu=data$mu, Q=data$Q, type='>', seed = data$seed)
-  r = c(2.467173e-15, 1.031418e-09, 7.755949e-06, 2.543606e-03, 
-       7.599777e-02, 4.194159e-01, 8.192652e-01, 9.747060e-01, 
+  r = c(2.467173e-15, 1.031418e-09, 7.755949e-06, 2.543606e-03,
+       7.599777e-02, 4.194159e-01, 8.192652e-01, 9.747060e-01,
        9.984658e-01, 9.999621e-01, 9.999997e-01)
   expect_equal(res$F,r,tolerance=1e-7)
 })
@@ -14,7 +14,7 @@ test_that("Excursions, alpha = 1, type = <", {
   data <- integration.testdata1()
   res = excursions(alpha=1, u=0, mu=data$mu, Q=data$Q, type='<', seed = data$seed)
   r = c(9.999997e-01, 9.999622e-01, 9.984766e-01, 9.746239e-01, 8.190389e-01,
-       4.192016e-01, 7.586059e-02, 2.540068e-03, 7.753973e-06, 1.033270e-09,     
+       4.192016e-01, 7.586059e-02, 2.540068e-03, 7.753973e-06, 1.033270e-09,
        2.468060e-15)
   expect_equal(res$F,r,tolerance=1e-7)
 })
@@ -39,7 +39,7 @@ test_that("Excursions, alpha = 1, type = !=", {
 test_that("Excursions, alpha = 0.1, type = >", {
   data <- integration.testdata1()
   res = excursions(alpha=0.1, u=0, mu=data$mu+0.1, Q=data$Q, type='>', seed = data$seed)
-  r = c(0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000, 
+  r = c(0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000,
        0.0000000, 0.9801446, 0.9988957, 0.9999751, 0.9999998)
   expect_equal(res$F,r,tolerance=1e-7)
 })
@@ -55,7 +55,7 @@ expect_equal(res$F,r,tolerance=1e-7)
 test_that("Excursions, alpha = 0.1, type = =", {
   data <- integration.testdata1()
   res = excursions(alpha=0.1, u=0, mu=data$mu+0.1, Q=data$Q, type='=', seed = data$seed)
-  r = c(7.381175e-07, 8.177720e-05, 3.204621e-03, 5.127762e-02, 1.000000e+00, 
+  r = c(7.381175e-07, 8.177720e-05, 3.204621e-03, 5.127762e-02, 1.000000e+00,
        1.000000e+00, 1.000000e+00, 2.193460e-02, 1.155138e-03, 2.547679e-05,
        1.945911e-07)
   expect_equal(res$F,r,tolerance=1e-7)
@@ -63,8 +63,8 @@ test_that("Excursions, alpha = 0.1, type = =", {
 
 test_that("Excursions, alpha = 0.1, type = !=", {
   data <- integration.testdata1()
-  res = excursions(alpha=0.1, u=0, mu=data$mu+0.1, Q=data$Q, type='!=', seed = data$seed) 
-  r = c(0.9999993, 0.9999182, 0.9967954, 0.9487224, 0.0000000, 0.0000000, 
+  res = excursions(alpha=0.1, u=0, mu=data$mu+0.1, Q=data$Q, type='!=', seed = data$seed)
+  r = c(0.9999993, 0.9999182, 0.9967954, 0.9487224, 0.0000000, 0.0000000,
        0.0000000, 0.9780654, 0.9988449, 0.9999745, 0.9999998)
   expect_equal(res$F,r,tolerance=1e-7)
 })
@@ -80,7 +80,7 @@ test_that("Excursions, move u to mu", {
 test_that("Excursions, input variances", {
   data <- integration.testdata1()
 
-  vars = diag(solve(Q.x))
+  vars = diag(solve(data$Q))
   res1 = excursions(alpha=1, u=0, mu=data$mu, Q=data$Q, type='>', seed = data$seed, vars = vars)
   res2 = excursions(alpha=1, u=0, mu=data$mu, Q=data$Q, type='>',seed = data$seed)
   expect_equal(res1$F,res2$F,tolerance=1e-7)

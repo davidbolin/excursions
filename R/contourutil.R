@@ -205,7 +205,7 @@ Pmeasure <- function(lp,mu,Q,Q.chol, ind=NULL,type,vars=vars)
   } else {
     limits = excursions.limits(lp=lp,mu=mu,measure=type)
 	  res = gaussint(mu = mu, Q=Q, Q.chol = Q.chol, a=limits$a,
-	                b=limits$b,ind=ind)
+	                b=limits$b,ind=ind,reo=TRUE)
 	  p = res$P[1]
   }
 	return(p)
