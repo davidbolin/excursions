@@ -1,6 +1,23 @@
+## excursions.R
+##
+##   Copyright (C) 2012, 2013, 2014, David Bolin, Finn Lindgren
+##
+##   This program is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version.
+##
+##   This program is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
                        vars, rho, reo, method='EB', ind, max.size,
-                       verbose=0, max.threads=0,seed) 
+                       verbose=0, max.threads=0,seed)
 {
 
   if(method=='QC'){
@@ -81,7 +98,7 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
     cat("Calculate limits\n")
   limits <- excursions.setlimits(marg, vars,type,QC=qc,u,mu)
 
-  res <- excursions.call(limits$a,limits$b,reo,Q, is.chol = is.chol, 
+  res <- excursions.call(limits$a,limits$b,reo,Q, is.chol = is.chol,
                          1-alpha, K = n.iter, max.size = m.size,
                          n.threads = max.threads,seed = seed)
 
@@ -105,5 +122,14 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
 	  if(i<n+1) D[reo[i:n]] = 1
   }
 
-  return(list(F=F, Fe=Fe, D=D, rho=marg$rho, reo=reo, ireo=ireo, vars=vars))
+  output <- list(F=F,
+                 D=D, rho=marg$rho, Fe=Fe, reo=reo, ireo=ireo, vars=vars,
+                 meta=list(calculation="excursions",
+                 type=type,
+                 level=u,
+                 alpha=alpha,
+                 n.iter=n.iter,
+                 method=method))
+  class(output) <- "excurobj"
+  output
 }

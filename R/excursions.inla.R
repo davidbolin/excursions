@@ -34,12 +34,12 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
 
   if(result.inla$.args$control.compute$config==FALSE)
 	  stop('INLA result must be calculated using control.compute$config=TRUE')
-  
+
   n = length(result.inla$misc$configs$config[[1]]$mean)
-      
-  #If u.link is TRUE, the limit is given in linear scale and we then transform back to the scale of the linear predictor using the link function 
+
+  #If u.link is TRUE, the limit is given in linear scale and we then transform back to the scale of the linear predictor using the link function
   u.t = rho = rep(0,n)
-  if(u.link == TRUE){ 
+  if(u.link == TRUE){
     links = result.inla$misc$linkfunctions$names[
                                             result.inla$misc$linkfunctions$link]
     u.tmp = sapply(ind, function(i) private.link.function(u,links[i]))
@@ -47,10 +47,10 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
   } else {
     u.t = u
   }
-  
+
   #Get indices for the component of interest in the configs
-  ind.stack <- inla.output.indices(result.inla, name=name, stack=stack, tag=tag)  
-  
+  ind.stack <- inla.output.indices(result.inla, name=name, stack=stack, tag=tag)
+
   #Index vector for the nodes in the component of interest
   ind.int <- seq_len(length(ind.stack))
 
@@ -63,31 +63,31 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
   #Calculate marginal probabilities
   #If stack and tag are provided, we are interested in the predictor
   #Otherwise, we are interested in some of the effects
-  
+
   if(verbose)
 	  cat('Calculating marginal probabilities\n')
- 
+
   #Are we interested in a random effect?
-  random.effect = FALSE 
+  random.effect = FALSE
   if(!missing(name)&&!is.null(name)&&name!="APredictor"&&name!="Predictor"){
     random.effect = TRUE
     if(is.null(result.inla$marginals.random))
-    stop('INLA result must be calculated using return.marginals.random=TRUE if excursion sets to be calculated for a random effect of the model') 
+    stop('INLA result must be calculated using return.marginals.random=TRUE if excursion sets to be calculated for a random effect of the model')
   }
-  
+
   if(!random.effect && is.null(result.inla$marginals.linear.predictor))
-    stop('INLA result must be calculated using return.marginals.linear.predictor=TRUE if excursion sets are to be calculated for the linear predictor.') 
-    
+    stop('INLA result must be calculated using return.marginals.linear.predictor=TRUE if excursion sets are to be calculated for the linear predictor.')
+
   if(random.effect) {
     rho.ind <- sapply(1:length(ind), function(j) inla.get.marginal(ind.int[j],
                            u=u,result = result.inla,
-                           effect.name=name, u.link = u.link, type = type))   
+                           effect.name=name, u.link = u.link, type = type))
   } else {
     rho.ind <- sapply(1:length(ind), function(j) inla.get.marginal(ind[j],
                            u=u,result = result.inla, u.link = u.link, type = type))
   }
   rho[ind] = rho.ind
-  	
+
   n.theta = result.inla$misc$configs$nconfig
   for(i in 1:n.theta){
     config = private.get.config(result.inla,i)
@@ -97,7 +97,7 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
 
   if(verbose)
     cat('Calculating excursion function using the ', method, ' method\n')
-  
+
   if(method == 'EB' || method == 'QC' ) {
 	  res = excursions(alpha=alpha, u=0, mu=config$mu-u.t, Q=config$Q, type=type,
 		  	  		method=method, vars=config$vars, rho=rho, ind=ind, n.iter=n.iter,
@@ -107,13 +107,13 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
     qc = 'QC'
   	if(method == 'NI')
 	  	qc = 'EB'
-		
+
   	res = lw = NULL
 
 	  for(i in 1:n.theta){
 		  if(verbose)
 			  cat('Configuration ', i, ' of ', n.theta, '\n')
-		
+
   		conf.i = private.get.config(result.inla,i)
 	  	lw[i] = conf.i$lp
 		  res[[i]] = excursions(alpha=alpha,u=0,mu=conf.i$mu-u.t,Q=conf.i$Q,
@@ -128,7 +128,7 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
  		  F = F + w[i]*res[[i]]$F[ind]
 	  }
   } else if (method == 'iNIQC') {
-	
+
   	pfam.i = rep(-0.1,n)
   	pfam.i[ind] = rho.ind
   	reo = sort(pfam.i,index.return=TRUE)$ix
@@ -139,7 +139,7 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
 	  for(i in 1:n.theta){
 	  	if(verbose)
 	  		cat('Configuration ', i, ' of ', n.theta, '\n')
-		
+
   		conf.i = private.get.config(result.inla,i)
   		lw[i] = conf.i$lp
   		r.i <- INLA::inla(result.inla$.args$formula,
@@ -153,19 +153,19 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
 
       if(random.effect) {
         p1.i <- sapply(1:length(ind), function(j) inla.get.marginal(
-                                    ind[j],u,r.i,effect.name=name, u.link))   
+                                    ind[j],u,r.i,effect.name=name, u.link))
       } else {
         p1.i <- sapply(1:length(ind), function(j) inla.get.marginal(
                                                 ind.int[j],u,r.i, u.link))
       }
 	  	pfam.i[ind] = p1.i
-	  	
+
 	  	res[[i]] = excursions(alpha=alpha,u=0,mu=conf.i$mu-u.t,
 		  					            Q=conf.i$Q, type=type, method='QC',
 	             						  rho=pfam.i,vars=conf.i$vars,
 		  				          	  max.size=length(ind),reo=reo,
 			  				            n.iter=n.iter,max.threads=max.threads)
-	  } 
+	  }
 
   	w = exp(lw)/sum(exp(lw))
   	F = w[1]*res[[1]]$F[ind]
@@ -175,11 +175,23 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
   } else {
   	stop('Method must be one of EB, QC, NI, NIQC, iNIQC')
   }
+
   if(type == "="){
     rho.ind = 1-pmax(rho.ind,1-rho.ind)
   }
   if(type == "!="){
     rho.ind = pmax(rho.ind,1-rho.ind)
   }    
-  return(list(F=F,mean=config$mu[ind],rho=rho.ind))
+
+  output <- list(F=F,
+                 mean=config$mu[ind], rho=rho.ind,
+                 meta=list(calculation="excursions",
+                 type=type,
+                 level=u,
+                 level.link=u.link,
+                 alpha=alpha,
+                 n.iter=n.iter,
+                 method=method))
+  class(output) <- "excurobj"
+  output
 }

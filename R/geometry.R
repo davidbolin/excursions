@@ -1071,11 +1071,23 @@ build.lattice.mesh <- function(loc, dims) {
 ##' @author Finn Lindgren
 spatialexcursions <- function(ex,
                               geometry,
+                              type=ex$meta$type,
                               alpha=0.1,
                               method=c("interp", "conservative"))
 {
+    stopifnot(inherits(ex, "excurobj"))
     method <- match.arg(method)
     info <- get.geometry(geometry)
+    if (type != ex$meta$type) {
+        if (((type %in% c("=", "!=")) &&
+             (ex$meta$type %in% c(">", "<"))) ||
+            ((type %in% c(">", "<")) &&
+             (ex$meta$type %in% c("=", "!=")))) {
+            stop(paste("Incompatible excursion types '", type, "' and '",
+                       ex$meta$type, "'.", sep=""))
+        }
+    }
+    invert <- (type != ex$meta$type)
 
     if (!(info$manifold %in% c("R2"))) {
      stop(paste("Unsupported manifold type '", info$manifold, "'.", sep=""))
@@ -1094,24 +1106,43 @@ spatialexcursions <- function(ex,
         F <- c(F, as.vector(mesh$misc$A %*% F))
     }
 
-    ## Placeholder code that just finds an F-levelset assuming "!="
+    if (ex$meta$calculation == "excursions") {
+        if (ex$meta$type == "=") {
+            F <- 1-F
+        }
+    } else if (ex$meta$calculation == "contourmap") {
+        ## Do nothing
+    } else {
+        stop(paste("Unsupported calculation '",
+                   ex$meta$calculation, "'.", sep=""))
+    }
+
+    if (alpha > ex$meta$alpha) {
+        warning(paste("Insufficient data: alpha = ", alpha,
+                      " > inputalpha = ", ex$meta$alpha, sep=""))
+    }
+
+    message("TODO: handle level avoiding sets properly")
     if (method == "interp") {
-        output <- tricontourmap(x=mesh.graph, z=F, levels=1-alpha, loc=loc)
+        regions <- tricontourmap(x=mesh.graph, z=F, levels=1-alpha, loc=loc)
+        message("TODO: handle output type")
+        output <- regions$map
     } else if (method == "conservative") {
-        t.avoid <- which(rowSums(matrix((F >= 1-alpha)[mesh.graph$tv],
-                                        nrow(mesh.graph$tv), 3)) == 3)
-        t.contour <- which(rowSums(matrix((F >= 1-alpha)[mesh.graph$tv],
-                                          nrow(mesh.graph$tv), 3)) < 3)
-        avoid.graph <-
+        t.count <- rowSums(matrix((F >= 1-alpha)[mesh.graph$tv],
+                                  nrow(mesh.graph$tv), 3))
+        if ((type == "=" && !invert) || (type != "=" && invert)) {
+            t.keep <- which(t.count < 3)
+        } else {
+            t.keep <- which(t.count == 3)
+        }
+        result.graph <-
             generate.trigraph.properties(
-                list(tv=mesh.graph$tv[t.avoid,,drop=FALSE]),
+                list(tv=mesh.graph$tv[t.keep,,drop=FALSE]),
                 Nv=nrow(loc))
-        contour.graph <-
-            generate.trigraph.properties(
-                list(tv=mesh.graph$tv[t.contour,,drop=FALSE]),
-                Nv=nrow(loc))
-        output <- list(avoid.graph=avoid.graph,
-                       contour.graph=contour.graph,
+
+        message("TODO: extract boundary edges from triangle graph and convert to output objects, and move all this to a helper function, possibly tricontourmap itself!")
+
+        output <- list(graph=result.graph,
                        loc=loc)
     }
     invisible(output)
