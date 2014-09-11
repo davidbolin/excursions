@@ -1001,60 +1001,66 @@ get.geometry <- function(geometry) {
 ## Output:
 ##   list(loc, graph=list(tv, tt, tti))
 build.lattice.mesh <- function(loc, dims) {
-    ## Index to node in main lattice or inbetween,
-    ## main=TRUE: i,j in 1...nx,ny
-    ## main=FALSE: i,j in 1...nx-1,ny-1
-    ij <- function(i,j,main=TRUE) {
-        ((j-1)*nx+i)*main + (!main)*(nx*ny+(j-1)*(nx-1)+i)
+    ## Index to node in original lattice,
+    ## i,j in 1...nx, 1...ny
+    ij1 <- function(i,j) {
+        ii <- rep(i, times=length(j))
+        jj <- rep(j, each=length(i))
+        ((jj-1)*nx+ii)
     }
-    ## Index to triangle, our index=1...4, i,j in 1...nx-1,ny-1
-    tij <- function(i,j,index=1) {
-        (nx-1)*(ny-1)*(index-1)+(j-1)*(nx-1)+i
-    }
-    ## Index to neighbour triangle, our index=1...4, i,j in 1...nx-1,ny-1
-    ## index CCW from lower triangle.
-    tijn <- function(i,j,index=1) {
-        ki <- i+c(0,+1,0,-1)[index]
-        kj <- j+c(-1,0,+1,0)[index]
-        ki[ki<1] <- NA
-        ki[ki>=nx] <- NA
-        kj[kj<1] <- NA
-        kj[kj>=ny] <- NA
-        tij(ki,kj,index=(index-1+2) %% 4 + 1)
+    ## Index to node in new sub-lattice,
+    ## i,j in 1...2*nx-1, 1...2*ny-1
+    ij2 <- function(i,j) {
+        ii <- rep(i, times=length(j))
+        jj <- rep(j, each=length(i))
+        ((jj-1)*nx2+ii)
     }
 
     nx <- dims[1]
     ny <- dims[2]
+    nx2 <- 2*nx-1
+    ny2 <- 2*ny-1
+    n1 <- nx*ny
+    n2 <- nx2*ny2
 
     i0 <- seq_len(nx-1)
     j0 <- seq_len(ny-1)
-    ii0 <- rep(i0, times=ny-1)
-    jj0 <- rep(j0, each=nx-1)
-    ## Mapping matrix from lattice nodes to sublattice nodes
-    A <- sparseMatrix(i=rep(seq_len((nx-1)*(ny-1)), 4),
-                      j=(c(ij(ii0,jj0),
-                           ij(ii0+1,jj0),
-                           ij(ii0,jj0+1),
-                           ij(ii0+1,jj0+1))),
-                      x=rep(1/4, (nx-1)*(ny-1)),
-                      dims=c((nx-1)*(ny-1), nx*ny))
-    loc <- rbind(loc, as.matrix(A %*% loc))
-    tv <- rbind(cbind(ij(ii0,jj0,FALSE), ij(ii0,jj0),     ij(ii0+1,jj0)),
-                cbind(ij(ii0,jj0,FALSE), ij(ii0+1,jj0),   ij(ii0+1,jj0+1)),
-                cbind(ij(ii0,jj0,FALSE), ij(ii0+1,jj0+1), ij(ii0,jj0+1)),
-                cbind(ij(ii0,jj0,FALSE), ij(ii0,jj0+1),   ij(ii0,jj0)))
-    tt <- rbind(cbind(tijn(ii0,jj0,1), tij(ii0,jj0,2), tij(ii0,jj0,4)),
-                cbind(tijn(ii0,jj0,2), tij(ii0,jj0,3), tij(ii0,jj0,1)),
-                cbind(tijn(ii0,jj0,3), tij(ii0,jj0,4), tij(ii0,jj0,2)),
-                cbind(tijn(ii0,jj0,4), tij(ii0,jj0,1), tij(ii0,jj0,3)))
-    kk <- rep(0, (nx-1)*(ny-1))
-    tti <- rbind(cbind(kk+1, kk+3, kk+2),
-                 cbind(kk+1, kk+3, kk+2),
-                 cbind(kk+1, kk+3, kk+2),
-                 cbind(kk+1, kk+3, kk+2))
-    tti[is.na(tt)] <- NA
+    i0a <- seq_len(nx)
+    j0a <- seq_len(ny)
+    i00 <- seq_len(nx-1)*2-1
+    j00 <- seq_len(ny-1)*2-1
+    i00a <- seq_len(nx)*2-1
+    j00a <- seq_len(ny)*2-1
+    ## Mapping matrix from lattice nodes to sub-lattice nodes
+    A <- sparseMatrix(i=(c(ij2(i00a,j00a),
+                           rep(ij2(i00+1,j00a), times=2),
+                           rep(ij2(i00a,j00+1), times=2),
+                           rep(ij2(i00+1,j00+1), times=4)
+                           )),
+                      j=(c(ij1(i0a,j0a),
+                           ij1(i0,j0a), ij1(i0+1,j0a),
+                           ij1(i0a,j0), ij1(i0a,j0+1),
+                           ij1(i0,j0), ij1(i0+1,j0),
+                           ij1(i0,j0+1), ij1(i0+1,j0+1)
+                           )),
+                      x=(c(rep(1, n1),
+                           rep(1/2, 2*(nx-1)*ny),
+                           rep(1/2, 2*nx*(ny-1)),
+                           rep(1/4, 4*(nx-1)*(ny-1))
+                           )),
+                      dims=c(n2, n1))
+    loc <- as.matrix(A %*% loc)
+    tv <- rbind(cbind(ij2(i00+1,j00+1), ij2(i00,j00+1), ij2(i00,j00)),
+                cbind(ij2(i00+1,j00+1), ij2(i00,j00), ij2(i00+1,j00)),
+                cbind(ij2(i00+1,j00+1), ij2(i00+1,j00), ij2(i00+2,j00)),
+                cbind(ij2(i00+1,j00+1), ij2(i00+2,j00), ij2(i00+2,j00+1)),
+                cbind(ij2(i00+1,j00+1), ij2(i00+2,j00+1), ij2(i00+2,j00+2)),
+                cbind(ij2(i00+1,j00+1), ij2(i00+2,j00+2), ij2(i00+1,j00+2)),
+                cbind(ij2(i00+1,j00+1), ij2(i00+1,j00+2), ij2(i00,j00+2)),
+                cbind(ij2(i00+1,j00+1), ij2(i00,j00+2), ij2(i00,j00+1))
+                )
 
-    list(loc=loc, graph=list(tv=tv, tt=tt, tti=tti), misc=list(A=A))
+    list(loc=loc, graph=list(tv=tv), misc=list(A=A))
 }
 
 
@@ -1065,16 +1071,16 @@ build.lattice.mesh <- function(loc, dims) {
 ##' @title Spatial interpretation of excursions and contourmaps
 ##' @param ex
 ##' @param geometry
-##' @param invert
 ##' @param alpha
+##' @param invert
 ##' @param method
 ##' @return A list with ...
 ##' @author Finn Lindgren
 continuous <- function(ex,
                        geometry,
-                       invert=FALSE,
                        alpha=0.1,
-                       method=c("interp", "conservative"))
+                       invert=FALSE,
+                       method=c("logit", "log", "linear", "step"))
 {
     stopifnot(inherits(ex, "excurobj"))
     method <- match.arg(method)
@@ -1117,11 +1123,22 @@ continuous <- function(ex,
     }
 
     message("TODO: handle level avoiding sets properly")
-    if (method == "interp") {
-        regions <- tricontourmap(x=mesh.graph, z=ex.F, levels=1-alpha, loc=loc)
+    if (method %in% c("logit", "log", "linear")) {
+        if (method == "logit") {
+            regions <- tricontourmap(x=mesh.graph,
+                                     z=log(ex.F)-log(1-ex.F),
+                                     levels=log(1-alpha)-log(alpha),
+                                     loc=loc)
+        } else if (method == "log") {
+            regions <- tricontourmap(x=mesh.graph, z=log(ex.F),
+                                     levels=log(1-alpha), loc=loc)
+        } else {
+            regions <- tricontourmap(x=mesh.graph, z=ex.F,
+                                     levels=1-alpha, loc=loc)
+        }
         message("TODO: handle output type")
         output <- regions$map
-    } else if (method == "conservative") {
+    } else if (method == "step") {
         t.count <- rowSums(matrix((ex.F >= 1-alpha)[mesh.graph$tv],
                                   nrow(mesh.graph$tv), 3))
         if (invert) {
