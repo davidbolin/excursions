@@ -1,162 +1,133 @@
-## Internal: inla.internal.sp2segment.join
-##
-## S3methods; also export some methods explicitly
-## Export: inla.sp2segment
-## Export: as.inla.mesh.segment
-## Export: as.inla.mesh.segment!Polygon as.inla.mesh.segment!Polygons
-## Export: as.inla.mesh.segment!SpatialPolygons
-## Export: as.inla.mesh.segment!SpatialPolygonsDataFrame
-## Export: as.inla.mesh.segment!Line as.inla.mesh.segment!Lines
-## Export: as.inla.mesh.segment!SpatialLines
-## Export: as.inla.mesh.segment!SpatialLinesDataFrame
+## Functions that will soon appear in the INLA package.
 
-## Note: The next INLA build will include these. FL/20140909
+library(INLA)
 
+inla.mesh.segment <- function(...) {
+    UseMethod("inla.mesh.segment")
+}
 
-## Input: list of segments, all closed polygons.
-inla.internal.sp2segment.join <- function(inp, grp=NULL, closed=TRUE) {
-    if (length(inp) > 0) {
-        out.loc = matrix(0,0,ncol(inp[[1]]$loc))
+inla.mesh.segment.default <-
+    function(loc = NULL, idx = NULL, grp = NULL, is.bnd = TRUE, ...)
+{
+    if ((missing(loc) || is.null(loc)) &&
+        (missing(idx) || is.null(idx))) {
+        stop("At most one of 'loc' and 'idx' may be missing or null.")
+    }
+    if (!missing(loc) && !is.null(loc)) {
+        if (!is.matrix(loc)) {
+            loc = as.matrix(loc)
+        }
+        if (!is.double(loc)) {
+            storage.mode(loc) = "double"
+        }
+        if (missing(idx) || is.null(idx))
+            idx = (inla.ifelse(is.bnd,
+                               c(1:nrow(loc),1),
+                               c(1:nrow(loc))))
     } else {
-        out.loc = matrix(0,0,2)
+        loc = NULL
     }
-    out.idx = matrix(0L,0,2)
-    if (is.null(grp)) {
-        out.grp = NULL
+
+    if (!missing(idx) && !is.null(idx)) {
+        if (!is.vector(idx) && !is.matrix(idx))
+            stop("'idx' must be a vector or a matrix")
+        if (is.vector(idx))
+            idx = as.matrix(idx, nrow=length(idx), ncol=1)
+        if (ncol(idx) == 1) {
+            if (nrow(idx) < 2) {
+                if (nrow(idx) == 1) {
+                    warning("Segment specification must have at least 2, or 0, indices.")
+                }
+                idx <- matrix(0L, 0, 2)
+            } else {
+                idx = matrix(c(idx[-nrow(idx)],idx[-1]), nrow(idx)-1, 2)
+            }
+        }
+        storage.mode(idx) <- "integer"
+        if (!is.null(loc) &&
+            (nrow(idx) > 0) &&
+            (max(idx, na.rm=TRUE) > nrow(loc))) {
+            warning("Segment indices (max=", max(idx, na.rm=TRUE),
+                    ") exceed specified location list length (",
+                    nrow(loc), ").")
+        }
+    }
+
+    if (!missing(grp) && !is.null(grp)) {
+        if (!is.vector(grp) && !is.matrix(grp))
+            stop("'grp' must be a vector or a matrix")
+        grp = matrix(grp, min(length(grp), nrow(idx)), 1)
+        if (nrow(grp)<nrow(idx))
+            grp = (matrix(c(as.vector(grp),
+                            rep(grp[nrow(grp)], nrow(idx)-length(grp))),
+                            nrow(idx), 1))
+        storage.mode(grp) <- "integer"
+    } else
+        grp = NULL
+
+    ## Filter away NAs in loc and idx
+    if (!is.null(loc)) {
+        idx[is.na(idx)] = 0L ## Avoid R annoyances with logical+NA indexing
+        while (sum(is.na(loc))>0) {
+            i = min(which(rowSums(is.na(loc))>0))
+            loc = loc[-i,,drop=FALSE]
+            idx[idx==i] = 0L
+            idx[idx>i] = idx[idx>i]-1L
+        }
+        idx[idx==0L] = NA
+    }
+    while (sum(is.na(idx))>0) {
+        i = min(which(rowSums(is.na(idx))>0))
+        idx = idx[-i,,drop=FALSE]
+        if (!is.null(grp))
+            grp = grp[-i,,drop=FALSE]
+    }
+
+    if (!is.null(loc)) {
+        ## Identify unused locations and remap indices accordingly.
+        idx.new = rep(0L, nrow(loc))
+        idx.new[as.vector(idx)] = 1L
+        loc = loc[idx.new==1L,, drop=FALSE]
+        idx.new[idx.new==1L] = seq_len(sum(idx.new))
+        idx = (matrix(idx.new[as.vector(idx)],
+                      nrow=nrow(idx),
+                      ncol=ncol(idx)))
+    }
+
+    ret = list(loc=loc, idx=idx, grp=grp, is.bnd=is.bnd)
+    class(ret) <- "inla.mesh.segment"
+    return(ret)
+}
+
+inla.mesh.segment.inla.mesh.segment <- function(..., grp.default=0) {
+    segm <- list(...)
+    if (!all(unlist(lapply(segm,
+                           function(x) inherits(x,"inla.mesh.segment"))))) {
+        stop("All objects must be of class 'inla.mesh.segment'.")
+    }
+
+    Nloc <- unlist(lapply(segm, function(x) nrow(x$loc)))
+    cumNloc <- c(0, cumsum(Nloc))
+    Nidx <- unlist(lapply(segm, function(x) nrow(x$idx)))
+
+    loc <- do.call(rbind, lapply(segm, function(x) x$loc))
+    idx <- do.call(rbind, lapply(seq_along(segm),
+                                function(x) segm[[x]]$idx+cumNloc[x]))
+    grp <- unlist(lapply(seq_along(segm),
+                         function(x) {
+                             if (is.null(segm[[x]]$grp)) {
+                                 rep(grp.default, Nidx[x])
+                             } else {
+                                 segm[[x]]$grp
+                             }
+                         }))
+    is.bnd <- unlist(lapply(segm, function(x) x$is.bnd))
+    if (!all(is.bnd) || all(!is.bnd)) {
+        warning("Inconsistent 'is.bnd' attributes.  Setting 'is.bnd=FALSE'.")
+        is.bnd <- FALSE
     } else {
-        out.grp = integer(0)
+        is.bnd <- all(is.bnd)
     }
-    for (k in seq_along(inp)) {
-        inp.loc = inp[[k]]$loc
-        inp.idx = inp[[k]]$idx
-        inp.grp = inp[[k]]$grp
-        offset = nrow(out.loc)
-        n = nrow(as.matrix(inp.idx))
-        if (closed) {
-            if (!is.null(grp) && is.null(inp.grp)) {
-                inp.grp = rep(grp[k], n)
-            }
-            if (ncol(as.matrix(inp.idx))==1) {
-                inp.idx = cbind(inp.idx, inp.idx[c(2:n,1)])
-            }
-        } else {
-            if (!is.null(grp) && is.null(inp.grp)) {
-                inp.grp = rep(grp[k], n-1)
-            }
-            if (ncol(as.matrix(inp.idx))==1) {
-                inp.idx = cbind(inp.idx[-n], inp.idx[-1])
-            }
-        }
-        out.loc = rbind(out.loc, inp.loc)
-        out.idx = rbind(out.idx, inp.idx+offset)
-        if (!is.null(grp)) {
-            out.grp = c(out.grp, inp.grp)
-        }
-    }
-    out = inla.mesh.segment(loc=out.loc,idx=out.idx,grp=out.grp,is.bnd=FALSE)
-}
 
-
-as.inla.mesh.segment <-
-    function(sp, ...)
-{
-    UseMethod("as.inla.mesh.segment")
-}
-
-inla.sp2segment <-
-    function(sp, ...)
-{
-    UseMethod("as.inla.mesh.segment")
-}
-
-as.inla.mesh.segment.Line <-
-    function(sp, reverse=FALSE, ...)
-{
-    loc = sp@coords
-    n = dim(loc)[1L]
-    if (reverse) {
-        idx <- seq(n, 1L, length=n)
-    } else {
-        idx <- seq_len(n)
-    }
-    return(inla.mesh.segment(loc = loc, idx = idx, is.bnd = FALSE))
-}
-
-as.inla.mesh.segment.Lines <-
-    function (sp, join = TRUE, ...)
-{
-    segm <- as.list(lapply(sp@Lines,
-                           function(x) as.inla.mesh.segment(x, ...)))
-    if (join)
-        segm = inla.internal.sp2segment.join(segm, grp = NULL, closed=FALSE)
-    return(segm)
-}
-
-as.inla.mesh.segment.SpatialLines <-
-    function (sp, join = TRUE, grp = NULL, ...)
-{
-    segm = list()
-    for (k in 1:length(sp@lines))
-        segm[[k]] = as.inla.mesh.segment(sp@lines[[k]], join = TRUE, ...)
-    if (join) {
-        if (missing(grp)) {
-            grp = 1:length(segm)
-        }
-        segm = inla.internal.sp2segment.join(segm, grp = grp, closed=FALSE)
-    }
-    return(segm)
-}
-
-as.inla.mesh.segment.SpatialLinesDataFrame <-
-    function (sp, ...)
-{
-    as.inla.mesh.segment.SpatialLines(sp, ...)
-}
-
-as.inla.mesh.segment.SpatialPolygons <-
-    function(sp, join=TRUE, grp=NULL, ...)
-{
-    segm = list()
-    for (k in 1:length(sp@polygons))
-        segm[[k]] = as.inla.mesh.segment(sp@polygons[[k]], join=TRUE)
-    if (join) {
-        if (missing(grp)) {
-            grp = 1:length(segm)
-        }
-        segm = inla.internal.sp2segment.join(segm, grp=grp)
-    }
-    return(segm)
-}
-
-as.inla.mesh.segment.SpatialPolygonsDataFrame <-
-    function(sp, ...)
-{
-    as.inla.mesh.segment.SpatialPolygons(sp, ...)
-}
-
-as.inla.mesh.segment.Polygons <-
-    function(sp, join=TRUE, ...)
-{
-    segm = as.list(lapply(sp@Polygons, function (x) as.inla.mesh.segment(x)))
-    if (join)
-        segm = inla.internal.sp2segment.join(segm, grp=NULL)
-    return(segm)
-}
-
-as.inla.mesh.segment.Polygon <-
-    function(sp, ...)
-{
-    loc = sp@coords[-dim(sp@coords)[1L],,drop=FALSE]
-    n = dim(loc)[1L]
-    if (sp@hole)
-        if (sp@ringDir==1)
-            idx = c(1L:n,1L)
-        else
-            idx = c(1L,seq(n,1L,length.out=n))
-    else
-        if (sp@ringDir==1)
-            idx = c(1L,seq(n,1L,length.out=n))
-        else
-            idx = c(1L:n,1L)
-    return(inla.mesh.segment(loc=loc, idx=idx, is.bnd=TRUE))
+    inla.mesh.segment(loc=loc, idx=idx, grp=grp, is.bnd=is.bnd)
 }

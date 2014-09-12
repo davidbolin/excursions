@@ -483,9 +483,9 @@ outline.to.sp <- function(outline,
     }
 
     if (closed) {
-        as.SpatialPolygons.raw(coords, ID=ID)
+        as.Polygons.raw(coords, ID=ID)
     } else {
-        as.SpatialLines.raw(coords, ID=ID)
+        as.Lines.raw(coords, ID=ID)
     }
 }
 
@@ -493,6 +493,7 @@ outline.to.sp <- function(outline,
 outline.to.inla.mesh.segment <- function(outline,
                                          grp.ccw=unique(outline$grp),
                                          grp.cw=integer(0),
+                                         grp,
                                          ...)
 {
     if (!require(INLA)) {
@@ -500,15 +501,18 @@ outline.to.inla.mesh.segment <- function(outline,
     }
     ik.ccw = outline$grp %in% grp.ccw
     ik.cw = outline$grp %in% grp.cw
+    if (missing(grp)) {
+        grp <- c(outline$grp[ik.ccw], outline$grp[ik.cw])
+    }
     inla.mesh.segment(loc=outline$loc,
-                      idx=rbind(outline$idx[ik.ccw,],
-                      outline$idx[ik.cw, 2:1]),
-                      grp=c(outline$grp[ik.ccw], outline$grp[ik.cw]))
+                      idx=rbind(outline$idx[ik.ccw,,drop=FALSE],
+                      outline$idx[ik.cw, 2:1, drop=FALSE]),
+                      grp=grp)
 }
 
 
 
-as.SpatialPolygons.raw <- function(sequences, ID=" ") {
+as.Polygons.raw <- function(sequences, ID=" ") {
     if (!require(sp)) {
         stop("The 'sp' package is needed.")
     }
@@ -524,12 +528,12 @@ as.SpatialPolygons.raw <- function(sequences, ID=" ") {
     if (length(polys) == 0) {
         sp <- NULL
     } else {
-        sp <- SpatialPolygons(list(Polygons(polys, ID=ID)))
+        sp <- Polygons(polys, ID=ID)
     }
     sp
 }
 
-as.SpatialLines.raw <- function(cl, ID=" ") {
+as.Lines.raw <- function(cl, ID=" ") {
     if (!require(sp)) {
         stop("The 'sp' package is needed.")
     }
@@ -545,7 +549,7 @@ as.SpatialLines.raw <- function(cl, ID=" ") {
     if (length(polys) == 0) {
         sp <- NULL
     } else {
-        sp <- SpatialLines(list(Lines(polys, ID=ID)))
+        sp <- Lines(polys, ID=ID)
     }
     sp
 }
@@ -614,28 +618,23 @@ generate.trigraph.properties <- function(x, Nv=NULL) {
                     values=rep(1,x$Ne*2)),
                nrow=x$Ne, ncol=x$Nv)
     ev.tr <- triplet(ev%*%t(ev))
-    ee <- ev.tr$ind[(ev.tr$values==2) & (ev.tr$ind[,1]!=ev.tr$ind[,2]),]
+    ee <- ev.tr$ind[(ev.tr$values==2) &
+                    (ev.tr$ind[,1]!=ev.tr$ind[,2]),,
+                    drop=FALSE]
     x$ee <- rep(NA, x$Ne)
     x$ee[ee[,1]] <- ee[,2]
-    if (is.null(x$tt)) {
-        x$tt <- x$et[x$ee]
+    if (is.null(x$tt) ||
+        (nrow(x$tt) != x$Nt)) { ## Workaround for bug in fmesher < 2014-09-12
+        x$tt <- matrix(x$et[x$ee], x$Nt, 3)
     }
     if (is.null(x$tti)) {
-        x$tti <- x$eti[x$ee+(x$eti-1)*x$Ne+1]
+        x$tti <- matrix(x$eti[x$ee+(x$eti-1)*x$Ne], x$Nt, 3)
     }
     x
 }
 
 
 
-## Returns val=list(loc, idx, grp), where
-##   grp = 1,...,nlevels*2+1, level groups are even, 2,4,...
-## Suitable for
-##   inla.mesh.segment(val$loc, val$idx[val$grp==k], val$idx[val$grp==k])
-##     (supports R2 and S2)
-## and, for odd k=1,3,...,nlevels*2-1,nlevels*2+1,
-##   seg <- outline.to.inla.mesh.segment(val, grp.ccw=c(k-1,k), grp.cw=c(k+1))
-##   sp <- outline.to.sp(val, grp.ccw=c(k-1,k), grp.cw=c(k+1), ccw=FALSE)
 display.dim.list <- function(x) {
     lapply(as.list(sort(names(x))),
            function(xx) {
@@ -651,6 +650,15 @@ display.dim.list <- function(x) {
            )
     invisible()
 }
+
+## Returns val=list(loc, idx, grp), where
+##   grp = 1,...,nlevels*2+1, level groups are even, 2,4,...
+## Suitable for
+##   inla.mesh.segment(val$loc, val$idx[val$grp==k], val$idx[val$grp==k])
+##     (supports R2 and S2)
+## and, for odd k=1,3,...,nlevels*2-1,nlevels*2+1,
+##   seg <- outline.to.inla.mesh.segment(val, grp.ccw=c(k-1,k), grp.cw=c(k+1))
+##   sp <- outline.to.sp(val, grp.ccw=c(k-1,k), grp.cw=c(k+1), ccw=FALSE)
 tricontour.list <- function(x, z, nlevels = 10,
                             levels = pretty(range(z, na.rm = TRUE), nlevels),
                             loc, type=c("+", "-"), tol=1e-7, ...)
@@ -711,12 +719,12 @@ tricontour.list <- function(x, z, nlevels = 10,
         lev <- cross1[edge]
         v1 <- x$tv[x$et[edge],x$eti[edge]]
         sign1 <- (z[v1] > levels[lev]+tol) - (z[v1] < levels[lev]-tol)
-        neighb.t <- x$tt[x$et[edge],x$eti[edge]]
+        neighb.t <- x$tt[x$et[edge]+(x$eti[edge]-1)*x$Nt]
         if (is.na(neighb.t)) {
             v2 <- NA
             sign2 <- NA
         } else {
-            v2 <- x$tv[neighb.t, x$tti[x$et[edge],x$eti[edge]] ]
+            v2 <- x$tv[neighb.t, x$tti[x$et[edge]+(x$eti[edge]-1)*x$Nt] ]
             sign2 <- (z[v2] > levels[lev]+tol) - (z[v2] < levels[lev]-tol)
         }
         if (is.na(neighb.t)) {
@@ -753,7 +761,7 @@ tricontour.list <- function(x, z, nlevels = 10,
     e.newv <- sparseMatrix(i=integer(0), j=integer(0), x=double(0),
                            dims=c(x$Ne, length(levels)))
     for (edge in e.crossing) {
-        is.boundary.edge <- is.na(x$tt[x$et[edge], x$eti[edge]])
+        is.boundary.edge <- is.na(x$tt[x$et[edge]+(x$eti[edge]-1)*x$Nt])
         if (is.boundary.edge) {
             edge.reverse <- NA
         } else {
@@ -761,8 +769,8 @@ tricontour.list <- function(x, z, nlevels = 10,
             if (x$ev[edge,1] > x$ev[edge,2]) {
                 next
             }
-            edge.reverse <- x$te[x$tt[x$et[edge], x$eti[edge]],
-                                 x$tti[x$et[edge], x$eti[edge]]]
+            edge.reverse <- x$te[x$tt[x$et[edge]+(x$eti[edge]-1)*x$Nt],
+                                 x$tti[x$et[edge]+(x$eti[edge]-1)*x$Nt]]
         }
         ## lev = (1-beta_lev) * z1 + beta_lev * z2
         ##     = z1 + beta_lev * (z2-z1)
@@ -900,7 +908,7 @@ tricontourmap.list <-
              loc, type=c("+", "-"), tol=1e-7,
              output=c("sp", "inla.mesh.segment"), ...)
 {
-    message("tricontour.list")
+    message("tricontourmap.list")
     type <- match.arg(type)
     output <- match.arg(output)
     nlevels <- length(levels)
@@ -911,32 +919,53 @@ tricontourmap.list <-
     out <- list(map=list(), contour=list())
     for (k in seq_len(nlevels+1L)*2L-1L) {
         if (output == "sp") {
-            out$map <- c(out$map,
-                         list(try(outline.to.sp(tric,
-                                                grp.ccw=c(k-1,k),
-                                                grp.cw=c(k+1),
-                                                ccw=FALSE,
-                                                closed=TRUE))))
+            ID <- as.character((k-1)/2)
+            spobj <- tryCatch(outline.to.sp(tric,
+                                            grp.ccw=c(k-1,k),
+                                            grp.cw=c(k+1),
+                                            ccw=FALSE,
+                                            closed=TRUE,
+                                            ID=ID),
+                              error=function(e) NULL)
+            if (!is.null(spobj)) {
+                out$map[[ID]] <- spobj
+            }
         } else {
-            out$map <- c(out$map,
-                         list(outline.to.inla.mesh.segment(tric,
-                                                           grp.ccw=c(k-1,k),
-                                                           grp.cw=c(k+1))))
+            out$map[[as.character((k-1)/2)]] <-
+                outline.to.inla.mesh.segment(tric,
+                                             grp.ccw=c(k-1,k),
+                                             grp.cw=c(k+1),
+                                             grp=(k-1)/2)
         }
+    }
+    if (output == "sp") {
+        out$map <- SpatialPolygons(out$map)
+    } else {
+        out$map <- do.call(inla.mesh.segment, out$map)
     }
     for (k in seq_len(nlevels)) {
         if (output == "sp") {
-            out$contour <- c(out$contour,
-                             list(try(outline.to.sp(tric,
-                                                    grp.ccw=k*2L,
-                                                    ccw=FALSE,
-                                                    closed=FALSE))))
+            ID <- as.character(k)
+            spobj <- tryCatch(outline.to.sp(tric,
+                                            grp.ccw=k*2L,
+                                            ccw=FALSE,
+                                            closed=FALSE,
+                                            ID=ID),
+                              error=function(e) NULL)
+            if (!is.null(spobj)) {
+                out$contour[[ID]] <- spobj
+            }
         } else {
-            out$contour <-
-                c(out$contour,
-                  list(try(outline.to.inla.mesh.segment(tric,
-                                                        grp.ccw=k*2L))))
+            out$contour[[as.character(k)]] <-
+                outline.to.inla.mesh.segment(tric,
+                                             grp.ccw=k*2L,
+                                             grp=k)
         }
+    }
+    if (output == "sp") {
+        out$contour <- SpatialLines(out$contour)
+    } else {
+        out$contour <- do.call(inla.mesh.segment, out$contour)
     }
 
     out
