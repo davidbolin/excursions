@@ -83,7 +83,7 @@ contour.segment.pixels <- function(c.x, c.y,
                 idx$x <- start.x:end.x
                 idx$y <- rep(start.y, length(idx$x))
             } else {
-                ## Need to step thorugh each y-pixel-row.
+                ## Need to step through each y-pixel-row.
                 curr.y <- start.y
                 curr.x <- start.x
                 while (curr.y < end.y) {
@@ -672,7 +672,8 @@ tricontour.list <- function(x, z, nlevels = 10,
 
     ## Find vertices on levels
     ## For each edge on a level, store edge if
-    ##     opposing vertices are +/-, and either
+    ##   it is a boundary edge, or
+    ##   opposing vertices are +/-, and either
     ##     0/- (type="+", u1 <= z < u2) or
     ##     +/0 (type="-", u1 < z <= u2)
     ## For each edge crossing at least one level,
@@ -709,9 +710,10 @@ tricontour.list <- function(x, z, nlevels = 10,
     }
 
     ## For each edge on a level, store edge if ...
+    ##   it is a boundary edge, or
     ##   opposing vertices are +/-, and either
-    ##   0/- (type="+", u1 <= z < u2) or
-    ##   +/0 (type="-", u1 < z <= u2)
+    ##     0/- (type="+", u1 <= z < u2) or
+    ##     +/0 (type="-", u1 < z <= u2)
     cross1 <- vcross.lev[x$ev[,1]] ## left neighbour
     cross2 <- vcross.lev[x$ev[,2]] ## right neighbour
     vv.edges <- which((cross1 > 0) & (cross2 > 0) & (cross1 == cross2))
@@ -728,7 +730,12 @@ tricontour.list <- function(x, z, nlevels = 10,
             sign2 <- (z[v2] > levels[lev]+tol) - (z[v2] < levels[lev]-tol)
         }
         if (is.na(neighb.t)) {
-            if (sign1 == 0) {
+            ## Make sure the edge gets the right label
+            if (sign1 != 0) {
+                idx <- rbind(idx, x$ev[edge,])
+                ## Associate with the neighbour
+                grp <- c(grp, lev*2L + sign1)
+            } else {
                 idx <- rbind(idx, x$ev[edge,])
                 grp <- c(grp, lev*2L + (type=="+")-(type=="-"))
             }
