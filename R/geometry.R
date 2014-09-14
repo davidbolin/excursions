@@ -623,13 +623,15 @@ generate.trigraph.properties <- function(x, Nv=NULL) {
                     drop=FALSE]
     x$ee <- rep(NA, x$Ne)
     x$ee[ee[,1]] <- ee[,2]
+
     if (is.null(x$tt) ||
         (nrow(x$tt) != x$Nt)) { ## Workaround for bug in fmesher < 2014-09-12
         x$tt <- matrix(x$et[x$ee], x$Nt, 3)
     }
     if (is.null(x$tti)) {
-        x$tti <- matrix(x$eti[x$ee+(x$eti-1)*x$Ne], x$Nt, 3)
+        x$tti <- matrix(x$eti[x$ee], x$Nt, 3)
     }
+
     x
 }
 
@@ -768,7 +770,7 @@ tricontour.list <- function(x, z, nlevels = 10,
     e.newv <- sparseMatrix(i=integer(0), j=integer(0), x=double(0),
                            dims=c(x$Ne, length(levels)))
     for (edge in e.crossing) {
-        is.boundary.edge <- is.na(x$tt[x$et[edge]+(x$eti[edge]-1)*x$Nt])
+        is.boundary.edge <- is.na(x$tt[x$et[edge],x$eti[edge]])
         if (is.boundary.edge) {
             edge.reverse <- NA
         } else {
@@ -776,16 +778,16 @@ tricontour.list <- function(x, z, nlevels = 10,
             if (x$ev[edge,1] > x$ev[edge,2]) {
                 next
             }
-            edge.reverse <- x$te[x$tt[x$et[edge]+(x$eti[edge]-1)*x$Nt],
-                                 x$tti[x$et[edge]+(x$eti[edge]-1)*x$Nt]]
+            edge.reverse <- x$te[x$tt[x$et[edge],x$eti[edge]],
+                                 x$tti[x$et[edge],x$eti[edge]]]
         }
         ## lev = (1-beta_lev) * z1 + beta_lev * z2
         ##     = z1 + beta_lev * (z2-z1)
         ## beta_lev = (lev-z1)/(z2-z1)
         e.levels <- ((e.lower[edge]+1)/2):((e.upper[edge]-1)/2)
+        loc.new.idx <- loc.last+seq_along(e.levels)
         beta <- ((levels[e.levels] - z[x$ev[edge,1]]) /
                  (z[x$ev[edge,2]] - z[x$ev[edge,1]]))
-        loc.new.idx <- loc.last+seq_along(e.levels)
         loc.new[loc.new.idx,] <-
             (as.matrix(1-beta) %*% loc[x$ev[edge,1],,drop=FALSE]+
              as.matrix(beta) %*% loc[x$ev[edge,2],,drop=FALSE])
@@ -901,14 +903,6 @@ tricontourmap.matrix <-
 
 
 
-## Returns val=list(loc, idx, grp), where
-##   grp = 1,...,nlevels*2+1, level groups are even, 2,4,...
-## Suitable for
-##   inla.mesh.segment(val$loc, val$idx[val$grp==k], val$idx[val$grp==k])
-##     (supports R2 and S2)
-## and, for odd k=1,3,...,nlevels*2-1,nlevels*2+1,
-##   seg <- outline.to.inla.mesh.segment(val, grp.ccw=c(k-1,k), grp.cw=c(k+1))
-##   sp <- outline.to.sp(val, grp.ccw=c(k-1,k), grp.cw=c(k+1), ccw=FALSE)
 tricontourmap.list <-
     function(x, z, nlevels = 10,
              levels = pretty(range(z, na.rm = TRUE), nlevels),
@@ -973,6 +967,87 @@ tricontourmap.list <-
         out$contour <- SpatialLines(out$contour)
     } else {
         out$contour <- do.call(inla.mesh.segment, out$contour)
+    }
+
+    out
+}
+
+
+
+## In-filled points at transitions should have G[i] == -1
+## to get a conservative approximation.
+## To get only under/over sets, use a constant non-negative integer G
+probabilitymap <-
+    function(mesh, F, level, G,
+             calc.contour=FALSE,
+             tol=1e-7, neginf=-1e10,
+             output=c("sp", "inla.mesh.segment"), ...)
+{
+    message("probabilitymap")
+    output <- match.arg(output)
+
+    out <- list()
+    if (calc.contour) {
+        ## Find contour set
+        FF <- F
+        FF[G == -1] <- neginf
+        tric <- tricontour(x=mesh$graph, z=FF, levels=level,
+                           loc=mesh$loc, type="+", tol=tol, ...)
+        ID <- "-1"
+        if (output == "sp") {
+            spobj <- tryCatch(outline.to.sp(tric,
+                                            grp.ccw=c(1),
+                                            grp.cw=c(2),
+                                            ccw=FALSE,
+                                            closed=TRUE,
+                                            ID=ID),
+                              error=function(e) NULL)
+            if (!is.null(spobj)) {
+                out[[ID]] <- spobj
+            }
+        } else {
+            out[[ID]] <-
+                outline.to.inla.mesh.segment(tric,
+                                             grp.ccw=c(1),
+                                             grp.cw=c(2),
+                                             grp=-1)
+        }
+    }
+
+    ## Find individual avoidance/between-level/under/over sets.
+    for (k in sort(unique(G[G >= 0]))) {
+        FF <- F
+        FF[G != k] <- neginf
+        tric <- tricontour(x=mesh$graph, z=FF, levels=level,
+                           loc=mesh$loc, type="+", tol=tol, ...)
+        ID <- as.character(k)
+        if (output == "sp") {
+            spobj <- tryCatch(outline.to.sp(tric,
+                                            grp.ccw=c(2,3),
+                                            grp.cw=c(),
+                                            ccw=FALSE,
+                                            closed=TRUE,
+                                            ID=ID),
+                              error=function(e) NULL)
+            if (!is.null(spobj)) {
+                out[[ID]] <- spobj
+            }
+        } else {
+            out[[ID]] <-
+                outline.to.inla.mesh.segment(tric,
+                                             grp.ccw=c(2,3),
+                                             grp.cw=c(),
+                                             grp=k)
+        }
+    }
+    if (length(out) > 0) {
+        if (output == "sp") {
+            out <- SpatialPolygons(out)
+        } else {
+            out <- do.call(inla.mesh.segment, out)
+        }
+    } else {
+        out <- NULL
     }
 
     out
@@ -1068,6 +1143,8 @@ build.lattice.mesh <- function(loc, dims) {
     i00a <- seq_len(nx)*2-1
     j00a <- seq_len(ny)*2-1
     ## Mapping matrix from lattice nodes to sub-lattice nodes
+    isorig <- logical(nx2*ny2)
+    isorig[ij2(i00a,j00a)] <- TRUE
     A <- sparseMatrix(i=(c(ij2(i00a,j00a),
                            rep(ij2(i00+1,j00a), times=2),
                            rep(ij2(i00a,j00+1), times=2),
@@ -1096,7 +1173,7 @@ build.lattice.mesh <- function(loc, dims) {
                 cbind(ij2(i00+1,j00+1), ij2(i00,j00+2), ij2(i00,j00+1))
                 )
 
-    list(loc=loc, graph=list(tv=tv), misc=list(A=A))
+    list(loc=loc, graph=list(tv=tv), A=A, isorig=isorig)
 }
 
 
@@ -1115,37 +1192,10 @@ build.lattice.mesh <- function(loc, dims) {
 continuous <- function(ex,
                        geometry,
                        alpha=0.1,
-                       invert=FALSE,
                        method=c("logit", "log", "linear", "step"))
 {
     stopifnot(inherits(ex, "excurobj"))
     method <- match.arg(method)
-
-    info <- get.geometry(geometry)
-    if (!(info$manifold %in% c("R2"))) {
-     stop(paste("Unsupported manifold type '", info$manifold, "'.", sep=""))
-    }
-
-    if (ex$meta$type == "=") {
-        ex.type <- "!="
-        invert <- !invert
-        ex.F <- 1-ex$F
-    } else {
-        ex.type <- ex$meta$type
-        ex.F <- ex$F
-    }
-
-    if (info$geometry == "mesh") {
-        mesh.graph <- geometry$graph
-        loc <- geometry$loc
-        lattice <- NULL
-    }
-    if (info$geometry == "lattice") {
-        mesh <- build.lattice.mesh(info$loc, info$dims)
-        mesh.graph <- mesh$graph
-        loc <- mesh$loc
-        ex.F <- c(ex.F, as.vector(mesh$misc$A %*% ex.F))
-    }
 
     if (!(ex$meta$calculation %in% c("excursions",
                                      "contourmap"))) {
@@ -1158,25 +1208,82 @@ continuous <- function(ex,
                       " > inputalpha = ", ex$meta$alpha, sep=""))
     }
 
-    message("TODO: handle level avoiding sets properly")
+    info <- get.geometry(geometry)
+    if (!(info$manifold %in% c("R2"))) {
+     stop(paste("Unsupported manifold type '", info$manifold, "'.", sep=""))
+    }
+
+    if (ex$meta$type == "=") {
+        type <- "!="
+        F.ex <- 1-ex$F
+    } else {
+        type <- ex$meta$type
+        F.ex <- ex$F
+    }
+
+    if (info$geometry == "mesh") {
+        mesh <- geometry
+        warning("TODO: subdivide triangle mesh")
+        mesh$A <- Diagonal(nrow(mesh$loc))
+    }
+    if (info$geometry == "lattice") {
+        mesh <- build.lattice.mesh(info$loc, info$dims)
+    }
+
     if (method %in% c("logit", "log", "linear")) {
         if (method == "logit") {
-            regions <- tricontourmap(x=mesh.graph,
-                                     z=log(ex.F)-log(1-ex.F),
-                                     levels=log(1-alpha)-log(alpha),
-                                     loc=loc)
+            F.ex <- log(F.ex)-log(1-F.ex)
+            level <- log(1-alpha)-log(alpha)
         } else if (method == "log") {
-            regions <- tricontourmap(x=mesh.graph, z=log(ex.F),
-                                     levels=log(1-alpha), loc=loc)
+            F.ex <- log(F.ex)
+            level <- log(1-alpha)
         } else {
-            regions <- tricontourmap(x=mesh.graph, z=ex.F,
-                                     levels=1-alpha, loc=loc)
+            level <- 1-alpha
         }
-        message("TODO: handle output type")
-        output <- regions$map
+    } else {
+        level <- 1-alpha
+    }
+    F.interp <- as.vector(mesh$A %*% F.ex)
+
+    mesh$graph <-
+        generate.trigraph.properties(mesh$graph, Nv=nrow(mesh$loc))
+
+    if (type %in% c(">", "<")) {
+        ## For ordinary excursions, the set/group information is not used.
+        G <- rep(1, length(F.interp))
+    } else {
+        ## Take 'G' information from 'ex' input and set new interface
+        ## values 'G[i]=-1'.
+        Gorig <- ex$G
+        G <- integer(length(F.interp))
+        G[mesh$isorig] <- Gorig
+        G[!mesh$isorig] <- NA
+        for (edge in seq_len(mesh$graph$Ne)) {
+            ev <- mesh$graph$ev[edge,]
+            for (k1 in 1:2) {
+                k2 <- 3-k1
+                if (mesh$isorig[ev[k1]] &&
+                    !mesh$isorig[ev[k2]]) {
+                    if (is.na(G[ev[k2]])) {
+                        G[ev[k2]] <- G[ev[k1]]
+                    } else if (G[ev[k1]] != G[ev[k2]]) {
+                        G[ev[k2]] <- -1
+                    }
+                }
+            }
+        }
+        G[is.na(G)] <- -1
+    }
+
+    if (method %in% c("logit", "log", "linear")) {
+        output <- probabilitymap(mesh,
+                                 F=F.interp,
+                                 level=level,
+                                 G=G,
+                                 calc.contour=TRUE)
     } else if (method == "step") {
-        t.count <- rowSums(matrix((ex.F >= 1-alpha)[mesh.graph$tv],
-                                  nrow(mesh.graph$tv), 3))
+        t.count <- rowSums(matrix((F.interp >= level)[mesh$graph$tv],
+                                  nrow(mesh$graph$tv), 3))
         if (invert) {
             t.keep <- which(t.count < 3)
         } else {
@@ -1184,10 +1291,10 @@ continuous <- function(ex,
         }
         result.graph <-
             generate.trigraph.properties(
-                list(tv=mesh.graph$tv[t.keep,,drop=FALSE]),
-                Nv=nrow(loc))
+                list(tv=mesh$graph$tv[t.keep,,drop=FALSE]),
+                Nv=nrow(mesh$loc))
 
-        message("TODO: extract boundary edges from triangle graph and convert to output objects, and move all this to a helper function, possibly tricontourmap itself!")
+        warning("TODO: extract boundary edges from triangle graph and convert to output objects, and move all this to a helper for probabilitymap itself.")
 
         output <- list(graph=result.graph,
                        loc=loc)
