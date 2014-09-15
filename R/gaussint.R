@@ -33,7 +33,7 @@ gaussint <- function(mu, Q.chol, Q, a, b, lim = 0, n.iter = 10000,
     a[!ind] = Inf
     b[!ind] = -Inf
   }
-
+  n = length(a)
   if(missing(max.size))
     max.size = n
 

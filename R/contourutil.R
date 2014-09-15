@@ -119,9 +119,12 @@ excursions.levelplot <- function(mu,n.levels,ind,levels,equal.area=FALSE)
 	}
 	E[[n.levels+1]] = which((l1[n.levels+1] <= x.mean))
 	map = rep(0,n)
-	for(i in 1:(n.levels+1)) map[E[[i]]] = u.e[i]
-
-	return(list(u = levels, n.levels = n.levels, u.e = u.e, E=E,map=map))
+	G = rep(-1,n)
+	for(i in 1:(n.levels+1)){
+	  map[E[[i]]] = u.e[i]
+	  G[E[[i]]] = i-1
+	}
+	return(list(u = levels, n.levels = n.levels, u.e = u.e, E=E,map=map,G=G))
 }
 
 ## Create a P-optimal levelplot.

@@ -111,5 +111,8 @@ contourmap <- function(mu,Q,vars,n.levels,ind,levels,
 	 	lp$P0 = mean(p$F)
 	 	lp$F = p$F
 	}
+	lp$meta=list(calculation="contourmap",
+               alpha=alpha,
+               n.iter=n.iter)
 	return(lp)
 }
