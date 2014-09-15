@@ -43,8 +43,9 @@ contourmap <- function(mu,
   \item{compute}{A list with quality indices to compute
     \itemize{
       \item{'F': }{Compute the contour map function? (default TRUE)}
-      \item{'measures': }{A list with the quality measures to compute ("P0", "P1", or "P2")}
-  }
+      \item{'measures': }{A list with the quality measures to compute
+	("P0", "P1", or "P2")}
+    }}
   \item{alpha}{Maximal error probability in contour map function (default=1)}
   \item{n.iter}{Number or iterations in the MC sampler that is used for
     approximating probabilities. The default value is 10000.}
