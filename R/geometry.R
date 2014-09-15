@@ -1222,8 +1222,8 @@ subdivide.mesh <- function(mesh) {
     v1 <- seq_len(graph$Nv)
     edges.boundary <- which(is.na(graph$ee))
     edges.interior <- which(!is.na(graph$ee))
-    edges.interior.main <- edges.interior[graph$ee[edges.interior,1] <
-                                          graph$ee[edges.interior,2]]
+    edges.interior.main <- edges.interior[graph$ev[edges.interior,1] <
+                                          graph$ev[edges.interior,2]]
     edges.interior.secondary <- graph$ee[edges.interior.main]
     Neb <- length(edges.boundary)
     Nei <- length(edges.interior.main)
@@ -1237,7 +1237,7 @@ subdivide.mesh <- function(mesh) {
 
     ## Mapping matrix from lattice nodes to sub-lattice nodes
     idxorig <- rep(as.integer(NA), Nv2)
-    idxorig[i1] <- v1
+    idxorig[v1] <- v1
     A <- sparseMatrix(i=(c(v1,
                            rep(v2.boundary, times=2),
                            rep(v2.interior, times=2)
@@ -1251,7 +1251,7 @@ subdivide.mesh <- function(mesh) {
                            rep(1/2, 2*Nei)
                            )),
                       dims=c(Nv2, graph$Nv))
-    loc <- as.matrix(A %*% loc)
+    loc <- as.matrix(A %*% mesh$loc)
     tv <- rbind(cbind(edge.split.v[graph$te[,1]],
                       edge.split.v[graph$te[,2]],
                       edge.split.v[graph$te[,3]]),
@@ -1274,7 +1274,7 @@ subdivide.mesh <- function(mesh) {
 continuous <- function(ex,
                        geometry,
                        alpha=0.1,
-                       method=c("logit", "log", "linear", "step"),
+                       method=c("log", "logit", "linear", "step"),
                        output=c("sp", "inla"))
 {
     stopifnot(inherits(ex, "excurobj"))
@@ -1315,13 +1315,16 @@ continuous <- function(ex,
         mesh <- build.lattice.mesh(info$loc, info$dims)
     }
 
-    if (method %in% c("logit", "log", "linear")) {
-        if (method == "logit") {
-            F.ex <- log(F.ex)-log(1-F.ex)
-            level <- log(1-alpha)-log(alpha)
-        } else if (method == "log") {
+    if (method %in% c("log", "logit", "linear")) {
+         if (method == "log") {
             F.ex <- log(F.ex)
             level <- log(1-alpha)
+            F.ex[is.infinite(F.ex) & F.ex < 0] <- -1e20
+        } else if (method == "logit") {
+            F.ex <- log(F.ex)-log(1-F.ex)
+            level <- log(1-alpha)-log(alpha)
+            F.ex[is.infinite(F.ex) & F.ex < 0] <- -1e20
+            F.ex[is.infinite(F.ex) & F.ex > 0] <- +1e20
         } else {
             level <- 1-alpha
         }
