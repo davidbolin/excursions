@@ -16,7 +16,7 @@
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
-                       vars, rho, reo, method='EB', ind, max.size,
+                        F.limit, vars, rho, reo, method='EB', ind, max.size,
                        verbose=0, max.threads=0,seed)
 {
 
@@ -47,6 +47,9 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
 
   if(!missing(ind) && !missing(reo))
 	  stop('Either provide a reordering using the reo argument or provied a set of nodes using the ind argument, both cannot be provided')
+
+	if(missing(F.limit))
+	  F.limit = alpha
 
   if (!missing(Q.chol) && !is.null(Q.chol)) {
       ## make the representation unique (i,j,v)
@@ -101,38 +104,36 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
   limits <- excursions.setlimits(marg, vars,type,QC=qc,u,mu)
 
   res <- excursions.call(limits$a,limits$b,reo,Q, is.chol = is.chol,
-                         1-alpha, K = n.iter, max.size = m.size,
+                         1-F.limit, K = n.iter, max.size = m.size,
                          n.threads = max.threads,seed = seed)
 
   n = length(mu)
   ii = which(res$Pv[1:n] > 0)
   if (length(ii) == 0) i=n+1 else i=min(ii)
 
-  F = Fe  = rep(0,n)
+  F = Fe  = E = G = rep(0,n)
   F[reo] = res$Pv
   Fe[reo] = res$Ev
 
   ireo = NULL
   ireo[reo] = 1:n
 
-  if(type == '='){
-	  F=1-F
-	  D = rep(1,n)
-	  if(i<n+1) D[reo[i:n]] = 0
-  } else {
-	  D = rep(0,n)
-	  if(i<n+1) D[reo[i:n]] = 1
-  }
+  ind = F < 1-alpha
+	E[F>1-alpha] = 1
 
-  G = rep(0,n)
+  if(type == '=')
+	  F=1-F
+
   if(type == "<") {
     G[mu>u] = 1
   } else {
     G[mu>=u] = 1
   }
 
+  F[ind] = Fe[ind] = NA
+
   output <- list(F=F, G = G,
-                 D=D, rho=marg$rho, Fe=Fe, reo=reo, ireo=ireo, vars=vars,
+                 E=E, rho=marg$rho, Fe=Fe, reo=reo, ireo=ireo, vars=vars,
                  meta=list(calculation="excursions",
                  type=type,
                  level=u,

@@ -117,6 +117,7 @@ contourmap <- function(mu,Q,vars,n.levels,ind,levels,
 	    lp$F = p$F
 	  }
 	}
+	lp$E <- NULL
 	lp$meta <- list(calculation="contourmap",
                         alpha=alpha,
                         n.iter=n.iter,

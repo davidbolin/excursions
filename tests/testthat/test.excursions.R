@@ -41,15 +41,17 @@ test_that("Excursions, alpha = 0.1, type = >", {
   res = excursions(alpha=0.1, u=0, mu=data$mu+0.1, Q=data$Q, type='>', seed = data$seed)
   r = c(0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000,
        0.0000000, 0.9801446, 0.9988957, 0.9999751, 0.9999998)
+  res$F[is.na(res$F)] = 0
   expect_equal(res$F,r,tolerance=1e-7)
 })
 
-test_that("Excursions, alpha = 1, type = <", {
+test_that("Excursions, alpha = 0.1, type = <", {
   data <- integration.testdata1()
   res = excursions(alpha=0.1, u=0, mu=data$mu+0.1, Q=data$Q, type='<', seed = data$seed)
   r = c(0.9999429, 0.9999434, 0.9978976, 0.9679410, 0.0000000, 0.0000000,
        0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.0000000)
-expect_equal(res$F,r,tolerance=1e-7)
+  res$F[is.na(res$F)] = 0
+  expect_equal(res$F,r,tolerance=1e-7)
 })
 
 test_that("Excursions, alpha = 0.1, type = =", {
@@ -58,6 +60,7 @@ test_that("Excursions, alpha = 0.1, type = =", {
   r = c(7.381175e-07, 8.177720e-05, 3.204621e-03, 5.127762e-02, 1.000000e+00,
        1.000000e+00, 1.000000e+00, 2.193460e-02, 1.155138e-03, 2.547679e-05,
        1.945911e-07)
+  res$F[is.na(res$F)] = 1
   expect_equal(res$F,r,tolerance=1e-7)
 })
 
@@ -66,6 +69,7 @@ test_that("Excursions, alpha = 0.1, type = !=", {
   res = excursions(alpha=0.1, u=0, mu=data$mu+0.1, Q=data$Q, type='!=', seed = data$seed)
   r = c(0.9999993, 0.9999182, 0.9967954, 0.9487224, 0.0000000, 0.0000000,
        0.0000000, 0.9780654, 0.9988449, 0.9999745, 0.9999998)
+  res$F[is.na(res$F)] = 0
   expect_equal(res$F,r,tolerance=1e-7)
 })
 
@@ -74,6 +78,8 @@ test_that("Excursions, move u to mu", {
 
   res = excursions(alpha=0.1, u=1, mu=data$mu, Q=data$Q, type='>', seed = data$seed)
   res2 = excursions(alpha=0.1, u=0, mu=data$mu-1, Q=data$Q, type='>', seed = data$seed)
+  res$F[is.na(res$F)] = 0
+  res2$F[is.na(res2$F)] = 0
   expect_equal(res$F,res2$F,tolerance=1e-7)
 })
 
