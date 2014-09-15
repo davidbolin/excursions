@@ -125,13 +125,10 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
   }
 
   G = rep(0,n)
-  if(type == ">"){
+  if(type == "<") {
     G[mu>u] = 1
-  } else if(type == "<") {
-    G[mu<u] = 1
-  } else if(type == "=" || type == "!=") {
-    G[mu<u] = 0
-    G[mu>u] = 1
+  } else {
+    G[mu>=u] = 1
   }
 
   output <- list(F=F, G = G,
