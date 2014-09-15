@@ -973,26 +973,65 @@ tricontourmap.list <-
 }
 
 
+tricontour_step <- function(x, z, levels, loc, ...)
+{
+    stopifnot(length(levels) == 1)
+
+    t.count <- rowSums(matrix((z >= levels)[x$tv], nrow(x$tv), 3))
+
+    t.keep <- which(t.count < 3)
+    if (length(t.keep) > 0) {
+        graph.lower <-
+            generate.trigraph.properties(
+                list(tv=x$tv[t.keep,,drop=FALSE]),
+                Nv=nrow(loc))
+        idx.lower <- graph.lower$ev[is.na(graph.lower$ee),,drop=FALSE]
+    } else {
+        idx.lower <- matrix(0L, 0,2)
+    }
+
+    t.keep <- which(t.count == 3)
+    if (length(t.keep) > 0) {
+        graph.upper <-
+            generate.trigraph.properties(
+                list(tv=x$tv[t.keep,,drop=FALSE]),
+                Nv=nrow(loc))
+        idx.upper <- graph.upper$ev[is.na(graph.upper$ee),,drop=FALSE]
+    } else {
+        idx.upper <- matrix(0L, 0,2)
+    }
+
+    grp <- rep(c(1L, 3L), c(nrow(idx.lower), nrow(idx.upper)))
+
+    list(loc=loc, idx=rbind(idx.lower, idx.upper), grp=grp)
+}
+
 
 ## In-filled points at transitions should have G[i] == -1
 ## to get a conservative approximation.
 ## To get only under/over sets, use a constant non-negative integer G
 probabilitymap <-
     function(mesh, F, level, G,
-             calc.contour=FALSE,
+             calc.complement=FALSE,
              tol=1e-7, neginf=-1e10,
-             output=c("sp", "inla.mesh.segment"), ...)
+             output=c("sp", "inla.mesh.segment"),
+             method, ...)
 {
     message("probabilitymap")
     output <- match.arg(output)
 
     out <- list()
-    if (calc.contour) {
+    if (calc.complement) {
         ## Find contour set
         FF <- F
         FF[G == -1] <- neginf
-        tric <- tricontour(x=mesh$graph, z=FF, levels=level,
-                           loc=mesh$loc, type="+", tol=tol, ...)
+        if (method == "step") {
+            tric <- tricontour_step(x=mesh$graph, z=FF, levels=level,
+                                    loc=mesh$loc)
+        } else {
+            tric <- tricontour(x=mesh$graph, z=FF, levels=level,
+                               loc=mesh$loc, type="+", tol=tol, ...)
+        }
         ID <- "-1"
         if (output == "sp") {
             spobj <- tryCatch(outline.to.sp(tric,
@@ -1018,8 +1057,13 @@ probabilitymap <-
     for (k in sort(unique(G[G >= 0]))) {
         FF <- F
         FF[G != k] <- neginf
-        tric <- tricontour(x=mesh$graph, z=FF, levels=level,
-                           loc=mesh$loc, type="+", tol=tol, ...)
+        if (method == "step") {
+            tric <- tricontour_step(x=mesh$graph, z=FF, levels=level,
+                                    loc=mesh$loc)
+        } else {
+            tric <- tricontour(x=mesh$graph, z=FF, levels=level,
+                               loc=mesh$loc, type="+", tol=tol, ...)
+        }
         ID <- as.character(k)
         if (output == "sp") {
             spobj <- tryCatch(outline.to.sp(tric,
@@ -1105,12 +1149,12 @@ get.geometry <- function(geometry) {
     list(loc=loc, dims=dims, geometry=geometrytype, manifold=manifoldtype)
 }
 
-## Input: One of
+## Input:
 ##   loc, dims
 ## The input is treated as a topological lattice, and the
 ## the lattice boxes are assumed to be convex.
 ## Output:
-##   list(loc, graph=list(tv, tt, tti))
+##   list(loc, graph=list(tv), A, idxorig)
 build.lattice.mesh <- function(loc, dims) {
     ## Index to node in original lattice,
     ## i,j in 1...nx, 1...ny
@@ -1143,8 +1187,8 @@ build.lattice.mesh <- function(loc, dims) {
     i00a <- seq_len(nx)*2-1
     j00a <- seq_len(ny)*2-1
     ## Mapping matrix from lattice nodes to sub-lattice nodes
-    isorig <- logical(nx2*ny2)
-    isorig[ij2(i00a,j00a)] <- TRUE
+    idxorig <- rep(as.integer(NA), nx2*ny2)
+    idxorig[ij2(i00a,j00a)] <- seq_len(nx*ny)
     A <- sparseMatrix(i=(c(ij2(i00a,j00a),
                            rep(ij2(i00+1,j00a), times=2),
                            rep(ij2(i00a,j00+1), times=2),
@@ -1173,7 +1217,64 @@ build.lattice.mesh <- function(loc, dims) {
                 cbind(ij2(i00+1,j00+1), ij2(i00,j00+2), ij2(i00,j00+1))
                 )
 
-    list(loc=loc, graph=list(tv=tv), A=A, isorig=isorig)
+    list(loc=loc, graph=list(tv=tv), A=A, idxorig=idxorig)
+}
+
+## Input:
+##   list(loc, graph=list(tv, ...)) or an inla.mesh
+## Output:
+##   list(loc, graph=list(tv), A, idxorig)
+subdivide.mesh <- function(mesh) {
+    graph <- generate.trigraph.properties(mesh$graph, nrow(mesh$loc))
+
+    v1 <- seq_len(graph$Nv)
+    edges.boundary <- which(is.na(graph$ee))
+    edges.interior <- which(!is.na(graph$ee))
+    edges.interior.main <- edges.interior[graph$ee[edges.interior,1] <
+                                          graph$ee[edges.interior,2]]
+    edges.interior.secondary <- graph$ee[edges.interior.main]
+    Neb <- length(edges.boundary)
+    Nei <- length(edges.interior.main)
+    Nv2 <- graph$Nv + Neb + Nei
+    v2.boundary <- graph$Nv + seq_len(Neb)
+    v2.interior <- graph$Nv + Neb + seq_len(Nei)
+    edge.split.v <- integer(length(graph$ee))
+    edge.split.v[edges.boundary] <- v2.boundary
+    edge.split.v[edges.interior.main] <- v2.interior
+    edge.split.v[edges.interior.secondary] <- v2.interior
+
+    ## Mapping matrix from lattice nodes to sub-lattice nodes
+    idxorig <- rep(as.integer(NA), Nv2)
+    idxorig[i1] <- v1
+    A <- sparseMatrix(i=(c(v1,
+                           rep(v2.boundary, times=2),
+                           rep(v2.interior, times=2)
+                           )),
+                      j=(c(v1,
+                           as.vector(graph$ev[edges.boundary,]),
+                           as.vector(graph$ev[edges.interior.main,])
+                           )),
+                      x=(c(rep(1, graph$Nv),
+                           rep(1/2, 2*Neb),
+                           rep(1/2, 2*Nei)
+                           )),
+                      dims=c(Nv2, graph$Nv))
+    loc <- as.matrix(A %*% loc)
+    tv <- rbind(cbind(edge.split.v[graph$te[,1]],
+                      edge.split.v[graph$te[,2]],
+                      edge.split.v[graph$te[,3]]),
+                cbind(graph$tv[,1],
+                      edge.split.v[graph$te[,3]],
+                      edge.split.v[graph$te[,2]]),
+                cbind(graph$tv[,2],
+                      edge.split.v[graph$te[,1]],
+                      edge.split.v[graph$te[,3]]),
+                cbind(graph$tv[,3],
+                      edge.split.v[graph$te[,2]],
+                      edge.split.v[graph$te[,1]])
+                )
+
+    list(loc=loc, graph=list(tv=tv), A=A, idxorig=idxorig)
 }
 
 
@@ -1185,7 +1286,6 @@ build.lattice.mesh <- function(loc, dims) {
 ##' @param ex
 ##' @param geometry
 ##' @param alpha
-##' @param invert
 ##' @param method
 ##' @return A list with ...
 ##' @author Finn Lindgren
@@ -1202,6 +1302,10 @@ continuous <- function(ex,
         stop(paste("Unsupported calculation '",
                    ex$meta$calculation, "'.", sep=""))
     }
+    if (ex$meta$calculation %in% "contourmap") {
+        message("TODO: Recalculate P0-measure.")
+    }
+
 
     if (alpha > ex$meta$alpha) {
         warning(paste("Insufficient data: alpha = ", alpha,
@@ -1222,11 +1326,8 @@ continuous <- function(ex,
     }
 
     if (info$geometry == "mesh") {
-        mesh <- geometry
-        warning("TODO: subdivide triangle mesh")
-        mesh$A <- Diagonal(nrow(mesh$loc))
-    }
-    if (info$geometry == "lattice") {
+        mesh <- subdivide.mesh(geometry)
+    } else if (info$geometry == "lattice") {
         mesh <- build.lattice.mesh(info$loc, info$dims)
     }
 
@@ -1248,22 +1349,25 @@ continuous <- function(ex,
     mesh$graph <-
         generate.trigraph.properties(mesh$graph, Nv=nrow(mesh$loc))
 
-    if (type %in% c(">", "<")) {
-        ## For ordinary excursions, the set/group information is not used.
+    if (type == ">") {
+        ## For ordinary excursions, the input set/group information is not used.
         G <- rep(1, length(F.interp))
+    } else if (type == "<") {
+        ## For ordinary excursions, the input set/group information is not used.
+        G <- rep(0, length(F.interp))
     } else {
         ## Take 'G' information from 'ex' input and set new interface
         ## values 'G[i]=-1'.
         Gorig <- ex$G
         G <- integer(length(F.interp))
-        G[mesh$isorig] <- Gorig
-        G[!mesh$isorig] <- NA
+        G[!is.na(mesh$idxorig)] <- Gorig[mesh$idxorig[!is.na(mesh$idxorig)]]
+        G[is.na(mesh$idxorig)] <- NA
         for (edge in seq_len(mesh$graph$Ne)) {
             ev <- mesh$graph$ev[edge,]
             for (k1 in 1:2) {
                 k2 <- 3-k1
-                if (mesh$isorig[ev[k1]] &&
-                    !mesh$isorig[ev[k2]]) {
+                if (!is.na(mesh$idxorig[ev[k1]]) &&
+                    is.na(mesh$idxorig[ev[k2]])) {
                     if (is.na(G[ev[k2]])) {
                         G[ev[k2]] <- G[ev[k1]]
                     } else if (G[ev[k1]] != G[ev[k2]]) {
@@ -1275,29 +1379,12 @@ continuous <- function(ex,
         G[is.na(G)] <- -1
     }
 
-    if (method %in% c("logit", "log", "linear")) {
-        output <- probabilitymap(mesh,
-                                 F=F.interp,
-                                 level=level,
-                                 G=G,
-                                 calc.contour=TRUE)
-    } else if (method == "step") {
-        t.count <- rowSums(matrix((F.interp >= level)[mesh$graph$tv],
-                                  nrow(mesh$graph$tv), 3))
-        if (invert) {
-            t.keep <- which(t.count < 3)
-        } else {
-            t.keep <- which(t.count == 3)
-        }
-        result.graph <-
-            generate.trigraph.properties(
-                list(tv=mesh$graph$tv[t.keep,,drop=FALSE]),
-                Nv=nrow(mesh$loc))
+    output <- probabilitymap(mesh,
+                             F=F.interp,
+                             level=level,
+                             G=G,
+                             calc.complement=TRUE,
+                             method=method)
 
-        warning("TODO: extract boundary edges from triangle graph and convert to output objects, and move all this to a helper for probabilitymap itself.")
-
-        output <- list(graph=result.graph,
-                       loc=loc)
-    }
     invisible(output)
 }
