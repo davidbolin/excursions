@@ -124,12 +124,12 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
 	  if(i<n+1) D[reo[i:n]] = 1
   }
 
-  G = rep(-1,n)
+  G = rep(0,n)
   if(type == ">"){
     G[mu>u] = 1
   } else if(type == "<") {
-    G[mu<u] = 0
-  } else if(type == "=" || type == "!") {
+    G[mu<u] = 1
+  } else if(type == "=" || type == "!=") {
     G[mu<u] = 0
     G[mu>u] = 1
   }
