@@ -57,7 +57,7 @@ contourmap <- function(mu,
   \item{u }{Contour levels}
   \item{n.levels}{The number of contours used}
   \item{u.e}{The values associated with the level sets E_k}
-  \item{E}{A list containing the different level sets E_k}
+  \item{G}{A vector which shows which of the level sets E_k each node belongs to.}
   \item{map}{Representation of the contour map with map[i]=u.e[k] if i is in E[[k]]}
   \item{F }{The contour map function}
   \item{P0/P1/P2}{Calculated quality measures}

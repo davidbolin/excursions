@@ -24,6 +24,7 @@ excursions <- function(alpha,
                        type,
                        n.iter=10000,
                        Q.chol,
+                       F.limit,
                        vars,
                        rho,
                        reo,
@@ -35,8 +36,7 @@ excursions <- function(alpha,
                        seed)
 }
 \arguments{
-  \item{alpha}{Error probability. The excursion function is calculated
-    for all values up to \code{alpha}. }
+  \item{alpha}{Error probability for the excursion set.}
   \item{u}{Excursion or contour level.}
   \item{mu}{Expectation vector}
   \item{Q}{Precision matrix}
@@ -49,6 +49,7 @@ excursions <- function(alpha,
   \item{n.iter}{Number or iterations in the MC sampler that is used for
     approximating probabilities. The default value is 10000.}
   \item{Q.chol}{The Cholesky factor of the precision matrix (optional)}
+  \item{F.limit}{The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}. }
   \item{vars}{Precomputed marginal variances (optional)}
   \item{rho}{Marginal excursion probabilities (optional).  For contour
     regions, provide \eqn{P(X>u)}.}
@@ -67,7 +68,7 @@ excursions <- function(alpha,
 }
 \value{
   A list:
-  \item{D }{Excursion set, contour credible region, or contour avoiding
+  \item{E }{Excursion set, contour credible region, or contour avoiding
     set}
   \item{F }{The excursion function corresponding to the set D calculated
     for values up to alpha}
