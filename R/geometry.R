@@ -1009,10 +1009,11 @@ tricontour_step <- function(x, z, levels, loc, ...)
 
 ## In-filled points at transitions should have G[i] == -1
 ## to get a conservative approximation.
-## To get only under/over sets, use a constant non-negative integer G
+## To get only an "over/under set", use a constant non-negative integer G
+##   and let calc.complement=FALSE
 probabilitymap <-
     function(mesh, F, level, G,
-             calc.complement=FALSE,
+             calc.complement=TRUE,
              tol=1e-7, neginf=-1e10,
              output=c("sp", "inla.mesh.segment"),
              method, ...)
