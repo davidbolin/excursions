@@ -70,6 +70,31 @@ Finn Lindgren
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %%}
 \examples{
+\dontrun{
+if (require(INLA)) {
+  ## Generate a mesh and spde model
+  mesh <- inla.mesh.create(lattice=inla.mesh.lattice(x=1:30, y=1:20),
+                           refine=FALSE, extend=FALSE)
+  spde <- inla.spde2.matern(mesh)
+  Q <- inla.spde.precision(spde, theta=c(0, log(sqrt(8)/5)))
+
+  ## Generate an artificial sample
+  x <- inla.qsample(1, Q)[,1]
+  sd.obs <- 0.1
+  y <- x + rnorm(length(x), sd=sd.obs)
+
+  ## Calculate posterior
+  Q.post <- Q + Diagonal(length(x), 1/sd.obs^2)
+  mu.post <- inla.qsolve(Q.post, as.matrix(y/sd.obs^2))
+
+  ## Calculate contour map for the zero crossing
+  ex <- excursions(mu=mu.post, Q=Q.post, u=0, type="=", alpha=1)
+  sets <- continuous(ex, mesh, alpha=0.1)
+
+  ## Plot result
+  plot(sets, col=seq_along(row.names(sets)))
+}
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
