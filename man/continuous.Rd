@@ -9,7 +9,7 @@
 }
 \usage{
 continuous(ex, geometry, alpha = 0.1,
-           method = c("logit", "log", "linear", "step"),
+           method = c("log", "logit", "linear", "step"),
            output = c("sp", "inla"))
 }
 %- maybe also 'usage' for other objects documented here.
@@ -34,8 +34,8 @@ topologically as lattices, and the lattice boxes are assumed convex.
 }
 \item{method}{
   The spatial probability interpolation transformation method to use.
-  One of \code{"logit"}, \code{"log"}, \code{"linear"}, or
-  \code{"step"}.  For \code{logit} and \code{log}, the probabilities are
+  One of \code{"log"}, \code{"logit"}, \code{"linear"}, or
+  \code{"step"}.  For \code{log} and \code{logit}, the probabilities are
   interpolated linearly in the transformed scale. For \code{step}, a
   conservative step function is used.
 }
