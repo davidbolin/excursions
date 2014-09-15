@@ -1279,6 +1279,7 @@ continuous <- function(ex,
 {
     stopifnot(inherits(ex, "excurobj"))
     method <- match.arg(method)
+    output <- match.arg(output)
 
     if (!(ex$meta$calculation %in% c("excursions",
                                      "contourmap"))) {
