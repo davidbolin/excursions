@@ -563,7 +563,6 @@ tricontour <-
              levels = pretty(range(z, na.rm = TRUE), nlevels),
              ...)
 {
-    message("tricontour")
     UseMethod("tricontour")
 }
 
@@ -572,7 +571,6 @@ tricontour.inla.mesh <-
              levels = pretty(range(z, na.rm = TRUE), nlevels),
              ...)
 {
-    message("tricontour.inla.mesh")
     tricontour.list(x$graph, z=z,
                     nlevels=nlevels, levels=levels,
                     loc=x$loc, ...)
@@ -583,7 +581,6 @@ tricontour.matrix <-
              levels = pretty(range(z, na.rm = TRUE), nlevels),
              loc, ...)
 {
-    message("tricontour.matrix")
     tricontour.list(list(tv=x), z=z,
                     nlevels=nlevels, levels=levels,
                     loc=loc, ...)
@@ -665,7 +662,6 @@ tricontour.list <- function(x, z, nlevels = 10,
                             levels = pretty(range(z, na.rm = TRUE), nlevels),
                             loc, type=c("+", "-"), tol=1e-7, ...)
 {
-    message("tricontour.list")
     type <- match.arg(type)
     nlevels <- length(levels)
 
@@ -875,7 +871,6 @@ tricontourmap <- function(x, z, nlevels = 10,
                           levels = pretty(range(z, na.rm = TRUE), nlevels),
                           ...)
 {
-    message("tricontourmap")
     UseMethod("tricontourmap")
 }
 
@@ -884,7 +879,6 @@ tricontourmap.inla.mesh <-
              levels = pretty(range(z, na.rm = TRUE), nlevels),
              ...)
 {
-    message("tricontourmap.inla.mesh")
     tricontourmap.list(x$graph, z=z,
                        nlevels=nlevels, levels=levels,
                        loc=x$loc, ...)
@@ -895,7 +889,6 @@ tricontourmap.matrix <-
              levels = pretty(range(z, na.rm = TRUE), nlevels),
              loc, ...)
 {
-    message("tricontour.matrix")
     tricontourmap.list(list(tv=x), z=z,
                        nlevels=nlevels, levels=levels,
                        loc=loc, ...)
@@ -909,7 +902,6 @@ tricontourmap.list <-
              loc, type=c("+", "-"), tol=1e-7,
              output=c("sp", "inla.mesh.segment"), ...)
 {
-    message("tricontourmap.list")
     type <- match.arg(type)
     output <- match.arg(output)
     nlevels <- length(levels)
@@ -1018,7 +1010,6 @@ probabilitymap <-
              output=c("sp", "inla.mesh.segment"),
              method, ...)
 {
-    message("probabilitymap")
     output <- match.arg(output)
 
     out <- list()
