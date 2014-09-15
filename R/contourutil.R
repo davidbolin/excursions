@@ -46,7 +46,7 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha=1, n.iter=10000,
 
   res <- excursions.call(lim$a,lim$b,reo,Q, is.chol = is.chol,
                          1-alpha, K = n.iter, max.size = m.size,
-                         n.threads = max.threads,seed = seed)
+                         n.threads = max.threads)
 
   n = length(mu)
   ii = which(res$Pv[1:n] > 0)
