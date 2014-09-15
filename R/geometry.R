@@ -1279,20 +1279,11 @@ subdivide.mesh <- function(mesh) {
 
 
 
-##' .. content for \description{} (no empty lines) ..
-##'
-##' .. content for \details{} ..
-##' @title Spatial interpretation of excursions and contourmaps
-##' @param ex
-##' @param geometry
-##' @param alpha
-##' @param method
-##' @return A list with ...
-##' @author Finn Lindgren
 continuous <- function(ex,
                        geometry,
                        alpha=0.1,
-                       method=c("logit", "log", "linear", "step"))
+                       method=c("logit", "log", "linear", "step"),
+                       output=c("sp", "inla"))
 {
     stopifnot(inherits(ex, "excurobj"))
     method <- match.arg(method)
@@ -1379,12 +1370,11 @@ continuous <- function(ex,
         G[is.na(G)] <- -1
     }
 
-    output <- probabilitymap(mesh,
+    invisible(probabilitymap(mesh,
                              F=F.interp,
                              level=level,
                              G=G,
                              calc.complement=TRUE,
-                             method=method)
-
-    invisible(output)
+                             method=method,
+                             output=output))
 }
