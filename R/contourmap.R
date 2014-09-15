@@ -17,12 +17,22 @@
 
 
 contourmap <- function(mu,Q,vars,n.levels,ind,levels,
-								       type='standard', measure,
-								       contour.map.function = FALSE,
+								       type = c("standard",
+								                "equalarea",
+								                "P0-optimal",
+								                "P1-optimal",
+								                "P2-optimal"),
+								       compute = list(F=TRUE,
+								                      measures = NULL),
 								       use.marginals=TRUE,
 								       alpha=1,n.iter=10000,
 								       verbose=FALSE,max.threads=0)
 {
+  type <- match.arg(type)
+  measure = NULL
+  if(!is.null(compute$measures))
+    measure <- match.arg(compute$measures,c("P0", "P1", "P2"), several.ok=TRUE)
+
 	if(type == 'standard')
 	{
 	  if(verbose) cat('Creating contour map\n')
@@ -67,30 +77,26 @@ contourmap <- function(mu,Q,vars,n.levels,ind,levels,
 		} else if (type == 'P2-optimal'){
 			if(verbose) cat('Creating P2-optimal contour map\n')
 			opt.measure = 2
-		} else {
-			stop('only P0, P1, and P2-measures supported')
 		}
 
 		lp <- excursions.opt.levelplot(mu = mu,vars = vars,Q = Q,
 		                               n.levels = n.levels, measure = opt.measure,
 		                               use.marginals = use.marginals,ind = ind)
-	} else {
-		stop('type not supported (use standard, equalarea, or P0/P1/P2-optimal)')
 	}
 
 	F.calculated = FALSE
-	if(!missing(measure) && !is.null(measure)){
+	if(!is.null(measure)){
 		if(missing(Q))
 			stop('precision matrix must be supplied if measure should be calculated')
 
 		for( i in 1:length(measure)){
-      if(measure[i]==1) {
+      if(measure[i]=="P1") {
         if(verbose) cat('Calculating P1-measure\n')
-        lp$P1 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=measure[i])
-      } else if(measure[i] == 2) {
+        lp$P1 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=1)
+      } else if(measure[i] == "P2") {
         if(verbose) cat('Calculating P2-measure\n')
-        lp$P2 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=measure[i])
-	 	  } else if (measure[i] == 0) {
+        lp$P2 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=2)
+	 	  } else if (measure[i] == "P0") {
 	 	    if(verbose) cat('Calculating P0-measure and contour map function\n')
 
 	 	    p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
@@ -99,17 +105,17 @@ contourmap <- function(mu,Q,vars,n.levels,ind,levels,
 	 	    lp$P0 = mean(p$F)
 	 	    lp$F = p$F
 	 	    F.calculated = TRUE
-	 	  } else {
-	 	    cat('Measure not supported (Only 0,1, and 2 supported)\n')
 	 	  }
 	 	}
 	}
-	if(contour.map.function == TRUE && F.calculated == FALSE){
-    if(verbose) cat('Calculating contour map function\n')
-    p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
+	if(!F.calculated){
+  	if(is.null(compute$F) || compute$F){
+      if(verbose) cat('Calculating contour map function\n')
+      p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
 	 	                     alpha=alpha, n.iter=n.iter, max.threads=max.threads)
-	 	lp$P0 = mean(p$F)
-	 	lp$F = p$F
+	    lp$P0 = mean(p$F)
+	    lp$F = p$F
+	  }
 	}
 	lp$meta <- list(calculation="contourmap",
                         alpha=alpha,

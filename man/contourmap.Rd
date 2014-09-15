@@ -13,9 +13,12 @@ contourmap <- function(mu,
                        n.levels,
                        ind,
                        levels,
-                       type='standard',
-                       measure,
-                       contour.map.function = FALSE,
+                       type = c("standard",
+                                "equalarea",
+                                "P0-optimal",
+                                "P1-optimal",
+                                "P2-optimal"),
+                       compute = list(F=TRUE, measures = NULL),
                        use.marginals=TRUE,
                        alpha=1,
                        n.iter=10000,
@@ -29,7 +32,7 @@ contourmap <- function(mu,
   \item{n.levels}{Number of levels in contour map}
   \item{ind}{Indices of the nodes that should be analyzed (optional)}
   \item{levels}{Levels to use in contour map}
-  \item{type}{Type of contour map:
+  \item{type}{Type of contour map. One of:
     \itemize{
     \item{'standard' }{Equidistant levels between min(mu) and max(mu) (default)}
     \item{'equalarea' }{Levels such that different spatial regions are approximately equal in size}
@@ -37,8 +40,11 @@ contourmap <- function(mu,
     \item{'P1-optimal' }{Levels chosen to maximize the P1 measure}
     \item{'P2-optimal' }{Levels chosen to maximize the P2 measure}
     }}
-  \item{measure}{Vector of quality measures to compute, measures 0, 1, and 2 are available (optional).}
-  \item{contour.map.function}{Indicates whether the contour map function should be calculated (default=FALSE)}
+  \item{compute}{A list with quality indices to compute
+    \itemize{
+      \item{'F': }{Compute the contour map function? (default TRUE)}
+      \item{'measures': }{A list with the quality measures to compute ("P0", "P1", or "P2")}
+  }
   \item{alpha}{Maximal error probability in contour map function (default=1)}
   \item{n.iter}{Number or iterations in the MC sampler that is used for
     approximating probabilities. The default value is 10000.}
