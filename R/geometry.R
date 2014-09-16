@@ -1320,23 +1320,32 @@ continuous <- function(ex,
     mesh <- build.lattice.mesh(info$loc, info$dims)
   }
 
-  if (method %in% c("log", "logit", "linear")) {
-    if (method == "log") {
-      F.ex <- log(F.ex)
-      level <- log(1-alpha)
-      F.ex[is.infinite(F.ex) & F.ex < 0] <- -1e20
-    } else if (method == "logit") {
-      F.ex <- log(F.ex)-log(1-F.ex)
-      level <- log(1-alpha)-log(alpha)
-      F.ex[is.infinite(F.ex) & F.ex < 0] <- -1e20
-      F.ex[is.infinite(F.ex) & F.ex > 0] <- +1e20
-    } else {
-      level <- 1-alpha
-    }
+  if (method == "log") {
+    F.ex <- log(F.ex)
+    level <- log(1-alpha)
+    F.ex[is.infinite(F.ex) & F.ex < 0] <- -1e20
+  } else if (method == "logit") {
+    F.ex <- log(F.ex)-log(1-F.ex)
+    level <- log(1-alpha)-log(alpha)
+    F.ex[is.infinite(F.ex) & F.ex < 0] <- -1e20
+    F.ex[is.infinite(F.ex) & F.ex > 0] <- +1e20
+  } else if (method == "linear") {
+    level <- 1-alpha
   } else {
     level <- 1-alpha
   }
   F.interp <- as.vector(mesh$A %*% F.ex)
+
+  if (method == "log") {
+    F.interp.nontransformed <- exp(F.interp)
+  } else if (method == "logit") {
+    F.interp.nontransformed <- 1/(1 + exp(-F.interp))
+  } else if (method == "linear") {
+    F.interp.nontransformed
+  } else {
+    F.interp.nontransformed
+  }
+
 
   mesh$graph <-
     generate.trigraph.properties(mesh$graph, Nv=nrow(mesh$loc))
@@ -1379,5 +1388,12 @@ continuous <- function(ex,
                       method=method,
                       output=output)
 
-  list(F=NULL, G=G, M=M)
+  if (suppressWarnings(require(INLA,quietly=TRUE))) {
+    F.geometry <- inla.mesh.create(loc=mesh$loc,
+                                   tv=mesh$graph$tv)
+  } else {
+    F.geometry <- mesh
+  }
+
+  list(G=G, M=M, F=F.interp.nontransformed, F.geometry=F.geometry)
 }
