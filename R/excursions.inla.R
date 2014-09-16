@@ -37,17 +37,6 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
 
   n = length(result.inla$misc$configs$config[[1]]$mean)
 
-  #If u.link is TRUE, the limit is given in linear scale and we then transform back to the scale of the linear predictor using the link function
-  u.t = rho = rep(0,n)
-  if(u.link == TRUE){
-    links = result.inla$misc$linkfunctions$names[
-                                            result.inla$misc$linkfunctions$link]
-    u.tmp = sapply(ind, function(i) private.link.function(u,links[i]))
-    u.t[ind] = u.tmp
-  } else {
-    u.t = u
-  }
-
   #Get indices for the component of interest in the configs
   ind.stack <- inla.output.indices(result.inla, name=name, stack=stack, tag=tag)
 
@@ -60,6 +49,19 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
     ind.stack <- ind.stack[ind]
   }
   ind = ind.stack
+
+  # If u.link is TRUE, the limit is given in linear scale
+  # then transform to the scale of the linear predictor
+  u.t = rho = rep(0,n)
+  if(u.link == TRUE){
+    links = result.inla$misc$linkfunctions$names[
+                                            result.inla$misc$linkfunctions$link]
+    u.tmp = sapply(ind, function(i) private.link.function(u,links[i]))
+    u.t[ind] = u.tmp
+  } else {
+    u.t = u
+  }
+
   #Calculate marginal probabilities
   #If stack and tag are provided, we are interested in the predictor
   #Otherwise, we are interested in some of the effects
@@ -181,7 +183,7 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
   }
   if(type == "!="){
     rho.ind = pmax(rho.ind,1-rho.ind)
-  }    
+  }
 
   output <- list(F=F,
                  mean=config$mu[ind], rho=rho.ind,

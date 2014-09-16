@@ -56,31 +56,32 @@ private.get.config <- function(result,i)
   return(list(mu=mu,Q=Q,vars=vars,lp=lp))
 }
 
-## Calculate the marginal probability for X_i>u or X_i<u. 
-## Note that the index 'i' refers to a location in the linear 
-## predictor if predictor==TRUE, whereas it refers to a location 
+## Calculate the marginal probability for X_i>u or X_i<u.
+## Note that the index 'i' refers to a location in the linear
+## predictor if predictor==TRUE, whereas it refers to a location
 ## in the random effect vector otherwise.
 inla.get.marginal <- function(i, u,result,effect.name=NULL, u.link, type)
-{ 
+{
   link = result$misc$linkfunctions$names[result$misc$linkfunctions$link][i]
 
   if(is.null(effect.name) && u.link == TRUE){
-    #calculate marginals using fitted values 
-    if(link=="identity" || is.na(link)){
-	    marg.p = result$marginals.fitted.values[[i]]
-	  } else {
-	    marg.p = INLA::inla.tmarginal(function(x)
-                              private.link.function(x,link,inv=TRUE),
-                                  result$marginals.fitted.values[[i]])
-	  }
-	} else if (is.null(effect.name)){
+    #calculate marginals using fitted values
+    #if(link=="identity" || is.na(link)){
+      marg.p = result$marginals.fitted.values[[i]]
+    #} else {
+
+      #marg.p = INLA::inla.tmarginal(function(x)
+      #                        private.link.function(x,link,inv=TRUE),
+      #                            result$marginals.fitted.values[[i]])
+    #}
+  } else if (is.null(effect.name)){
       # Calculate marginals using linear predictor
       marg.p = result$marginals.linear.predictor[[i]]
   } else {
       # Calculate marginals using a random effect
       marg.p = result$marginals.random[[effect.name]][[i]]
   }
-    
+
 	  if(type=='<'){
 		  return(INLA::inla.pmarginal(u,marg.p))
 	  } else {
