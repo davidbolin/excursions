@@ -9,5 +9,6 @@ export(simconf)
 export(continuous)
 export(contourmap)
 export(contourmap.inla)
+export(contourmap.colors)
 
 useDynLib(excursions2, .registration=TRUE)

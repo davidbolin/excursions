@@ -46,7 +46,7 @@ topologically as lattices, and the lattice boxes are assumed convex.
 }
 }
 \details{
-  
+
 }
 \value{
   A \code{SpatialPolygons} or \code{inla.mesh.segment} object.
@@ -72,36 +72,43 @@ Finn Lindgren
 \examples{
 \dontrun{
 if (require(INLA)) {
-  ## Generate a mesh and spde model
-  mesh <- inla.mesh.create(lattice=inla.mesh.lattice(x=1:30, y=1:20),
-                           refine=FALSE, extend=FALSE)
-  spde <- inla.spde2.matern(mesh)
-  Q <- inla.spde.precision(spde, theta=c(0, log(sqrt(8)/5)))
+  #Generate mesh and SPDE model
+  n.lattice = 40
+  x=seq(from=0,to=10,length.out=n.lattice)
+  lattice=inla.mesh.lattice(x=x,y=x)
+  mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
+  spde <- inla.spde2.matern(mesh, alpha=2)
 
-  ## Generate an artificial sample
-  x <- inla.qsample(1, Q)[,1]
-  sd.obs <- 0.1
-  y <- x + rnorm(length(x), sd=sd.obs)
+  #Generate an artificial sample
+  sigma2.e = 0.01
+  n.obs=1000
+  obs.loc = cbind(runif(n.obs)*diff(range(x))+min(x),
+                  runif(n.obs)*diff(range(x))+min(x))
+  Q = inla.spde2.precision(spde, theta=c(log(sqrt(0.5)), log(sqrt(1))))
+  x = inla.qsample(Q=Q)
+  A = inla.spde.make.A(mesh=mesh,loc=obs.loc)
+  Y = as.vector(A \%*\% x + rnorm(n.obs)*sqrt(sigma2.e))
 
   ## Calculate posterior
-  Q.post <- Q + Diagonal(length(x), 1/sd.obs^2)
-  mu.post <- inla.qsolve(Q.post, as.matrix(y/sd.obs^2))
+  Q.post = (Q + (t(A)\%*\%A)/sigma2.e)
+  mu.post = as.vector(solve(Q.post,(t(A)\%*\%Y)/sigma2.e))
+  vars.post = excursions.variances(chol(Q.post))
 
-  ## Calculate one-sided sets for the zero crossing
-  ex <- excursions(mu=mu.post, Q=Q.post, u=0, type=">",
-                   alpha=0.1, F.limit=1)
-  con <- continuous(ex, mesh)
+  ## Calculate contour map with two levels
+  map = contourmap(n.levels = 2, mu = mu.post, Q = Q.post,
+                   alpha=0.1,F.limit = 0.9)
 
-  ## Plot result
-  plot(con$M, col=seq_along(row.names(con$M)))
+  ## Calculate the continuous representation
+  sets <- continuous(map, mesh, alpha=0.1)
 
-  ## Calculate contour map for some level crossing
-  ex <- contourmap(mu=mu.post, Q=Q.post, levels=c(-1,0,1),
-                   alpha=0.1, F.limit=1)
-  con <- continuous(ex, mesh)
-
-  ## Plot result
-  plot(con$M, col=seq_along(row.names(con$M)))
+  ## Plot the results
+  reo = mesh$idx$lattice
+  cols = contourmap.colors(map,col=heat.colors(100),credible.col = grey(0.5))
+  par(mfrow = c(2,2))
+  image(matrix(mu.post[reo],n.lattice,n.lattice),main="mean",axes=F)
+  image(matrix(sqrt(vars.post[reo]),n.lattice,n.lattice),main="sd", axes = F)
+  image(matrix(map$M[reo],n.lattice,n.lattice),col=cols,axes=F)
+  plot(sets$M, col=cols)
 }
 }
 }

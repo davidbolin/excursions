@@ -280,3 +280,18 @@ excursions.limits <- function(lp,mu,measure,ind)
 	}
 	return(list(a=a,b=b))
 }
+
+contourmap.colors <- function(lp,zlim,col,credible.col)
+{
+  if(missing(zlim) || is.null(zlim))
+    zlim = lp$meta$mu.range
+
+  breaks <- seq(zlim[1]*(1-1e-16),
+                zlim[2]*(1+1e-16),
+                length.out = length(col)+1)
+  cmap = col[cut(c(lp$u.e), breaks)@.Data]
+  if(!missing(credible.col) && !is.null(credible.col))
+    cmap = c(credible.col,cmap)
+
+  return(cmap)
+}
