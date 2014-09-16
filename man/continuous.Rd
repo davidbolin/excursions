@@ -80,7 +80,7 @@ if (require(INLA)) {
 
   ## Generate an artificial sample
   x <- inla.qsample(1, Q)[,1]
-  sd.obs <- 0.5
+  sd.obs <- 0.1
   y <- x + rnorm(length(x), sd=sd.obs)
 
   ## Calculate posterior
