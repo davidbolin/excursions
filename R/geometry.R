@@ -1288,9 +1288,6 @@ continuous <- function(ex,
     stop(paste("Unsupported calculation '",
                ex$meta$calculation, "'.", sep=""))
   }
-  if (ex$meta$calculation %in% "contourmap") {
-    message("TODO: Recalculate P0-measure.")
-  }
 
   if (missing(alpha)) {
     alpha <- ex$meta$alpha
@@ -1345,6 +1342,9 @@ continuous <- function(ex,
   } else {
     F.interp.nontransformed
   }
+  if (ex$meta$type == "=") {
+    F.interp.nontransformed <- -F.interp.nontransformed
+  }
 
 
   mesh$graph <-
@@ -1388,12 +1388,25 @@ continuous <- function(ex,
                       method=method,
                       output=output)
 
-  if (suppressWarnings(require(INLA,quietly=TRUE))) {
+  if (suppressWarnings(require(INLA, quietly=TRUE))) {
     F.geometry <- inla.mesh.create(loc=mesh$loc,
                                    tv=mesh$graph$tv)
   } else {
     F.geometry <- mesh
   }
 
-  list(G=G, M=M, F=F.interp.nontransformed, F.geometry=F.geometry)
+  out <- list(F=F.interp.nontransformed, G=G, M=M, F.geometry=F.geometry)
+
+  if (!is.null(ex$P0)) {
+    if (!suppressWarnings(require(INLA, quietly=TRUE))) {
+      warning("INLA required for P0 calculations.")
+    } else {
+      fem <- inla.mesh.fem(F.geometry, order=1)
+      out$P0 <-
+        sum(diag(fem$c0) * F.interp.nontransformed) /
+        sum(diag(fem$c0))
+    }
+  }
+
+  out
 }
