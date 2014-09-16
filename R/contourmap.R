@@ -16,7 +16,12 @@
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-contourmap <- function(mu,Q,vars,n.levels,ind,levels,
+contourmap <- function(mu,
+                       Q,
+                       vars,
+                       n.levels,
+                       ind,
+                       levels,
 								       type = c("standard",
 								                "equalarea",
 								                "P0-optimal",
@@ -25,8 +30,11 @@ contourmap <- function(mu,Q,vars,n.levels,ind,levels,
 								       compute = list(F=TRUE,
 								                      measures = NULL),
 								       use.marginals=TRUE,
-								       alpha=1,n.iter=10000,
-								       verbose=FALSE,max.threads=0)
+								       alpha,
+								       F.limit,
+								       n.iter=10000,
+								       verbose=FALSE,
+								       max.threads=0)
 {
   type <- match.arg(type)
   measure = NULL
@@ -100,10 +108,8 @@ contourmap <- function(mu,Q,vars,n.levels,ind,levels,
 	 	    if(verbose) cat('Calculating P0-measure and contour map function\n')
 
 	 	    p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
-	 	                         alpha=alpha, n.iter=n.iter,max.threads=max.threads)
-
-	 	    lp$P0 = mean(p$F)
-	 	    lp$F = p$F
+	 	                         alpha=alpha, F.limit = F.limit,
+	 	                         n.iter=n.iter,max.threads=max.threads)
 	 	    F.calculated = TRUE
 	 	  }
 	 	}
@@ -112,12 +118,20 @@ contourmap <- function(mu,Q,vars,n.levels,ind,levels,
   	if(is.null(compute$F) || compute$F){
       if(verbose) cat('Calculating contour map function\n')
       p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
-	 	                     alpha=alpha, n.iter=n.iter, max.threads=max.threads)
-	    lp$P0 = mean(p$F)
-	    lp$F = p$F
+	 	                     alpha=alpha, F.limit = F.limit,
+	 	                     n.iter=n.iter, max.threads=max.threads)
+      F.calculated = TRUE
 	  }
 	}
-	lp$E <- NULL
+	if(F.calculated){
+  	lp$P0 = mean(p$F)
+	  lp$F = p$F
+	  lp$E = p$E
+	  lp$M = p$M
+	} else {
+	  lp$E <- NULL
+	}
+
 	lp$meta <- list(calculation="contourmap",
                         alpha=alpha,
                         n.iter=n.iter,

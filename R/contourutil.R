@@ -1,6 +1,6 @@
 ## Calculate the contour map function
-contourfunction <- function(lp,mu,Q,vars,ind, alpha=1, n.iter=10000,
-                                       Q.chol,max.threads=0)
+contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
+                            F.limit, Q.chol,max.threads=0)
 {
 	if (!missing(Q.chol) && !is.null(Q.chol)) {
       Q = Q.chol
@@ -16,6 +16,12 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha=1, n.iter=10000,
 
   if(missing(lp))
     stop('Must supply level plot')
+
+  if(missing(F.limit) || is.null(F.limit))
+    F.limit = 1
+
+  if(!missing(alpha) && !is.null(alpha))
+	  F.limit = max(alpha,F.limit)
 
 	lim <- excursions.limits(lp=lp,mu=mu,measure=0,ind=ind)
 
@@ -42,27 +48,34 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha=1, n.iter=10000,
 
   use.camd = !missing(ind) || alpha < 1
   reo <- excursions.permutation(rho = rho, ind = indices,
-                                use.camd = use.camd,alpha = alpha,Q = Q)
+                                use.camd = use.camd,alpha = F.limit,Q = Q)
 
   res <- excursions.call(lim$a,lim$b,reo,Q, is.chol = is.chol,
-                         1-alpha, K = n.iter, max.size = m.size,
+                         1-F.limit, K = n.iter, max.size = m.size,
                          n.threads = max.threads)
 
   n = length(mu)
   ii = which(res$Pv[1:n] > 0)
   if (length(ii) == 0) i=n+1 else i=min(ii)
 
-  F = Fe  = rep(0,n)
+  F = Fe  = E = rep(0,n)
   F[reo] = res$Pv
   Fe[reo] = res$Ev
 
   ireo = NULL
   ireo[reo] = 1:n
 
-	D = rep(0,n)
-	if(i<n+1) D[reo[i:n]] = 1
+  ind = F < 1-F.limit
+	E[F>1-alpha] = 1
 
-  return(list(F=F, Fe=Fe, D=D, rho=rho))
+  F[ind] = Fe[ind] = NA
+
+  M = rep(-1,n)
+  for(i in 1:lp$n.levels){
+    M[(lp$G == (i-1)) & (E == 1)] = i-1
+  }
+
+  return(list(F=F, Fe=Fe, E=E, M=M, rho=rho))
 }
 
 ## Calculate marginal probabilities P(lim$a < X < lim$b) for
