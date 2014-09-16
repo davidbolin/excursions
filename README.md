@@ -6,9 +6,16 @@ The theory of the methods used in the package are described in [Bolin and Lindgr
 # Version #
 The current stable version of the package is 1.1, which is also on CRAN. 
 
-The development version, which is called excursionsdevel, can be installed directly from R using the command 
+The development version can be installed directly from R using the command 
 ```
 #!r
 
 devtools::install_bitbucket("excursions","davidbolin",ref="devel")
 ```
+The development version of the package is called excursionsdevel, so it is loaded by running
+
+```
+#!r
+library(excursionsdevel)
+```
+
