@@ -71,7 +71,7 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
   F[ind] = Fe[ind] = NA
 
   M = rep(-1,n)
-  for(i in 1:lp$n.levels){
+  for(i in 1:(lp$n.levels+1)){
     M[(lp$G == (i-1)) & (E == 1)] = i-1
   }
 
