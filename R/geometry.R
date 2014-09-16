@@ -911,8 +911,8 @@ tricontourmap.list <-
 
   out <- list(map=list(), contour=list())
   for (k in seq_len(nlevels+1L)*2L-1L) {
+    ID <- as.character((k-1)/2)
     if (output == "sp") {
-      ID <- as.character((k-1)/2)
       spobj <- tryCatch(outline.to.sp(tric,
                                       grp.ccw=c(k-1,k),
                                       grp.cw=c(k+1),
@@ -924,7 +924,7 @@ tricontourmap.list <-
         out$map[[ID]] <- spobj
       }
     } else {
-      out$map[[as.character((k-1)/2)]] <-
+      out$map[[ID]] <-
         outline.to.inla.mesh.segment(tric,
                                      grp.ccw=c(k-1,k),
                                      grp.cw=c(k+1),
@@ -1312,6 +1312,7 @@ continuous <- function(ex,
     type <- ex$meta$type
     F.ex <- ex$F
   }
+  F.ex[is.na(F.ex)] <- 0
 
   if (info$geometry == "mesh") {
     mesh <- subdivide.mesh(geometry)
