@@ -15,4 +15,4 @@ S3method(tricontourmap,inla.mesh)
 S3method(tricontourmap,matrix)
 S3method(tricontourmap,list)
 
-useDynLib(excursions2, .registration=TRUE)
+useDynLib(excursionsdevel, .registration=TRUE)
