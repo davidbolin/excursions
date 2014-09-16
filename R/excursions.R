@@ -16,52 +16,52 @@
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
-                        F.limit, vars, rho, reo, method='EB', ind, max.size,
+                       F.limit, vars, rho, reo, method='EB', ind, max.size,
                        verbose=0, max.threads=0,seed)
 {
 
   if(method=='QC'){
-	  qc = TRUE
+    qc = TRUE
   } else if(method == 'EB'){
-	  qc = FALSE
+    qc = FALSE
   } else {
-	  stop('only EB and QC methods are supported.')
+    stop('only EB and QC methods are supported.')
   }
   if(missing(alpha))
-	  stop('Must specify error probability')
+    stop('Must specify error probability')
 
   if(missing(u))
-	  stop('Must specify level')
+    stop('Must specify level')
 
   if(missing(mu))
-	  stop('Must specify mean value')
+    stop('Must specify mean value')
 
   if(missing(Q) && missing(Q.chol))
-	  stop('Must specify a precision matrix or its Cholesky factor')
+    stop('Must specify a precision matrix or its Cholesky factor')
 
   if(missing(type))
-	  stop('Must specify type of excursion set')
+    stop('Must specify type of excursion set')
 
   if(qc && missing(rho))
-	  stop('rho must be provided if QC is used.')
+    stop('rho must be provided if QC is used.')
 
   if(!missing(ind) && !missing(reo))
-	  stop('Either provide a reordering using the reo argument or provied a set of nodes using the ind argument, both cannot be provided')
+    stop('Either provide a reordering using the reo argument or provied a set of nodes using the ind argument, both cannot be provided')
 
-	if(missing(F.limit)) {
-	  F.limit = alpha
-	} else {
-	  F.limit = max(alpha,F.limit)
-	}
+  if(missing(F.limit)) {
+    F.limit = alpha
+  } else {
+    F.limit = max(alpha,F.limit)
+  }
 
   if (!missing(Q.chol) && !is.null(Q.chol)) {
-      ## make the representation unique (i,j,v)
-      Q = Q.chol#private.as.dgTMatrix(Q.chol)
-      is.chol = TRUE
+    ## make the representation unique (i,j,v)
+    Q = Q.chol#private.as.dgTMatrix(Q.chol)
+    is.chol = TRUE
   } else {
-      ## make the representation unique (i,j,v)
-      Q = Q#private.as.dgTMatrix(Q)
-      is.chol = FALSE
+    ## make the representation unique (i,j,v)
+    Q = Q#private.as.dgTMatrix(Q)
+    is.chol = FALSE
   }
 
   if (missing(vars)) {
@@ -75,18 +75,18 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
                                mu = mu, u = u, QC = qc, ind = ind)
 
   if (missing(max.size)){
-	  m.size = length(mu)
+    m.size = length(mu)
   } else {
-	  m.size = max.size
+    m.size = max.size
   }
   if (!missing(ind)) {
-	  indices = rep(FALSE,length(mu))
-	  indices[ind] = TRUE
-	  if(missing(max.size)){
-		  m.size = length(ind)
-	  } else {
-		  m.size = min(length(ind),m.size)
-	  }
+    indices = rep(FALSE,length(mu))
+    indices[ind] = TRUE
+    if(missing(max.size)){
+      m.size = length(ind)
+    } else {
+      m.size = min(length(ind),m.size)
+    }
   } else {
     indices = rep(TRUE,length(mu))
   }
@@ -122,10 +122,10 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
   ireo[reo] = 1:n
 
   ind = F < 1-F.limit
-	E[F>1-alpha] = 1
+  E[F>1-alpha] = 1
 
   if(type == '=')
-	  F=1-F
+    F=1-F
 
   if(type == "<") {
     G[mu>u] = 1
@@ -149,12 +149,13 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
 
   output <- list(F=F, G = G, M = M,
                  E=E, rho=marg$rho, Fe=Fe, reo=reo, ireo=ireo, vars=vars,
-                 meta=list(calculation="excursions",
-                 type=type,
-                 level=u,
-                 alpha=alpha,
-                 n.iter=n.iter,
-                 method=method))
+                 meta=(list(calculation="excursions",
+                            type=type,
+                            level=u,
+                            F.limit=F.limit,
+                            alpha=alpha,
+                            n.iter=n.iter,
+                            method=method)))
   class(output) <- "excurobj"
   output
 }

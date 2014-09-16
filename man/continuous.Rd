@@ -88,18 +88,18 @@ if (require(INLA)) {
   mu.post <- inla.qsolve(Q.post, as.matrix(y/sd.obs^2))
 
   ## Calculate one-sided sets for the zero crossing
-  ex <- excursions(mu=mu.post, Q=Q.post, u=0, type=">", alpha=1)
-  sets <- continuous(ex, mesh, alpha=0.1)
+  ex <- excursions(mu=mu.post, Q=Q.post, u=0, type=">", alpha=0.1, F.limit=1)
+  con <- continuous(ex, mesh, alpha=0.1)
 
   ## Plot result
-  plot(sets, col=seq_along(row.names(sets)))
+  plot(con$M, col=seq_along(row.names(con$M)))
 
   ## Calculate contour map for some level crossing
-  ex <- contourmap(mu=mu.post, Q=Q.post, levels=c(-1,0,1), alpha=1)
-  sets <- continuous(ex, mesh, alpha=0.1)
+  ex <- contourmap(mu=mu.post, Q=Q.post, levels=c(-1,0,1), alpha=0.1, F.limit=1)
+  con <- continuous(ex, mesh, alpha=0.1)
 
   ## Plot result
-  plot(sets, col=seq_along(row.names(sets)))
+  plot(con$M, col=seq_along(row.names(con$M)))
 }
 }
 }
