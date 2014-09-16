@@ -49,10 +49,16 @@ topologically as lattices, and the lattice boxes are assumed convex.
 
 }
 \value{
-  A \code{SpatialPolygons} or \code{inla.mesh.segment} object.
+  A list:
+  \item{M}{\code{SpatialPolygons} or \code{inla.mesh.segment} object.
 
   The subsets are tagged, so that credible regions are tagged \code{"-1"}, and
   regions between levels are tagged \code{as.character(0:nlevels)}.
+}
+  \item{F}{Interpolated F function}
+  \item{G}{Contour and inter-level set indices for the interpolation}
+  \item{F.geometry}{Mesh geometry for the interpolation}
+  \item{P0}{P0 measure based on interpolated F function}
 }
 %%\references{
 %% ~put references to the literature/web site here ~
