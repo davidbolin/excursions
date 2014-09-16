@@ -1275,7 +1275,7 @@ subdivide.mesh <- function(mesh)
 
 continuous <- function(ex,
                        geometry,
-                       alpha=0.1,
+                       alpha,
                        method=c("log", "logit", "linear", "step"),
                        output=c("sp", "inla"))
 {
@@ -1292,7 +1292,9 @@ continuous <- function(ex,
     message("TODO: Recalculate P0-measure.")
   }
 
-
+  if (missing(alpha)) {
+    alpha <- ex$meta$alpha
+  }
   if (alpha > ex$meta$F.limit) {
     warning(paste("Insufficient data: alpha = ", alpha,
                   " > inputalpha = ", ex$meta$F.limit, sep=""))

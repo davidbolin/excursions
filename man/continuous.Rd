@@ -8,7 +8,7 @@
 %%  ~~ A concise (1-5 lines) description of what the function does. ~~
 }
 \usage{
-continuous(ex, geometry, alpha = 0.1,
+continuous(ex, geometry, alpha,
            method = c("log", "logit", "linear", "step"),
            output = c("sp", "inla"))
 }
@@ -30,18 +30,18 @@ topologically as lattices, and the lattice boxes are assumed convex.
 \item{alpha}{
   The target error probability.  A warning is given if it is detected
   that the information \code{ex} isn't sufficient for the given
-  \code{alpha}.
+  \code{alpha}.  Defaults to the value used when calculating \code{ex}
 }
 \item{method}{
   The spatial probability interpolation transformation method to use.
-  One of \code{"log"}, \code{"logit"}, \code{"linear"}, or
-  \code{"step"}.  For \code{log} and \code{logit}, the probabilities are
+  One of \code{log}, \code{logit}, \code{linear}, or
+  \code{step}.  For \code{log} and \code{logit}, the probabilities are
   interpolated linearly in the transformed scale. For \code{step}, a
   conservative step function is used.
 }
 \item{output}{
-  Specifies what type of object should be generated. \code{"sp"} gives a
-  \code{SpatialPolygons} object, and \code{"inla"} gives a
+  Specifies what type of object should be generated. \code{sp} gives a
+  \code{SpatialPolygons} object, and \code{inla} gives a
   \code{inla.mesh.segment} object.
 }
 }
@@ -88,15 +88,17 @@ if (require(INLA)) {
   mu.post <- inla.qsolve(Q.post, as.matrix(y/sd.obs^2))
 
   ## Calculate one-sided sets for the zero crossing
-  ex <- excursions(mu=mu.post, Q=Q.post, u=0, type=">", alpha=0.1, F.limit=1)
-  con <- continuous(ex, mesh, alpha=0.1)
+  ex <- excursions(mu=mu.post, Q=Q.post, u=0, type=">",
+                   alpha=0.1, F.limit=1)
+  con <- continuous(ex, mesh)
 
   ## Plot result
   plot(con$M, col=seq_along(row.names(con$M)))
 
   ## Calculate contour map for some level crossing
-  ex <- contourmap(mu=mu.post, Q=Q.post, levels=c(-1,0,1), alpha=0.1, F.limit=1)
-  con <- continuous(ex, mesh, alpha=0.1)
+  ex <- contourmap(mu=mu.post, Q=Q.post, levels=c(-1,0,1),
+                   alpha=0.1, F.limit=1)
+  con <- continuous(ex, mesh)
 
   ## Plot result
   plot(con$M, col=seq_along(row.names(con$M)))
