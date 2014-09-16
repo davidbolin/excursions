@@ -48,8 +48,11 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
   if(!missing(ind) && !missing(reo))
 	  stop('Either provide a reordering using the reo argument or provied a set of nodes using the ind argument, both cannot be provided')
 
-	if(missing(F.limit))
+	if(missing(F.limit)) {
 	  F.limit = alpha
+	} else {
+	  F.limit = max(alpha,F.limit)
+	}
 
   if (!missing(Q.chol) && !is.null(Q.chol)) {
       ## make the representation unique (i,j,v)
@@ -91,11 +94,11 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
   if(verbose)
     cat("Calculate permutation\n")
   if(missing(reo)){
-    use.camd = !missing(ind) || alpha < 1
+    use.camd = !missing(ind) || F.limit < 1
     if(qc){
-      reo <- excursions.permutation(marg$rho_ng, indices, use.camd = TRUE,alpha,Q)
+      reo <- excursions.permutation(marg$rho_ng, indices, use.camd = TRUE,F.limit,Q)
     } else {
-      reo <- excursions.permutation(marg$rho, indices, use.camd = TRUE,alpha,Q)
+      reo <- excursions.permutation(marg$rho, indices, use.camd = TRUE,F.limit,Q)
     }
   }
 
@@ -118,7 +121,7 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
   ireo = NULL
   ireo[reo] = 1:n
 
-  ind = F < 1-alpha
+  ind = F < 1-F.limit
 	E[F>1-alpha] = 1
 
   if(type == '=')
