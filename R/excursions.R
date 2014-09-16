@@ -135,7 +135,19 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
 
   F[ind] = Fe[ind] = NA
 
-  output <- list(F=F, G = G,
+  M = rep(-1,n)
+  if(type=="<") {
+    M[E==1] = 0
+  } else if(type == ">") {
+    M[E==1] = 1
+  } else if(type == "!=") {
+    M[E==1 & mu>u] = 1
+    M[E==1 & mu<u] = 0
+  } else if(type == "=") {
+    M[E==1] = 1
+  }
+
+  output <- list(F=F, G = G, M = M,
                  E=E, rho=marg$rho, Fe=Fe, reo=reo, ireo=ireo, vars=vars,
                  meta=list(calculation="excursions",
                  type=type,
