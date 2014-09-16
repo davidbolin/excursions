@@ -956,7 +956,11 @@ tricontourmap.list <-
     }
   }
   if (output == "sp") {
-    out$contour <- SpatialLines(out$contour)
+    if (length(out$contour) > 0) {
+      out$contour <- SpatialLines(out$contour)
+    } else {
+      out$contour <- NULL
+    }
   } else {
     out$contour <- do.call(inla.mesh.segment, out$contour)
   }
