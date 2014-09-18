@@ -26,7 +26,7 @@ The development version of the package is called excursionsdevel, so it is loade
 library(excursionsdevel)
 ```
 
-If you want to install the development version on Windows, you first need to install Rtools and update the Windows PATH environment variable. This can be done for the current R session only using the commands
+If you want to install the package using the install_bitbucket-method on Windows, you first need to install Rtools and add the paths to Rtools and gcc to the Windows PATH environment variable. This can be done for the current R session only using the commands
 ```
 #!r
 rtools = "C:\\Rtools\\bin"
