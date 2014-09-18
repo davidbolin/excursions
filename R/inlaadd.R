@@ -1,6 +1,6 @@
 ## Functions that will soon appear in the INLA package.
 
-library(INLA)
+#library(INLA)
 
 inla.mesh.segment <- function(...) {
     UseMethod("inla.mesh.segment")
