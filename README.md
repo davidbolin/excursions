@@ -19,3 +19,11 @@ The development version of the package is called excursionsdevel, so it is loade
 library(excursionsdevel)
 ```
 
+If you want to install the development version on Windows, you first need to install Rtools and update the Windows PATH environment variable. This can be done for the current R session only 
+```
+#!r
+rtools = "C:\\Rtools\\bin"
+gcc = "C:\\Rtools\\gcc-4.6.3\\bin"
+Sys.setenv(PATH=paste(c(gcc,rtools, Sys.getenv("PATH")),collapse=";"))
+```
+where the variables rtools and gcc need to be changed if Rtools is not installed directly on C:. 
