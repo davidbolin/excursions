@@ -23,12 +23,11 @@ contourmap <- function(mu,
                        ind,
                        levels,
                        type = c("standard",
-                       "equalarea",
-                       "P0-optimal",
-                       "P1-optimal",
-                       "P2-optimal"),
-                       compute = list(F=TRUE,
-                       measures = NULL),
+                                "equalarea",
+                                "P0-optimal",
+                                "P1-optimal",
+                                "P2-optimal"),
+                       compute = list(F=TRUE, measures = NULL),
                        use.marginals=TRUE,
                        alpha,
                        F.limit,
@@ -39,7 +38,7 @@ contourmap <- function(mu,
   type <- match.arg(type)
 
   if(missing(F.limit)) {
-    F.limit = alpha
+    F.limit = 0.99
   } else {
     F.limit = max(alpha,F.limit)
   }

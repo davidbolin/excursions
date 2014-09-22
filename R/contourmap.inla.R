@@ -16,10 +16,12 @@
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-contourmap.inla <- function(result.inla, stack,name=NULL,tag=NULL, method="EB",
-                            n.levels,ind,levels, type='standard', measure,
-                            contour.map.function = FALSE, use.marginals=TRUE,
-                            alpha=1,n.iter=10000, verbose=FALSE,max.threads=0)
+contourmap.inla <- function(result.inla,
+                            stack,
+                            name=NULL,
+                            tag=NULL,
+                            method="EB",
+                            ind,...)
 {
   if (!require("INLA"))
     stop('This function requires the INLA package (see www.r-inla.org/download)')
@@ -28,8 +30,6 @@ contourmap.inla <- function(result.inla, stack,name=NULL,tag=NULL, method="EB",
 
   if(method != "EB")
     stop("only EB method implemented so far")
-
-  if(verbose) cat("calculating contour map using the EB method")
 
   ind.stack <- inla.output.indices(result.inla, name=name, stack=stack, tag=tag)
   ind.int <- seq_len(length(ind.stack))
@@ -44,9 +44,5 @@ contourmap.inla <- function(result.inla, stack,name=NULL,tag=NULL, method="EB",
     if(config$lp == 0)
       break
   }
-  return(contourmap(mu=config$mu,Q = config$Q, n.levels = n.levels,
-                    ind = ind,levels = levels, type=type, measure = measure,
-                    contour.map.function = contour.map.function,
-                    use.marginals=use.marginals, alpha=alpha, n.iter=n.iter,
-                    verbose=verbose,max.threads=max.threads))
+  return(contourmap(mu=config$mu,Q = config$Q, ind=ind,...))
 }
