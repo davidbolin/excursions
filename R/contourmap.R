@@ -78,7 +78,8 @@ contourmap <- function(mu,
     if(missing(vars) && missing(Q)){
       stop('Variances must be supplied when creating optimal contour map')
     } else if(missing(vars)) {
-      L = chol(Q)
+      Q.spam = as.spam.dgCMatrix(as(forceSymmetric(Q),"dgCMatrix"))
+      L = chol(Q.spam)
       vars = excursions.variances(L)
     }
     if(use.marginals == TRUE){

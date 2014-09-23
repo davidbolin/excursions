@@ -18,15 +18,19 @@
 
 excursions.variances<-function(L)
 {
-  if (!is(L, "dtCMatrix"))
+  if(is(L,'spam.chol.NgPeyton')){
+    L = as(as(as.dgRMatrix.spam(as.spam(L.spam)), "TsparseMatrix"),"dtCMatrix")
+  } else {
+    if (!is(L, "dtCMatrix"))
       stop("L needs to be in ccs format for now.")
+  }
   Mp = L@p
   Mi = L@i
   Mv = L@x
   n = dim(L)[1]
 
-  out<- .C("Qinv",Rir = as.integer(L@i), Rjc = as.integer(L@p),
-           Rpr = as.double(L@x), variances=double(n), n = as.integer(n))
+  out<- .C("Qinv",Rir = as.integer(Mi), Rjc = as.integer(Mp),
+           Rpr = as.double(Mv), variances=double(n), n = as.integer(n))
 
   return(out$variances)
 }
@@ -169,4 +173,21 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
   return(res)
 }
 
+
+
+#From inla
+private.as.dgTMatrix = function (A, unique = TRUE)
+{
+    if (unique) {
+        return(as(as(as(A, "CsparseMatrix"), "dgCMatrix"), "dgTMatrix"))
+    }
+    else {
+        if (is(A, "dgTMatrix")) {
+            return(A)
+        }
+        else {
+            return(as(as(A, "TsparseMatrix"), "dgTMatrix"))
+        }
+    }
+}
 
