@@ -153,9 +153,20 @@ excursions.opt.levelplot <- function(mu,vars,Q,n.levels, measure=2, use.marginal
 
 	start.v <- seq(from=r[1],to=r[2],length.out = (n.levels+2))[2:(n.levels+1)]
   Q.chol = chol(Q)
-	u = optim(start.v,excursions.lim.func,mu=mu,vars=vars,Q.chol=Q.chol,
-			  measure=measure,use.marginals = use.marginals,ind=ind,Q=Q)
-
+  if(n.levels == 1){
+    u = optim(start.v,excursions.lim.func,method = "Brent",
+	          lower = r[1], upper = r[2],
+	          mu=mu,vars=vars,Q.chol=Q.chol,
+			      measure=measure,
+			      use.marginals = use.marginals,
+			      ind=ind,Q=Q)
+  } else {
+  	u = optim(start.v,excursions.lim.func,
+  	          mu=mu,vars=vars,Q.chol=Q.chol,
+	  		      measure=measure,
+		  	      use.marginals = use.marginals,
+			        ind=ind,Q=Q)
+  }
 	lp = excursions.levelplot(mu,levels = u$par,ind=ind)
 	if(measure==2){
 		if(use.marginals){
@@ -184,7 +195,7 @@ excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
                                 use.marginals, ind=ind)
 {
 	lp = excursions.levelplot(mu,levels = u,ind=ind)
-	if( min(u)<range(mu[ind])[1] | max(u) > range(mu[ind])[2]){
+	if( min(u)<=min(mu[ind]) | max(u) >= max(mu[ind])){
 	  # levels should be in (min(mu),max(mu))
 	  val = 0
 	} else if (max(sort(u,index.return=TRUE)$ix - seq_len(length(u)))>0) {
@@ -192,16 +203,19 @@ excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
 	  val = 0
 	} else {
 	  v = TRUE;
-	  for(i in 1:(length(u)-1)){
-	    v = v & sum(mu[ind]<u[i+1] & mu[ind] > u[i])>0
+	  if(length(u)>1){
+  	  for(i in 1:(length(u)-1)){
+	      v = v & (sum(mu[ind]<u[i+1] & mu[ind] > u[i])>0)
+	    }
 	  }
-	  if(v == FALSE) {
+	  if(!v) {
 	    # all sets E should be non-empty
 	    val = 0
 	  } else {
   		if(use.marginals){
 	  		limits = excursions.limits(lp,mu,measure=measure)
 		  	val = -min(contourmap.marginals(mu,vars,limits,ind)[ind])
+		    cat(u, ': ', -val, '\n')
 		  } else {
 			  val = -Pmeasure(lp,mu=mu,Q=Q,Q.chol=Q.chol,type=measure,
 			                ind=ind,vars=vars)

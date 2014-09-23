@@ -56,6 +56,9 @@ gaussint <- function(mu, Q.chol, Q, a, b, lim = 0, n.iter = 10000,
 		  b = b[reo]
 		  Q = Q[reo,reo]
 		  reordered = TRUE
+		  if(!missing(mu) && !is.null(mu)){
+		    mu = mu[reo]
+		  }
     }
     L = chol(Q)
   } else {
