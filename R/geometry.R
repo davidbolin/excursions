@@ -1342,9 +1342,10 @@ continuous <- function(ex,
   } else if (method == "logit") {
     F.interp.nontransformed <- 1/(1 + exp(-F.interp))
   } else if (method == "linear") {
-    F.interp.nontransformed
+    F.interp.nontransformed <- F.interp
   } else {
-    F.interp.nontransformed
+    ## This is for "step" and is not necessarily what the user wants
+    F.interp.nontransformed <- F.interp
   }
   if (ex$meta$type == "=") {
     F.interp.nontransformed <- -F.interp.nontransformed
