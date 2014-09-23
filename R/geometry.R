@@ -1384,6 +1384,8 @@ continuous <- function(ex,
     G[is.na(G)] <- -1
   }
 
+  F.interp.nontransformed[G == -1] <- 0
+
   M <- probabilitymap(mesh,
                       F=F.interp,
                       level=level,
