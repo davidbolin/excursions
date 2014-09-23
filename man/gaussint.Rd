@@ -6,10 +6,7 @@
 \description{
   \code{gaussint} is used for calculating Gaussian integrals
  \deqn{latex}{
- 	\int_a^b
-	\frac{|Q|^{1/2}}{(2\pi)^{n/2}}
-	\exp(-\frac1{2}(x-\mu)^{T}Q(x-\mu))
-	dx
+  \int_a^b \frac{|Q|^{1/2}}{(2\pi)^{n/2}} \exp(-\frac1{2}(x-\mu)^{T}Q(x-\mu)) dx
  }
  A limit value \eqn{lim} can be used to stop the integration if the
  sequential estimate goes below the limit, which can result in substantial
@@ -19,18 +16,18 @@
 
 }
 \usage{
-excursions.int( mu,
-                Q.chol,
-                Q,
-                a,
-                b,
-                lim = 0,
-                n.iter = 10000,
-                ind,
-                reo = c("natural","sparsity","limits"),
-                max.size,
-                max.threads=0,
-                seed)
+gaussint( mu,
+          Q.chol,
+          Q,
+          a,
+          b,
+          lim = 0,
+          n.iter = 10000,
+          ind,
+          reo = c("natural","sparsity","limits"),
+          max.size,
+          max.threads=0,
+          seed)
 }
 \arguments{
   \item{mu}{Expectation vector for the Gaussian distribution.}
@@ -78,6 +75,6 @@ mu.x = seq(-5, 5, length=n)
 Q.x = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
 
 ## Calculate the probability that the process is between mu-3 and mu+3
-prob = excursions.int(mu.x, Q.x, mu.x-3, mu.x+3, max.threads=2)
+prob = gaussint(mu=mu.x, Q=Q.x, a= mu.x-3, b=mu.x+3, max.threads=2)
 prob$P
 }
