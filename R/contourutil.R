@@ -27,10 +27,9 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
 
   if (missing(vars)) {
     if(is.chol) {
-      vars <- excursions.variances(Q)
+      vars <- excursions.variances(L=Q)
     } else {
-      L = chol(Q)
-      vars <- excursions.variances(L)
+      vars <- excursions.variances(Q=Q)
     }
   }
   rho <- contourmap.marginals(mu=mu,vars=vars,lim=lim,ind=ind)

@@ -65,8 +65,11 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
   }
 
   if (missing(vars)) {
-    L = chol(Q)
-    vars <- excursions.variances(L)
+    if(is.chol){
+      vars <- excursions.variances(L=Q)
+    } else {
+      vars <- excursions.variances(Q=Q)
+    }
   }
 
   if(verbose)
