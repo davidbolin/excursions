@@ -16,8 +16,18 @@
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-gaussint <- function(mu, Q.chol, Q, a, b, lim = 0, n.iter = 10000,
-                     ind, max.size, max.threads=0,seed, reo = FALSE)
+gaussint <- function(mu,
+                     Q.chol,
+                     Q,
+                     a,
+                     b,
+                     lim = 0,
+                     n.iter = 10000,
+                     ind,
+                     reo = c("natural","sparsity","limits"),
+                     max.size,
+                     max.threads=0,
+                     seed)
 {
 
   if( missing(Q) && missing(Q.chol))
@@ -29,6 +39,8 @@ gaussint <- function(mu, Q.chol, Q, a, b, lim = 0, n.iter = 10000,
   if(missing(b))
     stop('Must specify upper integration limit')
 
+  reo <- match.arg(reo)
+
   if(!missing(ind) && !is.null(ind)){
     a[!ind] = Inf
     b[!ind] = -Inf
@@ -38,38 +50,49 @@ gaussint <- function(mu, Q.chol, Q, a, b, lim = 0, n.iter = 10000,
     max.size = n
 
   reordered = FALSE
-  if(reo && !missing(Q) && !is.null(Q)){
-    inf.ind = (a==-Inf) & (b==Inf)
-    if(sum(inf.ind)>0){
-      # We have nodes with limits -inf .. inf
-      # move these first in vector
-      max.size = min(max.size,n-sum(inf.ind))
-      n = length(a)
-      cind = rep(1,n)
-      cind[inf.ind] = 0
-      reo = rep(0,n)
-			out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p),
+  if(!missing(Q.chol) && !is.null(Q.chol)){
+    ## Cholesky factor is provided, use that and do not reorder
+      L = Q.chol
+  } else if(!missing(Q) && !is.null(Q)){
+    ## Cholesky factor is not provided and we are told to reorder
+    if(reo == "limits")
+    {
+      #Reorder by moving nodes with limits -inf ... inf first
+      inf.ind = (a==-Inf) & (b==Inf)
+      if(sum(inf.ind)>0){
+        max.size = min(max.size,n-sum(inf.ind))
+        n = length(a)
+        cind = rep(1,n)
+        cind[inf.ind] = 0
+        reo = rep(0,n)
+			  out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p),
 		                        Mi = as.integer(Q@i), reo = as.integer(reo),
 		                        cind = as.integer(cind))
-		  reo = out$reo+1
-		  a = a[reo]
-		  b = b[reo]
-		  Q = Q[reo,reo]
-		  reordered = TRUE
-		  if(!missing(mu) && !is.null(mu)){
-		    mu = mu[reo]
+		    reo = out$reo+1
+		    reordered = TRUE
 		  }
-    }
-    L = chol(Q)
-  } else {
-    if(!missing(Q.chol) && !is.null(Q.chol))
-      L = Q.chol
-    else
-     L = chol(Q)
+		} else if(reo == "sparsity"){
+		  #Reorder for sparsity, let SPAM do it...
+		  L = chol(private.as.spam(Q))
+		  reo = L@pivot
+		  ireo = L@invpivot
+		  reordered = TRUE
+		} else {
+		  #Do not reorder
+		  L = chol(private.as.spam(Q),pivot=FALSE)
+		}
+	}
+	if(reordered == TRUE){
+		a = a[reo]
+		b = b[reo]
+		Q = Q[reo,reo]
+		if(!missing(mu) && !is.null(mu)){
+		  mu = mu[reo]
+		}
   }
-    # If lim > 0 and reorder == TRUE, we should calculate marginal
-    # probabilities, see if bound is above lim, and then eorder
 
+  # If lim > 0 and reorder == TRUE, we should calculate marginal
+  # probabilities, see if bound is above lim, and then eorder
 
   if(!missing(mu) && !is.null(mu)){
     a = a - mu
@@ -81,8 +104,11 @@ gaussint <- function(mu, Q.chol, Q, a, b, lim = 0, n.iter = 10000,
   a[a==-Inf] = -.Machine$double.xmax
   b[b==-Inf] = -.Machine$double.xmax
 
-  if (!is(L, "dtCMatrix"))
-      stop("L needs to be in ccs format for now.")
+  if(is(L,'spam.chol.NgPeyton')){
+     L = as(as(as.dgRMatrix.spam(as.spam(L)), "TsparseMatrix"),"dtCMatrix")
+  } else if (!is(L, "dtCMatrix")) {
+    stop("L needs to be in ccs format for now.")
+  }
 
   n = dim(L)[1]
   Mp = L@p
@@ -107,9 +133,12 @@ gaussint <- function(mu, Q.chol, Q, a, b, lim = 0, n.iter = 10000,
               opts = as.integer(opts), lim = as.double(lim),
               Pv = as.double(Pv), Ev = as.double(Ev),seed_in=seed.in)
 
-  if(reordered) {
+  if(reo == "limits") {
     out$Pv[1:(n-max.size)] = out$Pv[n-max.size+1]
     out$Ev[1:(n-max.size)] = out$Ev[n-max.size+1]
+  } else if(reo == "sparsity") {
+    out$Pv = out$Pv[ireo.v]
+    out$Ev = out$Ev[ireo.v]
   }
   return(list(Pv = out$Pv, Ev = out$Ev, P = out$Pv[1], E = out$Ev[1]))
 }

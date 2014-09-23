@@ -16,13 +16,30 @@
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-excursions.variances<-function(L)
+
+
+## calculates variances given either a cholesky factor L in Matrix or SPAM f
+## format, or given a precision matrix Q. If Q is provided, the cholesky factor
+## is calculated and the variances are then returned in the same ordering as Q
+## If L is provided, the variances are returned in the same ordering as L, even
+## if L@invpivot exists.
+excursions.variances<-function(L,Q)
 {
-  if(is(L,'spam.chol.NgPeyton')){
-    L = as(as(as.dgRMatrix.spam(as.spam(L.spam)), "TsparseMatrix"),"dtCMatrix")
+
+  if(!missing(L) && !is.null(L)){
+    ireo = FALSE
+    if(is(L,'spam.chol.NgPeyton')){
+     L = as(as(as.dgRMatrix.spam(as.spam(L)), "TsparseMatrix"),"dtCMatrix")
+   } else {
+      if (!is(L, "dtCMatrix"))
+       stop("L needs to be in ccs format for now.")
+    }
   } else {
-    if (!is(L, "dtCMatrix"))
-      stop("L needs to be in ccs format for now.")
+    L = chol(private.as.spam(Q))
+    ireo = TRUE
+    reo = L@invpivot
+    L = as(as(as.dgRMatrix.spam(as.spam(L)), "TsparseMatrix"),"dtCMatrix")
+
   }
   Mp = L@p
   Mi = L@i
@@ -31,8 +48,13 @@ excursions.variances<-function(L)
 
   out<- .C("Qinv",Rir = as.integer(Mi), Rjc = as.integer(Mp),
            Rpr = as.double(Mv), variances=double(n), n = as.integer(n))
+  if(ireo){
+    return(out$variances[reo])
+  } else {
+    return(out$variances)
+  }
 
-  return(out$variances)
+
 }
 
 
@@ -159,8 +181,9 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
     b.sort = b[reo]
 
     #calculate cholesky here
-    L = chol(Q[reo,reo])
 
+    #L = chol(Q[reo,reo])
+    L = chol.spam(private.as.spam(Q),pivot = reo)
     res = gaussint(Q.chol = L, a = a.sort, b = b.sort, lim = lim,
                                  n.iter = K, max.size = max.size,
                                  max.threads = n.threads, seed = seed)
@@ -173,21 +196,12 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
   return(res)
 }
 
-
-
-#From inla
-private.as.dgTMatrix = function (A, unique = TRUE)
+private.as.spam = function(A)
 {
-    if (unique) {
-        return(as(as(as(A, "CsparseMatrix"), "dgCMatrix"), "dgTMatrix"))
-    }
-    else {
-        if (is(A, "dgTMatrix")) {
-            return(A)
-        }
-        else {
-            return(as(as(A, "TsparseMatrix"), "dgTMatrix"))
-        }
-    }
+  if(is(A,"spam")){
+    return(A)
+  }
+  else {
+    return(as.spam.dgCMatrix(as(A,"dgCMatrix")))
+  }
 }
-
