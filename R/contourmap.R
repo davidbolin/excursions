@@ -37,6 +37,10 @@ contourmap <- function(mu,
 {
   type <- match.arg(type)
 
+  if(missing(alpha) || is.null(alpha)){
+    cat("alpha not supplied, using alpha=0.1\n")
+    alpha = 0.1
+  }
   if(missing(F.limit)) {
     F.limit = 0.99
   } else {
@@ -105,8 +109,12 @@ contourmap <- function(mu,
 
     for( i in 1:length(measure)){
       if(measure[i]=="P1") {
-        if(verbose) cat('Calculating P1-measure\n')
-        lp$P1 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=1)
+        if(n.levels>1){
+          if(verbose) cat('Calculating P1-measure\n')
+          lp$P1 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=1)
+        } else {
+          cat("Not computing P1-measure since it makes sense for n.levels>1\n")
+        }
       } else if(measure[i] == "P2") {
         if(verbose) cat('Calculating P2-measure\n')
         lp$P2 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=2)
@@ -134,6 +142,7 @@ contourmap <- function(mu,
     lp$F = p$F
     lp$E = p$E
     lp$M = p$M
+    lp$rho = p$rho
   } else {
     lp$E <- NULL
   }

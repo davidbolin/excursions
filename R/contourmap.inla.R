@@ -44,5 +44,12 @@ contourmap.inla <- function(result.inla,
     if(config$lp == 0)
       break
   }
-  return(contourmap(mu=config$mu,Q = config$Q, ind=ind,...))
+  cm <- contourmap(mu=config$mu,Q = config$Q, ind=ind,...)
+  if(!is.null(cm$E)) cm$E = cm$E[ind]
+  if(!is.null(cm$G)) cm$G = cm$G[ind]
+  if(!is.null(cm$F)) cm$F = cm$F[ind]
+  if(!is.null(cm$M)) cm$M = cm$M[ind]
+  if(!is.null(cm$rho)) cm$rho = cm$rho[ind]
+  if(!is.null(cm$map)) cm$map = cm$map[ind]
+  return(cm)
 }
