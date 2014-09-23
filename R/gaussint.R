@@ -24,7 +24,7 @@ gaussint <- function(mu,
                      lim = 0,
                      n.iter = 10000,
                      ind,
-                     reo = c("natural","sparsity","limits"),
+                     use.reordering = c("natural","sparsity","limits"),
                      max.size,
                      max.threads=0,
                      seed)
@@ -39,7 +39,7 @@ gaussint <- function(mu,
   if(missing(b))
     stop('Must specify upper integration limit')
 
-  reo <- match.arg(reo)
+  use.reordering <- match.arg(use.reordering)
 
   if(!missing(ind) && !is.null(ind)){
     a[!ind] = Inf
@@ -55,7 +55,7 @@ gaussint <- function(mu,
       L = Q.chol
   } else if(!missing(Q) && !is.null(Q)){
     ## Cholesky factor is not provided and we are told to reorder
-    if(reo == "limits")
+    if(use.reordering == "limits")
     {
       #Reorder by moving nodes with limits -inf ... inf first
       inf.ind = (a==-Inf) & (b==Inf)
@@ -70,8 +70,10 @@ gaussint <- function(mu,
 		                        cind = as.integer(cind))
 		    reo = out$reo+1
 		    reordered = TRUE
+		    Q = Q[reo,reo]
 		  }
-		} else if(reo == "sparsity"){
+		  L = chol(private.as.spam(Q),pivot=FALSE)
+		} else if(use.reordering == "sparsity"){
 		  #Reorder for sparsity, let SPAM do it...
 		  L = chol(private.as.spam(Q))
 		  reo = L@pivot
@@ -133,10 +135,10 @@ gaussint <- function(mu,
               opts = as.integer(opts), lim = as.double(lim),
               Pv = as.double(Pv), Ev = as.double(Ev),seed_in=seed.in)
 
-  if(reo == "limits") {
+  if(use.reordering == "limits") {
     out$Pv[1:(n-max.size)] = out$Pv[n-max.size+1]
     out$Ev[1:(n-max.size)] = out$Ev[n-max.size+1]
-  } else if(reo == "sparsity") {
+  } else if(use.reordering == "sparsity") {
     out$Pv = out$Pv[ireo.v]
     out$Ev = out$Ev[ireo.v]
   }
