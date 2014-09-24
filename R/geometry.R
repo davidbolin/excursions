@@ -334,7 +334,7 @@ connect.segments <-function(segment.set,
 }
 
 ## Compute simple outline of 1/0 set on a grid, eliminating spikes.
-outline.on.grid <- function(z, x=NULL, y=NULL)
+outline.on.grid <- function(z, grid)
 {
   if (!require(spam)) {
     stop("The 'spam' package is needed.")
@@ -342,11 +342,9 @@ outline.on.grid <- function(z, x=NULL, y=NULL)
   ni <- nrow(z)
   nj <- ncol(z)
   z <- (z != FALSE)
-  if (missing(x) || is.null(x)) {
-    x <- seq(0,1,length=ni)
-  }
-  if (missing(y) || is.null(y)) {
-    y <- seq(0,1,length=nj)
+  if (missing(grid) || is.null(grid)) {
+    grid <- list(x=seq(0,1,length=ni), y=seq(0,1,length=nj))
+    grid$loc <- cbind(rep(grid$x, times=nj), rep(grid$y, each=ni))
   }
 
   ij2k <-function(i,j) {
@@ -456,12 +454,23 @@ outline.on.grid <- function(z, x=NULL, y=NULL)
   segment.grp <- rep(c(1L, 0L), c(nrow(seg), nrow(bnd.seg)))
   segment.set <- rbind(seg, bnd.seg)
 
-  loc <- cbind(rep(x, times=nj), rep(y, each=ni))
-
-  return(list(loc=loc, idx=segment.set, grp=segment.grp))
+  return(list(loc=grid$loc, idx=segment.set, grp=segment.grp))
 }
 
-outline.to.sp <- function(outline,
+grid.submesh <- function(z, grid=NULL)
+{
+  if (!require(INLA)) {
+    stop("The 'INLA' package is needed.")
+  }
+  outline <- outline.on.grid(z, grid)
+  inla.mesh.create(loc=outline$loc,
+                   boundary=(as.inla.mesh.segment.outline(outline$loc,
+                                                          outline$idx)),
+                   refine=FALSE)
+}
+
+
+as.sp.outline <- function(outline,
                           grp.ccw=unique(outline$grp),
                           grp.cw=integer(0),
                           ccw=FALSE,
@@ -490,7 +499,7 @@ outline.to.sp <- function(outline,
 }
 
 
-outline.to.inla.mesh.segment <- function(outline,
+as.inla.mesh.segment.outline <- function(outline,
                                          grp.ccw=unique(outline$grp),
                                          grp.cw=integer(0),
                                          grp,
@@ -656,8 +665,8 @@ display.dim.list <- function(x) {
 ##   inla.mesh.segment(val$loc, val$idx[val$grp==k], val$idx[val$grp==k])
 ##     (supports R2 and S2)
 ## and, for odd k=1,3,...,nlevels*2-1,nlevels*2+1,
-##   seg <- outline.to.inla.mesh.segment(val, grp.ccw=c(k-1,k), grp.cw=c(k+1))
-##   sp <- outline.to.sp(val, grp.ccw=c(k-1,k), grp.cw=c(k+1), ccw=FALSE)
+##   seg <- as.inla.mesh.segment.outline(val, grp.ccw=c(k-1,k), grp.cw=c(k+1))
+##   sp <- as.sp.outline(val, grp.ccw=c(k-1,k), grp.cw=c(k+1), ccw=FALSE)
 tricontour.list <- function(x, z, nlevels = 10,
                             levels = pretty(range(z, na.rm = TRUE), nlevels),
                             loc, type=c("+", "-"), tol=1e-7, ...)
@@ -913,7 +922,7 @@ tricontourmap.list <-
   for (k in seq_len(nlevels+1L)*2L-1L) {
     ID <- as.character((k-1)/2)
     if (output == "sp") {
-      spobj <- tryCatch(outline.to.sp(tric,
+      spobj <- tryCatch(as.sp.outline(tric,
                                       grp.ccw=c(k-1,k),
                                       grp.cw=c(k+1),
                                       ccw=FALSE,
@@ -925,7 +934,7 @@ tricontourmap.list <-
       }
     } else {
       out$map[[ID]] <-
-        outline.to.inla.mesh.segment(tric,
+        as.inla.mesh.segment.outline(tric,
                                      grp.ccw=c(k-1,k),
                                      grp.cw=c(k+1),
                                      grp=(k-1)/2)
@@ -939,7 +948,7 @@ tricontourmap.list <-
   for (k in seq_len(nlevels)) {
     if (output == "sp") {
       ID <- as.character(k)
-      spobj <- tryCatch(outline.to.sp(tric,
+      spobj <- tryCatch(as.sp.outline(tric,
                                       grp.ccw=k*2L,
                                       ccw=FALSE,
                                       closed=FALSE,
@@ -950,7 +959,7 @@ tricontourmap.list <-
       }
     } else {
       out$contour[[as.character(k)]] <-
-        outline.to.inla.mesh.segment(tric,
+        as.inla.mesh.segment.outline(tric,
                                      grp.ccw=k*2L,
                                      grp=k)
     }
@@ -1030,7 +1039,7 @@ probabilitymap <-
     }
     ID <- "-1"
     if (output == "sp") {
-      spobj <- tryCatch(outline.to.sp(tric,
+      spobj <- tryCatch(as.sp.outline(tric,
                                       grp.ccw=c(1),
                                       grp.cw=c(2),
                                       ccw=FALSE,
@@ -1042,7 +1051,7 @@ probabilitymap <-
       }
     } else {
       out[[ID]] <-
-        outline.to.inla.mesh.segment(tric,
+        as.inla.mesh.segment.outline(tric,
                                      grp.ccw=c(1),
                                      grp.cw=c(2),
                                      grp=-1)
@@ -1062,7 +1071,7 @@ probabilitymap <-
     }
     ID <- as.character(k)
     if (output == "sp") {
-      spobj <- tryCatch(outline.to.sp(tric,
+      spobj <- tryCatch(as.sp.outline(tric,
                                       grp.ccw=c(2,3),
                                       grp.cw=c(),
                                       ccw=FALSE,
@@ -1074,7 +1083,7 @@ probabilitymap <-
       }
     } else {
       out[[ID]] <-
-        outline.to.inla.mesh.segment(tric,
+        as.inla.mesh.segment.outline(tric,
                                      grp.ccw=c(2,3),
                                      grp.cw=c(),
                                      grp=k)
