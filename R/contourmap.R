@@ -152,7 +152,8 @@ contourmap <- function(mu,
                   levels=lp$u,
                   type="!=",
                   n.iter=n.iter,
-                  mu.range = range(mu[ind]))
+                  mu.range = range(mu[ind]),
+                  ind = ind)
   class(lp) <- "excurobj"
   return(lp)
 }

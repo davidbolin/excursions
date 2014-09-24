@@ -1298,7 +1298,7 @@ continuous <- function(ex,
   }
   if (alpha > ex$meta$F.limit) {
     warning(paste("Insufficient data: alpha = ", alpha,
-                  " > inputalpha = ", ex$meta$F.limit, sep=""))
+                  " > F.limit = ", ex$meta$F.limit, sep=""))
   }
 
   info <- get.geometry(geometry)
