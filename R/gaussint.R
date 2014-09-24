@@ -15,7 +15,6 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 gaussint <- function(mu,
                      Q.chol,
                      Q,
@@ -70,9 +69,8 @@ gaussint <- function(mu,
 		                        cind = as.integer(cind))
 		    reo = out$reo+1
 		    reordered = TRUE
-		    Q = Q[reo,reo]
 		  }
-		  L = chol(private.as.spam(Q),pivot=FALSE)
+		  L = chol(private.as.spam(Q),pivot=reo)
 		} else if(use.reordering == "sparsity"){
 		  #Reorder for sparsity, let SPAM do it...
 		  L = chol(private.as.spam(Q))
@@ -84,17 +82,9 @@ gaussint <- function(mu,
 		  L = chol(private.as.spam(Q),pivot=FALSE)
 		}
 	}
-	if(reordered == TRUE){
-		a = a[reo]
-		b = b[reo]
-		Q = Q[reo,reo]
-		if(!missing(mu) && !is.null(mu)){
-		  mu = mu[reo]
-		}
-  }
 
-  # If lim > 0 and reorder == TRUE, we should calculate marginal
-  # probabilities, see if bound is above lim, and then eorder
+  # Note: If lim > 0 and reorder == TRUE, we should calculate marginal
+  # probabilities, see if bound is above lim, and then reorder
 
   if(!missing(mu) && !is.null(mu)){
     a = a - mu
@@ -106,16 +96,16 @@ gaussint <- function(mu,
   a[a==-Inf] = -.Machine$double.xmax
   b[b==-Inf] = -.Machine$double.xmax
 
+	if(reordered == TRUE){
+		a = a[reo]
+		b = b[reo]
+  }
+
   if(is(L,'spam.chol.NgPeyton')){
      L = as(as(as.dgRMatrix.spam(as.spam(L)), "TsparseMatrix"),"dtCMatrix")
   } else if (!is(L, "dtCMatrix")) {
     stop("L needs to be in ccs format for now.")
   }
-
-  n = dim(L)[1]
-  Mp = L@p
-  Mi = L@i
-  Mv = L@x
 
   if(!missing(seed) && !is.null(seed)){
     seed_provided = 1
@@ -125,19 +115,18 @@ gaussint <- function(mu,
     seed.in = as.integer(rep(0,6))
   }
 
-  Pv = rep(0,n)
-  Ev = rep(0,n)
+  Pv = Ev = rep(0,dim(L)[1])
 
   opts = c(n,n.iter,max.size,max.threads,seed_provided)
 
-  out <- .C("shapeInt", Mp = as.integer(Mp), Mi = as.integer(Mi),
-              Mv = as.double(Mv), a = as.double(a), b = as.double(b),
+  out <- .C("shapeInt", Mp = as.integer(L@p), Mi = as.integer(L@i),
+              Mv = as.double(L@x), a = as.double(a), b = as.double(b),
               opts = as.integer(opts), lim = as.double(lim),
               Pv = as.double(Pv), Ev = as.double(Ev),seed_in=seed.in)
 
   if(use.reordering == "limits") {
-    out$Pv[1:(n-max.size)] = out$Pv[n-max.size+1]
-    out$Ev[1:(n-max.size)] = out$Ev[n-max.size+1]
+    out$Pv[1:(dim(L)[1]-max.size)] = out$Pv[dim(L)[1]-max.size+1]
+    out$Ev[1:(dim(L)[1]-max.size)] = out$Ev[dim(L)[1]-max.size+1]
   } else if(use.reordering == "sparsity") {
     out$Pv = out$Pv[ireo.v]
     out$Ev = out$Ev[ireo.v]
