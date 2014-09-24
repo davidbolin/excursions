@@ -32,7 +32,8 @@ contourmap.inla <- function(result.inla,
     stop("only EB method implemented so far")
 
   ind.stack <- inla.output.indices(result.inla, name=name, stack=stack, tag=tag)
-  ind.int <- seq_len(length(ind.stack))
+  n.out <- length(ind.stack)
+  ind.int <- seq_len(n.out)
   if(!missing(ind) && !is.null(ind)){
     ind.int <- ind.int[ind]
     ind.stack <- ind.stack[ind]
@@ -45,11 +46,25 @@ contourmap.inla <- function(result.inla,
       break
   }
   cm <- contourmap(mu=config$mu,Q = config$Q, ind=ind,...)
-  if(!is.null(cm$E)) cm$E = cm$E[ind]
-  if(!is.null(cm$G)) cm$G = cm$G[ind]
-  if(!is.null(cm$F)) cm$F = cm$F[ind]
-  if(!is.null(cm$M)) cm$M = cm$M[ind]
-  if(!is.null(cm$rho)) cm$rho = cm$rho[ind]
-  if(!is.null(cm$map)) cm$map = cm$map[ind]
+
+  set.out = rep(NA,n.out)
+  if(!is.null(cm$E))
+    set.out[ind.int] = cm$E[ind]; cm$E = set.out
+
+  if(!is.null(cm$G))
+    set.out[ind.int] = cm$G[ind]; cm$G = set.out
+
+  if(!is.null(cm$F))
+    set.out[ind.int] = cm$F[ind]; cm$F = set.out
+
+  if(!is.null(cm$M))
+    set.out[ind.int] = cm$M[ind]; cm$M = set.out
+
+  if(!is.null(cm$rho))
+    set.out[ind.int] = cm$rho[ind]; cm$rho = set.out
+
+  if(!is.null(cm$map))
+    set.out[ind.int] = cm$map[ind]; cm$map = set.out
+
   return(cm)
 }
