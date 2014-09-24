@@ -39,9 +39,9 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
 
   #Get indices for the component of interest in the configs
   ind.stack <- inla.output.indices(result.inla, name=name, stack=stack, tag=tag)
-
+  n.out = length(ind.stack)
   #Index vector for the nodes in the component of interest
-  ind.int <- seq_len(length(ind.stack))
+  ind.int <- seq_len(n.out)
 
   #ind is assumed to contain indices within the component of interest
   if(!missing(ind) && !is.null(ind)){
@@ -185,15 +185,22 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
     rho.ind = pmax(rho.ind,1-rho.ind)
   }
 
-  output <- list(F=F,
-                 mean=config$mu[ind], rho=rho.ind,
+  F.out = mu.out = rho.out = rep(NA,n.out)
+
+  F.out[ind.int] = F
+  mu.out[ind.int] = config$mu[ind]
+  rho.out[ind.int] = rho.ind
+
+  output <- list(F=F.out,
+                 mean=mu.out,
+                 rho=rho.out,
                  meta=list(calculation="excursions",
-                 type=type,
-                 level=u,
-                 level.link=u.link,
-                 alpha=alpha,
-                 n.iter=n.iter,
-                 method=method))
+                           type=type,
+                           level=u,
+                           level.link=u.link,
+                           alpha=alpha,
+                           n.iter=n.iter,
+                           method=method))
   class(output) <- "excurobj"
   output
 }

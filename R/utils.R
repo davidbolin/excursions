@@ -183,7 +183,8 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
     #calculate cholesky here
 
     #L = chol(Q[reo,reo])
-    L = chol.spam(private.as.spam(Q),pivot = reo)
+    Q = Q[reo,reo]
+    L = chol.spam(private.as.spam(Q),pivot = FALSE)
     res = gaussint(Q.chol = L, a = a.sort, b = b.sort, lim = lim,
                                  n.iter = K, max.size = max.size,
                                  max.threads = n.threads, seed = seed)

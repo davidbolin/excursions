@@ -68,9 +68,10 @@ gaussint <- function(mu,
 		                        Mi = as.integer(Q@i), reo = as.integer(reo),
 		                        cind = as.integer(cind))
 		    reo = out$reo+1
+		    Q = Q[reo,reo]
 		    reordered = TRUE
 		  }
-		  L = chol(private.as.spam(Q),pivot=reo)
+		  L = chol(private.as.spam(Q),pivot=FALSE)
 		} else if(use.reordering == "sparsity"){
 		  #Reorder for sparsity, let SPAM do it...
 		  L = chol(private.as.spam(Q))
