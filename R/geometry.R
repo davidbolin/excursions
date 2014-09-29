@@ -1360,6 +1360,7 @@ continuous <- function(ex,
   }
   active.nodes <- !is.na(mesh$idx$loc)
 
+  F.ex <- F.ex[active.nodes]
   if (method == "log") {
     F.ex <- log(F.ex)
     level <- log(1-alpha)
@@ -1374,7 +1375,7 @@ continuous <- function(ex,
   } else {
     level <- 1-alpha
   }
-  F.interp <- as.vector(mesh$A[,active.nodes,drop=FALSE] %*% F.ex[active.nodes])
+  F.interp <- as.vector(mesh$A[,active.nodes,drop=FALSE] %*% F.ex)
 
   if (method == "log") {
     F.interp.nontransformed <- exp(F.interp)
