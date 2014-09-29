@@ -75,7 +75,7 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
   if(verbose)
     cat("Calculate marginals\n")
   marg <- excursions.marginals(type = type, rho = rho,vars = vars,
-                               mu = mu, u = u, QC = qc, ind = ind)
+                               mu = mu, u = u, QC = qc)
 
   if (missing(max.size)){
     m.size = length(mu)
@@ -83,12 +83,21 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
     m.size = max.size
   }
   if (!missing(ind)) {
-    indices = rep(FALSE,length(mu))
-    indices[ind] = TRUE
-    if(missing(max.size)){
-      m.size = length(ind)
+    if(is.logical(ind)){
+      indices = ind
+      if(missing(max.size)){
+        m.size = sum(ind)
+      } else {
+        m.size = min(sum(ind),m.size)
+      }
     } else {
-      m.size = min(length(ind),m.size)
+      indices = rep(FALSE,length(mu))
+      indices[ind] = TRUE
+      if(missing(max.size)){
+        m.size = length(ind)
+      } else {
+        m.size = min(length(ind),m.size)
+      }
     }
   } else {
     indices = rep(TRUE,length(mu))
@@ -99,9 +108,11 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
   if(missing(reo)){
     use.camd = !missing(ind) || F.limit < 1
     if(qc){
-      reo <- excursions.permutation(marg$rho_ng, indices, use.camd = TRUE,F.limit,Q)
+      reo <- excursions.permutation(marg$rho_ng, indices,
+                                    use.camd = TRUE,F.limit,Q)
     } else {
-      reo <- excursions.permutation(marg$rho, indices, use.camd = TRUE,F.limit,Q)
+      reo <- excursions.permutation(marg$rho, indices,
+                                    use.camd = TRUE,F.limit,Q)
     }
   }
 
@@ -154,6 +165,8 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
 
   if (missing(ind) || is.null(ind)) {
     ind <- seq_len(n)
+  } else if(is.logical(ind)){
+    ind <- which(ind)
   }
 
   output <- list(F=F, G = G, M = M,

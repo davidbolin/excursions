@@ -58,7 +58,7 @@ excursions.variances<-function(L,Q)
 }
 
 
-excursions.marginals <- function(type, rho,vars, mu, u, QC = FALSE, ind)
+excursions.marginals <- function(type, rho,vars, mu, u, QC = FALSE)
 {
   rl = list()
   if(type == "=" || type == "!="){
