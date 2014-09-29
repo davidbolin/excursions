@@ -460,7 +460,7 @@ outline.on.grid <- function(z, grid)
 ## Compute simple outline of 1/0 set on a mesh, eliminating spikes.
 outline.on.mesh <- function(z, mesh, complement=FALSE)
 {
-  t.count <- rowSums(matrix((z >= 0.5)[mesh$tv], nrow(mesh$tv), 3))
+  t.count <- rowSums(matrix((z >= 0.5)[mesh$graph$tv], nrow(mesh$graph$tv), 3))
 
   if (complement) {
     t.keep <- which(t.count < 3)
@@ -471,9 +471,9 @@ outline.on.mesh <- function(z, mesh, complement=FALSE)
   if (length(t.keep) > 0) {
     graph <-
       generate.trigraph.properties(
-          list(tv=mesh$tv[t.keep,,drop=FALSE]),
+          list(tv=mesh$graph$tv[t.keep,,drop=FALSE]),
           Nv=nrow(mesh$loc))
-    idx <- graph.upper$ev[is.na(graph$ee),,drop=FALSE]
+    idx <- graph$ev[is.na(graph$ee),,drop=FALSE]
   } else {
     idx <- matrix(0L, 0,2)
   }
@@ -493,17 +493,15 @@ submesh.grid <- function(z, grid=NULL)
     stop("The 'INLA' package is needed.")
   }
   outline <- outline.on.grid(z, grid)
-  inla.mesh.create(loc=outline$loc,
-                   boundary=(as.inla.mesh.segment.outline(outline$loc,
-                                                          outline$idx)),
+  inla.mesh.create(loc=grid$loc,
+                   boundary=as.inla.mesh.segment.outline(outline),
                    refine=FALSE)
 }
 submesh.mesh <- function(z, mesh)
 {
   outline <- outline.on.mesh(z, mesh)
-  inla.mesh.create(loc=outline$loc,
-                   boundary=(as.inla.mesh.segment.outline(outline$loc,
-                                                          outline$idx)),
+  inla.mesh.create(loc=mesh$loc,
+                   boundary=as.inla.mesh.segment.outline(outline),
                    refine=FALSE)
 }
 
@@ -1020,7 +1018,7 @@ tricontour_step <- function(x, z, levels, loc, ...)
 {
   stopifnot(length(levels) == 1)
 
-  x$loc <- loc
+  x <- list(loc=loc, graph=x)
   outline.lower <- outline.on.mesh(z >= levels, x, TRUE)
   outline.upper <- outline.on.mesh(z >= levels, x, FALSE)
 
@@ -1178,7 +1176,7 @@ get.geometry <- function(geometry)
 ## The input is treated as a topological lattice, and the
 ## the lattice boxes are assumed to be convex.
 ## Output:
-##   list(loc, graph=list(tv), A, idxorig)
+##   list(loc, graph=list(tv), A, idx=list(loc))
 build.lattice.mesh <- function(loc, dims) {
   ## Index to node in original lattice,
   ## i,j in 1...nx, 1...ny
@@ -1211,8 +1209,7 @@ build.lattice.mesh <- function(loc, dims) {
   i00a <- seq_len(nx)*2-1
   j00a <- seq_len(ny)*2-1
   ## Mapping matrix from lattice nodes to sub-lattice nodes
-  idxorig <- rep(as.integer(NA), nx2*ny2)
-  idxorig[ij2(i00a,j00a)] <- seq_len(nx*ny)
+  idx <- ij2(i00a,j00a)
   A <- sparseMatrix(i=(c(ij2(i00a,j00a),
                          rep(ij2(i00+1,j00a), times=2),
                          rep(ij2(i00a,j00+1), times=2),
@@ -1241,13 +1238,13 @@ build.lattice.mesh <- function(loc, dims) {
               cbind(ij2(i00+1,j00+1), ij2(i00,j00+2), ij2(i00,j00+1))
               )
 
-  list(loc=loc, graph=list(tv=tv), A=A, idxorig=idxorig)
+  list(loc=loc, graph=list(tv=tv), A=A, idx=list(loc=idx))
 }
 
 ## Input:
 ##   list(loc, graph=list(tv, ...)) or an inla.mesh
 ## Output:
-##   list(loc, graph=list(tv), A, idxorig)
+##   list(loc, graph=list(tv), A, idx=list(loc))
 subdivide.mesh <- function(mesh)
 {
   graph <- generate.trigraph.properties(mesh$graph, nrow(mesh$loc))
@@ -1268,23 +1265,25 @@ subdivide.mesh <- function(mesh)
   edge.split.v[edges.interior.main] <- v2.interior
   edge.split.v[edges.interior.secondary] <- v2.interior
 
-  ## Mapping matrix from lattice nodes to sub-lattice nodes
-  idxorig <- rep(as.integer(NA), Nv2)
-  idxorig[v1] <- v1
+  ## Mapping matrix from mesh nodes to sub-mesh nodes
+  idx <- mesh$idx$loc ## Same indices as in input mesh
+  ridx <- integer(length(mesh$idx$loc))
+  ridx[mesh$idx$loc[!is.na(mesh$idx$loc)]] <-
+    which(!is.na(mesh$idx$loc))
   A <- sparseMatrix(i=(c(v1,
                          rep(v2.boundary, times=2),
                          rep(v2.interior, times=2)
                          )),
-                    j=(c(v1,
-                         as.vector(graph$ev[edges.boundary,]),
-                         as.vector(graph$ev[edges.interior.main,])
-                         )),
+                    j=(ridx[c(v1,
+                              as.vector(graph$ev[edges.boundary,]),
+                              as.vector(graph$ev[edges.interior.main,])
+                              )]),
                     x=(c(rep(1, graph$Nv),
                          rep(1/2, 2*Neb),
                          rep(1/2, 2*Nei)
                          )),
-                    dims=c(Nv2, graph$Nv))
-  loc <- as.matrix(A %*% mesh$loc)
+                    dims=c(Nv2, length(ridx)))
+  loc <- as.matrix(A[,ridx,drop=FALSE] %*% mesh$loc)
   tv <- rbind(cbind(edge.split.v[graph$te[,1]],
                     edge.split.v[graph$te[,2]],
                     edge.split.v[graph$te[,3]]),
@@ -1299,7 +1298,7 @@ subdivide.mesh <- function(mesh)
                     edge.split.v[graph$te[,1]])
               )
 
-  list(loc=loc, graph=list(tv=tv), A=A, idxorig=idxorig)
+  list(loc=loc, graph=list(tv=tv), A=A, idx=list(loc=idx))
 }
 
 
@@ -1349,17 +1348,16 @@ continuous <- function(ex,
     active.nodes[ex$meta$ind] <- TRUE
   }
   if (info$geometry == "mesh") {
-    mesh <- subdivide.mesh(submesh.mesh(active.nodes, geometry))
+    submesh <- submesh.mesh(active.nodes, geometry)
+    mesh <- subdivide.mesh(submesh)
   } else if (info$geometry == "lattice") {
     if (all(active.nodes)) {
       mesh <- build.lattice.mesh(info$loc, info$dims)
     } else {
-      mesh <- subdivide.mesh(submesh.grid(active.nodes, geometry))
+      submesh <- submesh.grid(active.nodes, geometry)
+      mesh <- subdivide.mesh(submesh)
     }
   }
-  ## Remap input to node subset
-  F.ex <- F.ex[active.nodes]
-  ##  Gorig <- ex$G[active.nodes] ## Later code uses original indexing
 
   if (method == "log") {
     F.ex <- log(F.ex)
@@ -1375,7 +1373,7 @@ continuous <- function(ex,
   } else {
     level <- 1-alpha
   }
-  F.interp <- as.vector(mesh$A[,active.nodes,drop=FALSE] %*% F.ex)
+  F.interp <- as.vector(mesh$A[,active.nodes,drop=FALSE] %*% F.ex[active.nodes])
 
   if (method == "log") {
     F.interp.nontransformed <- exp(F.interp)
@@ -1404,15 +1402,16 @@ continuous <- function(ex,
   } else {
     ## Take 'G' information from 'ex' input and set new interface
     ## values 'G[i]=-1'.
-    G <- integer(length(F.interp))
-    G[!is.na(mesh$idxorig)] <- Gorig[mesh$idxorig[!is.na(mesh$idxorig)]]
-    G[is.na(mesh$idxorig)] <- NA
+    Gorig <- ex$G
+    G <- rep(as.integer(NA), length(F.interp))
+    G[mesh$idx$loc[!is.na(mesh$idx$loc)]] <- Gorig[!is.na(mesh$idx$loc)]
+    orig.node <- logical(length(G))
+    orig.node[mesh$idx$loc[!is.na(mesh$idx$loc)]] <- TRUE
     for (edge in seq_len(mesh$graph$Ne)) {
       ev <- mesh$graph$ev[edge,]
       for (k1 in 1:2) {
         k2 <- 3-k1
-        if (!is.na(mesh$idxorig[ev[k1]]) &&
-            is.na(mesh$idxorig[ev[k2]])) {
+        if (orig.node[ev[k1]] && !orig.node[ev[k2]]) {
           if (is.na(G[ev[k2]])) {
             G[ev[k2]] <- G[ev[k1]]
           } else if (G[ev[k1]] != G[ev[k2]]) {
@@ -1438,8 +1437,8 @@ continuous <- function(ex,
     F.geometry <- inla.mesh.create(loc=mesh$loc,
                                    tv=mesh$graph$tv)
     ## Handle possible node reordering in inla.mesh.create()
-    F.interp.nontransformed <- F.interp.nontransformed[F.geometry$idx$loc]
-    G <- G[F.geometry$idx$loc]
+    F.interp.nontransformed[F.geometry$idx$loc] <- F.interp.nontransformed
+    G[F.geometry$idx$loc] <- G
   } else {
     F.geometry <- mesh
   }
