@@ -1342,11 +1342,24 @@ continuous <- function(ex,
   }
   F.ex[is.na(F.ex)] <- 0
 
-  if (info$geometry == "mesh") {
-    mesh <- subdivide.mesh(geometry)
-  } else if (info$geometry == "lattice") {
-    mesh <- build.lattice.mesh(info$loc, info$dims)
+  if (is.null(ex$meta$ind)) {
+    active.nodes <- rep(TRUE, length(ex$F))
+  } else {
+    active.nodes <- logical(length(ex$F))
+    active.nodes[ex$meta$ind] <- TRUE
   }
+  if (info$geometry == "mesh") {
+    mesh <- subdivide.mesh(submesh.mesh(active.nodes, geometry))
+  } else if (info$geometry == "lattice") {
+    if (all(active.nodes)) {
+      mesh <- build.lattice.mesh(info$loc, info$dims)
+    } else {
+      mesh <- subdivide.mesh(submesh.grid(active.nodes, geometry))
+    }
+  }
+  ## Remap input to node subset
+  F.ex <- F.ex[active.nodes]
+  ##  Gorig <- ex$G[active.nodes] ## Later code uses original indexing
 
   if (method == "log") {
     F.ex <- log(F.ex)
@@ -1362,7 +1375,7 @@ continuous <- function(ex,
   } else {
     level <- 1-alpha
   }
-  F.interp <- as.vector(mesh$A %*% F.ex)
+  F.interp <- as.vector(mesh$A[,active.nodes,drop=FALSE] %*% F.ex)
 
   if (method == "log") {
     F.interp.nontransformed <- exp(F.interp)
@@ -1391,7 +1404,6 @@ continuous <- function(ex,
   } else {
     ## Take 'G' information from 'ex' input and set new interface
     ## values 'G[i]=-1'.
-    Gorig <- ex$G
     G <- integer(length(F.interp))
     G[!is.na(mesh$idxorig)] <- Gorig[mesh$idxorig[!is.na(mesh$idxorig)]]
     G[is.na(mesh$idxorig)] <- NA
@@ -1425,6 +1437,9 @@ continuous <- function(ex,
   if (suppressWarnings(require(INLA, quietly=TRUE))) {
     F.geometry <- inla.mesh.create(loc=mesh$loc,
                                    tv=mesh$graph$tv)
+    ## Handle possible node reordering in inla.mesh.create()
+    F.interp.nontransformed <- F.interp.nontransformed[F.geometry$idx$loc]
+    G <- G[F.geometry$idx$loc]
   } else {
     F.geometry <- mesh
   }
