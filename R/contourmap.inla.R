@@ -66,5 +66,7 @@ contourmap.inla <- function(result.inla,
   if(!is.null(cm$map))
     set.out[ind.int] = cm$map[ind]; cm$map = set.out
 
+  cm$meta$ind <- ind.int
+
   return(cm)
 }

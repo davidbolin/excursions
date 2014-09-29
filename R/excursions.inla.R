@@ -200,7 +200,8 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
                            level.link=u.link,
                            alpha=alpha,
                            n.iter=n.iter,
-                           method=method))
+                           method=method,
+                           ind=ind.int))
   class(output) <- "excurobj"
   output
 }

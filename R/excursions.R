@@ -124,11 +124,12 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
   ireo = NULL
   ireo[reo] = 1:n
 
-  ind = F < 1-F.limit
+  ind.lowF = F < 1-F.limit
   E[F>1-alpha] = 1
 
-  if(type == '=')
+  if(type == '=') {
     F=1-F
+  }
 
   if(type == "<") {
     G[mu>u] = 1
@@ -136,18 +137,23 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
     G[mu>=u] = 1
   }
 
-  F[ind] = Fe[ind] = NA
+  F[ind.lowF] = Fe[ind.lowF] = NA
 
   M = rep(-1,n)
-  if(type=="<") {
+  if (type=="<") {
     M[E==1] = 0
-  } else if(type == ">") {
+  } else if (type == ">") {
     M[E==1] = 1
-  } else if(type == "!=") {
+  } else if (type == "!=") {
     M[E==1 & mu>u] = 1
     M[E==1 & mu<u] = 0
-  } else if(type == "=") {
-    M[E==1] = 1
+  } else if (type == "=") {
+    M[E==1 & mu>u] = 1
+    M[E==1 & mu<u] = 0
+  }
+
+  if (missing(ind) || is.null(ind)) {
+    ind <- seq_len(n)
   }
 
   output <- list(F=F, G = G, M = M,
@@ -158,7 +164,8 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
                             F.limit=F.limit,
                             alpha=alpha,
                             n.iter=n.iter,
-                            method=method)))
+                            method=method,
+                            ind=ind)))
   class(output) <- "excurobj"
   output
 }

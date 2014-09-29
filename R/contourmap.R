@@ -146,6 +146,10 @@ contourmap <- function(mu,
     lp$E <- NULL
   }
 
+  if (missing(ind) || is.null(ind)) {
+    ind <- seq_len(length(mu))
+  }
+
   lp$meta <- list(calculation="contourmap",
                   F.limit=F.limit,
                   alpha=alpha,

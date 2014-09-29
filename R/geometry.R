@@ -454,15 +454,53 @@ outline.on.grid <- function(z, grid)
   segment.grp <- rep(c(1L, 0L), c(nrow(seg), nrow(bnd.seg)))
   segment.set <- rbind(seg, bnd.seg)
 
-  return(list(loc=grid$loc, idx=segment.set, grp=segment.grp))
+  list(loc=grid$loc, idx=segment.set, grp=segment.grp)
 }
 
-grid.submesh <- function(z, grid=NULL)
+## Compute simple outline of 1/0 set on a mesh, eliminating spikes.
+outline.on.mesh <- function(z, mesh, complement=FALSE)
+{
+  t.count <- rowSums(matrix((z >= 0.5)[mesh$tv], nrow(mesh$tv), 3))
+
+  if (complement) {
+    t.keep <- which(t.count < 3)
+  } else {
+    t.keep <- which(t.count == 3)
+  }
+
+  if (length(t.keep) > 0) {
+    graph <-
+      generate.trigraph.properties(
+          list(tv=mesh$tv[t.keep,,drop=FALSE]),
+          Nv=nrow(mesh$loc))
+    idx <- graph.upper$ev[is.na(graph$ee),,drop=FALSE]
+  } else {
+    idx <- matrix(0L, 0,2)
+  }
+
+  if (complement) {
+    grp <- rep(1L, nrow(idx))
+  } else {
+    grp <- rep(3L, nrow(idx))
+  }
+
+  list(loc=mesh$loc, idx=idx, grp=grp)
+}
+
+submesh.grid <- function(z, grid=NULL)
 {
   if (!require(INLA)) {
     stop("The 'INLA' package is needed.")
   }
   outline <- outline.on.grid(z, grid)
+  inla.mesh.create(loc=outline$loc,
+                   boundary=(as.inla.mesh.segment.outline(outline$loc,
+                                                          outline$idx)),
+                   refine=FALSE)
+}
+submesh.mesh <- function(z, mesh)
+{
+  outline <- outline.on.mesh(z, mesh)
   inla.mesh.create(loc=outline$loc,
                    boundary=(as.inla.mesh.segment.outline(outline$loc,
                                                           outline$idx)),
@@ -982,33 +1020,13 @@ tricontour_step <- function(x, z, levels, loc, ...)
 {
   stopifnot(length(levels) == 1)
 
-  t.count <- rowSums(matrix((z >= levels)[x$tv], nrow(x$tv), 3))
+  x$loc <- loc
+  outline.lower <- outline.on.mesh(z >= levels, x, TRUE)
+  outline.upper <- outline.on.mesh(z >= levels, x, FALSE)
 
-  t.keep <- which(t.count < 3)
-  if (length(t.keep) > 0) {
-    graph.lower <-
-      generate.trigraph.properties(
-          list(tv=x$tv[t.keep,,drop=FALSE]),
-          Nv=nrow(loc))
-    idx.lower <- graph.lower$ev[is.na(graph.lower$ee),,drop=FALSE]
-  } else {
-    idx.lower <- matrix(0L, 0,2)
-  }
-
-  t.keep <- which(t.count == 3)
-  if (length(t.keep) > 0) {
-    graph.upper <-
-      generate.trigraph.properties(
-          list(tv=x$tv[t.keep,,drop=FALSE]),
-          Nv=nrow(loc))
-    idx.upper <- graph.upper$ev[is.na(graph.upper$ee),,drop=FALSE]
-  } else {
-    idx.upper <- matrix(0L, 0,2)
-  }
-
-  grp <- rep(c(1L, 3L), c(nrow(idx.lower), nrow(idx.upper)))
-
-  list(loc=loc, idx=rbind(idx.lower, idx.upper), grp=grp)
+  list(loc=loc,
+       idx=rbind(outline.lower$idx, outline.upper$idx),
+       grp=c(outline.lower$grp, outline.upper$grp))
 }
 
 
