@@ -54,9 +54,10 @@ contourmap.inla <- function(result.inla,
   if(!is.null(cm$G))
     set.out[ind.int] = cm$G[ind]; cm$G = set.out
 
-  if(!is.null(cm$F))
+  if(!is.null(cm$F)){
     set.out[ind.int] = cm$F[ind]; cm$F = set.out
-
+    cm$P0 = mean(set.out[ind.int])
+  }
   if(!is.null(cm$M))
     set.out[ind.int] = cm$M[ind]; cm$M = set.out
 
