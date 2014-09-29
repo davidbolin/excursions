@@ -1358,6 +1358,7 @@ continuous <- function(ex,
       mesh <- subdivide.mesh(submesh)
     }
   }
+  active.nodes <- !is.na(mesh$idx$loc)
 
   if (method == "log") {
     F.ex <- log(F.ex)
