@@ -92,6 +92,23 @@ test_that("Excursions, input variances", {
   expect_equal(res1$F,res2$F,tolerance=1e-7)
 })
 
+test_that("Excursions, ind argument order", {
+  data <- integration.testdata1()
+
+  vars = diag(solve(data$Q))
+
+  ind1 = c(1,2,3,4)
+  ind2 = c(4,3,2,1)
+  ind3 = rep(FALSE,length(data$mu))
+  ind3[1:4] = TRUE
+  res1 = excursions(alpha=1, u=0, mu=data$mu, Q=data$Q, type='>', seed = data$seed, ind = ind1)
+  res2 = excursions(alpha=1, u=0, mu=data$mu, Q=data$Q, type='>', seed = data$seed, ind = ind2)
+  res3 = excursions(alpha=1, u=0, mu=data$mu, Q=data$Q, type='>', seed = data$seed, ind = ind3)
+
+  expect_equal(res1$F,res2$F,tolerance=1e-7)
+  expect_equal(res2$F,res3$F,tolerance=1e-7)
+})
+
 #Tests to add:
 
 #Test that Q.chol and Q gives the same result
