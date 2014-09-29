@@ -1388,7 +1388,7 @@ continuous <- function(ex,
     F.interp.nontransformed <- F.interp
   }
   if (ex$meta$type == "=") {
-    F.interp.nontransformed <- -F.interp.nontransformed
+    F.interp.nontransformed <- 1-F.interp.nontransformed
   }
 
 
