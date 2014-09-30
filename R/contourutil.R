@@ -1,6 +1,6 @@
 ## Calculate the contour map function
 contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
-                            F.limit, Q.chol,max.threads=0)
+                            F.limit, Q.chol,max.threads=0,seed=seed)
 {
 	if (!missing(Q.chol) && !is.null(Q.chol)) {
       Q = Q.chol
@@ -23,7 +23,7 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
   if(!missing(alpha) && !is.null(alpha))
 	  F.limit = max(alpha,F.limit)
 
-	lim <- excursions.limits(lp=lp,mu=mu,measure=0,ind=ind)
+	lim <- excursions.limits(lp=lp,mu=mu,measure=0)
 
   if (missing(vars)) {
     if(is.chol) {
@@ -32,18 +32,25 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
       vars <- excursions.variances(Q=Q)
     }
   }
-  rho <- contourmap.marginals(mu=mu,vars=vars,lim=lim,ind=ind)
-
-  lim$a <- lim$a - mu
-	lim$b <- lim$b - mu
 
 	m.size = length(mu)
   indices = NULL
+
   if (!missing(ind)) {
-	  indices = rep(0,length(mu))
-	  indices[ind] = 1
-		m.size = length(ind)
+    if(is.logical(ind)){
+      indices = ind
+      m.size = sum(ind)
+    } else {
+      indices = rep(FALSE,length(mu))
+      indices[ind] = TRUE
+      m.size = length(ind)
+    }
   }
+
+  rho <- contourmap.marginals(mu=mu,vars=vars,lim=lim,ind=indices)
+
+  lim$a <- lim$a - mu
+	lim$b <- lim$b - mu
 
   use.camd = !missing(ind) || alpha < 1
   reo <- excursions.permutation(rho = rho, ind = indices,
@@ -51,7 +58,7 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
 
   res <- excursions.call(lim$a,lim$b,reo,Q, is.chol = is.chol,
                          1-F.limit, K = n.iter, max.size = m.size,
-                         n.threads = max.threads)
+                         n.threads = max.threads,seed=seed)
 
   n = length(mu)
   ii = which(res$Pv[1:n] > 0)
@@ -64,10 +71,9 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
   ireo = NULL
   ireo[reo] = 1:n
 
-  ind = F < 1-F.limit
-	E[F>1-alpha] = 1
-
-  F[ind] = Fe[ind] = NA
+  ind.lowF = F < 1-F.limit
+  E[F>1-alpha] = 1
+  F[ind.lowF] = Fe[ind.lowF] = NA
 
   M = rep(-1,n)
   for(i in 1:(lp$n.levels+1)){
@@ -241,7 +247,7 @@ Pmeasure <- function(lp,mu,Q,Q.chol, ind=NULL,type,vars=vars)
 }
 
 ## Set integration limits for a given measure.
-excursions.limits <- function(lp,mu,measure,ind)
+excursions.limits <- function(lp,mu,measure)
 {
 	n = length(mu)
 	n.l = length(lp$u)

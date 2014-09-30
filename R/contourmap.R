@@ -15,7 +15,6 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 contourmap <- function(mu,
                        Q,
                        vars,
@@ -33,7 +32,8 @@ contourmap <- function(mu,
                        F.limit,
                        n.iter=10000,
                        verbose=FALSE,
-                       max.threads=0)
+                       max.threads=0,
+                       seed=NULL)
 {
   type <- match.arg(type)
 
@@ -122,7 +122,7 @@ contourmap <- function(mu,
 
         p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
                              alpha=alpha, F.limit = F.limit,
-                             n.iter=n.iter,max.threads=max.threads)
+                             n.iter=n.iter,max.threads=max.threads,seed=seed)
         F.calculated = TRUE
       }
     }
@@ -132,7 +132,7 @@ contourmap <- function(mu,
       if(verbose) cat('Calculating contour map function\n')
       p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
                            alpha=alpha, F.limit = F.limit,
-                           n.iter=n.iter, max.threads=max.threads)
+                           n.iter=n.iter, max.threads=max.threads,seed=seed)
       F.calculated = TRUE
     }
   }
@@ -148,6 +148,8 @@ contourmap <- function(mu,
 
   if (missing(ind) || is.null(ind)) {
     ind <- seq_len(length(mu))
+  } else if(is.logical(ind)){
+    ind <- which(ind)
   }
 
   lp$meta <- list(calculation="contourmap",
