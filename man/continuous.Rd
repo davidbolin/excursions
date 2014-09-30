@@ -58,7 +58,8 @@ topologically as lattices, and the lattice boxes are assumed convex.
   \item{F}{Interpolated F function}
   \item{G}{Contour and inter-level set indices for the interpolation}
   \item{F.geometry}{Mesh geometry for the interpolation}
-  \item{P0}{P0 measure based on interpolated F function}
+  \item{P0}{P0 measure based on interpolated F function (only for
+  \code{contourmap} input)}
 }
 %%\references{
 %% ~put references to the literature/web site here ~
@@ -102,7 +103,7 @@ if (require(INLA)) {
 
   ## Calculate contour map with two levels
   map = contourmap(n.levels = 2, mu = mu.post, Q = Q.post,
-                   alpha=0.1,F.limit = 0.9)
+                   alpha=0.1, F.limit = 0.9)
 
   ## Calculate the continuous representation
   sets <- continuous(map, mesh, alpha=0.1)
