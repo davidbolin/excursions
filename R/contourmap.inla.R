@@ -29,7 +29,7 @@ contourmap.inla <- function(result.inla,
     stop('Must supply INLA result object')
 
   if(method != "EB")
-    stop("only EB method implemented so far")
+    stop("Currently only EB method is implemented")
 
   ind.stack <- inla.output.indices(result.inla, name=name, stack=stack, tag=tag)
   n.out <- length(ind.stack)
