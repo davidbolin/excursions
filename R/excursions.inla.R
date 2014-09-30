@@ -15,9 +15,20 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
-                            ind=NULL, method, alpha=1, u, u.link = FALSE,
-                            type, n.iter=10000, verbose=0, max.threads=0)
+excursions.inla <- function(result.inla,
+                            stack,
+                            name=NULL,
+                            tag=NULL,
+                            ind=NULL,
+                            method,
+                            alpha=1,
+                            u,
+                            u.link = FALSE,
+                            type,
+                            n.iter=10000,
+                            verbose=0,
+                            max.threads=0,
+                            seed=NULL)
 {
   if (!require("INLA"))
     stop('This function requires the INLA package (see www.r-inla.org/download)')
@@ -101,9 +112,9 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
     cat('Calculating excursion function using the ', method, ' method\n')
 
   if(method == 'EB' || method == 'QC' ) {
-	  res = excursions(alpha=alpha, u=0, mu=config$mu-u.t, Q=config$Q, type=type,
-		  	  		method=method, vars=config$vars, rho=rho, ind=ind, n.iter=n.iter,
-			  	  	max.threads=max.threads)
+	  res = excursions(alpha=alpha, u=0, mu=config$mu-u.t, Q=config$Q,
+	                   type=type, method=method, vars=config$vars, rho=rho,
+		  	  		       ind=ind, n.iter=n.iter, max.threads=max.threads,seed=seed)
   	F = res$F[ind]
   } else if (method =='NI' || method == 'NIQC') {
     qc = 'QC'
@@ -120,7 +131,8 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
 	  	lw[i] = conf.i$lp
 		  res[[i]] = excursions(alpha=alpha,u=0,mu=conf.i$mu-u.t,Q=conf.i$Q,
 		                        type=type,method=qc,rho=pfam,vars=conf.i$vars,
-							              ind=ind,n.iter=n.iter,max.threads=max.threads)
+							              ind=ind,n.iter=n.iter,
+							              max.threads=max.threads,seed=seed)
   	}
 
   	w = exp(lw)/sum(exp(lw))
@@ -166,7 +178,7 @@ excursions.inla <- function(result.inla, stack, name=NULL, tag=NULL,
 		  					            Q=conf.i$Q, type=type, method='QC',
 	             						  rho=pfam.i,vars=conf.i$vars,
 		  				          	  max.size=length(ind),reo=reo,
-			  				            n.iter=n.iter,max.threads=max.threads)
+			  				            n.iter=n.iter,max.threads=max.threads,seed=seed)
 	  }
 
   	w = exp(lw)/sum(exp(lw))
