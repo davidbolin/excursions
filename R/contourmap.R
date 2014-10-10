@@ -124,7 +124,8 @@ contourmap <- function(mu,
 
         p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
                              alpha=alpha, F.limit = F.limit,
-                             n.iter=n.iter,max.threads=max.threads,seed=seed)
+                             n.iter=n.iter,max.threads=max.threads,
+                             seed=seed,verbose=verbose)
         F.calculated = TRUE
       } else if(measure[i] == "P0-bound"){
         if(missing(vars)){
@@ -149,7 +150,8 @@ contourmap <- function(mu,
       if(verbose) cat('Calculating contour map function\n')
       p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
                            alpha=alpha, F.limit = F.limit,
-                           n.iter=n.iter, max.threads=max.threads,seed=seed)
+                           n.iter=n.iter, max.threads=max.threads,
+                           seed=seed,verbose=verbose)
       F.calculated = TRUE
     }
   }

@@ -1,6 +1,7 @@
 ## Calculate the contour map function
 contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
-                            F.limit, Q.chol,max.threads=0,seed=seed)
+                            F.limit, Q.chol,max.threads=0,
+                            seed=seed,verbose=FALSE)
 {
 	if (!missing(Q.chol) && !is.null(Q.chol)) {
       Q = Q.chol
@@ -23,9 +24,12 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
   if(!missing(alpha) && !is.null(alpha))
 	  F.limit = max(alpha,F.limit)
 
+  if(verbose) cat("set limits\n")
 	lim <- excursions.limits(lp=lp,mu=mu,measure=0)
 
+
   if (missing(vars)) {
+    if(verbose) cat("calculate variances\n")
     if(is.chol) {
       vars <- excursions.variances(L=Q)
     } else {
@@ -46,16 +50,18 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
       m.size = length(ind)
     }
   }
-
+  if(verbose) cat("calculate marginals\n")
   rho <- contourmap.marginals(mu=mu,vars=vars,lim=lim,ind=indices)
 
   lim$a <- lim$a - mu
 	lim$b <- lim$b - mu
 
+    if(verbose) cat("calculate permutation\n")
   use.camd = !missing(ind) || alpha < 1
   reo <- excursions.permutation(rho = rho, ind = indices,
                                 use.camd = use.camd,alpha = F.limit,Q = Q)
 
+    if(verbose) cat("integrate\n")
   res <- excursions.call(lim$a,lim$b,reo,Q, is.chol = is.chol,
                          1-F.limit, K = n.iter, max.size = m.size,
                          n.threads = max.threads,seed=seed)
@@ -233,7 +239,11 @@ excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
 Pmeasure.bound <- function(lp, mu, vars, type, ind=NULL)
 {
   limits = excursions.limits(lp,mu,measure=type)
-	return(min(contourmap.marginals(mu,vars,limits,ind)[ind]))
+  if(type==0){
+    return(mean(contourmap.marginals(mu,vars,limits,ind)[ind]))
+  } else {
+	  return(min(contourmap.marginals(mu,vars,limits,ind)[ind]))
+  }
 }
 
 ## Function that calculates the P measure for a given contour map.
