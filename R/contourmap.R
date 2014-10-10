@@ -49,7 +49,9 @@ contourmap <- function(mu,
 
   measure = NULL
   if(!is.null(compute$measures))
-    measure <- match.arg(compute$measures,c("P0", "P1", "P2"), several.ok=TRUE)
+    measure <- match.arg(compute$measures,
+                         c("P0", "P1", "P2","P0-bound","P1-bound","P2-bound"),
+                         several.ok=TRUE)
 
   if(type == 'standard')
   {
@@ -124,6 +126,21 @@ contourmap <- function(mu,
                              alpha=alpha, F.limit = F.limit,
                              n.iter=n.iter,max.threads=max.threads,seed=seed)
         F.calculated = TRUE
+      } else if(measure[i] == "P0-bound"){
+        if(missing(vars)){
+          vars = excursions.variances(Q=Q)
+        }
+        lp$P0.bound <- Pmeasure.bound(lp=lp, mu=mu, vars, type=0, ind=ind)
+      } else if(measure[i] == "P1-bound"){
+        if(missing(vars)){
+          vars = excursions.variances(Q=Q)
+        }
+        lp$P1.bound <- Pmeasure.bound(lp=lp, mu=mu, vars, type=1, ind=ind)
+      } else if(measure[i] == "P2-bound"){
+        if(missing(vars)){
+          vars = excursions.variances(Q=Q)
+        }
+        lp$P2.bound <- Pmeasure.bound(lp=lp, mu=mu, vars, type=2, ind=ind)
       }
     }
   }
@@ -136,20 +153,21 @@ contourmap <- function(mu,
       F.calculated = TRUE
     }
   }
+
+  if (missing(ind) || is.null(ind)) {
+    ind <- seq_len(length(mu))
+  } else if(is.logical(ind)){
+    ind <- which(ind)
+  }
+
   if(F.calculated){
-    lp$P0 = mean(p$F)
+    lp$P0 = mean(p$F[ind])
     lp$F = p$F
     lp$E = p$E
     lp$M = p$M
     lp$rho = p$rho
   } else {
     lp$E <- NULL
-  }
-
-  if (missing(ind) || is.null(ind)) {
-    ind <- seq_len(length(mu))
-  } else if(is.logical(ind)){
-    ind <- which(ind)
   }
 
   lp$meta <- list(calculation="contourmap",

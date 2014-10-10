@@ -175,19 +175,19 @@ excursions.opt.levelplot <- function(mu,vars,Q,n.levels, measure=2, use.marginal
 	lp = excursions.levelplot(mu,levels = u$par,ind=ind)
 	if(measure==2){
 		if(use.marginals){
-			lp$P2bound = -u$value
+			lp$P2.bound = -u$value
 		} else {
 			lp$P2 = -u$value
 		}
 	} else if(measure==1){
 		if(use.marginals){
-			lp$P1bound = -u$value
+			lp$P1.bound = -u$value
 		} else {
 			lp$P1 = -u$value
 		}
 	} else if(measure==0){
 		if(use.marginals){
-			lp$P0bound = -u$value
+			lp$P0.bound = -u$value
 		} else {
 			lp$P0 = -u$value
 		}
@@ -218,8 +218,7 @@ excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
 	    val = 0
 	  } else {
   		if(use.marginals){
-	  		limits = excursions.limits(lp,mu,measure=measure)
-		  	val = -min(contourmap.marginals(mu,vars,limits,ind)[ind])
+		  	val = -Pmeasure.bound(lp=lp,mu=mu,vars=vars,type=measure,ind=ind)
 		    cat(u, ': ', -val, '\n')
 		  } else {
 			  val = -Pmeasure(lp,mu=mu,Q=Q,Q.chol=Q.chol,type=measure,
@@ -231,12 +230,18 @@ excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
 	return(val)
 }
 
+Pmeasure.bound <- function(lp, mu, vars, type, ind=NULL)
+{
+  limits = excursions.limits(lp,mu,measure=type)
+	return(min(contourmap.marginals(mu,vars,limits,ind)[ind]))
+}
+
 ## Function that calculates the P measure for a given contour map.
 Pmeasure <- function(lp,mu,Q,Q.chol, ind=NULL,type,vars=vars)
 {
   if(type==0){
     res <- contourfunction(lp=lp,mu=mu,Q=Q,vars=vars,ind=ind)
-    p = mean(res$F)
+    p = mean(res$F[ind])
   } else {
     limits = excursions.limits(lp=lp,mu=mu,measure=type)
 	  res = gaussint(mu = mu, Q=Q, Q.chol = Q.chol, a=limits$a,
