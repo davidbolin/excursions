@@ -58,7 +58,8 @@ topologically as lattices, and the lattice boxes are assumed convex.
   \item{F}{Interpolated F function}
   \item{G}{Contour and inter-level set indices for the interpolation}
   \item{F.geometry}{Mesh geometry for the interpolation}
-  \item{P0}{P0 measure based on interpolated F function}
+  \item{P0}{P0 measure based on interpolated F function (only for
+  \code{contourmap} input)}
 }
 %%\references{
 %% ~put references to the literature/web site here ~
@@ -102,19 +103,31 @@ if (require(INLA)) {
 
   ## Calculate contour map with two levels
   map = contourmap(n.levels = 2, mu = mu.post, Q = Q.post,
-                   alpha=0.1,F.limit = 0.9)
+                   alpha=0.1, F.limit = 0.9)
 
   ## Calculate the continuous representation
   sets <- continuous(map, mesh, alpha=0.1)
 
+  ## Calculate continuous contours
+  setsc = tricontourmap(mesh, z=mu.post, levels=map$meta$levels)
+
   ## Plot the results
   reo = mesh$idx$lattice
-  cols = contourmap.colors(map,col=heat.colors(100),credible.col = grey(0.5))
+  cols = contourmap.colors(map, col=heat.colors(100, 1),
+                           credible.col = grey(0.5, 1))
+  cols2 = contourmap.colors(map, col=heat.colors(100, 0.5),
+                            credible.col = grey(0.5, 0))
+  names(cols) = as.character(-1:2)
+  names(cols2) = as.character(-1:2)
+
   par(mfrow = c(2,2))
   image(matrix(mu.post[reo],n.lattice,n.lattice),main="mean",axes=F)
   image(matrix(sqrt(vars.post[reo]),n.lattice,n.lattice),main="sd", axes = F)
   image(matrix(map$M[reo],n.lattice,n.lattice),col=cols,axes=F)
-  plot(sets$M, col=cols)
+  idx.setsc = setdiff(names(setsc$map), "-1")
+  idx.M = setdiff(names(sets$M), "-1")
+  plot(setsc$map[idx.setsc], col=cols2[idx.setsc])
+  plot(sets$M[idx.M], col=cols[idx.M], border=FALSE,add=TRUE)
 }
 }
 }
