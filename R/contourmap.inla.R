@@ -48,15 +48,21 @@ contourmap.inla <- function(result.inla,
   cm <- contourmap(mu=config$mu,Q = config$Q, ind=ind,...)
 
   set.out = rep(NA,n.out)
-  if(!is.null(cm$E))
-    set.out[ind.int] = cm$E[ind]; cm$E = set.out
+  if(!is.null(cm$E)){
+    set.out[ind.int] = cm$E[ind];
+    cm$E = set.out
+  }
 
-  if(!is.null(cm$G))
-    set.out[ind.int] = cm$G[ind]; cm$G = set.out
+  if(!is.null(cm$G)) {
+    set.out[ind.int] = cm$G[ind];
+    cm$G = set.out
+  }
 
   if(!is.null(cm$F)){
-    set.out[ind.int] = cm$F[ind]; cm$F = set.out
-    cm$P0 = mean(set.out[ind.int])
+    F0 = cm$F[ind]; F0[is.na(F0)] = 0
+    cm$P0 = mean(F0)
+    set.out[ind.int] = cm$F[ind];
+    cm$F = set.out
   }
   if(!is.null(cm$M))
     set.out[ind.int] = cm$M[ind]; cm$M = set.out
