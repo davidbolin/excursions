@@ -202,7 +202,7 @@ private.as.spam = function(A)
   if(is(A,"spam")){
     return(A)
   }
-  else if(is(Q.sy,"dsyMatrix")){
+  else if(is(A,"dsyMatrix")){
     return(as.spam.dgCMatrix(as(as.matrix(A),"dgCMatrix")))
   } else {
     return(as.spam.dgCMatrix(as(A,"dgCMatrix")))
