@@ -38,13 +38,20 @@ gaussint <- function(mu,
   if(missing(b))
     stop('Must specify upper integration limit')
 
+  n = length(a)
+  if(length(b) != n)
+    stop('Vectors with integration limits are of different length.')
+
+
+
+
   use.reordering <- match.arg(use.reordering)
 
   if(!missing(ind) && !is.null(ind)){
     a[!ind] = Inf
     b[!ind] = -Inf
   }
-  n = length(a)
+
   if(missing(max.size))
     max.size = n
 
@@ -52,7 +59,17 @@ gaussint <- function(mu,
   if(!missing(Q.chol) && !is.null(Q.chol)){
     ## Cholesky factor is provided, use that and do not reorder
       L = Q.chol
+      if(dim(L)[1] != dim(L)[2]){
+        stop("Q.chol is not symmetric")
+      } else if(dim(L)[1] != n) {
+        stop("Dimensions of Q.chol is different from the length of the integration limits.")
+      }
   } else if(!missing(Q) && !is.null(Q)){
+    if(dim(Q)[1] != dim(Q)[2]){
+      stop("Q is not symmetric")
+      } else if(dim(Q)[1] != n) {
+        stop("Dimensions of Q is different from the length of the integration limits.")
+      }
     ## Cholesky factor is not provided and we are told to reorder
     if(use.reordering == "limits")
     {
@@ -88,6 +105,9 @@ gaussint <- function(mu,
   # probabilities, see if bound is above lim, and then reorder
 
   if(!missing(mu) && !is.null(mu)){
+    if(length(mu) != n){
+      stop("The length of mu is different from the length of the integration limits.")
+    }
     a = a - mu
     b = b - mu
   }
