@@ -17,7 +17,7 @@
 
 excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
                        F.limit, vars, rho, reo, method='EB', ind, max.size,
-                       verbose=0, max.threads=0,seed)
+                       verbose=0, max.threads=0,seed,LDL=FALSE)
 {
 
   if(method=='QC'){
@@ -122,7 +122,7 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
 
   res <- excursions.call(limits$a,limits$b,reo,Q, is.chol = is.chol,
                          1-F.limit, K = n.iter, max.size = m.size,
-                         n.threads = max.threads,seed = seed)
+                         n.threads = max.threads,seed = seed,LDL=LDL)
 
   n = length(mu)
   ii = which(res$Pv[1:n] > 0)

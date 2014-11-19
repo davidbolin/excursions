@@ -27,7 +27,8 @@ gaussint( mu,
           reo = c("natural","sparsity","limits"),
           max.size,
           max.threads=0,
-          seed)
+          seed,
+          LDL)
 }
 \arguments{
   \item{mu}{Expectation vector for the Gaussian distribution.}
@@ -52,6 +53,8 @@ gaussint( mu,
   \item{max.size}{ The largest number of sub-integrals to compute. Default is the total dimension of the distribution. }
   \item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
   \item{seed}{ The random seed to use (optional). }
+  \item{LDL}{Use LDL factorisations? This is useful for analysis of problems with positive semidefinite precisions.}
+
 }
 \value{
   A list:

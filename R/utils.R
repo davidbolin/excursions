@@ -174,7 +174,7 @@ excursions.setlimits <- function(marg, vars,type,QC,u,mu)
 }
 
 
-excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threads, seed = seed)
+excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threads, seed,LDL=FALSE)
 {
   if(is.chol == FALSE){
     a.sort = a[reo]
@@ -184,15 +184,19 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
 
     #L = chol(Q[reo,reo])
     Q = Q[reo,reo]
-    L = chol.spam(private.as.spam(Q),pivot = FALSE)
+    if(LDL){
+  		L = suppressWarnings(t(as(Cholesky(Q,perm=FALSE),"Matrix")))
+    } else {
+      L = chol.spam(private.as.spam(Q),pivot = FALSE)
+    }
     res = gaussint(Q.chol = L, a = a.sort, b = b.sort, lim = lim,
                                  n.iter = K, max.size = max.size,
-                                 max.threads = n.threads, seed = seed)
+                                 max.threads = n.threads, seed = seed,LDL=LDL)
   } else {
     #assume that everything already is ordered
     res = gaussint(Q = Q, a= a, b = b, lim = lim, n.iter = K,
                     max.size = max.size,
-                    max.threads = n.threads,seed = seeed)
+                    max.threads = n.threads,seed = seeed,LDL=LDL)
   }
   return(res)
 }

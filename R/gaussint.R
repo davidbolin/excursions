@@ -26,7 +26,8 @@ gaussint <- function(mu,
                      use.reordering = c("natural","sparsity","limits"),
                      max.size,
                      max.threads=0,
-                     seed)
+                     seed,
+                     LDL=FALSE)
 {
 
   if( missing(Q) && missing(Q.chol))
@@ -88,16 +89,31 @@ gaussint <- function(mu,
 		    Q = Q[reo,reo]
 		    reordered = TRUE
 		  }
-		  L = chol(private.as.spam(Q),pivot=FALSE)
+
+      if(LDL) {
+  		  L = suppressWarnings(t(as(Cholesky(Q,perm=FALSE),"Matrix")))
+		  } else {
+		     L = chol(private.as.spam(Q),pivot=FALSE)
+		  }
 		} else if(use.reordering == "sparsity"){
 		  #Reorder for sparsity, let SPAM do it...
-		  L = chol(private.as.spam(Q))
-		  reo = L@pivot
-		  ireo = L@invpivot
+		  if(LDL) {
+  		  L = suppressWarnings(t(as(Cholesky(Q,perm=FALSE),"Matrix")))
+		    reo = L@perm
+		    ireo[reo] = 1:length(reo)
+		  } else {
+		     L = chol(private.as.spam(Q))
+  		  reo = L@pivot
+	  	  ireo = L@invpivot
+		  }
 		  reordered = TRUE
 		} else {
 		  #Do not reorder
-		  L = chol(private.as.spam(Q),pivot=FALSE)
+      if(LDL) {
+        L = suppressWarnings(t(as(Cholesky(Q,perm=FALSE),"Matrix")))
+		  } else {
+		    L = chol(private.as.spam(Q),pivot=FALSE)
+		  }
 		}
 	}
 
@@ -124,7 +140,7 @@ gaussint <- function(mu,
 
   if(is(L,'spam.chol.NgPeyton')){
      L = as(as(as.dgRMatrix.spam(as.spam(L)), "TsparseMatrix"),"dtCMatrix")
-  } else if (!is(L, "dtCMatrix")) {
+  } else if (!is(L, "dtCMatrix") && !is(L,"dCHMsimpl")) {
     stop("L needs to be in ccs format for now.")
   }
 

@@ -17,23 +17,24 @@ models
   \code{excursions.inla} can be used.
 }
 \usage{
-excursions <- function(alpha,
-                       u,
-                       mu,
-                       Q,
-                       type,
-                       n.iter=10000,
-                       Q.chol,
-                       F.limit,
-                       vars,
-                       rho,
-                       reo,
-                       method='EB',
-                       ind,
-                       max.size,
-                       verbose=0,
-                       max.threads=0,
-                       seed)
+excursions(alpha,
+           u,
+           mu,
+           Q,
+           type,
+           n.iter=10000,
+           Q.chol,
+           F.limit,
+           vars,
+           rho,
+           reo,
+           method='EB',
+           ind,
+           max.size,
+           verbose=0,
+           max.threads=0,
+           seed,
+           LDL=FALSE)
 }
 \arguments{
   \item{alpha}{Error probability for the excursion set.}
@@ -57,6 +58,8 @@ excursions <- function(alpha,
   \item{ind}{Indices of the nodes that should be analyzed (optional)}
   \item{max.size}{Maximum number of nodes to include in the set of
     interest (optional)}
+    \item{seed}{Random seed (optional)}
+      \item{LDL}{Use LDL factorisations? This is useful for analysis of problems with positive semidefinite precisions.}
   \item{method}{Method for handeling the latent Gaussian structure:
   \itemize{
     \item{'EB' }{Empirical Bayes (default)}

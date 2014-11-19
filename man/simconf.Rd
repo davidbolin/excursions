@@ -10,23 +10,34 @@
     1-alpha}.
 }
 \usage{
-excursions.simconf(alpha, mu, Q, n.iter=10000, Q.chol, vars, ind,
-                   verbose=0, max.threads=0)
+simconf(alpha,
+        mu,
+        Q,
+        n.iter=10000,
+        Q.chol,
+        vars,
+        ind,
+        verbose=0,
+        max.threads=0,
+        LDL)
 }
 \arguments{
-	\item{alpha}{Error probability for the region.}
-  	\item{mu}{Expectation vector for the Gaussian distribution.}
-  	\item{Q}{Precision matrix for the Gaussian distribution.}
-  	\item{n.iter}{Number or iterations in the MC sampler that is
-	  used for approximating probabilities. The default value is
-	  10000.}
-  	\item{Q.chol}{The Cholesky factor of the precision matrix
-	  (optional)}
-  	\item{vars}{Precomputed marginal variances (optional)}
-	\item{ind}{Indices of the nodes that should be analyzed
-	  (optional)}
-	\item{verbose}{Set to TRUE for verbose mode (optional)}
-	\item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
+  \item{alpha}{Error probability for the region.}
+  \item{mu}{Expectation vector for the Gaussian distribution.}
+  \item{Q}{Precision matrix for the Gaussian distribution.}
+  \item{n.iter}{Number or iterations in the MC sampler that is
+    used for approximating probabilities. The default value is
+    10000.}
+  \item{Q.chol}{The Cholesky factor of the precision matrix
+    (optional)}
+  \item{vars}{Precomputed marginal variances (optional)}
+  \item{ind}{Indices of the nodes that should be analyzed
+    (optional)}
+  \item{verbose}{Set to TRUE for verbose mode (optional)}
+  \item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
+  \item{seed}{Random seed (optional)}
+  \item{LDL}{Use LDL factorisations? This is useful for analysis of problems with positive semidefinite precisions.}
+
 }
 \value{
   A list:

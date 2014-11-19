@@ -15,7 +15,7 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-simconf <- function(alpha, mu, Q, n.iter=10000, Q.chol, vars, ind=NULL, verbose=0, max.threads=0,seed=NULL)
+simconf <- function(alpha, mu, Q, n.iter=10000, Q.chol, vars, ind=NULL, verbose=0, max.threads=0,seed=NULL,LDL=FALSE)
 {
 
   if(missing(mu))
@@ -30,13 +30,17 @@ simconf <- function(alpha, mu, Q, n.iter=10000, Q.chol, vars, ind=NULL, verbose=
   if (!missing(Q.chol) && !is.null(Q.chol)) {
       L = Q.chol
   } else {
-      L = chol(Q)
+      if(LDL){
+        L = suppressWarnings(t(as(Cholesky(Q),"Matrix")))
+      } else {
+        L = chol(Q)
+      }
   }
-  
+
   if(missing(vars)){
     sd <- sqrt(excursions.variances(L))
 	}
-  
+
   #setup function for optmization
   f.opt <- function(x,alpha,sd,L,ind,seed,max.threads){
 	  q = qnorm(x)*sd;
