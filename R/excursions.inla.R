@@ -15,6 +15,7 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 excursions.inla <- function(result.inla,
                             stack,
                             name=NULL,
@@ -22,6 +23,7 @@ excursions.inla <- function(result.inla,
                             ind=NULL,
                             method,
                             alpha=1,
+                            F.limit,
                             u,
                             u.link = FALSE,
                             type,
@@ -45,6 +47,12 @@ excursions.inla <- function(result.inla,
 
   if(result.inla$.args$control.compute$config==FALSE)
 	  stop('INLA result must be calculated using control.compute$config=TRUE')
+
+ if(missing(F.limit)) {
+    F.limit = alpha
+  } else {
+    F.limit = max(alpha,F.limit)
+  }
 
   n = length(result.inla$misc$configs$config[[1]]$mean)
 
@@ -113,7 +121,8 @@ excursions.inla <- function(result.inla,
 
   if(method == 'EB' || method == 'QC' ) {
 	  res = excursions(alpha=alpha, u=0, mu=config$mu-u.t, Q=config$Q,
-	                   type=type, method=method, vars=config$vars, rho=rho,
+	                   type=type, method=method, F.limit = F.limit,
+	                   vars=config$vars, rho=rho,
 		  	  		       ind=ind, n.iter=n.iter, max.threads=max.threads,seed=seed)
   	F = res$F[ind]
   } else if (method =='NI' || method == 'NIQC') {
@@ -132,6 +141,7 @@ excursions.inla <- function(result.inla,
 		  res[[i]] = excursions(alpha=alpha,u=0,mu=conf.i$mu-u.t,Q=conf.i$Q,
 		                        type=type,method=qc,rho=pfam,vars=conf.i$vars,
 							              ind=ind,n.iter=n.iter,
+							              F.limit = F.limit,
 							              max.threads=max.threads,seed=seed)
   	}
 
@@ -178,6 +188,7 @@ excursions.inla <- function(result.inla,
 		  					            Q=conf.i$Q, type=type, method='QC',
 	             						  rho=pfam.i,vars=conf.i$vars,
 		  				          	  max.size=length(ind),reo=reo,
+		  				          	  F.limit = F.limit,
 			  				            n.iter=n.iter,max.threads=max.threads,seed=seed)
 	  }
 
@@ -203,7 +214,16 @@ excursions.inla <- function(result.inla,
   mu.out[ind.int] = config$mu[ind]
   rho.out[ind.int] = rho.ind
 
-  output <- list(F=F.out,
+  G.out = rep(NA,n.out)
+  G = rep(0,length(config$mu[ind]))
+  if(type == "<") {
+    G[config$mu[ind] > u.t[ind]] = 1
+  } else {
+    G[config$mu[ind] >= u.t[ind]] = 1
+  }
+  G.out[ind.int] = G
+
+  output <- list(F=F.out, G=G.out,
                  mean=mu.out,
                  rho=rho.out,
                  meta=list(calculation="excursions",
@@ -211,6 +231,7 @@ excursions.inla <- function(result.inla,
                            level=u,
                            level.link=u.link,
                            alpha=alpha,
+                           F.limit = F.limit,
                            n.iter=n.iter,
                            method=method,
                            ind=ind.int))
