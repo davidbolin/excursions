@@ -38,8 +38,10 @@ simconf <- function(alpha, mu, Q, n.iter=10000, Q.chol, vars, ind=NULL, verbose=
   }
 
   if(missing(vars)){
-    sd <- sqrt(excursions.variances(L))
+    vars  <- excursions.variances(L)
 	}
+	sd <- sqrt(vars)
+
 
   #setup function for optmization
   f.opt <- function(x,alpha,sd,L,ind,seed,max.threads){

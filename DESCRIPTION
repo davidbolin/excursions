@@ -5,7 +5,7 @@ Version: 0.0-00000000
 Date: 0000-00-00
 Author: David Bolin <davidbolin@gmail.com> and Finn Lindgren <finn.lindgren@gmail.com>
 Maintainer: David Bolin <davidbolin@gmail.com>
-Description: This package contains functions that compute probabilistic excursion sets, contour credibility regions, and contour avoiding regions for latent gaussian random processes and fields. The function excursions.inla calculates these quantities for models estimated with the INLA package.
+Description: Functions that compute probabilistic excursion sets, contour credibility regions, and contour avoiding regions for latent gaussian random processes and fields. The function excursions.inla calculates these quantities for models estimated with the INLA package.
 Depends: Matrix, spam
 Suggests: INLA
 Additional_repositories: http://www.r-inla.org/download
