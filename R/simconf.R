@@ -15,7 +15,7 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-simconf <- function(alpha, mu, Q, n.iter=10000, Q.chol, vars, ind=NULL, verbose=0, max.threads=0,seed=NULL,LDL=FALSE)
+simconf <- function(alpha, mu, Q, n.iter=10000, Q.chol, vars, ind=NULL, verbose=0, max.threads=0,seed=NULL,LDL=TRUE)
 {
 
   if(missing(mu))

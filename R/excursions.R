@@ -17,7 +17,7 @@
 
 excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
                        F.limit, vars, rho, reo, method='EB', ind, max.size,
-                       verbose=0, max.threads=0,seed,LDL=FALSE)
+                       verbose=0, max.threads=0,seed,LDL=TRUE)
 {
 
   if(method=='QC'){
@@ -155,10 +155,7 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
     M[E==1] = 0
   } else if (type == ">") {
     M[E==1] = 1
-  } else if (type == "!=") {
-    M[E==1 & mu>u] = 1
-    M[E==1 & mu<u] = 0
-  } else if (type == "=") {
+  } else if (type == "!=" || type == "=") {
     M[E==1 & mu>u] = 1
     M[E==1 & mu<u] = 0
   }
@@ -178,7 +175,8 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
                             alpha=alpha,
                             n.iter=n.iter,
                             method=method,
-                            ind=ind)))
+                            ind=ind,
+                            LDL=LDL)))
   class(output) <- "excurobj"
   output
 }
