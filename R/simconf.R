@@ -61,6 +61,9 @@ simconf <- function(alpha, mu, Q, n.iter=10000, Q.chol, vars, ind=NULL, verbose=
   a = mu-qnorm(r.o$minimum)*sd
   b = mu+qnorm(r.o$minimum)*sd
 
-  return(list(a=a,b=b))
+  a.marg = mu-qnorm(alpha)*sd
+  b.marg = mu+qnorm(alpha)*sd
+
+  return(list(a=a,b=b,a.marginal = a.marg,b.marginal=b.marg))
 }
 
