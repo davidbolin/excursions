@@ -326,3 +326,23 @@ fmix.samp.opt <- function(x, alpha,mu, sd, w, limits, samples)
 
 }
 
+mix.sample <- function(n.samp = 1, mu,Q.chol,w)
+{
+  K = length(mu)
+  n = length(mu[[1]])
+  idx = sample(seq_len(K), n.samp, prob = w, replace = TRUE)
+  idx = sort(idx)
+  n.idx = numeric(K)
+  n.idx[] = 0
+  for (i in 1:K) {
+    n.idx[i] = sum(idx == i)
+  }
+  samples = c()
+  for (k in 1:K){
+    if (n.idx[k] > 0) {
+      xx = mu[[k]] + solve(Q.chol[[k]],matrix(rnorm(n.idx[k]*n),n,n.idx[k]))
+      samples = rBind(samples,t(as.matrix(xx)))
+    }
+  }
+  return(samples)
+}

@@ -67,9 +67,9 @@ simconf.inla <- function(result.inla,
 
   if(inla.sample){
     s = suppressWarnings(inla.posterior.sample(n.iter,result.inla))
-    samp <- matrix(0,n.samp,length(ind))
+    samp <- matrix(0,n.iter,length(ind))
 
-    for(i in seq_len(n.samp)){
+    for(i in seq_len(n.iter)){
       samp[i,] <- s[[i]]$latent[ind]
     }
 
@@ -108,7 +108,6 @@ simconf.inla <- function(result.inla,
                                                           sd = sd.m[,i],
                                                           w = w,
                                                           br = limits))
-
 
   return(list(a = a,
               b = b,
