@@ -1,0 +1,121 @@
+## simconf.mixture.R
+##
+##   Copyright (C) 2014 David Bolin, Finn Lindgren
+##
+##   This program is free software: you can redistribute it and/or modify
+##   it under the terms of the GNU General Public License as published by
+##   the Free Software Foundation, either version 3 of the License, or
+##   (at your option) any later version.
+##
+##   This program is distributed in the hope that it will be useful,
+##   but WITHOUT ANY WARRANTY; without even the implied warranty of
+##   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+##   GNU General Public License for more details.
+##
+##   You should have received a copy of the GNU General Public License
+##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+simconf.mixture <- function(alpha,
+                            mu,
+                            Q,
+                            w,
+                            ind,
+                            n.iter=10000,
+                            vars,
+                            limits = NULL,
+                            verbose=0,
+                            max.threads=0,
+                            seed=NULL)
+{
+
+  if(missing(mu))
+    stop('Must provide list with mean values')
+
+  if(missing(Q))
+    stop('Must provide list with precision matrices')
+
+  if(missing(w))
+    stop('Must provide list with mixture weights')
+
+  if(missing(alpha))
+    stop('Must provide significance level alpha')
+
+  if(missing(limits) || is.null(limits))
+    limits <- c(-1000,1000)
+
+  K <- length(mu)
+  n <- length(mu[[1]])
+
+  if(!missing(ind)){
+    if(!is.logical(ind)){
+      lind <- rep(FALSE,n)
+      lind[ind] = TRUE
+      ind <- lind
+    }
+    cind <- reo <- rep(1,n)
+    cind[!ind] = 0
+    out <- .C("reordering", nin = as.integer(n), Mp = as.integer(Q[[1]]@p),
+              Mi = as.integer(Q[[1]]@i), reo = as.integer(reo),
+              cind = as.integer(cind))
+    reo = out$reo+1
+  } else {
+    reo = seq_len(n)
+  }
+  ireo = NULL
+  ireo[reo] = 1:n
+
+  Q.chol <- list()
+  mu.m <- matrix(0,K,n)
+  sd.m <- matrix(0,K,n)
+  for(k in seq_len(K))
+  {
+    Q.chol[[k]] <- suppressWarnings(t(as(Cholesky(Q[[k]][reo,reo],perm=FALSE),"Matrix")))
+    mu.m[k,] = mu[[k]][reo]
+    if(missing(vars)){
+      sd.m[k,] = sqrt(excursions.variances(L = Q.chol[[k]]))
+    } else {
+      sd.m[k,] = sqrt(vars[[k]][reo])
+    }
+  }
+
+  r.o = optimize(fmix.opt,interval = c(alpha/n,alpha),
+                 alpha=alpha,
+                 mu=mu.m,
+                 sd=sd.m,
+                 Q.chol=Q.chol,
+                 w=w,
+                 ind = ind[reo],
+                 limits = limits,
+                 max.threads = max.threads,
+                 verbose=verbose)
+
+  a = sapply(seq_len(n), function(i) Fmix_inv(p = r.o$minimum/2,
+                                              mu = mu.m[,i],
+                                              sd = sd.m[,i],
+                                              w = w,
+                                              br = limits))[ireo]
+
+  b = sapply(seq_len(n), function(i) Fmix_inv(p = 1-r.o$minimum/2,
+                                              mu = mu.m[,i],
+                                              sd = sd.m[,i],
+                                              w = w,
+                                              br = limits))[ireo]
+
+  a.marg = sapply(seq_len(n), function(i) Fmix_inv(p = alpha/2,
+                                                   mu = mu.m[,i],
+                                                   sd = sd.m[,i],
+                                                   w = w,
+                                                   br = limits))[ireo]
+
+  b.marg = sapply(seq_len(n), function(i) Fmix_inv(p = 1-alpha/2,
+                                                   mu = mu.m[,i],
+                                                   sd = sd.m[,i],
+                                                   w = w,
+                                                   br = limits))[ireo]
+
+  return(list(a = a[ind],
+              b = b[ind],
+              a.marginal = a.marg[ind],
+              b.marginal = b.marg[ind]))
+}
+

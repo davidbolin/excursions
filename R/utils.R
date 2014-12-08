@@ -210,3 +210,119 @@ private.as.spam = function(A)
     return(as.spam.dgCMatrix(as(A,"dgCMatrix")))
   }
 }
+
+
+##
+# Distribution function of Gaussian mixture \Sum_k w[k]*N(mu[k],sigma[k]^2)
+##
+Fmix = function(x,mu,sd,w) sum(w*pnorm(x,mean=mu,sd=sd))
+
+##
+# Quantile function of Gaussian mixture
+##
+Fmix_inv = function(p,mu,sd,w,br=c(-1000,1000))
+{
+   G = function(x) Fmix(x,mu,sd,w) - p
+   return(uniroot(G,br)$root)
+}
+
+##
+# Function for optimization of interval for mixtures
+##
+fmix.opt <- function(x,
+                     alpha,
+                     sd,
+                     Q.chol,
+                     w,
+                     mu,
+                     limits,
+                     verbose,
+                     max.threads,
+                     ind)
+{
+  K = dim(mu)[1]
+  n = dim(mu)[2]
+  q.a = sapply(seq_len(n),function(i) Fmix_inv(x/2,
+                                               mu = mu[,i],
+                                               sd = sd[,i],
+                                               w=w,
+                                               br=limits))
+  q.b = sapply(seq_len(n),function(i) Fmix_inv(1-x/2,
+                                               mu = mu[,i],
+                                               sd = sd[,i],
+                                               w=w,
+                                               br=limits))
+
+
+
+  prob = 0
+  stopped = 0
+
+  k.seq = sort(w,decreasing=TRUE,index.return=TRUE)$ix
+
+  ki = 1
+  for(k in k.seq){
+    ws = 0
+    if(ki<K){
+      ws = sum(w[k.seq[(ki+1):K]])
+    }
+    ki = ki+1
+    lim = (1-alpha - prob - ws)/w[k]
+    p = gaussint(mu = mu[k,],
+                 Q.chol=Q.chol[[k]],
+                 a=q.a,
+                 b=q.b,
+                 ind = ind,
+                 lim=max(0,lim),
+                 max.threads=max.threads)
+    if(p$P==0){
+      stopped = 1
+      break
+    } else {
+      prob = prob + w[k]*p$P
+    }
+  }
+
+
+  if(stopped==1){ #too large alpha
+    if(prob == 0){
+      val = 10*(1+x)
+    } else {
+      val = 1+(prob-(1-alpha))^2
+    }
+  } else { #too small x
+    val = (prob-(1-alpha))^2
+  }
+
+  if(verbose){
+    cat("in optimization: ",x," ", prob, " ", val, "\n")
+  }
+
+  return(val)
+
+}
+
+
+fmix.samp.opt <- function(x, alpha,mu, sd, w, limits, samples)
+{
+  n = dim(mu)[2]
+  q.a = sapply(seq_len(n),function(i) Fmix_inv(x/2,
+                                               mu = mu[,i],
+                                               sd = sd[,i],
+                                               w=w,
+                                               br=limits))
+  q.b = sapply(seq_len(n),function(i) Fmix_inv(1-x/2,
+                                               mu = mu[,i],
+                                               sd = sd[,i],
+                                               w=w,
+                                               br=limits))
+
+  cover = sapply(seq_len(dim(samples)[1]), function(i) (sum(samples[i,]>q.b) + sum(samples[i,]<q.a))==0)
+
+  prob = mean(cover)
+  val = (prob-(1-alpha))^2
+  cat("in optimization: ",x," ", prob, " ", val, "\n")
+  return(val)
+
+}
+

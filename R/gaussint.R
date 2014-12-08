@@ -43,14 +43,11 @@ gaussint <- function(mu,
   if(length(b) != n)
     stop('Vectors with integration limits are of different length.')
 
-
-
-
   use.reordering <- match.arg(use.reordering)
 
   if(!missing(ind) && !is.null(ind)){
-    a[!ind] = Inf
-    b[!ind] = -Inf
+    a[!ind] = -Inf
+    b[!ind] = Inf
   }
 
   if(missing(max.size))
