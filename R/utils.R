@@ -144,11 +144,11 @@ excursions.setlimits <- function(marg, vars,type,QC,u,mu)
 {
 	if(QC){
 		if (type=="<") {
-		  uv = sqrt(vars)*qnorm(marg$rho_ng)
+		  uv = sqrt(vars)*qnorm(pmin(pmax(marg$rho_ngu,0),1))
 		} else if (type==">"){
-			uv = sqrt(vars)*qnorm(marg$rho_ng,lower.tail=FALSE)
+			uv = sqrt(vars)*qnorm(pmin(pmax(marg$rho_ngu,0),1),lower.tail=FALSE)
 		} else if (type=="=" || type == "!="){
-			uv = sqrt(vars)*qnorm(marg$rho_ngu,lower.tail=FALSE)
+			uv = sqrt(vars)*qnorm(pmin(pmax(marg$rho_ngu,0),1),lower.tail=FALSE)
 		}
 	} else {
 		uv = u-mu

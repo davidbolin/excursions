@@ -139,7 +139,7 @@ excursions.inla <- function(result.inla,
   		conf.i = private.get.config(result.inla,i)
 	  	lw[i] = conf.i$lp
 		  res[[i]] = excursions(alpha=alpha,u=0,mu=conf.i$mu-u.t,Q=conf.i$Q,
-		                        type=type,method=qc,rho=pfam,vars=conf.i$vars,
+		                        type=type,method=qc,rho=rho,vars=conf.i$vars,
 							              ind=ind,n.iter=n.iter,
 							              F.limit = F.limit,
 							              max.threads=max.threads,seed=seed)
@@ -168,19 +168,22 @@ excursions.inla <- function(result.inla,
   		lw[i] = conf.i$lp
   		r.i <- INLA::inla(result.inla$.args$formula,
                         family = result.inla$.args$family,
-                       data=result.inla$.args$data,
-                       control.compute = list(config = TRUE),
-                       control.predictor=result.inla$.args$control.predictor,
-                       control.mode = list(theta=
+                        data=result.inla$.args$data,
+                        control.compute = list(config = TRUE),
+                        control.predictor=result.inla$.args$control.predictor,
+                        control.mode = list(theta=
                          as.vector(result.inla$misc$configs$config[[i]]$theta),
                                   fixed=TRUE))
 
       if(random.effect) {
-        p1.i <- sapply(1:length(ind), function(j) inla.get.marginal(
-                                    ind[j],u,r.i,effect.name=name, u.link))
+        p1.i <- sapply(1:length(ind), function(j) inla.get.marginal(ind.int[j],
+                           u=u,result = r.i, effect.name=name,
+                           u.link = u.link, type = type))
+
       } else {
-        p1.i <- sapply(1:length(ind), function(j) inla.get.marginal(
-                                                ind.int[j],u,r.i, u.link))
+        p1.i <- sapply(1:length(ind), function(j) inla.get.marginal(ind[j],
+                           u=u,result = result.inla,
+                           u.link = u.link, type = type))
       }
 	  	pfam.i[ind] = p1.i
 
