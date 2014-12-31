@@ -73,7 +73,13 @@ simconf <- function(alpha,
 
   a.marg = mu-qnorm(alpha)*sd
   b.marg = mu+qnorm(alpha)*sd
+  if(is.null(ind)) {
+    return(list(a=a,b=b,a.marginal = a.marg,b.marginal=b.marg))
+  } else {
+    return(list(a=a[ind],b=b[ind],
+                a.marginal = a.marg[ind],
+                b.marginal=b.marg[ind]))
+  }
 
-  return(list(a=a,b=b,a.marginal = a.marg,b.marginal=b.marg))
 }
 

@@ -253,8 +253,6 @@ fmix.opt <- function(x,
                                                w=w,
                                                br=limits))
 
-
-
   prob = 0
   stopped = 0
 

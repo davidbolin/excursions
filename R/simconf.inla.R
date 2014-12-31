@@ -21,6 +21,7 @@ simconf.inla <- function(result.inla,
                          tag=NULL,
                          ind=NULL,
                          alpha=1,
+                         method="NI",
                          u,
                          n.iter=10000,
                          verbose=0,
@@ -53,79 +54,71 @@ simconf.inla <- function(result.inla,
   ind = ind.stack
 
   n.theta = result.inla$misc$configs$nconfig
-  mu <- Q <- vars <- list()
-  w <- rep(0,n.theta)
-  for(i in 1:n.theta){
-    config = private.get.config(result.inla,i)
-    mu[[i]] = config$mu
-    Q[[i]] = config$Q
-    vars[[i]] = config$vars
-    w[i] = config$lp
-  }
-  w = exp(w)/sum(exp(w))
 
-
-  if(inla.sample){
-    s = suppressWarnings(inla.posterior.sample(n.iter,result.inla))
-    samp <- matrix(0,n.iter,length(ind))
-
-    for(i in seq_len(n.iter)){
-      samp[i,] <- s[[i]]$latent[ind]
+  if(method=="EB") {
+    for(i in 1:n.theta){
+      config = private.get.config(result.inla,i)
+      if(config$lp == 0)
+        break
     }
 
-    mu.m <- matrix(0,n.theta,length(ind))
-    sd.m <- matrix(0,n.theta,length(ind))
-    for(k in seq_len(n.theta)){
-      mu.m[k,] = mu[[k]][ind]
-      sd.m[k,] = sqrt(vars[[k]][ind])
+    return(simconf(alpha = alpha, mu = config$mu, Q = config$Q,
+                   vars = config$vars, n.iter=n.iter, ind=ind,
+                   verbose=verbose, max.threads=max.threads, seed=seed))
+
+  } else if(method=="NI") {
+    mu <- Q <- vars <- list()
+    w <- rep(0,n.theta)
+    for(i in 1:n.theta){
+      config = private.get.config(result.inla,i)
+      mu[[i]] = config$mu
+      Q[[i]] = config$Q
+      vars[[i]] = config$vars
+      w[i] = config$lp
     }
+    w = exp(w)/sum(exp(w))
+    if(inla.sample){
+      s = suppressWarnings(inla.posterior.sample(n.iter,result.inla))
+      samp <- matrix(0,n.iter,length(ind))
 
-    a.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = alpha/2,
-                                                   mu = mu.m[,i],
-                                                   sd = sd.m[,i],
-                                                   w = w,
-                                                   br = limits))
+      for(i in seq_len(n.iter)){
+        samp[i,] <- s[[i]]$latent[ind]
+      }
 
-    b.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = 1-alpha/2,
-                                                   mu = mu.m[,i],
-                                                   sd = sd.m[,i],
-                                                   w = w,
-                                                   br = limits))
+      mu.m <- matrix(0,n.theta,length(ind))
+      sd.m <- matrix(0,n.theta,length(ind))
+      for(k in seq_len(n.theta)){
+        mu.m[k,] = mu[[k]][ind]
+        sd.m[k,] = sqrt(vars[[k]][ind])
+      }
 
-    r.o = optimize(fmix.samp.opt,interval = c(0,alpha),
-                   mu=mu.m, alpha=alpha,
-                   sd=sd.m, w=w, limits = limits,samples=samp)
+      a.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = alpha/2,
+                                                   mu = mu.m[,i], sd = sd.m[,i],
+                                                   w = w, br = limits))
 
+      b.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = 1-alpha/2,
+                                                   mu = mu.m[,i], sd = sd.m[,i],
+                                                   w = w, br = limits))
 
-    a = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = r.o$minimum/2,
-                                              mu = mu.m[,i],
-                                              sd = sd.m[,i],
-                                              w = w,
-                                              br = limits))
+      r.o = optimize(fmix.samp.opt,interval = c(0,alpha), mu=mu.m, alpha=alpha,
+                     sd=sd.m, w=w, limits = limits,samples=samp)
 
-    b = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = 1-r.o$minimum/2,
-                                                          mu = mu.m[,i],
-                                                          sd = sd.m[,i],
-                                                          w = w,
-                                                          br = limits))
+      a = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = r.o$minimum/2,
+                                              mu = mu.m[,i], sd = sd.m[,i],
+                                              w = w, br = limits))
 
-  return(list(a = a,
-              b = b,
-              a.marginal = a.marg,
-              b.marginal = b.marg))
+      b = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = 1-r.o$minimum/2,
+                                              mu = mu.m[,i], sd = sd.m[,i],
+                                              w = w, br = limits))
 
+      return(list(a = a, b = b, a.marginal = a.marg, b.marginal = b.marg))
+    } else {
+      return(simconf.mixture(alpha = alpha, mu = mu, Q = Q, vars = vars,
+                             w = w, n.iter=n.iter, limits = limits,
+                             ind=ind, verbose=verbose, max.threads=max.threads,
+                             seed=seed))
+    }
   } else {
-    return(simconf.mixture(alpha = alpha,
-                           mu = mu,
-                           Q = Q,
-                           vars = vars,
-                           w = w,
-                           n.iter=n.iter,
-                           limits = limits,
-                           ind=ind,
-                           verbose=verbose,
-                           max.threads=max.threads,
-                           seed=seed))
+    stop("Method must be EB or NI")
   }
 }
-
