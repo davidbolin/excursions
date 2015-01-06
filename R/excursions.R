@@ -15,9 +15,24 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
-                       F.limit, vars, rho, reo, method='EB', ind, max.size,
-                       verbose=0, max.threads=0,seed,LDL=TRUE)
+excursions <- function(alpha,
+                       u,
+                       mu,
+                       Q,
+                       type,
+                       n.iter=10000,
+                       Q.chol,
+                       F.limit,
+                       vars,
+                       rho,
+                       reo,
+                       method='EB',
+                       ind,
+                       max.size,
+                       verbose=0,
+                       max.threads=0,
+                       seed,
+                       LDL=TRUE)
 {
 
   if(method=='QC'){
@@ -166,8 +181,13 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
     ind <- which(ind)
   }
 
-  output <- list(F=F, G = G, M = M,
-                 E=E, rho=marg$rho, Fe=Fe, reo=reo, ireo=ireo, vars=vars,
+  output <- list(F = F,
+                 G = G,
+                 M = M,
+                 E = E,
+                 mean = mu,
+                 vars=vars,
+                 rho=marg$rho,
                  meta=(list(calculation="excursions",
                             type=type,
                             level=u,
@@ -176,6 +196,9 @@ excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
                             n.iter=n.iter,
                             method=method,
                             ind=ind,
+                            reo=reo,
+                            ireo=ireo,
+                            Fe=Fe,
                             LDL=LDL)))
   class(output) <- "excurobj"
   output

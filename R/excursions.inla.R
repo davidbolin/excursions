@@ -211,9 +211,10 @@ excursions.inla <- function(result.inla,
     rho.ind = pmax(rho.ind,1-rho.ind)
   }
 
-  F.out = mu.out = rho.out = rep(NA,n.out)
+  F.out = mu.out = rho.out = vars.out = rep(NA,n.out)
 
   F.out[ind.int] = F
+  vars.out[ind.int] = config$vars[ind]
   mu.out[ind.int] = config$mu[ind]
   rho.out[ind.int] = rho.ind
 
@@ -226,8 +227,29 @@ excursions.inla <- function(result.inla,
   }
   G.out[ind.int] = G
 
-  output <- list(F=F.out, G=G.out,
-                 mean=mu.out,
+  E = rep(0,length(F))
+  E[F>1-alpha] = 1
+  E.out = rep(NA,n.out)
+  E.out[ind.int] = E
+
+  M = rep(-1,length(F))
+  if (type=="<") {
+    M[E==1] = 0
+  } else if (type == ">") {
+    M[E==1] = 1
+  } else if (type == "!=" || type == "=") {
+    M[E==1 & mu>u] = 1
+    M[E==1 & mu<u] = 0
+  }
+
+  M.out[ind.int] = M
+
+  output <- list(E = E.out,
+                 F = F.out,
+                 G = G.out,
+                 M = M.out,
+                 mean = mu.out,
+                 vars = vars.out,
                  rho=rho.out,
                  meta=list(calculation="excursions",
                            type=type,
