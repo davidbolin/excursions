@@ -1,10 +1,10 @@
-\name{excursions.simconf}
-\alias{excursions.simconf}
+\name{simconf}
+\alias{simconf}
 \title{
   Simultaneous confidence regions for Gaussian models
 }
 \description{
-  \code{excursions.simconf} is used for calculating simultaneous
+  \code{simconf} is used for calculating simultaneous
   confidence regions for Gaussian models \eqn{x}. The function returns
   upper and lower bounds \eqn{a} and \eqn{b} such that \eqn{P(a<x<b) =
     1-alpha}.
@@ -16,10 +16,11 @@ simconf(alpha,
         n.iter=10000,
         Q.chol,
         vars,
-        ind,
+        ind=NULL,
         verbose=0,
         max.threads=0,
-        LDL)
+        seed=NULL,
+        LDL=TRUE)
 }
 \arguments{
   \item{alpha}{Error probability for the region.}
@@ -43,6 +44,9 @@ simconf(alpha,
   A list:
   \item{a }{The lower bound.}
   \item{b }{The upper bound.}
+  \item{a.marginal }{The lower bound for pointwise confidence bands.}
+  \item{b.marginal }{The upper bound for pointwise confidence bands.}
+
 }
 \author{
   David Bolin \email{davidbolin@gmail.com} and
@@ -50,7 +54,7 @@ simconf(alpha,
 }
 
 \references{
-Bolin, D. and Lindgren, F. (2013) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, Journal of the Royal Statistical Society: Series B (in press).
+Bolin et al. Statistical prediction of global sea level from global temperature, Statistica Sinica, Vol 25, pp 351-367.
 }
 
 \examples{
@@ -60,7 +64,7 @@ mu.x = seq(-5, 5, length=n)
 Q.x = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
 
 ## calculate the confidence region
-conf = excursions.simconf(0.05, mu.x, Q.x, max.threads=2)
+conf = simconf(0.05, mu.x, Q.x, max.threads=2)
 
 ## Plot the region
 plot(mu.x, type="l", ylim=c(-10, 10),

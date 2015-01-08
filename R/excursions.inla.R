@@ -211,14 +211,14 @@ excursions.inla <- function(result.inla,
     rho.ind = pmax(rho.ind,1-rho.ind)
   }
 
-  F.out = mu.out = rho.out = vars.out = rep(NA,n.out)
+  F.out = mu.out = rho.out = vars.out = E.out = M.out = G.out = rep(NA,n.out)
 
   F.out[ind.int] = F
   vars.out[ind.int] = config$vars[ind]
   mu.out[ind.int] = config$mu[ind]
   rho.out[ind.int] = rho.ind
 
-  G.out = rep(NA,n.out)
+
   G = rep(0,length(config$mu[ind]))
   if(type == "<") {
     G[config$mu[ind] > u.t[ind]] = 1
@@ -229,7 +229,6 @@ excursions.inla <- function(result.inla,
 
   E = rep(0,length(F))
   E[F>1-alpha] = 1
-  E.out = rep(NA,n.out)
   E.out[ind.int] = E
 
   M = rep(-1,length(F))

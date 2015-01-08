@@ -1,28 +1,29 @@
 \name{excursions.inla}
 \alias{excursions.inla}
 \title{
-  Calculate excursion sets based on INLA output
+Excursion sets and contour credible regions for latent Gaussian
+models
 }
 \description{
-  Calculate excursion function or contour uncertainty function for
-  models calculated using the INLA method.
+  Excursion sets and contour credible regions for latent Gaussian
+models calculated using the INLA method.
 }
 \usage{
-excursions.inla <- function(result.inla,
-                            stack,
-                            name=NULL,
-                            tag=NULL,
-                            ind=NULL,
-                            method,
-                            alpha=1,
-                            F.limit,
-                            u,
-                            u.link = FALSE,
-                            type,
-                            n.iter=10000,
-                            verbose=0,
-                            max.threads=0,
-                            seed=NULL)
+excursions.inla(result.inla,
+                stack,
+                name=NULL,
+                tag=NULL,
+                ind=NULL,
+                method,
+                alpha=1,
+                F.limit,
+                u,
+                u.link = FALSE,
+                type,
+                n.iter=10000,
+                verbose=0,
+                max.threads=0,
+                seed=NULL)
 }
 \arguments{
   \item{result.inla }{Result object from INLA call}
@@ -118,7 +119,6 @@ ef = list(c(list(ar=x),list(cov=mu)))
 s.obs = inla.stack(data=list(y=Y), A=list(A), effects=ef, tag="obs")
 s.pre = inla.stack(data=list(y=NA), A=list(1), effects=ef,tag="pred")
 stack = inla.stack(s.obs,s.pre)
-iprd <- inla.stack.index(stack, "pred")$data
 formula = y ~ -1 + cov + f(ar,model="ar1")
 result = inla(formula=formula, family="normal", data = inla.stack.data(stack),
               control.predictor=list(A=inla.stack.A(stack),compute=TRUE),

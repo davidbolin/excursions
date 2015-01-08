@@ -144,9 +144,9 @@ excursions.setlimits <- function(marg, vars,type,QC,u,mu)
 {
 	if(QC){
 		if (type=="<") {
-		  uv = sqrt(vars)*qnorm(pmin(pmax(marg$rho_ngu,0),1))
+		  uv = sqrt(vars)*qnorm(pmin(pmax(marg$rho_ng,0),1))
 		} else if (type==">"){
-			uv = sqrt(vars)*qnorm(pmin(pmax(marg$rho_ngu,0),1),lower.tail=FALSE)
+			uv = sqrt(vars)*qnorm(pmin(pmax(marg$rho_ng,0),1),lower.tail=FALSE)
 		} else if (type=="=" || type == "!="){
 			uv = sqrt(vars)*qnorm(pmin(pmax(marg$rho_ngu,0),1),lower.tail=FALSE)
 		}

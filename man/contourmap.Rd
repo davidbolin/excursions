@@ -7,23 +7,23 @@
   \code{contourmap} is used for calculating contour maps and quality measures for contour maps for latent Gaussian models.
 }
 \usage{
-contourmap <- function(mu,
-                       Q,
-                       vars,
-                       n.levels,
-                       ind,
-                       levels,
-                       type = c("standard",
-                                "equalarea",
-                                "P0-optimal",
-                                "P1-optimal",
-                                "P2-optimal"),
-                       compute = list(F=TRUE, measures = NULL),
-                       use.marginals=TRUE,
-                       alpha=1,
-                       n.iter=10000,
-                       verbose=FALSE,
-                       max.threads=0)
+contourmap(mu,
+           Q,
+           vars,
+           n.levels,
+           ind,
+           levels,
+           type = c("standard",
+                    "equalarea",
+                    "P0-optimal",
+                    "P1-optimal",
+                    "P2-optimal"),
+           compute = list(F=TRUE, measures = NULL),
+           use.marginals=TRUE,
+           alpha=1,
+           n.iter=10000,
+           verbose=FALSE,
+           max.threads=0)
 }
 \arguments{
   \item{mu}{Expectation vector}
@@ -53,15 +53,17 @@ contourmap <- function(mu,
   \item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
 }
 \value{
-  A list:
+\code{contourmap} returns an object of class "excurobj". This is a list that can contains the following arguments:
   \item{u }{Contour levels}
   \item{n.levels}{The number of contours used}
-  \item{u.e}{The values associated with the level sets E_k}
-  \item{G}{A vector which shows which of the level sets E_k each node belongs to.}
-  \item{map}{Representation of the contour map with map[i]=u.e[k] if i is in E[[k]]}
-  \item{F }{The contour map function}
-  \item{P0/P1/P2}{Calculated quality measures}
-  \item{P0bound/P1bound/P2bound}{Calculated upper bounds quality measures}
+  \item{u.e}{The values associated with the level sets G_k}
+  \item{G}{A vector which shows which of the level sets G_k each node belongs to.}
+  \item{map}{Representation of the contour map with map[i]=u.e[k] if i is in G_k}
+  \item{F }{The contour map function (if computed)}
+  \item{M }{Contour avoiding sets (if \code{F} is computed). \eqn{M=-1} for all non-significant nodes and  \eqn{M=k} for nodes that belong to \eqn{M_k}.}
+  \item{P0/P1/P2}{Calculated quality measures (if computed)}
+  \item{P0bound/P1bound/P2bound}{Calculated upper bounds quality measures (if computed)}
+  \item{meta }{A list containing various information about the calculation.}
 }
 \author{
   David Bolin \email{davidbolin@gmail.com}

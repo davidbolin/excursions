@@ -20,12 +20,10 @@ simconf.inla <- function(result.inla,
                          name=NULL,
                          tag=NULL,
                          ind=NULL,
-                         alpha=1,
+                         alpha,
                          method="NI",
-                         u,
                          n.iter=10000,
                          verbose=0,
-                         limits = c(-1000,1000),
                          max.threads=0,
                          seed=NULL,
                          inla.sample=TRUE)
@@ -34,6 +32,9 @@ simconf.inla <- function(result.inla,
     stop('This function requires the INLA package (see www.r-inla.org/download)')
   if(missing(result.inla))
     stop('Must supply INLA result object')
+
+  if(missing(alpha))
+    stop('Must supply error probability alpha')
 
   if(result.inla$.args$control.compute$config==FALSE)
     stop('INLA result must be calculated using control.compute$config=TRUE')
@@ -91,7 +92,7 @@ simconf.inla <- function(result.inla,
         mu.m[k,] = mu[[k]][ind]
         sd.m[k,] = sqrt(vars[[k]][ind])
       }
-
+      limits = c(-1000,1000)
       a.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = alpha/2,
                                                    mu = mu.m[,i], sd = sd.m[,i],
                                                    w = w, br = limits))
@@ -99,6 +100,17 @@ simconf.inla <- function(result.inla,
       b.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = 1-alpha/2,
                                                    mu = mu.m[,i], sd = sd.m[,i],
                                                    w = w, br = limits))
+      while(min(a.marg) == limits[1] || max(b.marg) == limits[2])
+      {
+        limits = 2*limits
+        a.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = alpha/2,
+                                                   mu = mu.m[,i], sd = sd.m[,i],
+                                                   w = w, br = limits))
+
+        b.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p= -alpha/2,
+                                                   mu = mu.m[,i], sd = sd.m[,i],
+                                                   w = w, br = limits))
+      }
 
       r.o = optimize(fmix.samp.opt,interval = c(0,alpha), mu=mu.m, alpha=alpha,
                      sd=sd.m, w=w, limits = limits,samples=samp)
@@ -114,9 +126,8 @@ simconf.inla <- function(result.inla,
       return(list(a = a, b = b, a.marginal = a.marg, b.marginal = b.marg))
     } else {
       return(simconf.mixture(alpha = alpha, mu = mu, Q = Q, vars = vars,
-                             w = w, n.iter=n.iter, limits = limits,
-                             ind=ind, verbose=verbose, max.threads=max.threads,
-                             seed=seed))
+                             w = w, n.iter=n.iter, ind=ind, verbose=verbose,
+                             max.threads=max.threads, seed=seed))
     }
   } else {
     stop("Method must be EB or NI")
