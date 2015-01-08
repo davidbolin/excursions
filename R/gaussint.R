@@ -93,7 +93,7 @@ gaussint <- function(mu,
 		     L = chol(private.as.spam(Q),pivot=FALSE)
 		  }
 		} else if(use.reordering == "sparsity"){
-		  #Reorder for sparsity, let SPAM do it...
+		  #Reorder for sparsity, let spam do it...
 		  if(LDL) {
   		  L = suppressWarnings(t(as(Cholesky(Q,perm=FALSE),"Matrix")))
 		    reo = L@perm
@@ -136,7 +136,7 @@ gaussint <- function(mu,
   }
 
   if(is(L,'spam.chol.NgPeyton')){
-     L = as(as(as.dgRMatrix.spam(as.spam(L)), "TsparseMatrix"),"dtCMatrix")
+     L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)), "TsparseMatrix"),"dtCMatrix")
   } else if (!is(L, "dtCMatrix") && !is(L,"dCHMsimpl")) {
     stop("L needs to be in ccs format for now.")
   }
@@ -162,8 +162,8 @@ gaussint <- function(mu,
     out$Pv[1:(dim(L)[1]-max.size)] = out$Pv[dim(L)[1]-max.size+1]
     out$Ev[1:(dim(L)[1]-max.size)] = out$Ev[dim(L)[1]-max.size+1]
   } else if(use.reordering == "sparsity") {
-    out$Pv = out$Pv[ireo.v]
-    out$Ev = out$Ev[ireo.v]
+    out$Pv = out$Pv[ireo]
+    out$Ev = out$Ev[ireo]
   }
   return(list(Pv = out$Pv, Ev = out$Ev, P = out$Pv[1], E = out$Ev[1]))
 }

@@ -16,44 +16,44 @@
 
 }
 \usage{
-gaussint( mu,
-          Q.chol,
-          Q,
-          a,
-          b,
-          lim = 0,
-          n.iter = 10000,
-          ind,
-          reo = c("natural","sparsity","limits"),
-          max.size,
-          max.threads=0,
-          seed,
-          LDL)
+gaussint(mu,
+         Q.chol,
+         Q,
+         a,
+         b,
+         lim = 0,
+         n.iter = 10000,
+         ind,
+         use.reordering = c("natural","sparsity","limits"),
+         max.size,
+         max.threads=0,
+         seed,
+         LDL=FALSE)
 }
 \arguments{
-  \item{mu}{Expectation vector for the Gaussian distribution.}
-  \item{Q}{Precision matrix for the Gaussian distribution. If Q is supplied but not Q.chol, the cholesky factor is computed before integrating.}
-  \item{Q.chol}{The Cholesky factor of the precision matrix
+  \item{mu }{Expectation vector for the Gaussian distribution.}
+  \item{Q.chol }{The Cholesky factor of the precision matrix
 	  (optional)}
-  \item{a}{Lower limit in integral.}
-  \item{b}{Upper limit in integral.}
-  \item{lim}{If this argument is used, the integration
+  \item{Q }{Precision matrix for the Gaussian distribution. If Q is supplied but not Q.chol, the cholesky factor is computed before integrating.}
+  \item{a }{Lower limit in integral.}
+  \item{b }{Upper limit in integral.}
+  \item{lim }{If this argument is used, the integration
     is stopped and 0 is returned if the estimated value goes
     below \eqn{lim}.}
-  \item{n.iter}{Number or iterations in the MC sampler that is
+  \item{n.iter }{Number or iterations in the MC sampler that is
     used for approximating probabilities. The default value is
     10000.}
-  \item{ind}{Indices of the nodes that should be analyzed (optional)}
-  \item{reo}{Determines what reordering to use:
+  \item{ind }{Indices of the nodes that should be analyzed (optional)}
+  \item{use.reordering }{Determines what reordering to use:
     \itemize{
-      \item{"natural"}{ No reordering is performed.}
-      \item{"sparsity"}{ Reorder for sparsity in the cholesky factor (MMD reordering is used).}
-      \item{"limits"}{ Reorder by moving all nodes with a=-Inf and b=Inf first and then reordering for sparsity (CAMD reordering is used).}
+      \item{"natural" }{No reordering is performed.}
+      \item{"sparsity" }{Reorder for sparsity in the cholesky factor (MMD reordering is used).}
+      \item{"limits" }{Reorder by moving all nodes with a=-Inf and b=Inf first and then reordering for sparsity (CAMD reordering is used).}
     }}
-  \item{max.size}{ The largest number of sub-integrals to compute. Default is the total dimension of the distribution. }
-  \item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
-  \item{seed}{ The random seed to use (optional). }
-  \item{LDL}{Use LDL factorisations? This is useful for analysis of problems with positive semidefinite precisions.}
+  \item{max.size }{The largest number of sub-integrals to compute. Default is the total dimension of the distribution. }
+  \item{max.threads }{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
+  \item{seed }{The random seed to use (optional). }
+  \item{LDL }{Use LDL factorisations? This is useful for analysis of problems with positive semidefinite precisions.}
 
 }
 \value{

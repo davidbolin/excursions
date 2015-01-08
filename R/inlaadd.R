@@ -21,7 +21,7 @@ inla.mesh.segment.default <-
             storage.mode(loc) = "double"
         }
         if (missing(idx) || is.null(idx))
-            idx = (inla.ifelse(is.bnd,
+            idx = (INLA:::inla.ifelse(is.bnd,
                                c(1:nrow(loc),1),
                                c(1:nrow(loc))))
     } else {

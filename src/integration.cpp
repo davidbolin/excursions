@@ -10,6 +10,11 @@
 #include <time.h>
 #include "gsl_fix.h"
 
+#include <R.h>
+#include <Rmath.h>
+#include <Rdefines.h>
+#include <R_ext/PrtUtil.h>
+
 /* Needed on Linux: */
 #include <unistd.h>
 
@@ -117,10 +122,13 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
       }
     #endif
     if (seed_read != (ssize_t) sizeof(seed)) {
-      srand(time(0));
+      //srand(time(0));
+      GetRNGstate();
       for(i=0;i<6;i++){
-        seed[i] = rand();
+        //seed[i] = rand();
+        seed[i] = round(RAND_MAX*unif_rand());
       }
+      PutRNGstate();
     }
   }
 
@@ -202,22 +210,21 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
         }
 
         if (x[i][j] == numeric_limits<double>::infinity()){
-          cout << "simulated infinite value, changing to zero" << endl;
-          cout << "c=" << c << ", d=" << d << ",d-c=" << d-c << endl;
+          Rprintf("simulated infinite value, changing to zero\n",i);
+          Rprintf("c= %f, d= %f, ,d-c= %f\n",c,d,d-c);
           x[i][j] = 0;
         }
 
         if (x[i][j]!=x[i][j]) {
-          cout << j << " x is nan: rtmp=" << rtmp << ", c="<< c;
-          cout << ", d="<< d << ", ai="<< ai << ", bi=" << bi <<", s[j]=";
-          cout << s[j] << ", Li=" << Li[i]<< endl;
+          Rprintf("%d x is nan: rtmp= %f, c= %f, d= %f, ai=%f",rtmp,c,d,ai);
+          Rprintf(", bi= %f, s[j] = %f, Li = %f",bi,s[j],Li[i]);
         }
       }
     }
 
     Pi = fsum/K;
     if (Pi!=Pi) {
-      cout << i << "Estimated probability is nan, stopping estimation." << endl;
+      Rprintf("%d Estimated probability is nan, stopping estimation\n",i);
       break;
     }
     Ei = sqrt(max((fsum2-fsum*fsum/K)/K/K,0));

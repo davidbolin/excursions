@@ -20,10 +20,12 @@ contourmap(mu,
                     "P2-optimal"),
            compute = list(F=TRUE, measures = NULL),
            use.marginals=TRUE,
-           alpha=1,
+           alpha,
+           F.limit,
            n.iter=10000,
            verbose=FALSE,
-           max.threads=0)
+           max.threads=0,
+           seed=NULL)
 }
 \arguments{
   \item{mu}{Expectation vector}
@@ -46,11 +48,14 @@ contourmap(mu,
       \item{'measures': }{A list with the quality measures to compute
 	("P0", "P1", or "P2")}
     }}
+  \item{use.marginals }{ Only marginal distributions are used when finding P-optimal maps (default TRUE).}
   \item{alpha}{Maximal error probability in contour map function (default=1)}
+  \item{F.limit}{The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.}
   \item{n.iter}{Number or iterations in the MC sampler that is used for
     approximating probabilities. The default value is 10000.}
   \item{verbose}{Set to TRUE for verbose mode (optional)}
   \item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
+  \item{seed}{Random seed (optional).}
 }
 \value{
 \code{contourmap} returns an object of class "excurobj". This is a list that can contains the following arguments:
@@ -77,5 +82,5 @@ Bolin, D. and Lindgren, F. (2014) \emph{Quantifying the uncertainty of contour m
   n = 100
   Q = Matrix(toeplitz(c(1, -0.5, rep(0, n-2))))
   mu = seq(-5, 5, length=n)
-  lp <- contourmap(mu,Q,n.levels = 2, measure = c(1,2))
+  lp <- contourmap(mu,Q,n.levels = 2, compute=list(F=FALSE, measures = c("P1","P2")))
 }

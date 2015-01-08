@@ -79,7 +79,7 @@ simconf.inla <- function(result.inla,
     }
     w = exp(w)/sum(exp(w))
     if(inla.sample){
-      s = suppressWarnings(inla.posterior.sample(n.iter,result.inla))
+      s = suppressWarnings(INLA::inla.posterior.sample(n.iter,result.inla))
       samp <- matrix(0,n.iter,length(ind))
 
       for(i in seq_len(n.iter)){

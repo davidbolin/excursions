@@ -22,7 +22,6 @@ simconf.mixture <- function(alpha,
                             ind,
                             n.iter=10000,
                             vars,
-                            limits = NULL,
                             verbose=0,
                             max.threads=0,
                             seed=NULL,
@@ -40,9 +39,6 @@ simconf.mixture <- function(alpha,
 
   if(missing(alpha))
     stop('Must provide significance level alpha')
-
-  if(missing(limits) || is.null(limits))
-    limits <- c(-1000,1000)
 
   K <- length(mu)
   n <- length(mu[[1]])

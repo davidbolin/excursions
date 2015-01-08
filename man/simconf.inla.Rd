@@ -55,6 +55,7 @@ simconf.inla(result.inla,
 }
 
 \examples{
+if (require(INLA)) {
 n <- 100
 x <- seq(0, 6, length.out=n)
 y <- sin(x) + rnorm(n)
@@ -71,4 +72,5 @@ lines(res$a)
 lines(res$b)
 lines(res$a.marginal,col="2")
 lines(res$b.marginal,col="2")
+}
 }

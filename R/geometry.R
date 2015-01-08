@@ -228,7 +228,7 @@ connect.segments <-function(segment.set,
   ## Remap nodes into 1...nV
   segments <- sort(unique(as.vector(segment.set)))
   nV <- length(segments)
-  segments.reo <- spam(list(i=segments,
+  segments.reo <- spam::spam(list(i=segments,
                             j=rep(1, nV),
                             values=seq_len(nV)),
                        max(segments), 1)
@@ -238,7 +238,7 @@ connect.segments <-function(segment.set,
 
   segment.unused <- rep(TRUE, nE)
   segment.unused.idx <- which(segment.unused)
-  segment.VV <- spam(list(i=segment.set[,1],
+  segment.VV <- spam::spam(list(i=segment.set[,1],
                           j=segment.set[,2],
                           values=seq_len(nE)),
                      nV, nV)
@@ -338,9 +338,9 @@ connect.segments <-function(segment.set,
 ## Compute simple outline of 1/0 set on a grid, eliminating spikes.
 outline.on.grid <- function(z, grid)
 {
-  if (!require(spam)) {
-    stop("The 'spam' package is needed.")
-  }
+#  if (!require(spam)) {
+#    stop("The 'spam' package is needed.")
+#  }
   ni <- nrow(z)
   nj <- ncol(z)
   z <- (z != FALSE)
@@ -362,12 +362,12 @@ outline.on.grid <- function(z, grid)
   zz.m <- z[-ni,-c(nj-1,nj),drop=FALSE] + z[-1,-c(nj-1,nj),drop=FALSE]
   zz <- (zz.n == 2) * (zz.p+zz.m > 0) * ((zz.p == 0)*1 + (zz.m == 0)*2)
   ## zz=0 : No segment, zz=1 : set is below, zz=2 : set is above
-  ijv <- triplet(as.spam(zz == 1), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 1), tri=TRUE)
   idx <- which(ijv$values > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]+1),
                      ij2k(ijv$i[idx], ijv$j[idx]+1)))
-  ijv <- triplet(as.spam(zz == 2), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 2), tri=TRUE)
   idx <- which(ijv$values > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx], ijv$j[idx]+1),
@@ -379,12 +379,12 @@ outline.on.grid <- function(z, grid)
   zz.m <- z[-c(ni-1,ni),-nj,drop=FALSE] + z[-c(ni-1,ni),-1,drop=FALSE]
   zz <- (zz.n == 2) * (zz.p+zz.m > 0) * ((zz.p == 0)*1 + (zz.m == 0)*2)
   ## zz=0 : No segment, zz=1 : set is on left, zz=2 : set is on right
-  ijv <- triplet(as.spam(zz == 1), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 1), tri=TRUE)
   idx <- which(ijv$values > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]),
                      ij2k(ijv$i[idx]+1, ijv$j[idx]+1)))
-  ijv <- triplet(as.spam(zz == 2), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 2), tri=TRUE)
   idx <- which(ijv$values > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]+1),
@@ -400,22 +400,22 @@ outline.on.grid <- function(z, grid)
            z[-ni,-1,drop=FALSE]*4 + z[-1,-1,drop=FALSE]*8))
   ## zz=0 : No diagonal
   ## zz=1 : (0,0), zz=2 : (1,0), zz=4 : (0,1), zz=8 : (1,1)
-  ijv <- triplet(as.spam(zz == 1), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 1), tri=TRUE)
   idx <- which(ijv$values > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx], ijv$j[idx]+1),
                      ij2k(ijv$i[idx]+1, ijv$j[idx])))
-  ijv <- triplet(as.spam(zz == 2), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 2), tri=TRUE)
   idx <- which(ijv$values > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx], ijv$j[idx]),
                      ij2k(ijv$i[idx]+1, ijv$j[idx]+1)))
-  ijv <- triplet(as.spam(zz == 4), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 4), tri=TRUE)
   idx <- which(ijv$values > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]+1),
                      ij2k(ijv$i[idx], ijv$j[idx])))
-  ijv <- triplet(as.spam(zz == 8), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 8), tri=TRUE)
   idx <- which(ijv$values > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]),
@@ -426,12 +426,12 @@ outline.on.grid <- function(z, grid)
   zz.n <- z[-ni,c(1,nj),drop=FALSE] + z[-1,c(1,nj),drop=FALSE]
   zz <- (zz.n == 2) * (zz.pm > 0) * matrix(rep(c(2,1), each=ni-1), ni-1, 2)
   ## zz=0 : No segment, zz=1 : set is below, zz=2 : set is above
-  ijv <- triplet(as.spam(zz == 1), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 1), tri=TRUE)
   idx <- which(ijv$values > 0)
   bnd.seg <- rbind(bnd.seg,
                    cbind(ij2k(ijv$i[idx]+1, nj),
                          ij2k(ijv$i[idx], nj)))
-  ijv <- triplet(as.spam(zz == 2), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 2), tri=TRUE)
   idx <- which(ijv$values > 0)
   bnd.seg <- rbind(bnd.seg,
                    cbind(ij2k(ijv$i[idx], 1),
@@ -442,12 +442,12 @@ outline.on.grid <- function(z, grid)
   zz.n <- z[c(1,ni),-nj,drop=FALSE] + z[c(1,ni),-1,drop=FALSE]
   zz <- (zz.n == 2) * (zz.pm > 0) * matrix(rep(c(2,1), times=nj-1), 2, nj-1)
   ## zz=0 : No segment, zz=1 : set is on left, zz=2 : set is on right
-  ijv <- triplet(as.spam(zz == 1), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 1), tri=TRUE)
   idx <- which(ijv$values > 0)
   bnd.seg <- rbind(bnd.seg,
                    cbind(ij2k(ni, ijv$j[idx]),
                          ij2k(ni, ijv$j[idx]+1)))
-  ijv <- triplet(as.spam(zz == 2), tri=TRUE)
+  ijv <- spam::triplet(spam::as.spam(zz == 2), tri=TRUE)
   idx <- which(ijv$values > 0)
   bnd.seg <- rbind(bnd.seg,
                    cbind(ij2k(1, ijv$j[idx]+1),
@@ -495,14 +495,14 @@ submesh.grid <- function(z, grid=NULL)
     stop("The 'INLA' package is needed.")
   }
   outline <- outline.on.grid(z, grid)
-  inla.mesh.create(loc=grid$loc,
+  INLA::inla.mesh.create(loc=grid$loc,
                    boundary=as.inla.mesh.segment.outline(outline),
                    refine=FALSE)
 }
 submesh.mesh <- function(z, mesh)
 {
   outline <- outline.on.mesh(z, mesh)
-  inla.mesh.create(loc=mesh$loc,
+  INLA::inla.mesh.create(loc=mesh$loc,
                    boundary=as.inla.mesh.segment.outline(outline),
                    refine=FALSE)
 }
@@ -560,43 +560,43 @@ as.inla.mesh.segment.outline <- function(outline,
 
 
 as.Polygons.raw <- function(sequences, ID=" ") {
-  if (!require(sp)) {
-    stop("The 'sp' package is needed.")
-  }
+  #if (!require(sp)) {
+  #  stop("The 'sp' package is needed.")
+  #}
   polys <- lapply(sequences,
                   function(x) {
                     if (is.list(x)) {
-                      p <- Polygon(cbind(x$x, x$y))
+                      p <- sp::Polygon(cbind(x$x, x$y))
                     } else {
-                      p <- Polygon(x)
+                      p <- sp::Polygon(x)
                     }
                     p
                   })
   if (length(polys) == 0) {
     sp <- NULL
   } else {
-    sp <- Polygons(polys, ID=ID)
+    sp <- sp::Polygons(polys, ID=ID)
   }
   sp
 }
 
 as.Lines.raw <- function(cl, ID=" ") {
-  if (!require(sp)) {
-    stop("The 'sp' package is needed.")
-  }
+  #if (!require(sp)) {
+  #  stop("The 'sp' package is needed.")
+  #}
   polys <- lapply(cl,
                   function(x) {
                     if (is.list(x)) {
-                      p <- Line(cbind(x$x, x$y))
+                      p <- sp::Line(cbind(x$x, x$y))
                     } else {
-                      p <- Line(x)
+                      p <- sp::Line(x)
                     }
                     p
                   })
   if (length(polys) == 0) {
     sp <- NULL
   } else {
-    sp <- Lines(polys, ID=ID)
+    sp <- sp::Lines(polys, ID=ID)
   }
   sp
 }
@@ -638,9 +638,9 @@ tricontour.matrix <-
 ## Generate triangulation graph properties
 ## Nt,Ne,Nv,ev,et,eti,ee,te,tt,tti
 generate.trigraph.properties <- function(x, Nv=NULL) {
-  if (!require(spam)) {
-    stop("The 'spam' package is needed.")
-  }
+  #if (!require(spam)) {
+  #  stop("The 'spam' package is needed.")
+  #}
   stopifnot(is.list(x))
   stopifnot("tv" %in% names(x))
 
@@ -657,11 +657,11 @@ generate.trigraph.properties <- function(x, Nv=NULL) {
   x$et <- rep(seq_len(x$Nt), times=3)
   x$eti <- rep(1:3, each=x$Nt) ## Opposing vertex within-triangle-indices
   x$te <- matrix(seq_len(x$Ne), x$Nt, 3)
-  ev <- spam(list(i=rep(seq_len(x$Ne), times=2),
+  ev <- spam::spam(list(i=rep(seq_len(x$Ne), times=2),
                   j=as.vector(x$ev),
                   values=rep(1,x$Ne*2)),
              nrow=x$Ne, ncol=x$Nv)
-  ev.tr <- triplet(ev%*%t(ev))
+  ev.tr <- spam::triplet(ev%*%t(ev))
   ee <- ev.tr$ind[(ev.tr$values==2) &
                   (ev.tr$ind[,1]!=ev.tr$ind[,2]),,
                   drop=FALSE]
@@ -979,7 +979,7 @@ tricontourmap.list <-
     }
   }
   if (output == "sp") {
-    out$map <- SpatialPolygons(out$map)
+    out$map <- sp::SpatialPolygons(out$map)
   } else {
     out$map <- do.call(inla.mesh.segment, out$map)
   }
@@ -1004,7 +1004,7 @@ tricontourmap.list <-
   }
   if (output == "sp") {
     if (length(out$contour) > 0) {
-      out$contour <- SpatialLines(out$contour)
+      out$contour <- sp::SpatialLines(out$contour)
     } else {
       out$contour <- NULL
     }
@@ -1109,7 +1109,7 @@ probabilitymap <-
   }
   if (length(out) > 0) {
     if (output == "sp") {
-      out <- SpatialPolygons(out)
+      out <- sp::SpatialPolygons(out)
     } else {
       out <- do.call(inla.mesh.segment, out)
     }
@@ -1438,7 +1438,7 @@ continuous <- function(ex,
                       output=output)
 
   if (suppressWarnings(require(INLA, quietly=TRUE))) {
-    F.geometry <- inla.mesh.create(loc=mesh$loc,
+    F.geometry <- INLA::inla.mesh.create(loc=mesh$loc,
                                    tv=mesh$graph$tv)
     ## Handle possible node reordering in inla.mesh.create()
     F.interp.nontransformed[F.geometry$idx$loc] <- F.interp.nontransformed
@@ -1453,7 +1453,7 @@ continuous <- function(ex,
     if (!suppressWarnings(require(INLA, quietly=TRUE))) {
       warning("INLA required for P0 calculations.")
     } else {
-      fem <- inla.mesh.fem(F.geometry, order=1)
+      fem <- INLA::inla.mesh.fem(F.geometry, order=1)
       out$P0 <-
         sum(diag(fem$c0) * F.interp.nontransformed) /
         sum(diag(fem$c0))

@@ -237,8 +237,8 @@ excursions.inla <- function(result.inla,
   } else if (type == ">") {
     M[E==1] = 1
   } else if (type == "!=" || type == "=") {
-    M[E==1 & mu>u] = 1
-    M[E==1 & mu<u] = 0
+    M[E==1 & config$mu[ind]>u] = 1
+    M[E==1 & config$mu[ind]<u] = 0
   }
 
   M.out[ind.int] = M

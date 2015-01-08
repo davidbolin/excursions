@@ -1,22 +1,29 @@
+
+
 /***********************************************************************\
  *
  * File:           RngStream.c for multiple streams of Random Numbers
  * Language:       ANSI C
- * Copyright:      Pierre L'Ecuyer, University of Montreal
+ * Copyright:      Pierre L'Ecuyer, University of Montreal (lecuyer@iro.UMontreal.ca)
+ * Notice:         This code is released under the GPL license
  * Date:           14 August 2001
- * License: 	   GPL version 2 or later
  *
- * Notice:         Please contact P. L'Ecuyer at <lecuyer@iro.UMontreal.ca>
- *                 for commercial purposes.
- *
-\***********************************************************************/
+\***********************************************************************/ 
 
+/*
+January 25, 2012: Minor modifications were made in order to satisfy the R 2.14.1 check:
+					- include R.h
+					- replace printf with Rprintf
+					- replace exit with error
+					- remove stderr
+				  The changes are marked with 'HS 01-25-2012'
+*/
 
 #include "RngStream.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <R.h> /* HS 01-25-2012 */
 
 /*---------------------------------------------------------------------*/
 /* Private part.                                                       */
@@ -269,31 +276,47 @@ static int CheckSeed (unsigned long seed[6])
 
    for (i = 0; i < 3; ++i) {
       if (seed[i] >= m1) {
-	 fprintf (stderr, "****************************************\n"
+      	/* HS 01-25-2012 */
+      	error("Seed[%1d] >= %d, Seed is not set.\n", i,m1); 
+	 /* original code
+	   fprintf (stderr, "****************************************\n"
 		 "ERROR: Seed[%1d] >= m1, Seed is not set.\n"
 		 "****************************************\n\n", i);
-	 return (-1);
+	    return (-1);
+	 */
        }
    }
    for (i = 3; i < 6; ++i) {
       if (seed[i] >= m2) {
+      	 /* HS 01-25-2012 */
+      	error("Seed[%1d] >= %d, Seed is not set.\n", i,m2); 
+	 /* original code
 	 fprintf (stderr, "****************************************\n"
 		 "ERROR: Seed[%1d] >= m1, Seed is not set.\n"
 		 "****************************************\n\n", i);
 	 return (-1);
+	 */
        }
    }
    if (seed[0] == 0 && seed[1] == 0 && seed[2] == 0) {
+   	    /* HS 01-25-2012 */
+      	error("First 3 seeds = 0.\n"); 
+	 /* original code
       fprintf (stderr, "****************************\n"
 	      "ERROR: First 3 seeds = 0.\n"
 	      "****************************\n\n");
       return (-1);
+      */
    }
    if (seed[3] == 0 && seed[4] == 0 && seed[5] == 0) {
+   	   	/* HS 01-25-2012 */
+      	error("Last 3 seeds = 0.\n"); 
+	 /* original code
       fprintf (stderr, "****************************\n"
 	      "ERROR: Last 3 seeds = 0.\n"
 	      "****************************\n\n");
       return (-1);
+      */
    }
 
    return 0;
@@ -309,19 +332,19 @@ RngStream RngStream_CreateStream (const char name[])
 {
    int i;
    RngStream g;
-   size_t len;
+   size_t len = strlen (name);
 
    g = (RngStream) malloc (sizeof (struct RngStream_InfoState));
    if (g == NULL) {
+   	/* HS 01-25-2012 */
+      	error("RngStream_CreateStream: No more memory\n");
+      /* original code
       printf ("RngStream_CreateStream: No more memory\n\n");
       exit (EXIT_FAILURE);
+      */
    }
-   if (name) {
-      len = strlen (name);
-      g->name = (char *) malloc ((len + 1) * sizeof (char));
-      strncpy (g->name, name, len + 1);
-   } else
-      g->name = 0;
+   g->name = (char *) malloc ((len + 1) * sizeof (char));
+   strncpy (g->name, name, len + 1); 
    g->Anti = 0;
    g->IncPrec = 0;
 
@@ -376,26 +399,32 @@ void RngStream_ResetStartSubstream (RngStream g)
 
 /*-------------------------------------------------------------------------*/
 
-int RngStream_SetPackageSeed (unsigned long seed[6])
+void RngStream_SetPackageSeed (unsigned long seed[6])
 {
    int i;
+   /* HS 01-25-2012 */
+   CheckSeed (seed);
+   /*original code
    if (CheckSeed (seed))
-      return -1;                    /* FAILURE */
+      exit (EXIT_FAILURE);
+   */
    for (i = 0; i < 6; ++i)
       nextSeed[i] = seed[i];
-   return 0;                       /* SUCCESS */
 }
 
 /*-------------------------------------------------------------------------*/
 
-int RngStream_SetSeed (RngStream g, unsigned long seed[6])
+void RngStream_SetSeed (RngStream g, unsigned long seed[6])
 {
    int i;
+   /* HS 01-25-2012 */
+   CheckSeed (seed);
+   /*original code
    if (CheckSeed (seed))
-      return -1;                    /* FAILURE */
+      exit (EXIT_FAILURE);
+   */
    for (i = 0; i < 6; ++i)
       g->Cg[i] = g->Bg[i] = g->Ig[i] = seed[i];
-   return 0;                       /* SUCCESS */ 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -445,8 +474,19 @@ void RngStream_WriteState (RngStream g)
    int i;
    if (g == NULL)
       return;
+   /* HS 01-25-2012 */
+   Rprintf ("The current state of the Rngstream");
+   if (strlen (g->name) > 0)
+      Rprintf (" %s", g->name);
+   Rprintf (":\n   Cg = { ");
+   for (i = 0; i < 5; i++) {
+      Rprintf ("%lu, ", (unsigned long) g->Cg[i]);
+   }
+   Rprintf ("%lu }\n\n", (unsigned long) g->Cg[5]);
+
+   /* original code
    printf ("The current state of the Rngstream");
-   if (g->name && (strlen (g->name) > 0))
+   if (strlen (g->name) > 0)
       printf (" %s", g->name);
    printf (":\n   Cg = { ");
 
@@ -454,6 +494,7 @@ void RngStream_WriteState (RngStream g)
       printf ("%lu, ", (unsigned long) g->Cg[i]);
    }
    printf ("%lu }\n\n", (unsigned long) g->Cg[5]);
+   */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -463,8 +504,34 @@ void RngStream_WriteStateFull (RngStream g)
    int i;
    if (g == NULL)
       return;
+   /* HS 01-25-2012 */
+   Rprintf ("The RngStream");
+   if (strlen (g->name) > 0)
+      Rprintf (" %s", g->name);
+   Rprintf (":\n   Anti = %s\n", (g->Anti ? "true" : "false"));
+   Rprintf ("   IncPrec = %s\n", (g->IncPrec ? "true" : "false"));
+
+   Rprintf ("   Ig = { ");
+   for (i = 0; i < 5; i++) {
+      Rprintf ("%lu, ", (unsigned long) (g->Ig[i]));
+   }
+   Rprintf ("%lu }\n", (unsigned long) g->Ig[5]);
+
+   Rprintf ("   Bg = { ");
+   for (i = 0; i < 5; i++) {
+      Rprintf ("%lu, ", (unsigned long) (g->Bg[i]));
+   }
+   Rprintf ("%lu }\n", (unsigned long) g->Bg[5]);
+
+   Rprintf ("   Cg = { ");
+   for (i = 0; i < 5; i++) {
+      Rprintf ("%lu, ", (unsigned long) (g->Cg[i]));
+   }
+   Rprintf ("%lu }\n\n", (unsigned long) g->Cg[5]);
+
+   /* origial code
    printf ("The RngStream");
-   if (g->name && (strlen (g->name) > 0))
+   if (strlen (g->name) > 0)
       printf (" %s", g->name);
    printf (":\n   Anti = %s\n", (g->Anti ? "true" : "false"));
    printf ("   IncPrec = %s\n", (g->IncPrec ? "true" : "false"));
@@ -486,6 +553,7 @@ void RngStream_WriteStateFull (RngStream g)
       printf ("%lu, ", (unsigned long) (g->Cg[i]));
    }
    printf ("%lu }\n\n", (unsigned long) g->Cg[5]);
+   */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -514,7 +582,7 @@ double RngStream_RandU01 (RngStream g)
 
 /*-------------------------------------------------------------------------*/
 
-int RngStream_RandInt (RngStream g, int i, int j)
+long RngStream_RandInt (RngStream g, long i, long j)
 {
-   return i + (int) ((j - i + 1.0) * RngStream_RandU01 (g));
+   return i + (long) ((j - i + 1) * RngStream_RandU01 (g));
 }

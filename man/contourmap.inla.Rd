@@ -19,6 +19,7 @@ contourmap.inla(result.inla,
   \item{stack }{The stack object used in the INLA call.}
   \item{tag }{The tag of the component in the stack for which to do the calculation. This argument should only be used if a stack object is provided, use the name argument otherwise.}
   \item{name }{The name of the component for which to do the calculation. This argument should only be used if a stack object is not provided, use the tag argument otherwise.}
+   \item{method }{Method for handeling the latent Gaussian structure. Currently only Empirical Bayes (EB) is supported.}
   \item{ind }{If only a part of a component should be used in the calculations, this argument specifies the indices for that part.}
   \item{... }{Additional arguments to the contour map function. See the documentation for \code{contourmap} for details.}
 }
@@ -71,6 +72,6 @@ if (require(INLA)) {
   ## Plot the results
   cols = contourmap.colors(map, col=heat.colors(100, 1),
                            credible.col = grey(0.5, 1))
-  image(matrix(map$M[mesh$idx$lattice],n.lattice,n.lattice),col=cols,axes=F)
+  image(matrix(map$M[mesh$idx$lattice],n.lattice,n.lattice),col=cols)
 }
 }

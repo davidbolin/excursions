@@ -18,7 +18,7 @@
 
 
 
-## calculates variances given either a cholesky factor L in Matrix or SPAM f
+## calculates variances given either a cholesky factor L in Matrix or spam f
 ## format, or given a precision matrix Q. If Q is provided, the cholesky factor
 ## is calculated and the variances are then returned in the same ordering as Q
 ## If L is provided, the variances are returned in the same ordering as L, even
@@ -29,7 +29,7 @@ excursions.variances<-function(L,Q)
   if(!missing(L) && !is.null(L)){
     ireo = FALSE
     if(is(L,'spam.chol.NgPeyton')){
-     L = as(as(as.dgRMatrix.spam(as.spam(L)), "TsparseMatrix"),"dtCMatrix")
+     L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)), "TsparseMatrix"),"dtCMatrix")
    } else {
       if (!is(L, "dtCMatrix"))
        stop("L needs to be in ccs format for now.")
@@ -38,7 +38,7 @@ excursions.variances<-function(L,Q)
     L = chol(private.as.spam(Q))
     ireo = TRUE
     reo = L@invpivot
-    L = as(as(as.dgRMatrix.spam(as.spam(L)), "TsparseMatrix"),"dtCMatrix")
+    L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)), "TsparseMatrix"),"dtCMatrix")
 
   }
   Mp = L@p
@@ -53,8 +53,6 @@ excursions.variances<-function(L,Q)
   } else {
     return(out$variances)
   }
-
-
 }
 
 
@@ -184,7 +182,7 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
     if(LDL){
   		L = suppressWarnings(t(as(Cholesky(Q,perm=FALSE),"Matrix")))
     } else {
-      L = suppressWarnings(chol.spam(private.as.spam(Q),pivot = FALSE))
+      L = suppressWarnings(chol(private.as.spam(Q),pivot = FALSE))
     }
 
     res = gaussint(Q.chol = L, a = a.sort, b = b.sort, lim = lim,
@@ -194,7 +192,7 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
     #assume that everything already is ordered
     res = gaussint(Q = Q, a= a, b = b, lim = lim, n.iter = K,
                     max.size = max.size,
-                    max.threads = n.threads,seed = seeed,LDL=LDL)
+                    max.threads = n.threads,seed = seed,LDL=LDL)
   }
   return(res)
 }
@@ -205,9 +203,9 @@ private.as.spam = function(A)
     return(A)
   }
   else if(is(A,"dsyMatrix")){
-    return(as.spam.dgCMatrix(as(as.matrix(A),"dgCMatrix")))
+    return(spam::as.spam.dgCMatrix(as(as.matrix(A),"dgCMatrix")))
   } else {
-    return(as.spam.dgCMatrix(as(A,"dgCMatrix")))
+    return(spam::as.spam.dgCMatrix(as(A,"dgCMatrix")))
   }
 }
 
