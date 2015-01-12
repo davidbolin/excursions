@@ -5,7 +5,7 @@
   Calculate continuous domain excursion and credible contour sets
 }
 \description{
-%%  ~~ A concise (1-5 lines) description of what the function does. ~~
+  Calculates continuous domain excursion and credible contour sets
 }
 \usage{
 continuous(ex, geometry, alpha,
@@ -45,9 +45,7 @@ topologically as lattices, and the lattice boxes are assumed convex.
   \code{inla.mesh.segment} object.
 }
 }
-\details{
 
-}
 \value{
   A list:
   \item{M}{\code{SpatialPolygons} or \code{inla.mesh.segment} object.

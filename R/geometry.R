@@ -161,7 +161,7 @@ contour.pixels <- function(contourlines, pixelgrid, do.plot=0)
         setvec[tmp] <- 1
         image(mid.x, mid.y, matrix(setvec, nx, ny), col = c(0, 4),
               add=TRUE)
-        plot.contourLines(contourlines, add=TRUE)
+        #plot.contourLines(contourlines, add=TRUE)
         lines(c.x[segment+(0:1)], c.y[segment+(0:1)], col=2)
         if (do.plot > 2) {
           readline("next")
@@ -173,7 +173,7 @@ contour.pixels <- function(contourlines, pixelgrid, do.plot=0)
     setvec <- rep(0, nx*ny)
     setvec[sort(unique(unlist(which.pixel)))] <- 1
     image(mid.x, mid.y, matrix(setvec, nx, ny), col = c(0, 3))
-    plot.contourLines(contourlines, add=TRUE)
+    #plot.contourLines(contourlines, add=TRUE)
     lines(c.x[segment+(0:1)], c.y[segment+(0:1)], col=2)
   }
 
@@ -557,9 +557,9 @@ as.inla.mesh.segment.outline <- function(outline,
 
 
 as.Polygons.raw <- function(sequences, ID=" ") {
-  if (!require(sp)) {
-    stop("The 'sp' package is needed.")
-  }
+  #if (!require(sp)) {
+  #  stop("The 'sp' package is needed.")
+  #}
   polys <- lapply(sequences,
                   function(x) {
                     if (is.list(x)) {
@@ -578,9 +578,9 @@ as.Polygons.raw <- function(sequences, ID=" ") {
 }
 
 as.Lines.raw <- function(cl, ID=" ") {
-  if (!require(sp)) {
-    stop("The 'sp' package is needed.")
-  }
+  #if (!require(sp)) {
+  #  stop("The 'sp' package is needed.")
+  #}
   polys <- lapply(cl,
                   function(x) {
                     if (is.list(x)) {
