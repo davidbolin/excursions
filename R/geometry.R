@@ -17,9 +17,6 @@
 
 
 
-## library(rgeos)
-
-
 ## Trace a length 2 contour segment through pixels
 ##
 contour.segment.pixels <- function(c.x, c.y,
@@ -496,15 +493,15 @@ submesh.grid <- function(z, grid=NULL)
   }
   outline <- outline.on.grid(z, grid)
   INLA::inla.mesh.create(loc=grid$loc,
-                   boundary=as.inla.mesh.segment.outline(outline),
-                   refine=FALSE)
+                         boundary=as.inla.mesh.segment.outline(outline),
+                         refine=FALSE)
 }
 submesh.mesh <- function(z, mesh)
 {
   outline <- outline.on.mesh(z, mesh)
   INLA::inla.mesh.create(loc=mesh$loc,
-                   boundary=as.inla.mesh.segment.outline(outline),
-                   refine=FALSE)
+                         boundary=as.inla.mesh.segment.outline(outline),
+                         refine=FALSE)
 }
 
 
@@ -551,10 +548,10 @@ as.inla.mesh.segment.outline <- function(outline,
   if (missing(grp)) {
     grp <- c(outline$grp[ik.ccw], outline$grp[ik.cw])
   }
-  inla.mesh.segment(loc=outline$loc,
-                    idx=rbind(outline$idx[ik.ccw,,drop=FALSE],
-                    outline$idx[ik.cw, 2:1, drop=FALSE]),
-                    grp=grp)
+  INLA::inla.mesh.segment(loc=outline$loc,
+                          idx=rbind(outline$idx[ik.ccw,,drop=FALSE],
+                          outline$idx[ik.cw, 2:1, drop=FALSE]),
+                          grp=grp)
 }
 
 
@@ -981,7 +978,7 @@ tricontourmap.list <-
   if (output == "sp") {
     out$map <- sp::SpatialPolygons(out$map)
   } else {
-    out$map <- do.call(inla.mesh.segment, out$map)
+    out$map <- do.call(INLA::inla.mesh.segment, out$map)
   }
   for (k in seq_len(nlevels)) {
     if (output == "sp") {
@@ -1009,7 +1006,7 @@ tricontourmap.list <-
       out$contour <- NULL
     }
   } else {
-    out$contour <- do.call(inla.mesh.segment, out$contour)
+    out$contour <- do.call(INLA::inla.mesh.segment, out$contour)
   }
 
   out
@@ -1111,7 +1108,7 @@ probabilitymap <-
     if (output == "sp") {
       out <- sp::SpatialPolygons(out)
     } else {
-      out <- do.call(inla.mesh.segment, out)
+      out <- do.call(INLA::inla.mesh.segment, out)
     }
   } else {
     out <- NULL
