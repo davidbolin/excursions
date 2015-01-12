@@ -557,9 +557,9 @@ as.inla.mesh.segment.outline <- function(outline,
 
 
 as.Polygons.raw <- function(sequences, ID=" ") {
-  #if (!require(sp)) {
-  #  stop("The 'sp' package is needed.")
-  #}
+  if (!require(sp)) {
+    stop("The 'sp' package is needed.")
+  }
   polys <- lapply(sequences,
                   function(x) {
                     if (is.list(x)) {
@@ -578,9 +578,9 @@ as.Polygons.raw <- function(sequences, ID=" ") {
 }
 
 as.Lines.raw <- function(cl, ID=" ") {
-  #if (!require(sp)) {
-  #  stop("The 'sp' package is needed.")
-  #}
+  if (!require(sp)) {
+    stop("The 'sp' package is needed.")
+  }
   polys <- lapply(cl,
                   function(x) {
                     if (is.list(x)) {
