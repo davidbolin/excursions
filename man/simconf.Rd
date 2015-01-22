@@ -54,9 +54,8 @@ simconf(alpha,
 }
 
 \references{
-Bolin et al. Statistical prediction of global sea level from global temperature, Statistica Sinica, Vol 25, pp 351-367.
+Bolin et al. (2015) \emph{Statistical prediction of global sea level from global temperature}, Statistica Sinica, Vol 25, pp 351-367.
 }
-
 \examples{
 ## Create mean and a tridiagonal precision matrix
 n = 11

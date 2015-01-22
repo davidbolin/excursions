@@ -26,8 +26,8 @@ simconf.mixture(alpha,
 }
 \arguments{
   \item{alpha }{Error probability for the region.}
-  \item{mu }{A list with the \code{k} expectation vectors \deqn{latex}{\mu_k}.}
-  \item{Q }{A list with the \code{k} precision matrices \deqn{latex}{Q_k}.}
+  \item{mu }{A list with the \code{k} expectation vectors \eqn{latex}{\mu_k}.}
+  \item{Q }{A list with the \code{k} precision matrices \eqn{latex}{Q_k}.}
   \item{w }{A vector with the weights for each class in the mixture.}
   \item{ind}{Indices of the nodes that should be analyzed
     (optional)}
@@ -54,7 +54,7 @@ simconf.mixture(alpha,
 }
 
 \references{
-Bolin et al. Statistical prediction of global sea level from global temperature, Statistica Sinica, Vol 25, pp 351-367.
+Bolin et al. (2015) \emph{Statistical prediction of global sea level from global temperature}, Statistica Sinica, Vol 25, pp 351-367.
 }
 
 \examples{

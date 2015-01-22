@@ -26,6 +26,11 @@ contourmap.inla(result.inla,
 \value{
 \code{contourmap.inla} returns an object of class "excurobj" with the same elements as returned by \code{contourmap}.
 }
+\note{
+  This function requires the \code{INLA} package, which is not a CRAN
+  package.  See \url{http://www.r-inla.org/download} for easy
+  installation instructions.
+}
 \author{
   David Bolin \email{davidbolin@gmail.com}
 }
@@ -37,7 +42,7 @@ Bolin, D. and Lindgren, F. (2014) \emph{Quantifying the uncertainty of contour m
 \examples{
 if (require(INLA)) {
   #Generate mesh and SPDE model
-  n.lattice = 40
+  n.lattice = 10 #increase for more interesting, but slower, examples
   x=seq(from=0,to=10,length.out=n.lattice)
   lattice=inla.mesh.lattice(x=x,y=x)
   mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
@@ -45,7 +50,7 @@ if (require(INLA)) {
 
   #Generate an artificial sample
   sigma2.e = 0.01
-  n.obs=1000
+  n.obs=100
   obs.loc = cbind(runif(n.obs)*diff(range(x))+min(x),
                   runif(n.obs)*diff(range(x))+min(x))
   Q = inla.spde2.precision(spde, theta=c(log(sqrt(0.5)), log(sqrt(1))))
@@ -67,7 +72,7 @@ if (require(INLA)) {
 
   ## Calculate contour map with two levels
   map = contourmap.inla(result, stack = stack, tag = 'pred',
-                        n.levels = 2, alpha=0.1, F.limit = 0.9)
+                        n.levels = 2, alpha=0.1, F.limit = 0.1)
 
   ## Plot the results
   cols = contourmap.colors(map, col=heat.colors(100, 1),

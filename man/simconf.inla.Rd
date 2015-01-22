@@ -50,13 +50,18 @@ simconf.inla(result.inla,
   \item{b.marginal }{The upper bound for pointwise confidence bands.}
 
 }
+\note{
+  This function requires the \code{INLA} package, which is not a CRAN
+  package.  See \url{http://www.r-inla.org/download} for easy
+  installation instructions.
+}
 \author{
   David Bolin \email{davidbolin@gmail.com}
 }
 
 \examples{
 if (require(INLA)) {
-n <- 100
+n <- 10
 x <- seq(0, 6, length.out=n)
 y <- sin(x) + rnorm(n)
 mu <- 1:n
