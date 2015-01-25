@@ -207,6 +207,9 @@ connect.segments <-function(segment.set,
                             ccw=TRUE,
                             ambiguous.warning=FALSE)
 {
+  if (!require(spam)) {
+    stop("The 'spam' package is needed.")
+  }
   ## Remove unneeded segments
   segment.idx <- seq_len(nrow(segment.set))
   segment.idx <- c(segment.idx[segment.grp %in% grp.ccw],
@@ -335,9 +338,9 @@ connect.segments <-function(segment.set,
 ## Compute simple outline of 1/0 set on a grid, eliminating spikes.
 outline.on.grid <- function(z, grid)
 {
-#  if (!require(spam)) {
-#    stop("The 'spam' package is needed.")
-#  }
+  if (!require(spam)) {
+    stop("The 'spam' package is needed.")
+  }
   ni <- nrow(z)
   nj <- ncol(z)
   z <- (z != FALSE)
@@ -635,9 +638,9 @@ tricontour.matrix <-
 ## Generate triangulation graph properties
 ## Nt,Ne,Nv,ev,et,eti,ee,te,tt,tti
 generate.trigraph.properties <- function(x, Nv=NULL) {
-  #if (!require(spam)) {
-  #  stop("The 'spam' package is needed.")
-  #}
+  if (!require(spam)) {
+    stop("The 'spam' package is needed.")
+  }
   stopifnot(is.list(x))
   stopifnot("tv" %in% names(x))
 
