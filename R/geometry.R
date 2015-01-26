@@ -207,7 +207,7 @@ connect.segments <-function(segment.set,
                             ccw=TRUE,
                             ambiguous.warning=FALSE)
 {
-  if (!require(spam)) {
+  if (!requireNamespace("spam", quietly=TRUE)) {
     stop("The 'spam' package is needed.")
   }
   ## Remove unneeded segments
@@ -338,7 +338,7 @@ connect.segments <-function(segment.set,
 ## Compute simple outline of 1/0 set on a grid, eliminating spikes.
 outline.on.grid <- function(z, grid)
 {
-  if (!require(spam)) {
+  if (!requireNamespace("spam", quietly=TRUE)) {
     stop("The 'spam' package is needed.")
   }
   ni <- nrow(z)
@@ -491,7 +491,7 @@ outline.on.mesh <- function(z, mesh, complement=FALSE)
 
 submesh.grid <- function(z, grid=NULL)
 {
-  if (!require(INLA)) {
+  if (!requireNamespace("INLA", quietly=TRUE)) {
     stop("The 'INLA' package is needed.")
   }
   outline <- outline.on.grid(z, grid)
@@ -501,6 +501,9 @@ submesh.grid <- function(z, grid=NULL)
 }
 submesh.mesh <- function(z, mesh)
 {
+  if (!requireNamespace("INLA", quietly=TRUE)) {
+    stop("The 'INLA' package is needed.")
+  }
   outline <- outline.on.mesh(z, mesh)
   INLA::inla.mesh.create(loc=mesh$loc,
                          boundary=as.inla.mesh.segment.outline(outline),
@@ -543,7 +546,7 @@ as.inla.mesh.segment.outline <- function(outline,
                                          grp,
                                          ...)
 {
-  if (!require(INLA)) {
+  if (!requireNamespace("INLA", quietly=TRUE)) {
     stop("The 'INLA' package is needed.")
   }
   ik.ccw = outline$grp %in% grp.ccw
@@ -560,9 +563,9 @@ as.inla.mesh.segment.outline <- function(outline,
 
 
 as.Polygons.raw <- function(sequences, ID=" ") {
-  #if (!require(sp)) {
-  #  stop("The 'sp' package is needed.")
-  #}
+  if (!requireNamespace("sp", quietly=TRUE)) {
+    stop("The 'sp' package is needed.")
+  }
   polys <- lapply(sequences,
                   function(x) {
                     if (is.list(x)) {
@@ -581,9 +584,9 @@ as.Polygons.raw <- function(sequences, ID=" ") {
 }
 
 as.Lines.raw <- function(cl, ID=" ") {
-  #if (!require(sp)) {
-  #  stop("The 'sp' package is needed.")
-  #}
+  if (!requireNamespace("sp", quietly=TRUE)) {
+    stop("The 'sp' package is needed.")
+  }
   polys <- lapply(cl,
                   function(x) {
                     if (is.list(x)) {
@@ -638,7 +641,7 @@ tricontour.matrix <-
 ## Generate triangulation graph properties
 ## Nt,Ne,Nv,ev,et,eti,ee,te,tt,tti
 generate.trigraph.properties <- function(x, Nv=NULL) {
-  if (!require(spam)) {
+  if (!requireNamespace("spam", quietly=TRUE)) {
     stop("The 'spam' package is needed.")
   }
   stopifnot(is.list(x))
@@ -953,6 +956,16 @@ tricontourmap.list <-
   output <- match.arg(output)
   nlevels <- length(levels)
 
+  if (output == "sp") {
+    if (!requireNamespace("sp", quietly=TRUE)) {
+      stop("The 'sp' package is needed.")
+    }
+  } else {
+    if (!requireNamespace("INLA", quietly=TRUE)) {
+      stop("The 'INLA' package is needed.")
+    }
+  }
+
   tric <- tricontour(x=x, z=z, nlevels=nlevels, levels=levels,
                      loc=loc, type=type, tol=tol, ...)
 
@@ -1042,6 +1055,16 @@ probabilitymap <-
            method, ...)
 {
   output <- match.arg(output)
+
+  if (output == "sp") {
+    if (!requireNamespace("sp", quietly=TRUE)) {
+      stop("The 'sp' package is needed.")
+    }
+  } else {
+    if (!requireNamespace("INLA", quietly=TRUE)) {
+      stop("The 'INLA' package is needed.")
+    }
+  }
 
   out <- list()
   if (calc.complement) {
@@ -1437,7 +1460,7 @@ continuous <- function(ex,
                       method=method,
                       output=output)
 
-  if (suppressWarnings(require(INLA, quietly=TRUE))) {
+  if (requireNamespace("INLA", quietly=TRUE)) {
     F.geometry <- INLA::inla.mesh.create(loc=mesh$loc,
                                    tv=mesh$graph$tv)
     ## Handle possible node reordering in inla.mesh.create()
@@ -1450,8 +1473,8 @@ continuous <- function(ex,
   out <- list(F=F.interp.nontransformed, G=G, M=M, F.geometry=F.geometry)
 
   if (!is.null(ex$P0)) {
-    if (!suppressWarnings(require(INLA, quietly=TRUE))) {
-      warning("INLA required for P0 calculations.")
+    if (!requireNamespace("INLA", quietly=TRUE)) {
+      warning("The 'INLA' package is required for P0 calculations.")
     } else {
       fem <- INLA::inla.mesh.fem(F.geometry, order=1)
       out$P0 <-

@@ -15,7 +15,7 @@ integration.testdata1 <- function()
 
 testdata.inla <- function()
 {
-  if(require(INLA)){
+  if(requireNamespace("INLA", quietly=TRUE)){
   rho = 0.9
   tau = 15
   n = 11

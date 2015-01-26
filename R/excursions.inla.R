@@ -32,7 +32,7 @@ excursions.inla <- function(result.inla,
                             max.threads=0,
                             seed=NULL)
 {
-  if (!require("INLA"))
+  if (!requireNamespace("INLA", quietly=TRUE))
     stop('This function requires the INLA package (see www.r-inla.org/download)')
   if(missing(result.inla))
 	  stop('Must supply INLA result object')
