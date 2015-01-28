@@ -1,6 +1,7 @@
 context("Contourmap.inla")
 
 test_that("Contourmap.inla, test ind", {
+  if (requireNamespace("INLA", quietly=TRUE)) {
   data <- testdata.inla()
   ind1 = c(1,2,3,4)
   ind2 = c(4,3,2,1)
@@ -16,4 +17,5 @@ test_that("Contourmap.inla, test ind", {
 
   expect_equal(res1$F,res2$F,tolerance=1e-7)
   expect_equal(res2$F,res3$F,tolerance=1e-7)
+}
 })
