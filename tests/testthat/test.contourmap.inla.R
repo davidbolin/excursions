@@ -1,7 +1,7 @@
 context("Contourmap.inla")
 
 test_that("Contourmap.inla, test ind", {
-  if (requireNamespace("INLA", quietly=TRUE)) {
+  if (require("INLA", quietly=TRUE)) {
   data <- testdata.inla()
   ind1 = c(1,2,3,4)
   ind2 = c(4,3,2,1)

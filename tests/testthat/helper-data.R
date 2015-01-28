@@ -15,22 +15,24 @@ integration.testdata1 <- function()
 
 testdata.inla <- function()
 {
-  if (requireNamespace("INLA", quietly=TRUE)) {
+  if (require("INLA", quietly=TRUE)) {
   rho = 0.99
   tau = 15
   n = 11
   n.obs  = 10
   x = 1:n
   mu = 10*((x < n/2)*(x - n/2) + (x >= n/2)*(n/2 - x) + n/4)/n
-  Q = tau*sparseMatrix(i=c(1:n, 2:n), j=c(1:n, 1:(n-1)),
-                       x=c(1,rep(1+rho^2, n-2),1, rep(-rho, n-1)),
-                       dims=c(n, n), symmetric=TRUE)
-  X = mu + INLA::inla.qsample(1, Q, seed=12345L)[,1]
+  Q <- tau*sparseMatrix(i=c(1:n, 2:n), j=c(1:n, 1:(n-1)),
+                        x=c(1,rep(1+rho^2, n-2),1, rep(-rho, n-1)),
+                        dims=c(n, n), symmetric=TRUE)
+  debugonce(INLA::inla.qsample)
+  X <- mu + INLA::inla.qsample(1, Q, seed=12345L)[,1]
 
   obs.loc = sample(1:n,n.obs)
   A = sparseMatrix(i=1:n.obs, j=obs.loc, x=rep(1, n.obs), dims=c(n.obs, n))
-  Y <- as.vector(A %*% X + INLA::inla.qsample(1, Diagonal(n.obs, 1.0),
-                                              seed=98765L)[,1])
+  Y <- as.vector(A %*% X +
+                   INLA::inla.qsample(1, Diagonal(n.obs, 1.0),
+                                      seed=98765L)[,1])
 
   ef = list(c(list(ar=x),list(cov=mu)))
   s.obs = INLA::inla.stack(data=list(y=Y), A=list(A), effects=ef, tag="obs")
