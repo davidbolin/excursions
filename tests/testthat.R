@@ -1,5 +1,5 @@
 library(testthat)
-test_check("excursionsdevel")
+test_check("excursions")
 
 #test_file("test.integration.R")
 #test_file("test.variances.R")
