@@ -1,6 +1,6 @@
 ## excursions.R
 ##
-##   Copyright (C) 2012, 2013 David Bolin, Finn Lindgren
+##   Copyright (C) 2012, 2013, 2014, David Bolin, Finn Lindgren
 ##
 ##   This program is free software: you can redistribute it and/or modify
 ##   it under the terms of the GNU General Public License as published by
@@ -15,233 +15,191 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-excursions <- function(alpha, u, mu, Q, type, n.iter=10000, Q.chol,
-                       vars, rho, reo, method='EB', ind, max.size,
-                       verbose=0, keep=FALSE, max.threads=0) {
+excursions <- function(alpha,
+                       u,
+                       mu,
+                       Q,
+                       type,
+                       n.iter=10000,
+                       Q.chol,
+                       F.limit,
+                       vars,
+                       rho,
+                       reo,
+                       method='EB',
+                       ind,
+                       max.size,
+                       verbose=0,
+                       max.threads=0,
+                       seed,
+                       LDL=TRUE)
+{
 
-# Paths to temp directoy
-tmppath = private.make.tempdir()
+  if(method=='QC'){
+    qc = TRUE
+  } else if(method == 'EB'){
+    qc = FALSE
+  } else {
+    stop('only EB and QC methods are supported.')
+  }
+  if(missing(alpha))
+    stop('Must specify error probability')
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Extract input data and setup parameters %
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if(method=='QC'){
-	qc = TRUE
-} else if(method == 'EB'){
-	qc = FALSE
-} else {
-	stop('only EB and QC methods are supported.')
-}
-if(missing(alpha))
-	stop('Must specify error probability')
+  if(missing(u))
+    stop('Must specify level')
 
-if(missing(u))
-	stop('Must specify level')
+  if(missing(mu))
+    stop('Must specify mean value')
 
-if(missing(mu))
-	stop('Must specify mean value')
+  if(missing(Q) && missing(Q.chol))
+    stop('Must specify a precision matrix or its Cholesky factor')
 
-if(missing(Q) && missing(Q.chol))
-	stop('Must specify a precision matrix or its Cholesky factor')
+  if(missing(type))
+    stop('Must specify type of excursion set')
 
-if(missing(type))
-	stop('Must specify type of excursion set')
+  if(qc && missing(rho))
+    stop('rho must be provided if QC is used.')
 
-if(qc && missing(rho))
-	stop('rho must be provided if QC is used.')
+  if(!missing(ind) && !missing(reo))
+    stop('Either provide a reordering using the reo argument or provied a set of nodes using the ind argument, both cannot be provided')
 
-if(!missing(ind) && !missing(reo))
-	stop('Either provide a reordering using the reo argument or provied a set of nodes using the ind argument, both cannot be provided')
+  if(missing(F.limit)) {
+    F.limit = alpha
+  } else {
+    F.limit = max(alpha,F.limit)
+  }
 
-
-if (missing(rho)) {
-	rho_p = 0
-} else {
-	if(qc) {
-		rho_p = 2
-	} else {
-		rho_p = 1
-	}
-}
-
-if (missing(reo)){
-	reo_p = 0
-} else {
-	reo_p = 1
-}
-
-if (missing(vars)) {
-	var_p = 0
-} else {
-	var_p = 1
-}
-
-if (missing(max.size)){
-	m.size = length(mu)
-} else {
-	m.size = max.size
-}
-if (missing(ind)) {
-	ind_p = 0
-} else {
-	ind_p = 1
-	indices = rep(0,length(mu))
-	indices[ind] = 1
-	if(missing(max.size)){
-		m.size = length(ind)
-	} else {
-		m.size = min(length(ind),m.size)
-	}
-}
-
-
-
-if (!missing(Q.chol) && !is.null(Q.chol)) {
+  if (!missing(Q.chol) && !is.null(Q.chol)) {
     ## make the representation unique (i,j,v)
-    Q = private.as.dgTMatrix(Q.chol)
+    Q = Q.chol#private.as.dgTMatrix(Q.chol)
     is.chol = TRUE
-} else {
+  } else {
     ## make the representation unique (i,j,v)
-    Q = private.as.dgTMatrix(Q)
+    Q = Q#private.as.dgTMatrix(Q)
     is.chol = FALSE
-}
+  }
 
+  if (missing(vars)) {
+    if(is.chol){
+      vars <- excursions.variances(L=Q)
+    } else {
+      vars <- excursions.variances(Q=Q)
+    }
+  }
 
+  if(verbose)
+    cat("Calculate marginals\n")
+  marg <- excursions.marginals(type = type, rho = rho,vars = vars,
+                               mu = mu, u = u, QC = qc)
 
-if(type == '>'){
-	tp = 0
-} else if(type == '<') {
-	tp = 1
-} else if(type == '=' || type == '!='){
-	tp = 2
-} else {
-	stop('Type must be one of <, >, =, or !=.')
-}
+  if (missing(max.size)){
+    m.size = length(mu)
+  } else {
+    m.size = max.size
+  }
+  if (!missing(ind)) {
+    if(is.logical(ind)){
+      indices = ind
+      if(missing(max.size)){
+        m.size = sum(ind)
+      } else {
+        m.size = min(sum(ind),m.size)
+      }
+    } else {
+      indices = rep(FALSE,length(mu))
+      indices[ind] = TRUE
+      if(missing(max.size)){
+        m.size = length(ind)
+      } else {
+        m.size = min(length(ind),m.size)
+      }
+    }
+  } else {
+    indices = rep(TRUE,length(mu))
+  }
 
-#%%%%%%%%%%%%%%%%%%%%%
-# Write data to disk %
-#%%%%%%%%%%%%%%%%%%%%%
+  if(verbose)
+    cat("Calculate permutation\n")
+  if(missing(reo)){
+    use.camd = !missing(ind) || F.limit < 1
+    if(qc){
+      reo <- excursions.permutation(marg$rho_ng, indices,
+                                    use.camd = TRUE,F.limit,Q)
+    } else {
+      reo <- excursions.permutation(marg$rho, indices,
+                                    use.camd = TRUE,F.limit,Q)
+    }
+  }
 
-fid <- file(file.path(tmppath,"initdata.bin"), "wb")
-writeBin(as.double(alpha),fid)
-writeBin(as.double(u), fid)
-writeBin(as.integer(n.iter), fid)
-writeBin(as.integer(tp), fid)
-writeBin(as.integer(is.chol),fid)
-writeBin(as.integer(rho_p), fid)
-writeBin(as.integer(reo_p), fid)
-writeBin(as.integer(var_p), fid)
-writeBin(as.integer(ind_p), fid)
-writeBin(as.integer(m.size), fid)
-writeBin(as.integer(verbose), fid)
-writeBin(as.integer(max.threads), fid)
-close(fid);
+  if(verbose)
+    cat("Calculate limits\n")
+  limits <- excursions.setlimits(marg, vars,type,QC=qc,u,mu)
 
-fid <- file(file.path(tmppath,"mu.bin"), "wb")
-writeBin(mu,fid);
-close(fid);
+  res <- excursions.call(limits$a,limits$b,reo,Q, is.chol = is.chol,
+                         1-F.limit, K = n.iter, max.size = m.size,
+                         n.threads = max.threads,seed = seed,LDL=LDL)
 
-## write upper triangular and and diagonal part of Q to file:
-uppertri = (Q@i <= Q@j)
-i = Q@i[uppertri]
-j = Q@j[uppertri]
-v = Q@x[uppertri]
+  n = length(mu)
+  ii = which(res$Pv[1:n] > 0)
+  if (length(ii) == 0) i=n+1 else i=min(ii)
 
-## dgTMatrix internals are sorted by j; sort by j instead:
-is = sort(i,index.return=TRUE)
-i = is$x
-j = j[is$ix]
-v = v[is$ix]
-fid <- file(file.path(tmppath,"precI.bin"), "wb")
-writeBin(as.integer(c(matrix(c(i,j),nrow = 2,byrow=T))), fid)
-close(fid)
-fid <- file(file.path(tmppath,"precV.bin"), "wb")
-writeBin(as.double(v), fid)
-close(fid)
+  F = Fe  = E = G = rep(0,n)
+  F[reo] = res$Pv
+  Fe[reo] = res$Ev
 
-if (rho_p >0){
-	fid <- file(file.path(tmppath,"rho.bin"), "wb")
-	writeBin(as.double(rho), fid)
-	close(fid)
-}
-if (var_p == 1){
-	fid <- file(file.path(tmppath,"vars.bin"), "wb")
-	writeBin(as.double(vars), fid)
-	close(fid)
-}
-if (reo_p == 1){
-	fid <- file(file.path(tmppath,"reo.bin"), "wb")
-	writeBin(as.integer(reo-1), fid)
-	close(fid)
-}
+  ireo = NULL
+  ireo[reo] = 1:n
 
-if (ind_p == 1){
-	fid <- file(file.path(tmppath,"ind.bin"), "wb")
-	writeBin(as.integer(indices), fid)
-	close(fid)
-}
+  ind.lowF = F < 1-F.limit
+  E[F>1-alpha] = 1
 
-#%%%%%%%%%%%%%%%%%%%%%%
-# Do the calculations %
-#%%%%%%%%%%%%%%%%%%%%%%
-private.excursions.call(gsub("/*$", "/", tmppath),"excursions")
+  if(type == '=') {
+    F=1-F
+  }
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Read results and save data %
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  if(type == "<") {
+    G[mu>u] = 1
+  } else {
+    G[mu>=u] = 1
+  }
 
-n = length(mu)
+  F[ind.lowF] = Fe[ind.lowF] = NA
 
-fid <- file(file.path(tmppath,"results_p.bin"), "rb")
-Pv = readBin(fid,double(),n)
-close(fid)
+  M = rep(-1,n)
+  if (type=="<") {
+    M[E==1] = 0
+  } else if (type == ">") {
+    M[E==1] = 1
+  } else if (type == "!=" || type == "=") {
+    M[E==1 & mu>u] = 1
+    M[E==1 & mu<u] = 0
+  }
 
-fid <- file(file.path(tmppath,"results_e.bin"), "rb")
-Ev = readBin(fid,double(),n)
-close(fid)
+  if (missing(ind) || is.null(ind)) {
+    ind <- seq_len(n)
+  } else if(is.logical(ind)){
+    ind <- which(ind)
+  }
 
-fid <- file(file.path(tmppath,"results_rho.bin"), "rb")
-rho = readBin(fid,double(),n)
-close(fid)
-
-fid <- file(file.path(tmppath,"results_reo.bin"), "rb")
-ind = readBin(fid,integer(),n)
-close(fid)
-
-fid <- file(file.path(tmppath,"vars.bin"), "rb")
-vars = readBin(fid,double(),n)
-close(fid)
-
-if (!keep) {
-    ## Delete temporary files
-    unlink(tmppath, recursive=TRUE)
-}
-
-ind = ind + 1
-
-ii = which(Pv[1:n] > 0)
-if (length(ii) == 0) i=n+1 else i=min(ii)
-
-F = Fe  = rep(0,n)
-F[ind] = Pv
-Fe[ind] = Ev
-
-ireo = NULL
-ireo[ind] = 1:n
-
-if(type == '='){
-	F=1-F
-	D = rep(1,n)
-	if(i<n+1) D[ind[i:n]] = 0
-} else {
-	D = rep(0,n)
-	if(i<n+1) D[ind[i:n]] = 1
-}
-
-if (keep) {
-    return(list(F=F, Fe=Fe, D=D, rho=rho, reo=ind, ireo=ireo, vars=vars,
-                tmppath=file.path(tmppath, "")))
-} else {
-    return(list(F=F, Fe=Fe, D=D, rho=rho, reo=ind, ireo=ireo, vars=vars))
-}
+  output <- list(F = F,
+                 G = G,
+                 M = M,
+                 E = E,
+                 mean = mu,
+                 vars=vars,
+                 rho=marg$rho,
+                 meta=(list(calculation="excursions",
+                            type=type,
+                            level=u,
+                            F.limit=F.limit,
+                            alpha=alpha,
+                            n.iter=n.iter,
+                            method=method,
+                            ind=ind,
+                            reo=reo,
+                            ireo=ireo,
+                            Fe=Fe,
+                            LDL=LDL)))
+  class(output) <- "excurobj"
+  output
 }

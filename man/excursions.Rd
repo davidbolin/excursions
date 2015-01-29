@@ -17,16 +17,30 @@ models
   \code{excursions.inla} can be used.
 }
 \usage{
-excursions(alpha, u, mu, Q, type, n.iter=10000, Q.chol, vars,
-           rho, reo, method='EB', ind, max.size, verbose=0, 
-           keep=FALSE, max.threads=0)
+excursions(alpha,
+           u,
+           mu,
+           Q,
+           type,
+           n.iter=10000,
+           Q.chol,
+           F.limit,
+           vars,
+           rho,
+           reo,
+           method='EB',
+           ind,
+           max.size,
+           verbose=0,
+           max.threads=0,
+           seed,
+           LDL=TRUE)
 }
 \arguments{
-  \item{alpha}{Error probability. The excursion function is calculated
-    for all values up to \code{alpha}. }
+  \item{alpha}{Error probability for the excursion set.}
   \item{u}{Excursion or contour level.}
-  \item{mu}{Expectation vector}
-  \item{Q}{Precision matrix}
+  \item{mu}{Expectation vector.}
+  \item{Q}{Precision matrix.}
   \item{type}{Type of region:
     \itemize{
     \item{'>' }{positive excursion region}
@@ -35,38 +49,38 @@ excursions(alpha, u, mu, Q, type, n.iter=10000, Q.chol, vars,
     \item{'=' }{contour credibility region}}}
   \item{n.iter}{Number or iterations in the MC sampler that is used for
     approximating probabilities. The default value is 10000.}
-  \item{Q.chol}{The Cholesky factor of the precision matrix (optional)}
-  \item{vars}{Precomputed marginal variances (optional)}
-  \item{rho}{Marginal excursion probabilities (optional).  For contour
+  \item{Q.chol}{The Cholesky factor of the precision matrix (optional).}
+  \item{F.limit}{The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.}
+  \item{vars}{Precomputed marginal variances (optional).}
+  \item{rho}{Marginal excursion probabilities (optional). For contour
     regions, provide \eqn{P(X>u)}.}
-  \item{reo}{Reordering (optional)}
-  \item{ind}{Indices of the nodes that should be analyzed (optional)} 
-  \item{max.size}{Maximum number of nodes to include in the set of
-    interest (optional)}
+  \item{reo}{Reordering (optional).}
   \item{method}{Method for handeling the latent Gaussian structure:
   \itemize{
-  	\item{'EB' }{Empirical Bayes (default)}
-  	\item{'QC' }{Quantile correction, rho must be provided if QC is
-	  used.}
+    \item{'EB' }{Empirical Bayes (default)}
+    \item{'QC' }{Quantile correction, rho must be provided if QC is used.}
   }
   }
+  \item{ind}{Indices of the nodes that should be analysed (optional).}
+  \item{max.size}{Maximum number of nodes to include in the set of
+    interest (optional).}
   \item{verbose}{Set to TRUE for verbose mode (optional)}
-  \item{keep}{Set to TRUE to keep the temporary binary I/O files}
   \item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
+  \item{seed}{Random seed (optional).}
+  \item{LDL}{Use LDL factorisations (default is TRUE)? This is useful for analysis of problems with positive semidefinite precision matrices.}
 }
 \value{
-  A list:
-  \item{D }{Excursion set, contour credible region, or contour avoiding
+\code{excursions} returns an object of class "excurobj". This is a list that contains the following arguments:
+  \item{E }{Excursion set, contour credible region, or contour avoiding
     set}
-  \item{F }{The excursion function corresponding to the set D calculated
-    for values up to alpha}
-  \item{Fe }{Estimated standard deviations of F estimate}
+  \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
+  \item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes. \eqn{M=0} for nodes where the process is significantly below \code{u} and \eqn{M=1} for all nodes where the field is significantly above \code{u}. Which values that should be present depends on what type of set that is calculated.}
+  \item{F }{The excursion function corresponding to the set \code{E} calculated
+    for values up to \code{F.limit}}
   \item{rho }{Marginal excursion probabilities}
-  \item{reo }{Reordering used for excursion function}
-  \item{ireo }{Inverse reordering}
-  \item{vars }{Marginal variances}
-  \item{tmppath }{If \code{keep} is TRUE, the location of the temporary
-    binary I/O files}
+  \item{mean }{The mean \code{mu}.}
+  \item{vars }{Marginal variances.}
+  \item{meta }{A list containing various information about the calculation.}
 }
 \author{
   David Bolin \email{davidbolin@gmail.com} and
@@ -74,7 +88,7 @@ excursions(alpha, u, mu, Q, type, n.iter=10000, Q.chol, vars,
 }
 
 \references{
-Bolin, D. and Lindgren, F. (2013) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, Journal of the Royal Statistical Society: Series B (in press).
+Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
 }
 
 \examples{
