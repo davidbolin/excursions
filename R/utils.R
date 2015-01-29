@@ -23,7 +23,7 @@
 ## is calculated and the variances are then returned in the same ordering as Q
 ## If L is provided, the variances are returned in the same ordering as L, even
 ## if L@invpivot exists.
-excursions.variances<-function(L,Q)
+excursions.variances<-function(L,Q, max.threads=0)
 {
 
   if(!missing(L) && !is.null(L)){
@@ -47,7 +47,8 @@ excursions.variances<-function(L,Q)
   n = dim(L)[1]
 
   out<- .C("Qinv",Rir = as.integer(Mi), Rjc = as.integer(Mp),
-           Rpr = as.double(Mv), variances=double(n), n = as.integer(n))
+           Rpr = as.double(Mv), variances=double(n), n = as.integer(n),
+           n_threads = as.integer(max.threads))
   if(ireo){
     return(out$variances[reo])
   } else {
