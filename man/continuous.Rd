@@ -116,7 +116,6 @@ if (require(INLA)) {
   image(matrix(mu.post[reo],n.lattice,n.lattice),main="mean",axes=F)
   image(matrix(sqrt(vars.post[reo]),n.lattice,n.lattice),main="sd", axes = F)
   image(matrix(map$M[reo],n.lattice,n.lattice),col=cols,axes=F)
-  idx.setsc = setdiff(names(setsc$map), "-1")
   idx.M = setdiff(names(sets$M), "-1")
   plot(sets$M[idx.M], col=cols[idx.M])
 }
