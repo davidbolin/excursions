@@ -113,17 +113,6 @@ contour.segment.pixels <- function(c.x, c.y,
 }
 
 
-##' Trace line segments through grid pixels
-##'
-##' .. content for  ..
-##' @name contour.pixels
-##' @title Discretise line segments
-##' @param contourlines A contourLines object
-##' @param pixelgrid
-##' @param do.plot
-##' @return Pixel index vector
-##' @author Finn Lindgren
-##' @export contour.pixels
 contour.pixels <- function(contourlines, pixelgrid, do.plot=0)
 {
   if (inherits(pixelgrid, "pgrid")) {
