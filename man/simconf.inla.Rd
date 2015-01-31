@@ -68,9 +68,10 @@ mu <- 1:n
 
 result <- inla(y ~ 1 + f(mu, model='rw2'),
                data=list(y=y, mu=mu), verbose=FALSE,
-               control.compute = list(config=TRUE))
+               control.compute = list(config=TRUE),
+               num.threads = 1)
 
-res <- simconf.inla(result, name='mu', alpha = 0.05, max.threads=2)
+res <- simconf.inla(result, name='mu', alpha = 0.05, max.threads = 1)
 
 plot(result$summary.random$mu$mean,ylim=c(-2,2))
 lines(res$a)
