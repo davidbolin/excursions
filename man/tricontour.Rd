@@ -87,7 +87,7 @@ Finn Lindgren
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %%}
 \examples{
-\dontrun{
+\donttest{
 if (require(INLA)) {
  #Generate mesh and SPDE model
   n.lattice = 20 #increase for more interesting, but slower, examples
