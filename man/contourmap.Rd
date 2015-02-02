@@ -79,7 +79,7 @@ Bolin, D. and Lindgren, F. (2014) \emph{Quantifying the uncertainty of contour m
 }
 
 \examples{
-  n = 100
+  n = 10
   Q = Matrix(toeplitz(c(1, -0.5, rep(0, n-2))))
   mu = seq(-5, 5, length=n)
   lp <- contourmap(mu,Q,n.levels = 2, compute=list(F=FALSE, measures = c("P1","P2")),max.threads=1)

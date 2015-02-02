@@ -94,6 +94,7 @@ Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty region
 \examples{
 ## In this example, we calculate the excursion function
 ## for a partially observed AR process.
+\donttest{
 if (require(INLA)) {
 ## Sample the process:
 rho = 0.9
@@ -133,5 +134,6 @@ excursions.inla(result, stack = stack, tag = 'pred', alpha=0.99, u=0,
 plot(res.qc$rho,type="l",
      main="marginal probabilities (black) and excursion function (red)")
 lines(res.qc$F,col=2)
+}
 }
 }

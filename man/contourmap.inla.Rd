@@ -40,6 +40,7 @@ Bolin, D. and Lindgren, F. (2014) \emph{Quantifying the uncertainty of contour m
 }
 
 \examples{
+\donttest{
 if (require(INLA)) {
   #Generate mesh and SPDE model
   n.lattice = 10 #increase for more interesting, but slower, examples
@@ -80,5 +81,6 @@ if (require(INLA)) {
   cols = contourmap.colors(map, col=heat.colors(100, 1),
                            credible.col = grey(0.5, 1))
   image(matrix(map$M[mesh$idx$lattice], n.lattice, n.lattice), col = cols)
+}
 }
 }
