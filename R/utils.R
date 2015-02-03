@@ -35,11 +35,17 @@ excursions.variances<-function(L,Q, max.threads=0)
        stop("L needs to be in ccs format for now.")
     }
   } else {
-    L = chol(private.as.spam(Q))
-    ireo = TRUE
-    reo = L@invpivot
-    L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)), "TsparseMatrix"),"dtCMatrix")
-
+    if (requireNamespace("spam", quietly=TRUE)){
+      L = chol(private.as.spam(Q))
+      ireo = TRUE
+      reo = L@invpivot
+      L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)),
+                "TsparseMatrix"),"dtCMatrix")
+    } else {
+      L = Cholesky(Q)
+      ireo = TRUE
+      reo[L@perm+1] <- 1:(L@Dim[1])
+    }
   }
   Mp = L@p
   Mi = L@i
