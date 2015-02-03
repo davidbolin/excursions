@@ -44,6 +44,7 @@ excursions.variances<-function(L,Q, max.threads=0)
     } else {
       L = Cholesky(Q)
       ireo = TRUE
+      reo <- 1:(L@Dim[1])
       reo[L@perm+1] <- 1:(L@Dim[1])
     }
   }
