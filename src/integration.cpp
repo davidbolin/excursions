@@ -324,7 +324,7 @@ extern "C" void testRand( int * opts, double * x, int * seed_in){
     myrank = omp_get_thread_num();
   #endif
 
-    #pragma omp for reduction(+:fsum,fsum2)
+    #pragma omp for
     for (int i=0; i<n; i++) {
       x[i] = RngStream_RandU01(RngArray[myrank]);
     }
