@@ -1,4 +1,5 @@
 import(Matrix)
+import(spam)
 import(sp)
 
 # Export only the main functions

@@ -23,7 +23,7 @@
 ## is calculated and the variances are then returned in the same ordering as Q
 ## If L is provided, the variances are returned in the same ordering as L, even
 ## if L@invpivot exists.
-excursions.variances<-function(L,Q, max.threads=0)
+excursions.variances<-function(L,Q, max.threads=0, use.spam=FALSE)
 {
 
   if(!missing(L) && !is.null(L)){
@@ -42,20 +42,20 @@ excursions.variances<-function(L,Q, max.threads=0)
       L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)),
                 "TsparseMatrix"),"dtCMatrix")
     } else {
-      L = Cholesky(Q)
+      L = Cholesky(Q,LDL=FALSE)
       ireo = TRUE
       reo <- 1:(L@Dim[1])
       reo[L@perm+1] <- 1:(L@Dim[1])
     }
   }
-  Mp = L@p
-  Mi = L@i
-  Mv = L@x
-  n = dim(L)[1]
 
-  out<- .C("Qinv",Rir = as.integer(Mi), Rjc = as.integer(Mp),
-           Rpr = as.double(Mv), variances=double(n), n = as.integer(n),
-           n_threads = as.integer(max.threads))
+  out<- .C("Qinv",Rir = as.integer(L@i),
+                  Rjc = as.integer(L@p),
+                  Rpr = as.double(L@x),
+                  variances=double(dim(L)[1]),
+                  n = as.integer(dim(L)[1]),
+                  n_threads = as.integer(max.threads))
+
   if(ireo){
     return(out$variances[reo])
   } else {
