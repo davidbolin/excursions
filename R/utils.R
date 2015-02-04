@@ -350,3 +350,22 @@ mix.sample <- function(n.samp = 1, mu,Q.chol,w)
   }
   return(samples)
 }
+
+excursions.rand <- function(n,seed,n.threads=1)
+{
+  if(!missing(seed) && !is.null(seed)){
+    seed_provided = 1
+    seed.in = seed
+  } else {
+    seed_provided = 0
+    seed.in = as.integer(rep(0,6))
+  }
+
+  x = rep(0,n)
+  opt = c(n,n.threads,seed_provided)
+  out<- .C("testRand",opt  = as.integer(opt),
+                      x = as.double(x),
+                      seed_in  = as.integer(seed.in))
+
+  return(out$x)
+}
