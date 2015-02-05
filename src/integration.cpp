@@ -111,6 +111,7 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
   if(seed_provided == 1){
     for(i=0;i<6;i++){
       seed[i] = (unsigned long) seed_in[i];
+      Rprintf("seed[%d]= %d\n",i,seed[i]);
     }
   } else {
     ssize_t seed_read = 0;
