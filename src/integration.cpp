@@ -111,7 +111,6 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
   if(seed_provided == 1){
     for(i=0;i<6;i++){
       seed[i] = (unsigned long) seed_in[i];
-      Rprintf("seed[%d]= %d\n",i,seed[i]);
     }
   } else {
     ssize_t seed_read = 0;
@@ -208,7 +207,6 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
         } else {
           rtmp = c+(d-c)* RngStream_RandU01(RngArray[myrank]);
           x[i][j] = (gsl_cdf_ugaussian_Pinv(rtmp)-s[j])/Li[i];
-          Rprintf("(i,j)= (%d,%d), c= %f, d=%f, rtmp=%f, x=%f\n",i,j,c,d,rtmp,x[i][j]);
         }
 
         if (x[i][j] == numeric_limits<double>::infinity()){
