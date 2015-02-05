@@ -207,6 +207,7 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
         } else {
           rtmp = c+(d-c)* RngStream_RandU01(RngArray[myrank]);
           x[i][j] = (gsl_cdf_ugaussian_Pinv(rtmp)-s[j])/Li[i];
+          Rprintf("(i,j)= (%d,%d), rtmp=%f, x=%f\n",i,j,rtmp,x[i][j]);
         }
 
         if (x[i][j] == numeric_limits<double>::infinity()){
