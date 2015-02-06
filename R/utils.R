@@ -369,3 +369,17 @@ excursions.rand <- function(n,seed,n.threads=1)
 
   return(out$x)
 }
+
+
+
+## Turn off all warnings for require(), to allow clean completion of
+## examples that require unavailable Suggested packages.
+require.nowarnings <- function(package, lib.loc = NULL, character.only = FALSE)
+{
+  if (!character.only)
+    package <- as.character(substitute(package))
+  op <- options("warn")
+  on.exit(options(op))
+  options(warn = -1)
+  require(package, lib.loc = lib.loc, quietly = TRUE, character.only = TRUE)
+}

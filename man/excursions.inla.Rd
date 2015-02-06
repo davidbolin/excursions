@@ -95,7 +95,7 @@ Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty region
 ## In this example, we calculate the excursion function
 ## for a partially observed AR process.
 \donttest{
-if (require(INLA)) {
+if (require.nowarnings("INLA")) {
 ## Sample the process:
 rho = 0.9
 tau = 15

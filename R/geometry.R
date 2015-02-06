@@ -196,9 +196,9 @@ connect.segments <-function(segment.set,
                             ccw=TRUE,
                             ambiguous.warning=FALSE)
 {
-  if (!requireNamespace("spam", quietly=TRUE)) {
-    stop("The 'spam' package is needed.")
-  }
+##  if (!requireNamespace("spam", quietly=TRUE)) {
+##    stop("The 'spam' package is needed.")
+##  }
   ## Remove unneeded segments
   segment.idx <- seq_len(nrow(segment.set))
   segment.idx <- c(segment.idx[segment.grp %in% grp.ccw],
@@ -630,9 +630,9 @@ tricontour.matrix <-
 ## Generate triangulation graph properties
 ## Nt,Ne,Nv,ev,et,eti,ee,te,tt,tti
 generate.trigraph.properties <- function(x, Nv=NULL) {
-  if (!requireNamespace("spam", quietly=TRUE)) {
-    stop("The 'spam' package is needed.")
-  }
+##  if (!requireNamespace("spam", quietly=TRUE)) {
+##    stop("The 'spam' package is needed.")
+##  }
   stopifnot(is.list(x))
   stopifnot("tv" %in% names(x))
 

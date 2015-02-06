@@ -61,7 +61,7 @@ simconf.inla(result.inla,
 
 \examples{
 \donttest{
-if (require(INLA)) {
+if (require.nowarnings("INLA")) {
 n <- 10
 x <- seq(0, 6, length.out=n)
 y <- sin(x) + rnorm(n)

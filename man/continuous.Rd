@@ -76,7 +76,7 @@ Finn Lindgren
 %%}
 \examples{
 \donttest{
-if (require(INLA)) {
+if (require.nowarnings("INLA")) {
   #Generate mesh and SPDE model
   n.lattice = 10 #Increase for more interesting, but slower, examples
   x=seq(from=0,to=10,length.out=n.lattice)

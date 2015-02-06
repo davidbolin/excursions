@@ -27,5 +27,6 @@ export(tricontourmap)
 S3method(tricontourmap,inla.mesh)
 S3method(tricontourmap,matrix)
 S3method(tricontourmap,list)
+export(require.nowarnings)
 
 useDynLib(excursions, .registration=TRUE)
