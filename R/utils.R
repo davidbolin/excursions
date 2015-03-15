@@ -98,6 +98,8 @@ excursions.marginals <- function(type, rho,vars, mu, u, QC = FALSE)
        } else {
   				rl$rho = pnorm(mu-u,sd=sqrt(vars), lower.tail=FALSE)
         }
+      } else {
+        rl$rho = rho
       }
     }
   }
