@@ -173,6 +173,7 @@ excursions.setlimits <- function(marg, vars,type,QC,u,mu)
 }
 
 
+
 excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threads, seed,LDL=FALSE)
 {
   if(is.chol == FALSE){
@@ -198,7 +199,7 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
   return(res)
 }
 
-private.as.spam = function(A)
+private.as.spam <- function(A)
 {
   if(is(A,"spam")){
     return(A)
@@ -214,12 +215,12 @@ private.as.spam = function(A)
 ##
 # Distribution function of Gaussian mixture \Sum_k w[k]*N(mu[k],sigma[k]^2)
 ##
-Fmix = function(x,mu,sd,w) sum(w*pnorm(x,mean=mu,sd=sd))
+Fmix <- function(x,mu,sd,w) sum(w*pnorm(x,mean=mu,sd=sd))
 
 ##
 # Quantile function of Gaussian mixture
 ##
-Fmix_inv = function(p,mu,sd,w,br=c(-1000,1000))
+Fmix_inv <- function(p,mu,sd,w,br=c(-1000,1000))
 {
    G = function(x) Fmix(x,mu,sd,w) - p
    return(uniroot(G,br)$root)
@@ -323,6 +324,18 @@ fmix.samp.opt <- function(x, alpha,mu, sd, w, limits, samples)
 
 }
 
+fsamp.opt <- function(x, samples,verbose=FALSE)
+{
+  q.a = apply(samples,1,quantile,1,probs=c(x/2))
+  q.b = apply(samples,1,quantile,1,probs=c(1-x/2))
+  prob = mean(apply((samples<q.b)*(samples>q.a),2,prod))
+  if(verbose)
+    cat("in optimization: ",x," ", prob, "\n")
+  return(prob)
+
+}
+
+
 mix.sample <- function(n.samp = 1, mu,Q.chol,w)
 {
   K = length(mu)
@@ -343,3 +356,58 @@ mix.sample <- function(n.samp = 1, mu,Q.chol,w)
   }
   return(samples)
 }
+
+
+
+excursions.marginals.mc <- function(X,type, rho, mu, u)
+{
+  rl = list()
+  if(type == "=" || type == "!="){
+      if(!missing(rho)){
+        rl$rho_u = rho
+      } else {
+        rl$rho_u = 1 - rowMeans(X<u)
+		  }
+		  rl$rho_l = 1-rl$rho_u
+		  rl$rho = pmax(rl$rho_u,rl$rho_l)
+  } else {
+      if(missing(rho)){
+       if(type == ">"){
+  				rl$rho = rowMeans(X>u)
+       } else {
+  				rl$rho = rowMeans(X<u)
+        }
+      }
+    }
+  return(rl)
+}
+
+mcint <- function(X,
+                  a,
+                  b,
+                  ind)
+{
+
+  if(missing(a))
+    stop('Must specify lower integration limit')
+
+  if(missing(b))
+    stop('Must specify upper integration limit')
+
+  n = length(a)
+  if(length(b) != n)
+    stop('Vectors with integration limits are of different length.')
+
+  if(!missing(ind) && !is.null(ind)){
+    a[!ind] = -Inf
+    b[!ind] = Inf
+  }
+
+  Pv = rowMeans(apply(apply(apply(a < X & X < b,2,rev),2,cumprod),2,rev))
+
+  #Estimate of MC error, not implemented yet
+  Ev <-  rep(0,n)
+
+  return(list(Pv = Pv, Ev = Ev, P = Pv[1], E = Ev[1]))
+}
+

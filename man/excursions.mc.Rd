@@ -1,0 +1,80 @@
+\name{excursions.mc}
+\alias{excursions.mc}
+\title{
+  Excursion sets and contour credible regions using Monte Carlo samples
+}
+\description{
+  \code{excursions.mc} is used for calculating excursion sets, contour
+  credible regions, and contour avoiding sets based on Monte Carlo samples of models.
+}
+\usage{
+excursions.mc(samples,
+              alpha,
+              u,
+              type,
+              rho,
+              reo,
+              ind,
+              max.size,
+              verbose=FALSE)
+
+}
+\arguments{
+  \item{samples}{Matrix with model Monte Carlo samples. Each column contains a sample of the model.}
+  \item{alpha}{Error probability for the excursion set.}
+  \item{u}{Excursion or contour level.}
+  \item{type}{Type of region:
+    \itemize{
+    \item{'>' }{positive excursion region}
+    \item{'<' }{negative excursion region}
+    \item{'!=' }{contour avoiding region}
+    \item{'=' }{contour credibility region}}}
+  \item{rho}{Marginal excursion probabilities (optional). For contour
+    regions, provide \eqn{P(X>u)}.}
+  \item{reo}{Reordering (optional).}
+  \item{ind}{Indices of the nodes that should be analysed (optional).}
+  \item{max.size}{Maximum number of nodes to include in the set of
+    interest (optional).}
+  \item{verbose}{Set to TRUE for verbose mode (optional)}
+}
+\value{
+\code{excursions} returns an object of class "excurobj". This is a list that contains the following arguments:
+  \item{E }{Excursion set, contour credible region, or contour avoiding
+    set}
+  \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
+  \item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes. \eqn{M=0} for nodes where the process is significantly below \code{u} and \eqn{M=1} for all nodes where the field is significantly above \code{u}. Which values that should be present depends on what type of set that is calculated.}
+  \item{F }{The excursion function corresponding to the set \code{E} calculated
+    for values up to \code{F.limit}}
+  \item{rho }{Marginal excursion probabilities}
+  \item{mean }{The mean \code{mu}.}
+  \item{vars }{Marginal variances.}
+  \item{meta }{A list containing various information about the calculation.}
+}
+\author{
+  David Bolin \email{davidbolin@gmail.com} and
+  Finn Lindgren \email{finn.lindgren@gmail.com}
+}
+
+\references{
+Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
+}
+
+\examples{
+## Create mean and a tridiagonal precision matrix
+n = 101
+mu.x = seq(-5, 5, length=n)
+Q.x = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
+
+## Sample the model 100 times (increase for better estimate)
+X = mu.x + solve(chol(Q.x),matrix(rnorm(n=n*1000),nrow=n,ncol=1000))
+
+## calculate the positive excursion function
+res.x = excursions.mc(X,alpha=0.05,type='>',u=0)
+
+## Plot the excursion function and the marginal excursion probabilities
+plot(res.x$F, type="l",
+     main='Excursion function (black) and marginal probabilites (red)')
+lines(res.x$rho, col=2)
+
+
+}

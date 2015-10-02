@@ -834,6 +834,13 @@ tricontour.list <- function(x, z, nlevels = 10,
     loc.new.idx <- loc.last+seq_along(e.levels)
     beta <- ((levels[e.levels] - z[x$ev[edge,1]]) /
              (z[x$ev[edge,2]] - z[x$ev[edge,1]]))
+    #Temporary workaround for boundary part error:
+    #if (max(loc.new.idx) > nrow(loc.new)) {
+    #  loc.new <- rbind(loc.new,
+    #                   matrix(NA,
+    #                          max(loc.new.idx) - nrow(loc.new),
+    #                          ncol(loc.new)))
+    #}
     loc.new[loc.new.idx,] <-
       (as.matrix(1-beta) %*% loc[x$ev[edge,1],,drop=FALSE]+
        as.matrix(beta) %*% loc[x$ev[edge,2],,drop=FALSE])

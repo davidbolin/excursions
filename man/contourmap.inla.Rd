@@ -36,7 +36,7 @@ contourmap.inla(result.inla,
 }
 
 \references{
-Bolin, D. and Lindgren, F. (2014) \emph{Quantifying the uncertainty of contour maps}, ArXiv preprint
+Bolin, D. and Lindgren, F. (2015) \emph{Quantifying the uncertainty of contour maps}, ArXiv preprint
 }
 
 \examples{

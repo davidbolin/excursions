@@ -38,7 +38,6 @@ contourmap <- function(mu,
   type <- match.arg(type)
 
   if(missing(alpha) || is.null(alpha)){
-    cat("alpha not supplied, using alpha=0.1\n")
     alpha = 0.1
   }
   if(missing(F.limit)) {

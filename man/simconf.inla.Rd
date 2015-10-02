@@ -17,6 +17,7 @@ simconf.inla(result.inla,
              method="NI",
              n.iter=10000,
              verbose=0,
+             link = FALSE,
              max.threads=0,
              seed=NULL,
              inla.sample=TRUE)
@@ -38,6 +39,7 @@ simconf.inla(result.inla,
     used for approximating probabilities. The default value is
     10000.}
   \item{verbose }{Set to TRUE for verbose mode (optional)}
+  \item{link }{Transform output to the scale of the data using the link function (default FALSE)}
   \item{max.threads }{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
   \item{seed }{Random seed (optional)}
   \item{inla.sample }{Use inla.posterior.sample for MC integration?}

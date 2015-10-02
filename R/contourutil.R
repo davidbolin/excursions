@@ -1,4 +1,68 @@
 ## Calculate the contour map function
+contourfunction.mc <- function(lp,mu,X,ind, alpha, verbose=FALSE)
+{
+
+  if(missing(mu))
+    stop('Must supply mu')
+
+  if(missing(lp))
+    stop('Must supply level plot')
+
+	F.limit = 1
+
+  if(verbose) cat("set limits\n")
+
+	lim <- excursions.limits(lp=lp,mu=mu,measure=0)
+
+	m.size = length(mu)
+  indices = NULL
+
+  if (!missing(ind)) {
+    if(is.logical(ind)){
+      indices = ind
+      m.size = sum(ind)
+    } else {
+      indices = rep(FALSE,length(mu))
+      indices[ind] = TRUE
+      m.size = length(ind)
+    }
+  }
+  if(verbose) cat("calculate marginals\n")
+
+  rho <- contourmap.marginals.mc(X=X,lim=lim,ind=indices)
+
+
+  reo <- excursions.permutation(rho, indices, use.camd = FALSE)
+
+  if(verbose) cat("integrate\n")
+
+  res = mcint(X=X[reo,],a=lim$a[reo],b=lim$b[reo])
+
+  n = length(mu)
+  ii = which(res$Pv[1:n] > 0)
+  if (length(ii) == 0) i=n+1 else i=min(ii)
+
+  F = Fe  = E = rep(0,n)
+  F[reo] = res$Pv
+  Fe[reo] = res$Ev
+
+  ireo = NULL
+  ireo[reo] = 1:n
+
+  ind.lowF = F < 1-F.limit
+  E[F>1-alpha] = 1
+  F[ind.lowF] = Fe[ind.lowF] = NA
+
+  M = rep(-1,n)
+  for(i in 1:(lp$n.levels+1)){
+    M[(lp$G == (i-1)) & (E == 1)] = i-1
+  }
+
+  return(list(F=F, Fe=Fe, E=E, M=M, rho=rho))
+}
+
+
+## Calculate the contour map function
 contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
                             F.limit, Q.chol,max.threads=0,
                             seed=seed,verbose=FALSE)
@@ -99,6 +163,19 @@ contourmap.marginals <- function(mu,vars,lim,ind)
 	              pnorm(lim$a[ind], mu[ind], sqrt(vars[ind]))
 	} else {
 	  marg = pnorm(lim$b, mu, sqrt(vars)) - pnorm(lim$a, mu, sqrt(vars))
+	}
+	return(marg)
+}
+
+## Calculate marginal probabilities P(lim$a < X < lim$b) for
+## when X
+contourmap.marginals.mc <- function(X,lim,ind)
+{
+  if(!missing(ind) && !is.null(ind)){
+	  marg = rep(0,length(lim$a))
+	  marg[ind] = rowMeans(lim$a[ind] < X[ind,] & X[ind,] < lim$b[ind])
+	} else {
+	  marg = rowMeans(lim$a < X & X < lim$b)
 	}
 	return(marg)
 }
@@ -253,9 +330,29 @@ Pmeasure <- function(lp,mu,Q,Q.chol, ind=NULL,type,vars=vars)
     res <- contourfunction(lp=lp,mu=mu,Q=Q,vars=vars,ind=ind)
     p = mean(res$F[ind])
   } else {
+    if(type == 1 && length(lp$u) == 1){
+      return(1)
+    }
     limits = excursions.limits(lp=lp,mu=mu,measure=type)
 	  res = gaussint(mu = mu, Q=Q, Q.chol = Q.chol, a=limits$a,
 	                b=limits$b,ind=ind,use.reordering="limits")
+	  p = res$P[1]
+  }
+	return(p)
+}
+
+## Function that calculates the P measure for a given contour map.
+Pmeasure.mc <- function(lp,mu,X, ind=NULL,type)
+{
+  if(type==0){
+    res <- contourfunction.mc(lp=lp,X=X,ind=ind)
+    p = mean(res$F[ind])
+  } else {
+    if(type == 1 && length(lp$u) == 1){
+      return(1)
+    }
+    limits = excursions.limits(lp=lp,mu=mu,measure=type)
+    res = mcint(X=X, a=limits$a, b=limits$b,ind=ind)
 	  p = res$P[1]
   }
 	return(p)
@@ -266,9 +363,6 @@ excursions.limits <- function(lp,mu,measure)
 {
 	n = length(mu)
 	n.l = length(lp$u)
-	if(measure == 1 & n.l<2){
-	  stop('P1 measure only makes sense if number of contours is larger than 1')
-	}
 
 	a = rep(-Inf,n)
 	b = rep(Inf,n)
@@ -329,3 +423,6 @@ contourmap.colors <- function(lp,zlim,col,credible.col)
 
   return(cmap)
 }
+
+
+

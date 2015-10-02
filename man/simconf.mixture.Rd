@@ -4,7 +4,7 @@
   Simultaneous confidence regions for Gaussian mixture models
 }
 \description{
-  \code{excursions.simconf} is used for calculating simultaneous
+  \code{simconf.mixture} is used for calculating simultaneous
   confidence regions for Gaussian mixture models. The distribution for the process \eqn{x} is assumed to be
  \deqn{latex}{
   \pi(x) = \sum_{k=1}^K w_k N(\mu_k, Q_k^{-1}).

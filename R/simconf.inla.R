@@ -24,6 +24,7 @@ simconf.inla <- function(result.inla,
                          method="NI",
                          n.iter=10000,
                          verbose=0,
+                         link = FALSE,
                          max.threads=0,
                          seed=NULL,
                          inla.sample=TRUE)
@@ -41,6 +42,7 @@ simconf.inla <- function(result.inla,
 
   n = length(result.inla$misc$configs$config[[1]]$mean)
 
+
   #Get indices for the component of interest in the configs
   ind.stack <- inla.output.indices(result.inla, name=name, stack=stack, tag=tag)
   n.out = length(ind.stack)
@@ -54,6 +56,13 @@ simconf.inla <- function(result.inla,
   }
   ind = ind.stack
 
+  links = NULL
+  if(link){
+    links = result.inla$misc$linkfunctions$names[
+                                            result.inla$misc$linkfunctions$link]
+    links = links[ind]
+  }
+
   n.theta = result.inla$misc$configs$nconfig
 
   if(method=="EB") {
@@ -62,10 +71,11 @@ simconf.inla <- function(result.inla,
       if(config$lp == 0)
         break
     }
-
-    return(simconf(alpha = alpha, mu = config$mu, Q = config$Q,
+    res <- simconf(alpha = alpha, mu = config$mu, Q = config$Q,
                    vars = config$vars, n.iter=n.iter, ind=ind,
-                   verbose=verbose, max.threads=max.threads, seed=seed))
+                   verbose=verbose, max.threads=max.threads, seed=seed)
+    return(private.simconf.link(res,links,link))
+
 
   } else if(method=="NI") {
     mu <- Q <- vars <- list()
@@ -123,11 +133,14 @@ simconf.inla <- function(result.inla,
                                               mu = mu.m[,i], sd = sd.m[,i],
                                               w = w, br = limits))
 
-      return(list(a = a, b = b, a.marginal = a.marg, b.marginal = b.marg))
+      res = list(a = a, b = b, a.marginal = a.marg, b.marginal = b.marg)
+      return(private.simconf.link(res,links,link))
+
     } else {
-      return(simconf.mixture(alpha = alpha, mu = mu, Q = Q, vars = vars,
-                             w = w, n.iter=n.iter, ind=ind, verbose=verbose,
-                             max.threads=max.threads, seed=seed))
+      res = simconf.mixture(alpha = alpha, mu = mu, Q = Q, vars = vars,
+                            w = w, n.iter=n.iter, ind=ind, verbose=verbose,
+                            max.threads=max.threads, seed=seed)
+    return(private.simconf.link(res,links,link))
     }
   } else {
     stop("Method must be EB or NI")

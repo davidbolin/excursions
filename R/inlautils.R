@@ -38,6 +38,21 @@ inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, ...)
     index
 }
 
+private.simconf.link <- function(res,links,trans=TRUE)
+{
+  if(trans){
+    n = length(res$a)
+    res$a.marginal = sapply(1:n, function(i) private.link.function(
+                                      res$a.marginal[i],links[i],inv=TRUE))
+    res$b.marginal = sapply(1:n, function(i) private.link.function(
+                                      res$b.marginal[i],links[i],inv=TRUE))
+    res$a = sapply(1:n, function(i) private.link.function(
+                                      res$a[i],links[i],inv=TRUE))
+    res$b = sapply(1:n, function(i) private.link.function(
+                                      res$b[i],links[i],inv=TRUE))
+  }
+  return(res)
+}
 
 private.link.function <- function(x, link, inv=FALSE)
 {

@@ -1,36 +1,27 @@
-\name{contourmap}
-\alias{contourmap}
+\name{contourmap.mc}
+\alias{contourmap.mc}
 \title{
-  Contour maps and contour map quality measures for latent Gaussian models
+  Contour maps and contour map quality measures using Monte Carlo samples
 }
 \description{
-  \code{contourmap} is used for calculating contour maps and quality measures for contour maps for latent Gaussian models.
+  \code{contourmap.mc} is used for calculating contour maps and quality measures for contour maps based on Monte Carlo samples of a model.
 }
 \usage{
-contourmap(mu,
-           Q,
-           vars,
-           n.levels,
-           ind,
-           levels,
-           type = c("standard",
-                    "equalarea",
-                    "P0-optimal",
-                    "P1-optimal",
-                    "P2-optimal"),
-           compute = list(F=TRUE, measures = NULL),
-           use.marginals=TRUE,
-           alpha,
-           F.limit,
-           n.iter=10000,
-           verbose=FALSE,
-           max.threads=0,
-           seed=NULL)
+contourmap.mc(samples,
+              n.levels,
+              ind,
+              levels,
+              type = c("standard",
+                       "equalarea",
+                       "P0-optimal",
+                       "P1-optimal",
+                       "P2-optimal"),
+              compute = list(F=TRUE, measures = NULL),
+              alpha,
+              verbose=FALSE)
 }
 \arguments{
-  \item{mu}{Expectation vector}
-  \item{Q}{Precision matrix}
-  \item{vars}{Precomputed marginal variances (optional)}
+  \item{samples}{Matrix with model Monte Carlo samples. Each column contains a sample of the model.}
   \item{n.levels}{Number of levels in contour map}
   \item{ind}{Indices of the nodes that should be analyzed (optional)}
   \item{levels}{Levels to use in contour map}
@@ -48,14 +39,8 @@ contourmap(mu,
       \item{'measures': }{A list with the quality measures to compute
 	("P0", "P1", or "P2")}
     }}
-  \item{use.marginals }{ Only marginal distributions are used when finding P-optimal maps (default TRUE).}
-  \item{alpha}{Maximal error probability in contour map function (default=1)}
-  \item{F.limit}{The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.}
-  \item{n.iter}{Number or iterations in the MC sampler that is used for
-    approximating probabilities. The default value is 10000.}
+  \item{alpha}{Maximal error probability in contour map function (default=0.1)}
   \item{verbose}{Set to TRUE for verbose mode (optional)}
-  \item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
-  \item{seed}{Random seed (optional).}
 }
 \value{
 \code{contourmap} returns an object of class "excurobj". This is a list that can contains the following arguments:
@@ -82,5 +67,8 @@ Bolin, D. and Lindgren, F. (2015) \emph{Quantifying the uncertainty of contour m
   n = 100
   Q = Matrix(toeplitz(c(1, -0.5, rep(0, n-2))))
   mu = seq(-5, 5, length=n)
-  lp <- contourmap(mu,Q,n.levels = 2, compute=list(F=FALSE, measures = c("P1","P2")),max.threads=2)
+  ## Sample the model 100 times (increase for better estimate)
+  X = mu + solve(chol(Q),matrix(rnorm(n=n*100),nrow=n,ncol=100))
+
+  lp <- contourmap.mc(X,n.levels = 2, compute=list(F=FALSE, measures = c("P1","P2")))
 }
