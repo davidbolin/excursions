@@ -1,5 +1,11 @@
 import(Matrix)
 import(sp)
+importFrom(spam,spam)
+importFrom(spam,triplet)
+importFrom(spam,as.spam)
+importFrom(spam,as.dgRMatrix.spam)
+importFrom(spam,as.spam.dgCMatrix)
+
 
 # Export only the main functions
 export(excursions)
@@ -29,5 +35,6 @@ export(tricontourmap)
 S3method(tricontourmap,inla.mesh)
 S3method(tricontourmap,matrix)
 S3method(tricontourmap,list)
+export(require.nowarnings)
 
 useDynLib(excursionsdevel, .registration=TRUE)

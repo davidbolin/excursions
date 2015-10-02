@@ -1,0 +1,18 @@
+citEntry(
+    entry = "Article",
+    title        = "Excursion and contour uncertainty regions for latent {Gaussian} models",
+    author       =
+      personList(as.person("David Bolin"),
+                 as.person("Finn Lindgren")),
+    journal      = "Journal of the Royal Statistical Society, Series B (Statistical Methodology)",
+    year         = "2015",
+    volume       = "77",
+    number       = "1",
+    pages        = "85--106",
+    textVersion  =
+      paste0("David Bolin, Finn Lindgren (2015).",
+             "Excursion and contour uncertainty regions for",
+             "latent {Gaussian} models.",
+             "Journal of the Royal Statistical Sociecy, Series B,",
+             "77(1), 85-106.")
+)

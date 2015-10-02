@@ -253,3 +253,81 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
   delete[] RngArray;
 
 }
+
+extern "C" void testRand( int * opts, double * x, int * seed_in){
+
+  int n = opts[0];
+  int n_threads = opts[1];
+  int seed_provided = opts[2];
+
+  #ifdef _OPENMP
+    const int max_nP = omp_get_num_procs();
+    int nPtmp;
+    if(n_threads == 0){
+      nPtmp = max_nP;
+    } else {
+      nPtmp = min(max_nP, max(n_threads,1));
+    }
+    const int nP = nPtmp;
+    omp_set_num_threads(nP);
+  #else
+    const int nP = 1;
+  #endif
+
+
+  unsigned long m_1 = 4294967087U;
+  unsigned long m_2 = 4294944443U;
+  unsigned long seed[6];
+
+  if(seed_provided == 1){
+    for(int i=0;i<6;i++){
+      seed[i] = (unsigned long) seed_in[i];
+    }
+  } else {
+    ssize_t seed_read = 0;
+    #if defined (__APPLE__) && defined (__linux__)
+      int randomSrc = open("/dev/urandom", O_RDONLY);
+      if (randomSrc > 0) {
+      seed_read = read(randomSrc, seed, sizeof(seed));
+      close(randomSrc);
+      }
+    #endif
+    if (seed_read != (ssize_t) sizeof(seed)) {
+      //srand(time(0));
+      GetRNGstate();
+      for(int i=0;i<6;i++){
+        //seed[i] = rand();
+        seed[i] = round(RAND_MAX*unif_rand());
+      }
+      PutRNGstate();
+    }
+  }
+
+  seed[0] = seed[0] % m_1;
+  seed[1] = seed[1] % m_1;
+  seed[2] = seed[2] % m_1;
+  seed[3] = seed[3] % m_2;
+  seed[4] = seed[4] % m_2;
+  seed[5] = seed[5] % m_2;
+
+  RngStream_SetPackageSeed(seed);
+  RngStream * RngArray = new RngStream[nP];
+  int myrank = 0;
+
+  for (int i=0; i<nP; i++) {
+    RngArray[i] = RngStream_CreateStream("namehere");
+  }
+
+  #pragma omp parallel private(myrank)
+  {
+  #ifdef _OPENMP
+    myrank = omp_get_thread_num();
+  #endif
+
+    #pragma omp for
+    for (int i=0; i<n; i++) {
+      x[i] = RngStream_RandU01(RngArray[myrank]);
+    }
+  }
+  delete[] RngArray;
+}

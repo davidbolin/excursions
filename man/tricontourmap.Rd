@@ -86,8 +86,8 @@ Finn Lindgren
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %%}
 \examples{
-\dontrun{
-if (require(INLA)) {
+\donttest{
+if (require.nowarnings("INLA")) {
   #Generate mesh and SPDE model
   n.lattice = 20 #increase for more interesting, but slower, examples
   x=seq(from=0,to=10,length.out=n.lattice)
@@ -108,10 +108,10 @@ if (require(INLA)) {
   ## Calculate posterior
   Q.post = (Q + (t(A)\%*\%A)/sigma2.e)
   mu.post = as.vector(solve(Q.post,(t(A)\%*\%Y)/sigma2.e))
-  
+
   map = contourmap(n.levels = 2, mu = mu.post, Q = Q.post,
-                   alpha=0.1, compute=list(F=FALSE))
-                   
+                   alpha=0.1, compute=list(F=FALSE),max.threads=1)
+
   ## Calculate continuous contours
   setsc = tricontourmap(mesh, z=mu.post, levels=as.vector(quantile(x,c(0.25,0.75))))
 
@@ -123,7 +123,7 @@ if (require(INLA)) {
   names(cols2) = as.character(-1:2)
 
   par(mfrow = c(1,2))
-  image(matrix(mu.post[reo],n.lattice,n.lattice),main="mean",axes=F)
+  image(matrix(mu.post[reo],n.lattice,n.lattice),main="mean",axes=FALSE)
   plot(setsc$map[idx.setsc], col=cols2[idx.setsc])
 }
 }

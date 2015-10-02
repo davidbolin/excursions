@@ -11,9 +11,7 @@ PKG_LIBS = $(E_LIBS) -lm $(SHLIB_OPENMP_CFLAGS)
 
 all : $(SHLIB)
 
-$(SHLIB): $(OBJECTS) sublibs
-
-sublibs: subclean sublibraries
+$(SHLIB): $(OBJECTS) sublibraries
 
 sublibraries: $(E_LIBS)
 
@@ -34,4 +32,4 @@ subclean:
 	  (cd $${d} && MkInclude="" $(MAKE) clean) || exit 0; \
 	done
 
-.PHONY: all clean subclean
+.PHONY: all sublibraries clean subclean

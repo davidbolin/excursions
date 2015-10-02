@@ -23,7 +23,7 @@
 ## is calculated and the variances are then returned in the same ordering as Q
 ## If L is provided, the variances are returned in the same ordering as L, even
 ## if L@invpivot exists.
-excursions.variances<-function(L,Q, max.threads=0)
+excursions.variances<-function(L,Q, max.threads=0, use.spam=FALSE)
 {
 
   if(!missing(L) && !is.null(L)){
@@ -35,20 +35,27 @@ excursions.variances<-function(L,Q, max.threads=0)
        stop("L needs to be in ccs format for now.")
     }
   } else {
-    L = chol(private.as.spam(Q))
-    ireo = TRUE
-    reo = L@invpivot
-    L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)), "TsparseMatrix"),"dtCMatrix")
-
+    if (requireNamespace("spam", quietly=TRUE)){
+      L = chol(private.as.spam(Q))
+      ireo = TRUE
+      reo = L@invpivot
+      L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)),
+                "TsparseMatrix"),"dtCMatrix")
+    } else {
+      L = Cholesky(Q,LDL=FALSE)
+      ireo = TRUE
+      reo <- 1:(L@Dim[1])
+      reo[L@perm+1] <- 1:(L@Dim[1])
+    }
   }
-  Mp = L@p
-  Mi = L@i
-  Mv = L@x
-  n = dim(L)[1]
 
-  out<- .C("Qinv",Rir = as.integer(Mi), Rjc = as.integer(Mp),
-           Rpr = as.double(Mv), variances=double(n), n = as.integer(n),
-           n_threads = as.integer(max.threads))
+  out<- .C("Qinv",Rir = as.integer(L@i),
+                  Rjc = as.integer(L@p),
+                  Rpr = as.double(L@x),
+                  variances=double(dim(L)[1]),
+                  n = as.integer(dim(L)[1]),
+                  n_threads = as.integer(max.threads))
+
   if(ireo){
     return(out$variances[reo])
   } else {
@@ -91,6 +98,8 @@ excursions.marginals <- function(type, rho,vars, mu, u, QC = FALSE)
        } else {
   				rl$rho = pnorm(mu-u,sd=sqrt(vars), lower.tail=FALSE)
         }
+      } else {
+        rl$rho = rho
       }
     }
   }
@@ -355,6 +364,39 @@ mix.sample <- function(n.samp = 1, mu,Q.chol,w)
     }
   }
   return(samples)
+}
+
+excursions.rand <- function(n,seed,n.threads=1)
+{
+  if(!missing(seed) && !is.null(seed)){
+    seed_provided = 1
+    seed.in = seed
+  } else {
+    seed_provided = 0
+    seed.in = as.integer(rep(0,6))
+  }
+
+  x = rep(0,n)
+  opt = c(n,n.threads,seed_provided)
+  out<- .C("testRand",opt  = as.integer(opt),
+                      x = as.double(x),
+                      seed_in  = as.integer(seed.in))
+
+  return(out$x)
+}
+
+
+
+## Turn off all warnings for require(), to allow clean completion of
+## examples that require unavailable Suggested packages.
+require.nowarnings <- function(package, lib.loc = NULL, character.only = FALSE)
+{
+  if (!character.only)
+    package <- as.character(substitute(package))
+  op <- options("warn")
+  on.exit(options(op))
+  options(warn = -1)
+  require(package, lib.loc = lib.loc, quietly = TRUE, character.only = TRUE)
 }
 
 
