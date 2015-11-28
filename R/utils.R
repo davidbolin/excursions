@@ -220,6 +220,27 @@ private.as.spam <- function(A)
   }
 }
 
+private.as.vector <- function(v)
+{
+  if(is.null(v) || is.vector(v)) {
+    return(v)
+  } else {
+    if(min(dim(v)>1)) {
+      stop("vector has wrong dimensions")
+    }
+    return(as.vector(v))
+  }
+  return(c(v))
+}
+
+private.as.Matrix <- function(M)
+{
+  if(is.null(M) || is(M,"Matrix")){
+    return(M)
+  } else {
+    return(as(M,"Matrix"))
+  }
+}
 
 ##
 # Distribution function of Gaussian mixture \Sum_k w[k]*N(mu[k],sigma[k]^2)
@@ -453,3 +474,110 @@ mcint <- function(X,
   return(list(Pv = Pv, Ev = Ev, P = Pv[1], E = Ev[1]))
 }
 
+
+summary.excurobj <- function(obj)
+{
+  out <- list()
+  class(out) <- "summary.excurobj"
+  out$calculation = obj$meta$calculation
+  out$call = obj$meta$call
+    if(obj$meta$calculation == "excursions"){
+      if(obj$meta$type == ">"){
+        out$computation = "Positive excursion set, E_{u,alpha}^+"
+      } else if(obj$meta$type == "<"){
+         out$computation = "Negative excursion set, E_{u,alpha}^-"
+      } else if(obj$meta$type == "="){
+        out$computation = "Contour credible region, E_{u,alpha}^c"
+      } else {
+        out$computation = "Contour avoiding set, E_{u,\alpha}"
+      }
+      out$u = obj$meta$level
+      out$alpha = obj$meta$alpha
+      out$F.limit = obj$meta$F.limit
+      out$method = obj$meta$method
+    } else if(obj$meta$calculation == "simconf"){
+      out$computation = "Simultaneous confidence band"
+      out$alpha = obj$alpha
+    } else if(obj$meta$calculation == "contourmap"){
+      out$computation = "Contour map"
+      out$u = obj$u
+      out$type = obj$meta$contourmap.type
+      out$F.computed = obj$meta$F.computed
+      if(out$F.computed)
+        out$F.limit = obj$meta$F.limit
+
+      if(is.null(obj$P0) && is.null(obj$P1) && is.null(obj$P2) &&
+         is.null(obj$P0.bound) && is.null(obj$P1.bound) &&
+         is.null(obj$P2.bound)){
+      } else {
+        out$measures = list()
+        if(!is.null(obj$P0))
+          out$measures$P0 = obj$P0
+
+        if(!is.null(obj$P1))
+          out$measures$P1 = obj$P1
+
+       if(!is.null(obj$P2))
+          out$measures$P2 = obj$P2
+
+        if(!is.null(obj$P0.bound))
+          out$measures$P0.bound = obj$P0.bound
+
+        if(!is.null(obj$P1.bound))
+          out$measures$P1.bound = obj$P1.bound
+
+       if(!is.null(obj$P2.bound))
+          out$measures$P2.bound = obj$P2.bound
+    }
+  }
+  return(out)
+}
+
+
+print.summary.excurobj <- function(obj)
+{
+
+  cat("Call: \n")
+  print(obj$call)
+  cat("\nComputation:\n")
+  cat(obj$computation,"\n\n")
+
+  if(obj$calculation == "excursions"){
+    cat("Level: u = ")
+    cat(obj$u,"\n")
+    cat("Error probability: alpha = ")
+    cat(obj$alpha,"\n")
+    cat("Limit for excursion function computation: F.limit = ")
+    cat(obj$F.limit,"\n")
+    cat("Method used : ")
+    cat(obj$method,"\n")
+  } else if(obj$calculation == "simconf"){
+    cat("Error probability: alpha = ")
+    cat(obj$alpha,"\n")
+  } else if(obj$calculation == "contourmap"){
+    cat("Level: u = ")
+    cat(objt$u,"\n")
+    cat("Type of contour map: ")
+    cat(obj$type,"\n")
+    if(obj$F.computed) {
+      cat("Contour map function computed\n")
+      cat("Limit for excursion function computation: F.limit = ")
+      cat(obj$F.limit,"\n")
+    } else {
+      cat("Contour map function not computed\n")
+    }
+    cat("Quality measures computed : ")
+    if(is.null(obj$measures)){
+      cat("none\n")
+    } else {
+      for(i in 1:length(obj$measures)){
+        cat(names(obj$measures)[i], " = ", obj$measures[[i]],"\n")
+      }
+    }
+  }
+}
+
+
+print.excurobj <- function(obj) {
+  print.summary.excurobj(summary(obj))
+}

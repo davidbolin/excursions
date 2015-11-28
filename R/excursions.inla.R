@@ -64,6 +64,7 @@ excursions.inla <- function(result.inla,
 
   #ind is assumed to contain indices within the component of interest
   if(!missing(ind) && !is.null(ind)){
+    ind <- private.as.vector(ind)
     ind.int <- ind.int[ind]
     ind.stack <- ind.stack[ind]
   }
@@ -258,7 +259,8 @@ excursions.inla <- function(result.inla,
                            F.limit = F.limit,
                            n.iter=n.iter,
                            method=method,
-                           ind=ind.int))
+                           ind=ind.int,
+                           call = match.call()))
   class(output) <- "excurobj"
   output
 }

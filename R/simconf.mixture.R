@@ -28,14 +28,28 @@ simconf.mixture <- function(alpha,
                             mix.samp = TRUE)
 {
 
-  if(missing(mu))
+  if(missing(mu)) {
     stop('Must provide list with mean values')
-
-  if(missing(Q))
+  } else {
+    mu <- private.as.vector(mu)
+  }
+  if(missing(Q)) {
     stop('Must provide list with precision matrices')
+  } else {
+    Q <- private.as.Matrix(Q)
+  }
 
-  if(missing(w))
+  if(missing(w)){
     stop('Must provide list with mixture weights')
+  } else {
+    w <- private.as.vector(w)
+  }
+  if(!missing(vars))
+    vars <- private.as.vector(vars)
+
+  if(!missing(ind))
+    ind <- private.as.vector(ind)
+
 
   if(missing(alpha))
     stop('Must provide significance level alpha')
@@ -162,10 +176,18 @@ simconf.mixture <- function(alpha,
                                                 w = w,
                                                 br = limits))[ireo]
   }
-  return(list(a = a[ind],
-              b = b[ind],
-              a.marginal = a.marg[ind],
-              b.marginal = b.marg[ind]))
-
+  output <- list(a = a[ind],
+                 b = b[ind],
+                 a.marginal = a.marg[ind],
+                 b.marginal = b.marg[ind],
+                 mean = mu[ind],
+                 vars = vars[ind])
+  output$meta = list(calculation="simconf",
+                     alpha=alpha,
+                     n.iter=n.iter,
+                     ind=ind,
+                     call = match.call())
+  class(output) <- "excurobj"
+  return(output)
 }
 

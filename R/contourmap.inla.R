@@ -74,6 +74,6 @@ contourmap.inla <- function(result.inla,
     set.out[ind.int] = cm$map[ind]; cm$map = set.out
 
   cm$meta$ind <- ind.int
-
+  cm$meta$call = match.call()
   return(cm)
 }

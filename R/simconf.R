@@ -28,14 +28,29 @@ simconf <- function(alpha,
                     LDL=TRUE)
 {
 
-  if(missing(mu))
+  if(missing(mu)){
 	  stop('Must specify mean value')
-
+  } else {
+    mu <- private.as.vector(mu)
+  }
   if(missing(Q) && missing(Q.chol))
 	  stop('Must specify a precision matrix or its Cholesky factor')
 
   if(!missing(ind) && !missing(Q.chol))
 	  stop('Cannot provide both cholesky factor and indices.')
+
+  if(!missing(Q))
+    Q <- private.as.Matrix(Q)
+
+  if(!missing(Q.chol))
+    Q.chol <- private.as.Matrix(Q.chol)
+
+  if(!missing(vars))
+    vars <- private.as.vector(vars)
+
+  if(!missing(ind))
+    ind <- private.as.vector(ind)
+
 
   if (!missing(Q.chol) && !is.null(Q.chol)) {
       L = Q.chol
@@ -73,13 +88,25 @@ simconf <- function(alpha,
 
   a.marg = mu-qnorm(alpha/2)*sd
   b.marg = mu+qnorm(alpha/2)*sd
+
+
   if(is.null(ind)) {
-    return(list(a=a,b=b,a.marginal = a.marg,b.marginal=b.marg))
+    output <- list(a=a,b=b,a.marginal = a.marg,b.marginal=b.marg,
+                   mean = mu, vars = vars)
   } else {
-    return(list(a=a[ind],b=b[ind],
-                a.marginal = a.marg[ind],
-                b.marginal=b.marg[ind]))
+    output <- list(a=a[ind],b=b[ind],
+                   a.marginal = a.marg[ind],
+                   b.marginal=b.marg[ind],
+                   mean = mu[ind], vars = vars[ind])
   }
 
+  output$meta = list(calculation="simconf",
+                     alpha=alpha,
+                     n.iter=n.iter,
+                     ind=ind,
+                     LDL=LDL,
+                     call = match.call())
+  class(output) <- "excurobj"
+  return(output)
 }
 

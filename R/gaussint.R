@@ -39,6 +39,22 @@ gaussint <- function(mu,
   if(missing(b))
     stop('Must specify upper integration limit')
 
+  if(!missing(mu))
+    mu <- private.as.vector(mu)
+
+  if(!missing(ind))
+    ind <- private.as.vector(ind)
+
+  a <- private.as.vector(a)
+  b <- private.as.vector(b)
+
+  if(!missing(Q))
+    Q <- private.as.Matrix(Q)
+
+  if(!missing(Q.chol))
+    Q.chol <- private.as.Matrix(Q.chol)
+
+
   n = length(a)
   if(length(b) != n)
     stop('Vectors with integration limits are of different length.')

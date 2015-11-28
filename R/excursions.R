@@ -48,9 +48,11 @@ excursions <- function(alpha,
   if(missing(u))
     stop('Must specify level')
 
-  if(missing(mu))
+  if(missing(mu)){
     stop('Must specify mean value')
-
+  } else {
+    mu <- private.as.vector(mu)
+  }
   if(missing(Q) && missing(Q.chol))
     stop('Must specify a precision matrix or its Cholesky factor')
 
@@ -71,11 +73,11 @@ excursions <- function(alpha,
 
   if (!missing(Q.chol) && !is.null(Q.chol)) {
     ## make the representation unique (i,j,v)
-    Q = Q.chol#private.as.dgTMatrix(Q.chol)
+    Q = private.as.Matrix(Q.chol)#private.as.dgTMatrix(Q.chol)
     is.chol = TRUE
   } else {
     ## make the representation unique (i,j,v)
-    Q = Q#private.as.dgTMatrix(Q)
+    Q = private.as.Matrix(Q)#private.as.dgTMatrix(Q)
     is.chol = FALSE
   }
 
@@ -85,7 +87,16 @@ excursions <- function(alpha,
     } else {
       vars <- excursions.variances(Q=Q)
     }
+  } else {
+    vars <- private.as.vector(vars)
   }
+
+  if(!missing(rho))
+    rho <- private.as.vector(rho)
+
+  if(!missing(ind))
+    ind <- private.as.vector(ind)
+
 
   if(verbose)
     cat("Calculate marginals\n")
@@ -129,6 +140,8 @@ excursions <- function(alpha,
       reo <- excursions.permutation(marg$rho, indices,
                                     use.camd = TRUE,F.limit,Q)
     }
+  } else {
+    reo <- private.as.vector(reo)
   }
 
   if(verbose)
@@ -199,7 +212,8 @@ excursions <- function(alpha,
                             reo=reo,
                             ireo=ireo,
                             Fe=Fe,
-                            LDL=LDL)))
+                            LDL=LDL,
+                            call = match.call())))
   class(output) <- "excurobj"
   output
 }

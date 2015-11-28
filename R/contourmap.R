@@ -46,6 +46,19 @@ contourmap <- function(mu,
     F.limit = max(alpha,F.limit)
   }
 
+  if(!missing(mu))
+    mu <- private.as.vector(mu)
+
+  if(!missing(vars))
+    vars <- private.as.vector(vars)
+
+  if(!missing(ind))
+    ind <- private.as.vector(ind)
+
+  if(!missing(Q))
+    Q <- private.as.Matrix(Q)
+
+
   measure = NULL
   if(!is.null(compute$measures))
     measure <- match.arg(compute$measures,
@@ -173,12 +186,15 @@ contourmap <- function(mu,
 
   lp$meta <- list(calculation="contourmap",
                   F.limit=F.limit,
+                  F.computed = compute$F,
                   alpha=alpha,
                   levels=lp$u,
                   type="!=",
+                  contourmap.type = type,
                   n.iter=n.iter,
                   mu.range = range(mu[ind]),
-                  ind = ind)
+                  ind = ind,
+                  call = match.call())
   class(lp) <- "excurobj"
   return(lp)
 }

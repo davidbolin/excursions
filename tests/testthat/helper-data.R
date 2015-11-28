@@ -24,7 +24,7 @@ testdata.inla <- function()
   Q <- tau*sparseMatrix(i=c(1:n, 2:n), j=c(1:n, 1:(n-1)),
                         x=c(1,rep(1+rho^2, n-2),1, rep(-rho, n-1)),
                         dims=c(n, n), symmetric=TRUE)
-  debugonce(INLA::inla.qsample)
+
   X <- mu + INLA::inla.qsample(1, Q, seed=12345L)[,1]
 
   obs.loc = sample(1:n,n.obs)

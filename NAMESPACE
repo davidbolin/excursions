@@ -6,8 +6,6 @@ importFrom(spam,as.spam)
 importFrom(spam,as.dgRMatrix.spam)
 importFrom(spam,as.spam.dgCMatrix)
 
-
-# Export only the main functions
 export(excursions)
 export(excursions.inla)
 export(excursions.mc)
@@ -28,13 +26,20 @@ export(contourmap.colors)
 export(submesh.mesh)
 export(submesh.grid)
 export(tricontour)
+
 S3method(tricontour,inla.mesh)
 S3method(tricontour,matrix)
 S3method(tricontour,list)
+
 export(tricontourmap)
 S3method(tricontourmap,inla.mesh)
 S3method(tricontourmap,matrix)
 S3method(tricontourmap,list)
+
 export(require.nowarnings)
+
+S3method(print,excurobj)
+S3method(print,summary.excurobj)
+S3method(summary,excurobj)
 
 useDynLib(excursionsdevel, .registration=TRUE)

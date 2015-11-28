@@ -28,6 +28,15 @@ contourmap.mc <- function(samples,
                        alpha,
                        verbose=FALSE)
 {
+
+  if(missing(samples)){
+    stop("Must supply samples.")
+  } else {
+    samples <- as(samples,"matrix")
+  }
+  if(!missing(ind))
+    ind <- private.as.vector(ind)
+
   mu <- rowMeans(samples)
   type <- match.arg(type)
 

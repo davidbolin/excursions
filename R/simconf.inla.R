@@ -42,6 +42,9 @@ simconf.inla <- function(result.inla,
 
   n = length(result.inla$misc$configs$config[[1]]$mean)
 
+  if(!missing(ind))
+    ind <- private.as.vector(ind)
+
 
   #Get indices for the component of interest in the configs
   ind.stack <- inla.output.indices(result.inla, name=name, stack=stack, tag=tag)
@@ -74,6 +77,7 @@ simconf.inla <- function(result.inla,
     res <- simconf(alpha = alpha, mu = config$mu, Q = config$Q,
                    vars = config$vars, n.iter=n.iter, ind=ind,
                    verbose=verbose, max.threads=max.threads, seed=seed)
+    res$meta$call = match.call()
     return(private.simconf.link(res,links,link))
 
 
@@ -133,13 +137,23 @@ simconf.inla <- function(result.inla,
                                               mu = mu.m[,i], sd = sd.m[,i],
                                               w = w, br = limits))
 
-      res = list(a = a, b = b, a.marginal = a.marg, b.marginal = b.marg)
+      res = list(a = a, b = b, a.marginal = a.marg, b.marginal = b.marg,
+                 mean = mu, vars = vars)
+
+      res$meta = list(calculation="simconf",
+                      alpha=alpha,
+                      n.iter=n.iter,
+                      ind=ind,
+                      call = match.call())
+      class(res) <- "excurobj"
+
       return(private.simconf.link(res,links,link))
 
     } else {
       res = simconf.mixture(alpha = alpha, mu = mu, Q = Q, vars = vars,
                             w = w, n.iter=n.iter, ind=ind, verbose=verbose,
                             max.threads=max.threads, seed=seed)
+      res$meta$call = match.call()
     return(private.simconf.link(res,links,link))
     }
   } else {
