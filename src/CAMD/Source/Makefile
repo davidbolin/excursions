@@ -9,7 +9,7 @@ lib: $(LIB)
 include make_o.mk
 
 $(LIB): $(OBJS)
-	$(AR) -rucs $(LIB) $(OBJS)
+	$(AR) -rcs $(LIB) $(OBJS)
 
 mostlyclean: clean
 
