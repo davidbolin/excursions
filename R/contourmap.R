@@ -22,6 +22,7 @@ contourmap <- function(mu,
                        ind,
                        levels,
                        type = c("standard",
+                                "pretty",
                                 "equalarea",
                                 "P0-optimal",
                                 "P1-optimal",
@@ -44,6 +45,13 @@ contourmap <- function(mu,
     F.limit = 0.99
   } else {
     F.limit = max(alpha,F.limit)
+  }
+  if(missing(n.levels) || is.null(n.levels)){
+    if(missing(levels) || is.null(levels)){
+      stop("Must supply levels or n.levels")
+    } else {
+      n.levels = length(levels)
+    }
   }
 
   if(!missing(mu))
@@ -70,6 +78,13 @@ contourmap <- function(mu,
     if(verbose) cat('Creating contour map\n')
     lp <- excursions.levelplot(mu=mu,n.levels = n.levels,ind = ind,
                                levels = levels,equal.area=FALSE)
+  }
+  else if(type == 'pretty')
+  {
+    if(verbose) cat('Creating pretty contour map\n')
+    lp <- excursions.levelplot(mu=mu,n.levels = n.levels,ind = ind,
+                               levels = levels,equal.area=FALSE,pretty.cm=TRUE)
+    n.levels = lp$n.levels
   }
   else if(type == 'equalarea')
   {
@@ -126,7 +141,7 @@ contourmap <- function(mu,
           if(verbose) cat('Calculating P1-measure\n')
           lp$P1 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=1)
         } else {
-          cat("Not computing P1-measure since it makes sense for n.levels>1\n")
+          lp$P1 = 1
         }
       } else if(measure[i] == "P2") {
         if(verbose) cat('Calculating P2-measure\n')
@@ -183,7 +198,6 @@ contourmap <- function(mu,
   } else {
     lp$E <- NULL
   }
-
   lp$meta <- list(calculation="contourmap",
                   F.limit=F.limit,
                   F.computed = compute$F,

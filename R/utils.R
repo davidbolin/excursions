@@ -220,6 +220,18 @@ private.as.spam <- function(A)
   }
 }
 
+
+private.check.integer <- function(v)
+{
+  if(is.null(v)) {
+    stop("Anticipated scalar value, got NULL")
+  } else if(!is.null(dim(v))){
+    stop("Anticipated scalar value, got matrix")
+  } else if(length(v)>1) {
+    stop("Anticipated scalar value, got vector")
+  }
+}
+
 private.as.vector <- function(v)
 {
   if(is.null(v) || is.vector(v)) {
@@ -556,7 +568,7 @@ print.summary.excurobj <- function(obj)
     cat(obj$alpha,"\n")
   } else if(obj$calculation == "contourmap"){
     cat("Level: u = ")
-    cat(objt$u,"\n")
+    cat(obj$u,"\n")
     cat("Type of contour map: ")
     cat(obj$type,"\n")
     if(obj$F.computed) {

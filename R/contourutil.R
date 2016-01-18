@@ -181,7 +181,9 @@ contourmap.marginals.mc <- function(X,lim,ind)
 }
 
 ## Create a levelplot with given levels/number of levels
-excursions.levelplot <- function(mu,n.levels,ind,levels,equal.area=FALSE)
+excursions.levelplot <- function(mu,n.levels,ind,levels,
+                                 equal.area=FALSE,
+                                 pretty.cm=FALSE)
 {
 	n = length(mu)
 	if(missing(ind)) ind = 1:n
@@ -191,10 +193,15 @@ excursions.levelplot <- function(mu,n.levels,ind,levels,equal.area=FALSE)
 	if(missing(levels)){
 		if(missing(n.levels)){
 			stop('Must specify levels or number of levels')
+		} else {
+		  private.check.integer(n.levels)
 		}
 		if(equal.area){
 			levels <- as.vector(quantile(mu[ind],
 								(1:n.levels)/(n.levels+1),type=4))
+		} else if(pretty.cm){
+      levels <- pretty(mu[ind], n = n.levels)
+      n.levels = length(levels)
 		} else {
 			levels <- seq(from=r[1],to=r[2],
 						  length.out = (n.levels+2))[2:(n.levels+1)]
@@ -212,7 +219,14 @@ excursions.levelplot <- function(mu,n.levels,ind,levels,equal.area=FALSE)
 
 	u.e = NULL
 	E = vector("list",n.levels+1)
-	l1 = c(r[1],levels,r[2])
+
+  if(n.levels == 1){
+    l1 = c(levels-diff(r),levels,levels+diff(r))
+  } else {
+  	l1 = c(2*levels[1]- levels[2],
+	         levels,
+	         2*levels[n.levels]-levels[n.levels-1])
+  }
 	for(i in 1:(n.levels+1)) u.e[i] = (l1[i]+l1[i+1])/2
 
 	for(i in 1:(n.levels)){
@@ -225,7 +239,12 @@ excursions.levelplot <- function(mu,n.levels,ind,levels,equal.area=FALSE)
 	  map[E[[i]]] = u.e[i]
 	  G[E[[i]]] = i-1
 	}
-	return(list(u = levels, n.levels = n.levels, u.e = u.e, E=E,map=map,G=G))
+	return(list(u = levels,
+	            n.levels = n.levels,
+	            u.e = u.e,
+	            E=E,
+	            map=map,
+	            G=G))
 }
 
 ## Create a P-optimal levelplot.
@@ -239,44 +258,71 @@ excursions.opt.levelplot <- function(mu,vars,Q,n.levels, measure=2, use.marginal
 
 	r = range(mu[ind])
 
-	start.v <- seq(from=r[1],to=r[2],length.out = (n.levels+2))[2:(n.levels+1)]
+	u <- seq(from=r[1],to=r[2],length.out = (n.levels+2))[2:(n.levels+1)]
+	if(n.levels==1){
+  	l = diff(r)
+	} else {
+	  l <- diff(u[1:2])
+	}
+
   Q.chol = chol(Q)
-  if(n.levels == 1){
-    u = optim(start.v,excursions.lim.func,method = "Brent",
-	          lower = r[1], upper = r[2],
-	          mu=mu,vars=vars,Q.chol=Q.chol,
-			      measure=measure,
-			      use.marginals = use.marginals,
-			      ind=ind,Q=Q)
-  } else {
-  	u = optim(start.v,excursions.lim.func,
-  	          mu=mu,vars=vars,Q.chol=Q.chol,
-	  		      measure=measure,
-		  	      use.marginals = use.marginals,
-			        ind=ind,Q=Q)
+  u.add = seq(from=-l, to = l,length.out = 19)
+  P.add = NULL
+  for(jj in 1:length(u.add)){
+    P.add[jj] = -restricted.lim.func(u.add = u.add[jj],
+                                     u0 = u,
+                                     mu = mu,
+                                     vars = vars,
+                                     Q.chol = Q.chol,
+                                     Q=Q,
+                                     measure = measure,
+                                     use.marginals = use.marginals,
+                                     ind=ind)
   }
-	lp = excursions.levelplot(mu,levels = u$par,ind=ind)
+  plot(u.add,P.add)
+  k = which.max(P.add)
+  u.add = u.add[k]
+  P.k = P.add[k]
+
+  u <- u.add + u
+	lp = excursions.levelplot(mu,levels = u,ind=ind)
 	if(measure==2){
 		if(use.marginals){
-			lp$P2.bound = -u$value
+			lp$P2.bound = P.k
 		} else {
-			lp$P2 = -u$value
+			lp$P2 = P.k
 		}
 	} else if(measure==1){
 		if(use.marginals){
-			lp$P1.bound = -u$value
+			lp$P1.bound = P.k
 		} else {
-			lp$P1 = -u$value
+			lp$P1 = P.k
 		}
 	} else if(measure==0){
 		if(use.marginals){
-			lp$P0.bound = -u$value
+			lp$P0.bound = P.k
 		} else {
-			lp$P0 = -u$value
+			lp$P0 = P.k
 		}
 	}
 	return(lp)
 }
+## Internal function for optimization of restricted P-optimal contour map
+restricted.lim.func <- function(u.add, u0, mu, vars, Q.chol, Q, measure,
+                                use.marginals, ind=ind)
+{
+	lp = excursions.levelplot(mu=mu,levels = (u.add + u0),ind=ind)
+  if(use.marginals){
+	  val = -Pmeasure.bound(lp=lp,mu=mu,vars=vars,type=measure,ind=ind)
+		cat(u, ': ', -val, '\n')
+	} else {
+		val = -Pmeasure(lp,mu=mu,Q=Q,Q.chol=Q.chol,type=measure,
+		                ind=ind,vars=vars)
+	  cat(u.add, ': ', -val, '\n')
+	}
+	return(val)
+}
+
 
 ## Internal function for optimization of P-optimal contour map
 excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
@@ -411,13 +457,18 @@ excursions.limits <- function(lp,mu,measure)
 
 contourmap.colors <- function(lp,zlim,col,credible.col)
 {
-  if(missing(zlim) || is.null(zlim))
-    zlim = lp$meta$mu.range
 
-  breaks <- seq(zlim[1]*(1-1e-16),
-                zlim[2]*(1+1e-16),
+  if(missing(zlim) || is.null(zlim)){
+    zlim = lp$meta$mu.range
+  }
+
+  u.e <- sort(unique(lp$map)) #extracts only used breakpoints
+  u.e[1] = max(u.e[1],zlim[1])
+  u.e[length(u.e)] = min(u.e[length(u.e)],zlim[2])
+
+  breaks <- seq(zlim[1]-1e-16, zlim[2]+1e-16,
                 length.out = length(col)+1)
-  cmap = col[cut(c(lp$u.e), breaks)@.Data]
+  cmap = col[cut(c(u.e), breaks)@.Data]
   if(!missing(credible.col) && !is.null(credible.col))
     cmap = c(credible.col,cmap)
 
