@@ -153,8 +153,10 @@ gaussint <- function(mu,
 
   if(is(L,'spam.chol.NgPeyton')){
      L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)), "TsparseMatrix"),"dtCMatrix")
-  } else if (!is(L, "dtCMatrix") && !is(L,"dCHMsimpl")) {
-    stop("L needs to be in ccs format for now.")
+  } else if (is(L, "Matrix")) {
+     L <- as(as(L, "CsparseMatrix"), "dtCMatrix")
+  } else {
+    stop("Unsuported matrix type.")
   }
 
   if(!missing(seed) && !is.null(seed)){

@@ -10,7 +10,9 @@
 \usage{
 continuous(ex, geometry, alpha,
            method = c("log", "logit", "linear", "step"),
-           output = c("sp", "inla"))
+           output = c("sp", "inla"),
+           subdivisions=1,
+           calc.credible=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -44,6 +46,14 @@ topologically as lattices, and the lattice boxes are assumed convex.
   \code{SpatialPolygons} object, and \code{inla} gives a
   \code{inla.mesh.segment} object.
 }
+\item{subdivions}{
+  The number of mesh triangle subdivisions to perform for the
+  interpolation of the excursions or contour function. Default=1.
+}
+\item{calc.credible}{
+  Logical, if TRUE (default), calculate credible contour region objects
+  in addition to avoidance sets.
+  }
 }
 
 \value{

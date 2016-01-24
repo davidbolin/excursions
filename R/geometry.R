@@ -556,18 +556,25 @@ as.Polygons.raw <- function(sequences, ID=" ") {
     stop("The 'sp' package is needed.")
   }
   polys <- lapply(sequences,
-                  function(x) {
-                    if (is.list(x)) {
-                      p <- sp::Polygon(cbind(x$x, x$y))
-                    } else {
-                      p <- sp::Polygon(x)
-                    }
-                    p
-                  })
+                  function(x)
+  {
+    if (is.list(x)) {
+      p <- sp::Polygon(cbind(x$x, x$y))
+    } else {
+      p <- sp::Polygon(x)
+    }
+    if (p@area > 0) {
+      p
+    } else {
+      warning("Skipping zero area polygon, in as.Polygons.raw.")
+      NULL
+    }
+  })
   if (length(polys) == 0) {
     sp <- NULL
   } else {
-    sp <- sp::Polygons(polys, ID=ID)
+    ok <- unlist(lapply(polys, function(x) is(x, "Polygon")))
+    sp <- sp::Polygons(polys[ok], ID=ID)
   }
   sp
 }
@@ -738,7 +745,7 @@ tricontour.list <- function(x, z, nlevels = 10,
     ecross.grp.lower[ i == 0 ] <- lev.grp
     ecross.grp.lower[ i > 0 ] <- lev.grp+1L
   }
-  for (lev in seq_along(levels)[length(levels):1L]) {
+  for (lev in rev(seq_along(levels))) {
     signv <- (z > levels[lev]+tol) - (z < levels[lev]-tol)
     lev.grp <- 2L*lev
     i <- pmax(signv[x$ev[,1]], signv[x$ev[,2]])
@@ -822,17 +829,30 @@ tricontour.list <- function(x, z, nlevels = 10,
     e.levels <- ((e.lower[edge]+1)/2):((e.upper[edge]-1)/2)
     loc.new.idx <- loc.last+seq_along(e.levels)
     beta <- ((levels[e.levels] - z[x$ev[edge,1]]) /
-             (z[x$ev[edge,2]] - z[x$ev[edge,1]]))
-    #Temporary workaround for boundary part error:
-    #if (max(loc.new.idx) > nrow(loc.new)) {
-    #  loc.new <- rbind(loc.new,
-    #                   matrix(NA,
-    #                          max(loc.new.idx) - nrow(loc.new),
-    #                          ncol(loc.new)))
-    #}
+               (z[x$ev[edge,2]] - z[x$ev[edge,1]]))
+    ##print(str(loc.new))
+    ##print(e.levels)
+    ##print(c(loc.last, loc.new.idx))
+##    message("???")
+##    message(paste(paste(dim(loc.new), collapse=", "),
+##                  loc.new.idx, collapse="; "))
+    ## Temporary workaround for boundary part error:
+    if (max(loc.new.idx) > nrow(loc.new)) {
+##      browser()
+      loc.new <- rbind(loc.new,
+                       matrix(NA,
+                              max(loc.new.idx) - nrow(loc.new),
+                              ncol(loc.new)))
+    }
+
+##    xxx <-
+##      (as.matrix(1-beta) %*% loc[x$ev[edge,1],,drop=FALSE]+
+##       as.matrix(beta) %*% loc[x$ev[edge,2],,drop=FALSE])
+
     loc.new[loc.new.idx,] <-
       (as.matrix(1-beta) %*% loc[x$ev[edge,1],,drop=FALSE]+
        as.matrix(beta) %*% loc[x$ev[edge,2],,drop=FALSE])
+
     e.newv[edge, e.levels] <- Nv + loc.new.idx
     if (!is.boundary.edge) {
       e.newv[edge.reverse, e.levels] <- Nv + loc.new.idx
@@ -1046,7 +1066,7 @@ tricontour_step <- function(x, z, levels, loc, ...)
 probabilitymap <-
   function(mesh, F, level, G,
            calc.complement=TRUE,
-           tol=1e-7, neginf=-1e10,
+           tol=1e-7,
            output=c("sp", "inla.mesh.segment"),
            method, ...)
 {
@@ -1062,75 +1082,118 @@ probabilitymap <-
     }
   }
 
-  out <- list()
-  if (calc.complement) {
-    ## Find contour set
-    FF <- F
-    FF[G == -1] <- neginf
-    if (method == "step") {
-      tric <- tricontour_step(x=mesh$graph, z=FF, levels=level,
-                              loc=mesh$loc)
-    } else {
-      tric <- tricontour(x=mesh$graph, z=FF, levels=level,
-                         loc=mesh$loc, type="+", tol=tol, ...)
-    }
-    ID <- "-1"
-    if (output == "sp") {
-      spobj <- tryCatch(as.sp.outline(tric,
-                                      grp.ccw=c(1),
-                                      grp.cw=c(2),
-                                      ccw=FALSE,
-                                      closed=TRUE,
-                                      ID=ID),
-                        error=function(e) NULL)
-      if (!is.null(spobj)) {
-        out[[ID]] <- spobj
-      }
-    } else {
-      out[[ID]] <-
-        as.inla.mesh.segment.outline(tric,
-                                     grp.ccw=c(1),
-                                     grp.cw=c(2),
-                                     grp=-1)
-    }
-  }
+  spout <- list()
+  inlaout <- list()
 
   ## Find individual avoidance/between-level/under/over sets.
   for (k in sort(unique(G[G >= 0]))) {
-    FF <- F
-    FF[G != k] <- neginf
-    if (method == "step") {
-      tric <- tricontour_step(x=mesh$graph, z=FF, levels=level,
-                              loc=mesh$loc)
-    } else {
-      tric <- tricontour(x=mesh$graph, z=FF, levels=level,
-                         loc=mesh$loc, type="+", tol=tol, ...)
-    }
-    ID <- as.character(k)
-    if (output == "sp") {
-      spobj <- tryCatch(as.sp.outline(tric,
-                                      grp.ccw=c(2,3),
-                                      grp.cw=c(),
-                                      ccw=FALSE,
-                                      closed=TRUE,
-                                      ID=ID),
-                        error=function(e) NULL)
-      if (!is.null(spobj)) {
-        out[[ID]] <- spobj
+    active.triangles <-
+      which(rowSums(matrix(G[mesh$graph$tv] == k, nrow(mesh$graph$tv), 3)) == 3)
+    active.nodes.idx <- unique(as.vector(mesh$graph$tv[active.triangles,]))
+
+    if (length(active.nodes.idx) >= 3) { ## Non-empty mesh subset
+      active.nodes <- logical(nrow(mesh$loc))
+      active.nodes[active.nodes.idx] <- TRUE
+      submesh <- submesh.mesh(active.nodes, mesh)
+
+      subF <- rep(NA, nrow(submesh$loc))
+      subF[submesh$idx$loc[active.nodes]] <- F[active.nodes]
+
+      if (FALSE) { ## Debugging plots
+        op <- par(mfrow=c(2,1))
+        on.exit(par(op))
+
+        class(mesh) <- "inla.mesh"
+        mesh$n <- nrow(mesh$loc)
+        mesh$manifold <- "R2"
+        proj <- inla.mesh.projector(mesh)
+        image(proj$x, proj$y, inla.mesh.project(proj, field=exp(F)),
+              zlim=range(exp(F)))
+        if (length(spout) > 0) {
+          plot(sp::SpatialPolygons(spout), add=TRUE, col="blue")
+        }
+        proj <- inla.mesh.projector(submesh)
+        image.plot(proj$x, proj$y, inla.mesh.project(proj, field=exp(subF)),
+                   xlim=range(mesh$loc[,1]), ylim=range(mesh$loc[,1]),
+                   zlim=range(exp(F)))
+        plot(submesh, add=TRUE)
       }
+
+      if (method == "step") {
+        tric <- tricontour_step(x=submesh$graph, z=subF, levels=level,
+                                loc=submesh$loc)
+      } else {
+        tric <- tricontour(x=submesh$graph, z=subF, levels=level,
+                           loc=submesh$loc, type="+", tol=tol, ...)
+      }
+      ID <- as.character(k)
+
+      if (output == "sp" || calc.complement) {
+        spobj <- tryCatch(as.sp.outline(tric,
+                                        grp.ccw=c(2,3),
+                                        grp.cw=c(),
+                                        ccw=FALSE,
+                                        closed=TRUE,
+                                        ID=ID),
+                          error=function(e) NULL)
+        if (!is.null(spobj)) {
+          if (spobj@area == 0) {
+            warning("Skipping zero area polygon in probabilitymap.")
+          } else {
+            spout[[ID]] <- spobj
+            ##          plot(sp::SpatialPolygons(list(spobj)), add=TRUE, col="blue")
+          }
+        }
+      }
+      if (output == "inla.mesh.segment") {
+        inlaout[[ID]] <-
+          as.inla.mesh.segment.outline(tric,
+                                       grp.ccw=c(2,3),
+                                       grp.cw=c(),
+                                       grp=k)
+      }
+    }
+
+
+##    readline()
+}
+
+  if (calc.complement) {
+    ## Find contour set
+    if (!requireNamespace("rgeos", quietly=TRUE)) {
+      error("Package 'rgeos' required for set complement calculations.")
+    }
+
+    ID <- "-1"
+    outline <- inla.mesh.boundary(mesh)[[1]]
+    sp.domain <- as.sp.outline(outline,
+                               grp.ccw=unique(outline$grp),
+                               grp.cw=integer(0),
+                               ID=ID,
+                               closed=TRUE)
+    sp.domain <- sp::SpatialPolygons(list(sp.domain))
+
+    if (length(spout) == 0) {
+      ## Complement is the entire domain
+      spout[[ID]] <- sp.domain@polygons[[1]]
     } else {
-      out[[ID]] <-
-        as.inla.mesh.segment.outline(tric,
-                                     grp.ccw=c(2,3),
-                                     grp.cw=c(),
-                                     grp=k)
+      spout.joined <- sp::SpatialPolygons(spout)
+      spout.union <- rgeos::gUnaryUnion(spout.joined)
+      spout[[ID]] <- rgeos::gDifference(sp.domain, spout.union)
+      spout[[ID]] <- spout[[ID]]@polygons[[1]]
+    }
+    spout[[ID]]@ID <- ID
+
+    if (output == "inla.mesh.segment") {
+      inlaout[[ID]] <- INLA::inla.sp2segment(spout[[ID]])
     }
   }
-  if (length(out) > 0) {
+
+  if (length(spout) > 0) {
     if (output == "sp") {
-      out <- sp::SpatialPolygons(out)
+      out <- sp::SpatialPolygons(spout)
     } else {
-      out <- do.call(INLA::inla.mesh.segment, out)
+      out <- do.call(INLA::inla.mesh.segment, inlaout)
     }
   } else {
     out <- NULL
@@ -1287,10 +1350,10 @@ subdivide.mesh <- function(mesh)
   edge.split.v[edges.interior.secondary] <- v2.interior
 
   ## Mapping matrix from mesh nodes to sub-mesh nodes
-  idx <- mesh$idx$loc ## Same indices as in input mesh
-  ridx <- integer(length(mesh$idx$loc))
-  ridx[mesh$idx$loc[!is.na(mesh$idx$loc)]] <-
-    which(!is.na(mesh$idx$loc))
+  idx <- seq_len(graph$Nv) ## Same indices as in input mesh
+  ridx <- seq_len(graph$Nv)
+##  ridx[mesh$idx$loc[!is.na(mesh$idx$loc)]] <-
+##    which(!is.na(mesh$idx$loc))
   A <- sparseMatrix(i=(c(v1,
                          rep(v2.boundary, times=2),
                          rep(v2.interior, times=2)
@@ -1319,7 +1382,16 @@ subdivide.mesh <- function(mesh)
                     edge.split.v[graph$te[,1]])
               )
 
-  list(loc=loc, graph=list(tv=tv), A=A, idx=list(loc=idx))
+  if (!requireNamespace("INLA", quietly=TRUE)) {
+    stop("Requires package 'INLA'.")
+  }
+  newmesh <- INLA::inla.mesh.create(loc=loc, tv=tv)
+  ## Handle possible node reordering in inla.mesh.create()
+  newmesh$idx$loc <- newmesh$idx$loc[idx]
+  ## Add mapping matrix
+  newmesh$A <- A
+
+  newmesh
 }
 
 
@@ -1328,7 +1400,9 @@ continuous <- function(ex,
                        geometry,
                        alpha,
                        method=c("log", "logit", "linear", "step"),
-                       output=c("sp", "inla"))
+                       output=c("sp", "inla"),
+                       subdivisions=1,
+                       calc.credible=TRUE)
 {
   stopifnot(inherits(ex, "excurobj"))
   method <- match.arg(method)
@@ -1369,34 +1443,83 @@ continuous <- function(ex,
     active.nodes[ex$meta$ind] <- TRUE
   }
   if (info$geometry == "mesh") {
-    submesh <- submesh.mesh(active.nodes, geometry)
-    mesh <- subdivide.mesh(submesh)
+    mesh <- submesh.mesh(active.nodes, geometry)
   } else if (info$geometry == "lattice") {
     if (all(active.nodes)) {
       mesh <- build.lattice.mesh(info$loc, info$dims)
     } else {
-      submesh <- submesh.grid(active.nodes, geometry)
-      mesh <- subdivide.mesh(submesh)
+      mesh <- submesh.grid(active.nodes, geometry)
     }
   }
-  active.nodes <- !is.na(mesh$idx$loc)
+  mesh$graph <-
+    generate.trigraph.properties(mesh$graph, Nv=nrow(mesh$loc))
 
-  F.ex <- F.ex[active.nodes]
+  active.nodes <- !is.na(mesh$idx$loc)
+  F.ex[mesh$idx$loc[active.nodes]] <- F.ex[active.nodes]
+  G.ex <- rep(-1, nrow(mesh$loc))
+  G.ex[mesh$idx$loc[active.nodes]] <- ex$G[active.nodes]
+
+  ## Construct interpolation mesh
+  F.geometry <- mesh
+  F.geometry.A <- list()
+  for (subdivision in seq_len(subdivisions)) {
+    F.geometry <- subdivide.mesh(F.geometry)
+    F.geometry.A <- c(F.geometry.A, list(F.geometry$A))
+  }
+
   if (method == "log") {
+    F.zero <- -1e20
     F.ex <- log(F.ex)
     level <- log(1-alpha)
-    F.ex[is.infinite(F.ex) & F.ex < 0] <- -1e20
+    F.ex[is.infinite(F.ex) & F.ex < 0] <- F.zero
   } else if (method == "logit") {
+    F.zero <- -1e20
+    F.one <- +1e20
     F.ex <- log(F.ex)-log(1-F.ex)
     level <- log(1-alpha)-log(alpha)
-    F.ex[is.infinite(F.ex) & F.ex < 0] <- -1e20
-    F.ex[is.infinite(F.ex) & F.ex > 0] <- +1e20
+    F.ex[is.infinite(F.ex) & F.ex < 0] <- F.zero
+    F.ex[is.infinite(F.ex) & F.ex > 0] <- F.one
   } else if (method == "linear") {
+    F.zero <- 0
     level <- 1-alpha
   } else {
+    ## 'step'
+    F.zero <- 0
     level <- 1-alpha
   }
-  F.interp <- as.vector(mesh$A[,active.nodes,drop=FALSE] %*% F.ex)
+
+  ## For ordinary excursions, the input set/group information is not used.
+  if (type == ">") {
+    G.ex <- rep(1, length(G.ex))
+  } else if (type == "<") {
+    G.ex <- rep(0, length(G.ex))
+  }
+  ## Copy 'G' and interpolate 'F' within coherent single level regions.
+  G.interp <- G.ex
+  F.interp <- F.ex
+  for (subdivision in seq_len(subdivisions)) {
+    G.input <- G.interp
+    F.input <- F.interp
+    G.interp <- rep(-1, nrow(F.geometry.A[[subdivision]]))
+    F.interp <- rep(F.zero, nrow(F.geometry.A[[subdivision]]))
+    for (k in unique(G.ex[G.ex >= 0])) {
+      ok.in <- (G.input == k)
+      ok.out <- (rowSums(F.geometry.A[[subdivision]][,ok.in,drop=FALSE]) >
+                 1 - 1e-12)
+      G.interp[ok.out] <- k
+    }
+    ok.in <- (G.input >= 0)
+    ok.out <- (G.interp >=0)
+    if (method =="step") {
+      for (vtx in which(ok.out)) {
+        F.interp[vtx] <- min(F.input[F.geometry.A[[subdivision]][vtx, ] > 0])
+      }
+    } else {
+      F.interp[ok.out] <-
+        as.vector(F.geometry.A[[subdivision]][ok.out,ok.in,drop=FALSE] %*%
+                  F.input[ok.in])
+    }
+  }
 
   if (method == "log") {
     F.interp.nontransformed <- exp(F.interp)
@@ -1405,68 +1528,39 @@ continuous <- function(ex,
   } else if (method == "linear") {
     F.interp.nontransformed <- F.interp
   } else {
-    ## This is for "step" and is not necessarily what the user wants
+    ## 'step'
     F.interp.nontransformed <- F.interp
   }
+  F.interp.nontransformed[G.interp == -1] <- 0
   if (ex$meta$type == "=") {
     F.interp.nontransformed <- 1-F.interp.nontransformed
   }
 
+##  M <- probabilitymap(mesh,
+##                      F=F.ex,
+##                      level=level,
+##                      G=G.ex,
+##                      calc.complement=TRUE,
+##                      method=method,
+##                      output=output)
 
-  mesh$graph <-
-    generate.trigraph.properties(mesh$graph, Nv=nrow(mesh$loc))
-
-  if (type == ">") {
-    ## For ordinary excursions, the input set/group information is not used.
-    G <- rep(1, length(F.interp))
-  } else if (type == "<") {
-    ## For ordinary excursions, the input set/group information is not used.
-    G <- rep(0, length(F.interp))
-  } else {
-    ## Take 'G' information from 'ex' input and set new interface
-    ## values 'G[i]=-1'.
-    Gorig <- ex$G
-    G <- rep(as.integer(NA), length(F.interp))
-    G[mesh$idx$loc[!is.na(mesh$idx$loc)]] <- Gorig[!is.na(mesh$idx$loc)]
-    orig.node <- logical(length(G))
-    orig.node[mesh$idx$loc[!is.na(mesh$idx$loc)]] <- TRUE
-    for (edge in seq_len(mesh$graph$Ne)) {
-      ev <- mesh$graph$ev[edge,]
-      for (k1 in 1:2) {
-        k2 <- 3-k1
-        if (orig.node[ev[k1]] && !orig.node[ev[k2]]) {
-          if (is.na(G[ev[k2]])) {
-            G[ev[k2]] <- G[ev[k1]]
-          } else if (G[ev[k1]] != G[ev[k2]]) {
-            G[ev[k2]] <- -1
-          }
-        }
-      }
-    }
-    G[is.na(G)] <- -1
-  }
-
-  F.interp.nontransformed[G == -1] <- 0
-
-  M <- probabilitymap(mesh,
+  M <- probabilitymap(F.geometry,
                       F=F.interp,
                       level=level,
-                      G=G,
-                      calc.complement=TRUE,
+                      G=G.interp,
+                      calc.complement=calc.credible,
                       method=method,
                       output=output)
 
   if (requireNamespace("INLA", quietly=TRUE)) {
-    F.geometry <- INLA::inla.mesh.create(loc=mesh$loc,
-                                   tv=mesh$graph$tv)
+    F.geometry <- INLA::inla.mesh.create(loc=F.geometry$loc,
+                                         tv=F.geometry$graph$tv)
     ## Handle possible node reordering in inla.mesh.create()
     F.interp.nontransformed[F.geometry$idx$loc] <- F.interp.nontransformed
-    G[F.geometry$idx$loc] <- G
-  } else {
-    F.geometry <- mesh
+    G.interp[F.geometry$idx$loc] <- G.interp
   }
 
-  out <- list(F=F.interp.nontransformed, G=G, M=M, F.geometry=F.geometry)
+  out <- list(F=F.interp.nontransformed, G=G.interp, M=M, F.geometry=F.geometry)
 
   if (!is.null(ex$P0)) {
     if (!requireNamespace("INLA", quietly=TRUE)) {
