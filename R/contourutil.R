@@ -314,7 +314,7 @@ restricted.lim.func <- function(u.add, u0, mu, vars, Q.chol, Q, measure,
 	lp = excursions.levelplot(mu=mu,levels = (u.add + u0),ind=ind)
   if(use.marginals){
 	  val = -Pmeasure.bound(lp=lp,mu=mu,vars=vars,type=measure,ind=ind)
-		cat(u, ': ', -val, '\n')
+		cat(u0, ': ', -val, '\n')
 	} else {
 		val = -Pmeasure(lp,mu=mu,Q=Q,Q.chol=Q.chol,type=measure,
 		                ind=ind,vars=vars)

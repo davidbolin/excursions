@@ -28,15 +28,24 @@ simconf.mixture <- function(alpha,
                             mix.samp = TRUE)
 {
 
-  if(missing(mu)) {
+  if(missing(mu) || !is.list(mu)) {
     stop('Must provide list with mean values')
   } else {
-    mu <- private.as.vector(mu)
+    K <- length(mu)
+    n <- length(mu[[1]])
+    for(i in seq_len(K)){
+      mu[[k]] <- private.as.vector(mu[[k]])
+    }
   }
-  if(missing(Q)) {
+  if(missing(Q) || !is.list(Q)) {
     stop('Must provide list with precision matrices')
   } else {
-    Q <- private.as.Matrix(Q)
+    if(length(Q) != K){
+      stop('Input lists are of different length')
+    }
+    for(i in seq_len(K)){
+      Q[[k]] <- private.as.Matrix(Q[[k]])
+    }
   }
 
   if(missing(w)){
@@ -44,8 +53,18 @@ simconf.mixture <- function(alpha,
   } else {
     w <- private.as.vector(w)
   }
-  if(!missing(vars))
-    vars <- private.as.vector(vars)
+  if(!missing(vars)){
+    compute.vars <- FALSE
+    if(length(w) != K){
+      stop('Input lists are of different length')
+    }
+    for(i in seq_len(K)){
+      vars[[k]] <- private.as.vector(vars[[k]])
+    }
+  } else {
+    compute.vars <- TRUE
+    vars <- list()
+  }
 
   if(!missing(ind))
     ind <- private.as.vector(ind)
@@ -53,9 +72,6 @@ simconf.mixture <- function(alpha,
 
   if(missing(alpha))
     stop('Must provide significance level alpha')
-
-  K <- length(mu)
-  n <- length(mu[[1]])
 
 
   if(mix.samp){
@@ -69,11 +85,10 @@ simconf.mixture <- function(alpha,
     {
       Q.chol[[k]] <- chol(Q[[k]])
       mu.m[k,] = mu[[k]]
-      if(missing(vars)){
-        sd.m[k,] = sqrt(excursions.variances(L = Q.chol[[k]]))
-      } else {
-        sd.m[k,] = sqrt(vars[[k]])
+      if(compute.vars){
+        vars[[k]] <- excursions.variances(L = Q.chol[[k]])
       }
+      sd.m[k,] = sqrt(vars[[k]])
     }
 
     limits = c(-1000,1000)
@@ -129,11 +144,10 @@ simconf.mixture <- function(alpha,
     {
       Q.chol[[k]] <- t(as(Cholesky(Q[[k]][reo,reo],perm=FALSE),"Matrix"))
       mu.m[k,] = mu[[k]][reo]
-      if(missing(vars)){
-        sd.m[k,] = sqrt(excursions.variances(L = Q.chol[[k]]))
-      } else {
-        sd.m[k,] = sqrt(vars[[k]][reo])
+      if(compute.vars){
+        vars[[k]] <- excursions.variances(L = Q.chol[[k]])
       }
+      sd.m[k,] = sqrt(vars[[k]][reo])
     }
 
     limits = c(-1000,1000)

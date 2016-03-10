@@ -1099,25 +1099,25 @@ probabilitymap <-
       subF <- rep(NA, nrow(submesh$loc))
       subF[submesh$idx$loc[active.nodes]] <- F[active.nodes]
 
-      if (FALSE) { ## Debugging plots
-        op <- par(mfrow=c(2,1))
-        on.exit(par(op))
+#      if (FALSE) { ## Debugging plots
+#        op <- par(mfrow=c(2,1))
+#        on.exit(par(op))
 
-        class(mesh) <- "inla.mesh"
-        mesh$n <- nrow(mesh$loc)
-        mesh$manifold <- "R2"
-        proj <- inla.mesh.projector(mesh)
-        image(proj$x, proj$y, inla.mesh.project(proj, field=exp(F)),
-              zlim=range(exp(F)))
-        if (length(spout) > 0) {
-          plot(sp::SpatialPolygons(spout), add=TRUE, col="blue")
-        }
-        proj <- inla.mesh.projector(submesh)
-        image.plot(proj$x, proj$y, inla.mesh.project(proj, field=exp(subF)),
-                   xlim=range(mesh$loc[,1]), ylim=range(mesh$loc[,1]),
-                   zlim=range(exp(F)))
-        plot(submesh, add=TRUE)
-      }
+#        class(mesh) <- "inla.mesh"
+#        mesh$n <- nrow(mesh$loc)
+#        mesh$manifold <- "R2"
+#        proj <- inla.mesh.projector(mesh)
+#        image(proj$x, proj$y, inla.mesh.project(proj, field=exp(F)),
+#              zlim=range(exp(F)))
+#        if (length(spout) > 0) {
+#          plot(sp::SpatialPolygons(spout), add=TRUE, col="blue")
+#        }
+#        proj <- inla.mesh.projector(submesh)
+#        image.plot(proj$x, proj$y, inla.mesh.project(proj, field=exp(subF)),
+#                   xlim=range(mesh$loc[,1]), ylim=range(mesh$loc[,1]),
+#                   zlim=range(exp(F)))
+#        plot(submesh, add=TRUE)
+#      }
 
       if (method == "step") {
         tric <- tricontour_step(x=submesh$graph, z=subF, levels=level,
@@ -1141,7 +1141,6 @@ probabilitymap <-
             warning("Skipping zero area polygon in probabilitymap.")
           } else {
             spout[[ID]] <- spobj
-            ##          plot(sp::SpatialPolygons(list(spobj)), add=TRUE, col="blue")
           }
         }
       }
@@ -1153,19 +1152,16 @@ probabilitymap <-
                                        grp=k)
       }
     }
-
-
-##    readline()
 }
 
   if (calc.complement) {
     ## Find contour set
     if (!requireNamespace("rgeos", quietly=TRUE)) {
-      error("Package 'rgeos' required for set complement calculations.")
+      stop("Package 'rgeos' required for set complement calculations.")
     }
 
     ID <- "-1"
-    outline <- inla.mesh.boundary(mesh)[[1]]
+    outline <- INLA::inla.mesh.boundary(mesh)[[1]]
     sp.domain <- as.sp.outline(outline,
                                grp.ccw=unique(outline$grp),
                                grp.cw=integer(0),

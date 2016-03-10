@@ -487,109 +487,109 @@ mcint <- function(X,
 }
 
 
-summary.excurobj <- function(obj)
+summary.excurobj <- function(object,...)
 {
   out <- list()
   class(out) <- "summary.excurobj"
-  out$calculation = obj$meta$calculation
-  out$call = obj$meta$call
-    if(obj$meta$calculation == "excursions"){
-      if(obj$meta$type == ">"){
+  out$calculation = object$meta$calculation
+  out$call = object$meta$call
+    if(object$meta$calculation == "excursions"){
+      if(object$meta$type == ">"){
         out$computation = "Positive excursion set, E_{u,alpha}^+"
-      } else if(obj$meta$type == "<"){
+      } else if(object$meta$type == "<"){
          out$computation = "Negative excursion set, E_{u,alpha}^-"
-      } else if(obj$meta$type == "="){
+      } else if(object$meta$type == "="){
         out$computation = "Contour credible region, E_{u,alpha}^c"
       } else {
         out$computation = "Contour avoiding set, E_{u,\alpha}"
       }
-      out$u = obj$meta$level
-      out$alpha = obj$meta$alpha
-      out$F.limit = obj$meta$F.limit
-      out$method = obj$meta$method
-    } else if(obj$meta$calculation == "simconf"){
+      out$u = object$meta$level
+      out$alpha = object$meta$alpha
+      out$F.limit = object$meta$F.limit
+      out$method = object$meta$method
+    } else if(object$meta$calculation == "simconf"){
       out$computation = "Simultaneous confidence band"
-      out$alpha = obj$alpha
-    } else if(obj$meta$calculation == "contourmap"){
+      out$alpha = object$alpha
+    } else if(object$meta$calculation == "contourmap"){
       out$computation = "Contour map"
-      out$u = obj$u
-      out$type = obj$meta$contourmap.type
-      out$F.computed = obj$meta$F.computed
+      out$u = object$u
+      out$type = object$meta$contourmap.type
+      out$F.computed = object$meta$F.computed
       if(out$F.computed)
-        out$F.limit = obj$meta$F.limit
+        out$F.limit = object$meta$F.limit
 
-      if(is.null(obj$P0) && is.null(obj$P1) && is.null(obj$P2) &&
-         is.null(obj$P0.bound) && is.null(obj$P1.bound) &&
-         is.null(obj$P2.bound)){
+      if(is.null(object$P0) && is.null(object$P1) && is.null(object$P2) &&
+         is.null(object$P0.bound) && is.null(object$P1.bound) &&
+         is.null(object$P2.bound)){
       } else {
         out$measures = list()
-        if(!is.null(obj$P0))
-          out$measures$P0 = obj$P0
+        if(!is.null(object$P0))
+          out$measures$P0 = object$P0
 
-        if(!is.null(obj$P1))
-          out$measures$P1 = obj$P1
+        if(!is.null(object$P1))
+          out$measures$P1 = object$P1
 
-       if(!is.null(obj$P2))
-          out$measures$P2 = obj$P2
+       if(!is.null(object$P2))
+          out$measures$P2 = object$P2
 
-        if(!is.null(obj$P0.bound))
-          out$measures$P0.bound = obj$P0.bound
+        if(!is.null(object$P0.bound))
+          out$measures$P0.bound = object$P0.bound
 
-        if(!is.null(obj$P1.bound))
-          out$measures$P1.bound = obj$P1.bound
+        if(!is.null(object$P1.bound))
+          out$measures$P1.bound = object$P1.bound
 
-       if(!is.null(obj$P2.bound))
-          out$measures$P2.bound = obj$P2.bound
+       if(!is.null(object$P2.bound))
+          out$measures$P2.bound = object$P2.bound
     }
   }
   return(out)
 }
 
 
-print.summary.excurobj <- function(obj)
+print.summary.excurobj <- function(x,...)
 {
 
   cat("Call: \n")
-  print(obj$call)
+  print(x$call)
   cat("\nComputation:\n")
-  cat(obj$computation,"\n\n")
+  cat(x$computation,"\n\n")
 
-  if(obj$calculation == "excursions"){
+  if(x$calculation == "excursions"){
     cat("Level: u = ")
-    cat(obj$u,"\n")
+    cat(x$u,"\n")
     cat("Error probability: alpha = ")
-    cat(obj$alpha,"\n")
+    cat(x$alpha,"\n")
     cat("Limit for excursion function computation: F.limit = ")
-    cat(obj$F.limit,"\n")
+    cat(x$F.limit,"\n")
     cat("Method used : ")
-    cat(obj$method,"\n")
-  } else if(obj$calculation == "simconf"){
+    cat(x$method,"\n")
+  } else if(x$calculation == "simconf"){
     cat("Error probability: alpha = ")
-    cat(obj$alpha,"\n")
-  } else if(obj$calculation == "contourmap"){
+    cat(x$alpha,"\n")
+  } else if(x$calculation == "contourmap"){
     cat("Level: u = ")
-    cat(obj$u,"\n")
+    cat(x$u,"\n")
     cat("Type of contour map: ")
-    cat(obj$type,"\n")
-    if(obj$F.computed) {
+    cat(x$type,"\n")
+    if(x$F.computed) {
       cat("Contour map function computed\n")
       cat("Limit for excursion function computation: F.limit = ")
-      cat(obj$F.limit,"\n")
+      cat(x$F.limit,"\n")
     } else {
       cat("Contour map function not computed\n")
     }
     cat("Quality measures computed : ")
-    if(is.null(obj$measures)){
+    if(is.null(x$measures)){
       cat("none\n")
     } else {
-      for(i in 1:length(obj$measures)){
-        cat(names(obj$measures)[i], " = ", obj$measures[[i]],"\n")
+      for(i in 1:length(x$measures)){
+        cat(names(x$measures)[i], " = ", x$measures[[i]],"\n")
       }
     }
   }
 }
 
 
-print.excurobj <- function(obj) {
-  print.summary.excurobj(summary(obj))
+print.excurobj <- function(x,...) {
+  print.summary.excurobj(summary(x))
 }

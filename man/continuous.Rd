@@ -46,7 +46,7 @@ topologically as lattices, and the lattice boxes are assumed convex.
   \code{SpatialPolygons} object, and \code{inla} gives a
   \code{inla.mesh.segment} object.
 }
-\item{subdivions}{
+\item{subdivisions}{
   The number of mesh triangle subdivisions to perform for the
   interpolation of the excursions or contour function. Default=1.
 }
