@@ -1084,7 +1084,7 @@ tricontour_step <- function(x, z, levels, loc, ...)
 ## to get a conservative approximation.
 ## To get only an "over/under set", use a constant non-negative integer G
 ##   and let calc.complement=FALSE
-probabilitymap <-
+probabilitymap.old <-
   function(mesh, F, level, G,
            calc.complement=TRUE,
            tol=1e-7,
@@ -1413,7 +1413,7 @@ subdivide.mesh <- function(mesh)
 
 
 
-continuous <- function(ex,
+continuous.old <- function(ex,
                        geometry,
                        alpha,
                        method=c("log", "logit", "linear", "step"),
@@ -1553,21 +1553,13 @@ continuous <- function(ex,
     F.interp.nontransformed <- 1-F.interp.nontransformed
   }
 
-##  M <- probabilitymap(mesh,
-##                      F=F.ex,
-##                      level=level,
-##                      G=G.ex,
-##                      calc.complement=TRUE,
-##                      method=method,
-##                      output=output)
-
-  M <- probabilitymap(F.geometry,
-                      F=F.interp,
-                      level=level,
-                      G=G.interp,
-                      calc.complement=calc.credible,
-                      method=method,
-                      output=output)
+  M <- probabilitymap.old(F.geometry,
+                          F=F.interp,
+                          level=level,
+                          G=G.interp,
+                          calc.complement=calc.credible,
+                          method=method,
+                          output=output)
 
   if (requireNamespace("INLA", quietly=TRUE)) {
     F.geometry <- INLA::inla.mesh.create(loc=F.geometry$loc,
@@ -1611,6 +1603,7 @@ continuous <- function(ex,
 
 
 ##########################################################################
+## New geometry implementation
 
 ## Copy 'G' and interpolate 'F' within coherent single level regions.
 F.interpolation <- function(F.geometry, F, G, type, method, subdivisions=1)
@@ -1669,8 +1662,6 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions=1)
 
   if (method == "log") {
     F <- exp(F.interp)
-  } else if (method == "logit") {
-    F <- 1/(1 + exp(-F.interp))
   } else if (method == "linear") {
     F <- F.interp
   } else {
@@ -1703,7 +1694,7 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions=1)
 ## to get a conservative approximation.
 ## To get only an "over/under set", use a constant non-negative integer G
 ##   and let calc.complement=FALSE
-probabilitymap.new <-
+probabilitymap <-
   function(mesh, F, level, G,
            calc.complement=TRUE,
            tol=1e-7,
@@ -1855,7 +1846,8 @@ probabilitymap.new <-
 
 calc.continuous.P0 <- function(F, G, F.geometry, method) {
   tri <-
-    which((G[F.geometry$graph$tv[,1]] == G[F.geometry$graph$tv[,2]])
+    which((G[F.geometry$graph$tv[,1]] >=0)
+          & (G[F.geometry$graph$tv[,1]] == G[F.geometry$graph$tv[,2]])
           & (G[F.geometry$graph$tv[,1]] == G[F.geometry$graph$tv[,3]])
           & (rowSums(matrix(is.finite(F[F.geometry$graph$tv]),
                             nrow(F.geometry$graph$tv), 3)) == 3))
@@ -1864,40 +1856,62 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
   subF <- rep(NA, length(active.nodes.idx))
   subF[submesh$idx$loc[active.nodes.idx]] <- F[active.nodes.idx]
 
-  fem <- INLA::inla.mesh.fem(submesh, order=1)
+  tot.area <- sum(INLA::inla.fmesher.smorg(F.geometry$loc,
+                                           F.geometry$graph$tv,
+                                           fem=0, output="ta")$ta)
+
   if (method == "linear") {
-    P0 <- sum(diag(fem$c0) * subF) / sum(diag(fem$c0))
+    I.w <- INLA::inla.fmesher.smorg(submesh$loc, submesh$graph$tv,
+                                    fem=0, output="va")$va
+    P0 <- sum(I.w * subF) / tot.area
   } else if (method == "log") {
-    I.w <- rep(1, nrow(submesh$graph$tv)) ## Triangle areas
-    I.loc <- (
-      submesh$loc[
-        submesh$graph$tv[,1],,drop=FALSE] +
-      submesh$loc[
-        submesh$graph$tv[,2],,drop=FALSE] +
-      submesh$loc[
-        submesh$graph$tv[,3],,drop=FALSE])/3
+    I.w <- INLA::inla.fmesher.smorg(submesh$loc, submesh$graph$tv,
+                                    fem=0, output="ta")$ta
+    ## Construct cubic Gauss-quadrature points and weights
+    I.loc <-
+      rbind(
+      (submesh$loc[submesh$graph$tv[,1],,drop=FALSE] +
+       submesh$loc[submesh$graph$tv[,2],,drop=FALSE] +
+       submesh$loc[submesh$graph$tv[,3],,drop=FALSE])/3,
+      (submesh$loc[submesh$graph$tv[,1],,drop=FALSE]*3 +
+       submesh$loc[submesh$graph$tv[,2],,drop=FALSE] +
+       submesh$loc[submesh$graph$tv[,3],,drop=FALSE])/5,
+      (submesh$loc[submesh$graph$tv[,1],,drop=FALSE] +
+       submesh$loc[submesh$graph$tv[,2],,drop=FALSE]*3 +
+       submesh$loc[submesh$graph$tv[,3],,drop=FALSE])/5,
+      (submesh$loc[submesh$graph$tv[,1],,drop=FALSE] +
+       submesh$loc[submesh$graph$tv[,2],,drop=FALSE] +
+       submesh$loc[submesh$graph$tv[,3],,drop=FALSE]*3)/5)
+    if (mesh$manifold == "S2") {
+      I.loc <- I.loc / sqrt(rowSums(I.loc^2))
+    }
     A <- inla.spde.make.A(submesh, I.loc)
+
+    I.w <- (rep(I.w, times=4) *
+            rep(c(-27,25,25,25)/48, each=nrow(submesh$graph$tv)))
+
     tmp <- exp(as.vector(A %*% log(subF)))
-    P0 <- sum(I.w * tmp) / sum(I.w)
+    P0 <- sum(I.w * tmp) / tot.area
   } else { ## "step") {
-    I.w <- rep(1, nrow(submesh$graph$tv)) ## Triangle areas
+    I.w <- INLA::inla.fmesher.smorg(submesh$loc, submesh$graph$tv,
+                                    fem=0, output="ta")$ta
     tmp <- matrix(subF[submesh$graph$tv],
                   nrow(submesh$graph$tv),
                   ncol(submesh$graph$tv))
     tmp <- apply(tmp, 1, min)
-    P0 <- sum(I.w * tmp) / sum(I.w)
+    P0 <- sum(I.w * tmp) / tot.area
   }
   P0
 }
 
 
-continuous.new <- function(ex,
-                           geometry,
-                           alpha,
-                           method=c("log", "linear", "step"),
-                           output=c("sp", "inla"),
-                           subdivisions=1,
-                           calc.credible=TRUE)
+continuous <- function(ex,
+                       geometry,
+                       alpha,
+                       method=c("log", "linear", "step"),
+                       output=c("sp", "inla"),
+                       subdivisions=1,
+                       calc.credible=TRUE)
 {
   stopifnot(inherits(ex, "excurobj"))
   method <- match.arg(method)
@@ -1983,7 +1997,7 @@ continuous.new <- function(ex,
     G.ex <- rep(0, length(G.ex))
   }
 
-  M <- probabilitymap.new(F.geometry,
+  M <- probabilitymap(F.geometry,
                       F=F.ex,
                       level=level,
                       G=G.ex,
