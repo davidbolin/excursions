@@ -1974,7 +1974,7 @@ continuous <- function(ex,
                     subdivisions=subdivisions)
 
   if (ex$meta$type == "=") {
-    iterpolated$F <- 1-interpolated$F
+    interpolated$F <- 1-interpolated$F
 ##    F.ex <- 1-F.ex   ????????????????????
   }
 
