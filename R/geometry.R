@@ -670,7 +670,7 @@ generate.trigraph.properties <- function(x, Nv=NULL) {
   x$te <- matrix(seq_len(x$Ne), x$Nt, 3)
   ev <- Matrix::sparseMatrix(i=rep(seq_len(x$Ne), times=2),
                              j=as.vector(x$ev),
-                             values=rep(1,x$Ne*2),
+                             x=rep(1,x$Ne*2),
                              dims=c(x$Ne, x$Nv))
   ev.tr <- private.sparse.gettriplet(ev%*%t(ev))
   ee <- ev.tr$ind[(ev.tr$x==2) &

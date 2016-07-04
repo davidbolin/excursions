@@ -261,7 +261,7 @@ private.as.dgCMatrix <- function(M)
     ## Convert into dgCMatrix format of Matrix.
     ## Convert via virtual class CsparseMatrix;
     ## this allows more general conversions than direct conversion.
-    return(as(as(M, "CsparseMatrix"), "dgCMatrix"))
+    return(as(as(as(M, "sparseMatrix"), "CsparseMatrix"), "dgCMatrix"))
   }
 }
 
@@ -273,7 +273,7 @@ private.as.dtCMatrix <- function(M)
     ## Convert into dtCMatrix format of Matrix.
     ## Convert via virtual class CsparseMatrix;
     ## this allows more general conversions than direct conversion.
-    return (as(as(M, "CsparseMatrix"), "dtCMatrix"))
+    return (as(as(as(M, "sparseMatrix"), "CsparseMatrix"), "dtCMatrix"))
   }
 }
 
