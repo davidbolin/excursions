@@ -196,9 +196,6 @@ connect.segments <-function(segment.set,
                             ccw=TRUE,
                             ambiguous.warning=FALSE)
 {
-##  if (!requireNamespace("spam", quietly=TRUE)) {
-##    stop("The 'spam' package is needed.")
-##  }
   ## Remove unneeded segments
   segment.idx <- seq_len(nrow(segment.set))
   segment.idx <- c(segment.idx[segment.grp %in% grp.ccw],
@@ -217,20 +214,20 @@ connect.segments <-function(segment.set,
   ## Remap nodes into 1...nV
   segments <- sort(unique(as.vector(segment.set)))
   nV <- length(segments)
-  segments.reo <- spam::spam(list(i=segments,
-                            j=rep(1, nV),
-                            values=seq_len(nV)),
-                       max(segments), 1)
+  segments.reo <- Matrix::sparseMatrix(i=segments,
+                                       j=rep(1, nV),
+                                       x=seq_len(nV),
+                                       dims=c(max(segments), 1))
   segment.set <- matrix(segments.reo[as.vector(segment.set)],
                         nrow(segment.set), ncol(segment.set))
   ## Node remapping done
 
   segment.unused <- rep(TRUE, nE)
   segment.unused.idx <- which(segment.unused)
-  segment.VV <- spam::spam(list(i=segment.set[,1],
-                          j=segment.set[,2],
-                          values=seq_len(nE)),
-                     nV, nV)
+  segment.VV <- Matrix::sparseMatrix(i=segment.set[,1],
+                                     j=segment.set[,2],
+                                     x=seq_len(nE),
+                                     dims=c(nV, nV))
   loops.seg <- list()
   loops <- list()
   grp <- list()
@@ -327,9 +324,6 @@ connect.segments <-function(segment.set,
 ## Compute simple outline of 1/0 set on a grid, eliminating spikes.
 outline.on.grid <- function(z, grid)
 {
-  if (!requireNamespace("spam", quietly=TRUE)) {
-    stop("The 'spam' package is needed.")
-  }
   ni <- nrow(z)
   nj <- ncol(z)
   z <- (z != FALSE)
@@ -351,13 +345,13 @@ outline.on.grid <- function(z, grid)
   zz.m <- z[-ni,-c(nj-1,nj),drop=FALSE] + z[-1,-c(nj-1,nj),drop=FALSE]
   zz <- (zz.n == 2) * (zz.p+zz.m > 0) * ((zz.p == 0)*1 + (zz.m == 0)*2)
   ## zz=0 : No segment, zz=1 : set is below, zz=2 : set is above
-  ijv <- spam::triplet(spam::as.spam(zz == 1), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 1)
+  idx <- which(ijv$x > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]+1),
                      ij2k(ijv$i[idx], ijv$j[idx]+1)))
-  ijv <- spam::triplet(spam::as.spam(zz == 2), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 2)
+  idx <- which(ijv$x > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx], ijv$j[idx]+1),
                      ij2k(ijv$i[idx]+1, ijv$j[idx]+1)))
@@ -368,13 +362,13 @@ outline.on.grid <- function(z, grid)
   zz.m <- z[-c(ni-1,ni),-nj,drop=FALSE] + z[-c(ni-1,ni),-1,drop=FALSE]
   zz <- (zz.n == 2) * (zz.p+zz.m > 0) * ((zz.p == 0)*1 + (zz.m == 0)*2)
   ## zz=0 : No segment, zz=1 : set is on left, zz=2 : set is on right
-  ijv <- spam::triplet(spam::as.spam(zz == 1), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 1)
+  idx <- which(ijv$x > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]),
                      ij2k(ijv$i[idx]+1, ijv$j[idx]+1)))
-  ijv <- spam::triplet(spam::as.spam(zz == 2), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 2)
+  idx <- which(ijv$x > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]+1),
                      ij2k(ijv$i[idx]+1, ijv$j[idx])))
@@ -389,23 +383,23 @@ outline.on.grid <- function(z, grid)
            z[-ni,-1,drop=FALSE]*4 + z[-1,-1,drop=FALSE]*8))
   ## zz=0 : No diagonal
   ## zz=1 : (0,0), zz=2 : (1,0), zz=4 : (0,1), zz=8 : (1,1)
-  ijv <- spam::triplet(spam::as.spam(zz == 1), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 1)
+  idx <- which(ijv$x > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx], ijv$j[idx]+1),
                      ij2k(ijv$i[idx]+1, ijv$j[idx])))
-  ijv <- spam::triplet(spam::as.spam(zz == 2), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 2)
+  idx <- which(ijv$x > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx], ijv$j[idx]),
                      ij2k(ijv$i[idx]+1, ijv$j[idx]+1)))
-  ijv <- spam::triplet(spam::as.spam(zz == 4), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 4)
+  idx <- which(ijv$x > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]+1),
                      ij2k(ijv$i[idx], ijv$j[idx])))
-  ijv <- spam::triplet(spam::as.spam(zz == 8), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 8)
+  idx <- which(ijv$x > 0)
   seg <- rbind(seg,
                cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]),
                      ij2k(ijv$i[idx], ijv$j[idx]+1)))
@@ -415,13 +409,13 @@ outline.on.grid <- function(z, grid)
   zz.n <- z[-ni,c(1,nj),drop=FALSE] + z[-1,c(1,nj),drop=FALSE]
   zz <- (zz.n == 2) * (zz.pm > 0) * matrix(rep(c(2,1), each=ni-1), ni-1, 2)
   ## zz=0 : No segment, zz=1 : set is below, zz=2 : set is above
-  ijv <- spam::triplet(spam::as.spam(zz == 1), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 1)
+  idx <- which(ijv$x > 0)
   bnd.seg <- rbind(bnd.seg,
                    cbind(ij2k(ijv$i[idx]+1, nj),
                          ij2k(ijv$i[idx], nj)))
-  ijv <- spam::triplet(spam::as.spam(zz == 2), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 2)
+  idx <- which(ijv$x > 0)
   bnd.seg <- rbind(bnd.seg,
                    cbind(ij2k(ijv$i[idx], 1),
                          ij2k(ijv$i[idx]+1, 1)))
@@ -431,13 +425,13 @@ outline.on.grid <- function(z, grid)
   zz.n <- z[c(1,ni),-nj,drop=FALSE] + z[c(1,ni),-1,drop=FALSE]
   zz <- (zz.n == 2) * (zz.pm > 0) * matrix(rep(c(2,1), times=nj-1), 2, nj-1)
   ## zz=0 : No segment, zz=1 : set is on left, zz=2 : set is on right
-  ijv <- spam::triplet(spam::as.spam(zz == 1), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 1)
+  idx <- which(ijv$x > 0)
   bnd.seg <- rbind(bnd.seg,
                    cbind(ij2k(ni, ijv$j[idx]),
                          ij2k(ni, ijv$j[idx]+1)))
-  ijv <- spam::triplet(spam::as.spam(zz == 2), tri=TRUE)
-  idx <- which(ijv$values > 0)
+  ijv <- private.sparse.gettriplet(zz == 2)
+  idx <- which(ijv$x > 0)
   bnd.seg <- rbind(bnd.seg,
                    cbind(ij2k(1, ijv$j[idx]+1),
                          ij2k(1, ijv$j[idx])))
@@ -658,9 +652,6 @@ tricontour.matrix <-
 ## Generate triangulation graph properties
 ## Nt,Ne,Nv,ev,et,eti,ee,te,tt,tti
 generate.trigraph.properties <- function(x, Nv=NULL) {
-##  if (!requireNamespace("spam", quietly=TRUE)) {
-##    stop("The 'spam' package is needed.")
-##  }
   stopifnot(is.list(x))
   stopifnot("tv" %in% names(x))
 
@@ -677,13 +668,13 @@ generate.trigraph.properties <- function(x, Nv=NULL) {
   x$et <- rep(seq_len(x$Nt), times=3)
   x$eti <- rep(1:3, each=x$Nt) ## Opposing vertex within-triangle-indices
   x$te <- matrix(seq_len(x$Ne), x$Nt, 3)
-  ev <- spam::spam(list(i=rep(seq_len(x$Ne), times=2),
-                  j=as.vector(x$ev),
-                  values=rep(1,x$Ne*2)),
-             nrow=x$Ne, ncol=x$Nv)
-  ev.tr <- spam::triplet(ev%*%t(ev))
-  ee <- ev.tr$ind[(ev.tr$values==2) &
-                  (ev.tr$ind[,1]!=ev.tr$ind[,2]),,
+  ev <- Matrix::sparseMatrix(i=rep(seq_len(x$Ne), times=2),
+                             j=as.vector(x$ev),
+                             values=rep(1,x$Ne*2),
+                             dims=c(x$Ne, x$Nv))
+  ev.tr <- private.sparse.gettriplet(ev%*%t(ev))
+  ee <- ev.tr$ind[(ev.tr$x==2) &
+                  (ev.tr$i!=ev.tr$j),,
                   drop=FALSE]
   x$ee <- rep(NA, x$Ne)
   x$ee[ee[,1]] <- ee[,2]

@@ -73,11 +73,11 @@ excursions <- function(alpha,
 
   if (!missing(Q.chol) && !is.null(Q.chol)) {
     ## make the representation unique (i,j,v)
-    Q = private.as.Matrix(Q.chol)#private.as.dgTMatrix(Q.chol)
+    Q = private.as.dgTMatrix(Q.chol)
     is.chol = TRUE
   } else {
     ## make the representation unique (i,j,v)
-    Q = private.as.Matrix(Q)#private.as.dgTMatrix(Q)
+    Q = private.as.dgTMatrix(Q)
     is.chol = FALSE
   }
 

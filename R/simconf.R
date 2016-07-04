@@ -40,10 +40,10 @@ simconf <- function(alpha,
 	  stop('Cannot provide both cholesky factor and indices.')
 
   if(!missing(Q))
-    Q <- private.as.Matrix(Q)
+    Q <- private.as.dgCMatrix(Q)
 
   if(!missing(Q.chol))
-    Q.chol <- private.as.Matrix(Q.chol)
+    Q.chol <- private.as.dtCMatrix(Q.chol)
 
   if(!missing(vars))
     vars <- private.as.vector(vars)
@@ -55,11 +55,10 @@ simconf <- function(alpha,
   if (!missing(Q.chol) && !is.null(Q.chol)) {
       L = Q.chol
   } else {
-      if(LDL){
-        L = suppressWarnings(t(as(Cholesky(Q),"Matrix")))
-      } else {
-        L = chol(Q)
-      }
+    if (!LDL) spam.support.removed("'LDL=FALSE' flag ignored.")
+
+    L <- suppressWarnings(t(private.as.dtCMatrix(
+      Matrix::Cholesky(Q, perm=FALSE))))
   }
 
   if(missing(vars)){
