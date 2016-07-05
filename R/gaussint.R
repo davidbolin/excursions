@@ -105,24 +105,22 @@ gaussint <- function(mu,
 
       if(!LDL) spam.support.removed("'LDL=FALSE' flag ignored.")
 
-      L <- suppressWarnings(t(private.as.dtCMatrix(
-        Matrix::Cholesky(Q,perm=FALSE))))
+      L <- suppressWarnings(private.as.dtCMatrix(
+        Matrix::Cholesky(Q,perm=FALSE)))
 
     } else if(use.reordering == "sparsity"){
       if(!LDL) spam.support.removed("'LDL=FALSE' flag ignored.")
-      ## Reorder for sparsity...
-      ## ************ Check the next lines!!! ************ XYZZY
-      ## I'm pretty sure this doesn't work.
-      L <- suppressWarnings(t(private.as.dtCMatrix(
-        Matrix::Cholesky(Q,perm=TRUE))))
+      ## Reorder for sparsity calculated by Matrix...
+      L <- suppressWarnings(Matrix::Cholesky(Q,perm=TRUE))
       reo = L@perm
       ireo[reo] = 1:length(reo)
       reordered = TRUE
+      L <- private.as.dtCMatrix(L)
     } else {
       if(!LDL) spam.support.removed("'LDL=FALSE' flag ignored.")
       ## Do not reorder
-      L <- suppressWarnings(t(private.as.dtCMatrix(
-        Matrix::Cholesky(Q,perm=FALSE))))
+      L <- suppressWarnings(private.as.dtCMatrix(
+        Matrix::Cholesky(Q,perm=FALSE)))
     }
   }
 

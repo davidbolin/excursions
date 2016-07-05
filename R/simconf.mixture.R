@@ -142,8 +142,8 @@ simconf.mixture <- function(alpha,
     sd.m <- matrix(0,K,n)
     for(k in seq_len(K))
     {
-      Q.chol[[k]] <- t(private.as.dtCMatrix(
-        Matrix::Cholesky(Q[[k]][reo,reo],perm=FALSE)))
+      Q.chol[[k]] <- private.as.dtCMatrix(
+        Matrix::Cholesky(Q[[k]][reo,reo],perm=FALSE))
       mu.m[k,] = mu[[k]][reo]
       if(compute.vars){
         vars[[k]] <- excursions.variances(L = Q.chol[[k]])

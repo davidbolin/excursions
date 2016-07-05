@@ -57,8 +57,8 @@ simconf <- function(alpha,
   } else {
     if (!LDL) spam.support.removed("'LDL=FALSE' flag ignored.")
 
-    L <- suppressWarnings(t(private.as.dtCMatrix(
-      Matrix::Cholesky(Q, perm=FALSE))))
+    L <- suppressWarnings(private.as.dtCMatrix(
+      Matrix::Cholesky(Q, perm=FALSE)))
   }
 
   if(missing(vars)){

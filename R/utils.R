@@ -43,11 +43,11 @@ excursions.variances<-function(L,Q, max.threads=0, use.spam=FALSE)
     L <- private.as.dtCMatrix(L)
     ## "L needs to be in ccs format for now."
   } else {
-    ####### *************  Check the next line!!! *********** XYZZY
     L = Matrix::Cholesky(Q,LDL=FALSE)
     ireo = TRUE
     reo <- 1:(L@Dim[1])
     reo[L@perm+1] <- 1:(L@Dim[1])
+    L <- private.as.dtCMatrix(L)
   }
 
   out<- .C("Qinv",Rir = as.integer(L@i),
@@ -193,8 +193,8 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
 
     if (!LDL) spam.support.removed("'LDL=FALSE' flag ignored.")
 
-    L <- suppressWarnings(t(private.as.dtCMatrix(
-      Matrix::Cholesky(Q,perm=FALSE))))
+    L <- suppressWarnings(private.as.dtCMatrix(
+      Matrix::Cholesky(Q,perm=FALSE)))
 
     res = gaussint(Q.chol = L, a = a.sort, b = b.sort, lim = lim,
                    n.iter = K, max.size = max.size,
