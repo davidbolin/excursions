@@ -17,27 +17,14 @@
 
 
 
-## Temporary method for informing of removed 'spam' package support
-spam.support.removed <- function(msg)
-{
-  if (!missing(msg) && !is.null(msg)) {
-    message(msg)
-  }
-  warning("'spam' support has been removed.")
-}
-
-
-
 
 ## calculates variances given either a cholesky factor L in Matrix format,
 ## or given a precision matrix Q. If Q is provided, the cholesky factor
 ## is calculated and the variances are then returned in the same ordering as Q
 ## If L is provided, the variances are returned in the same ordering as L, even
 ## if L@invpivot exists.
-excursions.variances<-function(L,Q, max.threads=0, use.spam=FALSE)
+excursions.variances<-function(L,Q, max.threads=0)
 {
-  if (use.spam) spam.support.removed("'use.spam' flag ignored.")
-
   if(!missing(L) && !is.null(L)){
     ireo = FALSE
     L <- private.as.dtCMatrix(L)
