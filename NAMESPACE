@@ -1,10 +1,5 @@
 import(Matrix)
 import(sp)
-importFrom(spam,spam)
-importFrom(spam,triplet)
-importFrom(spam,as.spam)
-importFrom(spam,as.dgRMatrix.spam)
-importFrom(spam,as.spam.dgCMatrix)
 
 export(excursions)
 export(excursions.inla)
