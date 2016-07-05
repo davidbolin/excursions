@@ -238,7 +238,7 @@ private.sparse.gettriplet <- function(M)
   ## Get unique triplet representation:
   M <- private.as.dgTMatrix(M)
   ## Extract triplets:
-  list(i=M@i+1L, j=M@i+1L, x=M@x)
+  list(i=M@i+1L, j=M@j+1L, x=M@x)
 }
 
 private.as.dgTMatrix <- function(M)

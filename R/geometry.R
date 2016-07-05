@@ -673,9 +673,8 @@ generate.trigraph.properties <- function(x, Nv=NULL) {
                              x=rep(1,x$Ne*2),
                              dims=c(x$Ne, x$Nv))
   ev.tr <- private.sparse.gettriplet(ev%*%t(ev))
-  ee <- ev.tr$ind[(ev.tr$x==2) &
-                  (ev.tr$i!=ev.tr$j),,
-                  drop=FALSE]
+  ee <- cbind(ev.tr$i[(ev.tr$x==2) & (ev.tr$i!=ev.tr$j)],
+              ev.tr$j[(ev.tr$x==2) & (ev.tr$i!=ev.tr$j)])
   x$ee <- rep(NA, x$Ne)
   x$ee[ee[,1]] <- ee[,2]
 
