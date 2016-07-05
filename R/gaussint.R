@@ -26,8 +26,7 @@ gaussint <- function(mu,
                      use.reordering = c("natural","sparsity","limits"),
                      max.size,
                      max.threads=0,
-                     seed,
-                     LDL=TRUE)
+                     seed)
 {
 
   if( missing(Q) && missing(Q.chol))
@@ -103,13 +102,10 @@ gaussint <- function(mu,
         reordered = TRUE
       }
 
-      if(!LDL) spam.support.removed("'LDL=FALSE' flag ignored.")
-
       L <- suppressWarnings(private.as.dtCMatrix(
         Matrix::Cholesky(Q,perm=FALSE)))
 
     } else if(use.reordering == "sparsity"){
-      if(!LDL) spam.support.removed("'LDL=FALSE' flag ignored.")
       ## Reorder for sparsity calculated by Matrix...
       L <- suppressWarnings(Matrix::Cholesky(Q,perm=TRUE))
       reo = L@perm
@@ -117,7 +113,6 @@ gaussint <- function(mu,
       reordered = TRUE
       L <- private.as.dtCMatrix(L)
     } else {
-      if(!LDL) spam.support.removed("'LDL=FALSE' flag ignored.")
       ## Do not reorder
       L <- suppressWarnings(private.as.dtCMatrix(
         Matrix::Cholesky(Q,perm=FALSE)))

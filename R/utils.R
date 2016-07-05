@@ -185,14 +185,12 @@ excursions.setlimits <- function(marg, vars,type,QC,u,mu)
 
 
 
-excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threads, seed,LDL=TRUE)
+excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threads, seed)
 {
   if(is.chol == FALSE){
     a.sort = a[reo]
     b.sort = b[reo]
     Q = Q[reo,reo]
-
-    if (!LDL) spam.support.removed("'LDL=FALSE' flag ignored.")
 
     L <- suppressWarnings(private.as.dtCMatrix(
       Matrix::Cholesky(Q,perm=FALSE)))
@@ -204,7 +202,7 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
     #assume that everything already is ordered
     res = gaussint(Q = Q, a= a, b = b, lim = lim, n.iter = K,
                    max.size = max.size,
-                   max.threads = n.threads,seed = seed,LDL=LDL)
+                   max.threads = n.threads,seed = seed)
   }
   return(res)
 }

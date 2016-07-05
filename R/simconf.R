@@ -24,8 +24,7 @@ simconf <- function(alpha,
                     ind=NULL,
                     verbose=0,
                     max.threads=0,
-                    seed=NULL,
-                    LDL=TRUE)
+                    seed=NULL)
 {
 
   if(missing(mu)){
@@ -55,8 +54,6 @@ simconf <- function(alpha,
   if (!missing(Q.chol) && !is.null(Q.chol)) {
       L = Q.chol
   } else {
-    if (!LDL) spam.support.removed("'LDL=FALSE' flag ignored.")
-
     L <- suppressWarnings(private.as.dtCMatrix(
       Matrix::Cholesky(Q, perm=FALSE)))
   }
@@ -103,7 +100,6 @@ simconf <- function(alpha,
                      alpha=alpha,
                      n.iter=n.iter,
                      ind=ind,
-                     LDL=LDL,
                      call = match.call())
   class(output) <- "excurobj"
   return(output)

@@ -318,8 +318,7 @@ excursions.mc <- function(samples,
                             ind=ind,
                             reo=reo,
                             ireo=ireo,
-                            Fe=Fe,
-                            LDL=FALSE)))
+                            Fe=Fe)))
   class(output) <- "excurobj"
   output
 }

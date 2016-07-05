@@ -31,8 +31,7 @@ excursions <- function(alpha,
                        max.size,
                        verbose=0,
                        max.threads=0,
-                       seed,
-                       LDL=TRUE)
+                       seed)
 {
 
   if(method=='QC'){
@@ -150,7 +149,7 @@ excursions <- function(alpha,
 
   res <- excursions.call(limits$a,limits$b,reo,Q, is.chol = is.chol,
                          1-F.limit, K = n.iter, max.size = m.size,
-                         n.threads = max.threads,seed = seed,LDL=LDL)
+                         n.threads = max.threads,seed = seed)
 
   n = length(mu)
   ii = which(res$Pv[1:n] > 0)
@@ -212,7 +211,6 @@ excursions <- function(alpha,
                             reo=reo,
                             ireo=ireo,
                             Fe=Fe,
-                            LDL=LDL,
                             call = match.call())))
   class(output) <- "excurobj"
   output
