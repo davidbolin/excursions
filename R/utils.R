@@ -136,13 +136,14 @@ excursions.permutation <- function(rho, ind, use.camd = TRUE,alpha,Q)
 			}
       #change back to original ordering
       for (i in 1:n) {
-				cind[i] = k - cindr[ireo[i]]
-			}
-			#call CAMD
-			out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p),
-		                        Mi = as.integer(Q@i), reo = as.integer(reo),
-		                        cind = as.integer(cind))
-		  reo = out$reo+1
+        cind[i] = k - cindr[ireo[i]]
+      }
+      Q <- private.as.dgCMatrix(Q)
+      ## call CAMD
+      out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p),
+                Mi = as.integer(Q@i), reo = as.integer(reo),
+                cind = as.integer(cind))
+      reo = out$reo+1
     }
   }
   return(reo)
