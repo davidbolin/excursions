@@ -67,7 +67,7 @@ excursions(alpha,
   \item{verbose}{Set to TRUE for verbose mode (optional)}
   \item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
   \item{seed}{Random seed (optional).}
-  \item{LDL}{Use LDL factorisations (default is TRUE)? This is useful for analysis of problems with positive semidefinite precision matrices.}
+  \item{LDL}{[DEPRECATED: assumed TRUE] Use LDL factorisations (default is TRUE)? This is useful for analysis of problems with positive semidefinite precision matrices.}
 }
 \value{
 \code{excursions} returns an object of class "excurobj". This is a list that contains the following arguments:

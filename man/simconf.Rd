@@ -37,7 +37,7 @@ simconf(alpha,
   \item{verbose}{Set to TRUE for verbose mode (optional)}
   \item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
   \item{seed}{Random seed (optional)}
-  \item{LDL}{Use LDL factorisations? This is useful for analysis of problems with positive semidefinite precisions.}
+  \item{LDL}{[DEPRECATED: assumed TRUE] Use LDL factorisations? This is useful for analysis of problems with positive semidefinite precisions.}
 
 }
 \value{
