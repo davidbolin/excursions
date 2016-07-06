@@ -41,4 +41,4 @@ S3method(print,excurobj)
 S3method(print,summary.excurobj)
 S3method(summary,excurobj)
 
-useDynLib(excursions, .registration=TRUE)
+useDynLib(excursionsdevel, .registration=TRUE)
