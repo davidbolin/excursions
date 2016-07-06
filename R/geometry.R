@@ -1872,10 +1872,10 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
       (submesh$loc[submesh$graph$tv[,1],,drop=FALSE] +
        submesh$loc[submesh$graph$tv[,2],,drop=FALSE] +
        submesh$loc[submesh$graph$tv[,3],,drop=FALSE]*3)/5)
-    if (mesh$manifold == "S2") {
+    if (submesh$manifold == "S2") {
       I.loc <- I.loc / sqrt(rowSums(I.loc^2))
     }
-    A <- inla.spde.make.A(submesh, I.loc)
+    A <- INLA::inla.spde.make.A(submesh, I.loc)
 
     I.w <- (rep(I.w, times=4) *
             rep(c(-27,25,25,25)/48, each=nrow(submesh$graph$tv)))
