@@ -73,3 +73,13 @@ hg merge release
 hg commit -m "Apply bugfix from release branch: ..."
 ## Optionally, prepare a stable version
 ```
+  * Submit to CRAN
+```
+## If not already done, prepare a stable version
+## Submit to CRAN
+## If not accepted, do bugfixes and resubmit
+## If accepted, do
+hg update default
+## Update CRAN version in README.md
+hg commit -m "Update CRAN version in README.md"
+```
