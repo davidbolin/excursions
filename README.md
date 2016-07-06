@@ -4,7 +4,7 @@ Excursions is an R package that contains functions that compute probabilistic ex
 The theory of the methods used in the package are described in [Bolin and Lindgren (2014)](http://onlinelibrary.wiley.com/doi/10.1111/rssb.12055/abstract). A manual for the package (version 1.1, so slightly outdated at the moment) can be found [here](http://www.math.chalmers.se/~bodavid/software/excursions/excursions_manual.pdf) and the code used in the manual can be downloaded [here](http://www.math.chalmers.se/~bodavid/software/excursions/code.zip). 
 
 # Versions #
-The current stable version of the package on CRAN is 2.1.1. The development version of the package contains new features and fixes that are not on CRAN. To install this version, see the instructions below. 
+The current stable version of the package on CRAN is 2.2.1. The development version of the package contains new features and fixes that are not on CRAN. To install this version, see the instructions below. 
 
 # Installation instructions #
 The stable version of the package can be installed directly from CRAN, or by using the command
