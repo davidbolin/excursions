@@ -1,7 +1,7 @@
 Package: excursionsdevel
 Type: Package
 Title: Excursion Sets and Contour Credibility Regions for Random Fields
-Version: 2.2.1
+Version: 2.3.0
 Date: 2016-07-06
 Author: David Bolin <davidbolin@gmail.com> and Finn Lindgren <finn.lindgren@gmail.com>
 Maintainer: David Bolin <davidbolin@gmail.com>
