@@ -76,8 +76,9 @@ hg commit -m "Apply bugfix from release branch: ..."
   * Submit to CRAN
 ```
 ## If not already done, prepare a stable version
+## Perform CRAN checks, if unsuccessful then stop, and do bugfixes
 ## Submit to CRAN
-## If not accepted, do bugfixes and resubmit
+## If not accepted then stop, and do bugfixes
 ## If accepted, do
 hg update default
 ## Update CRAN version in README.md
