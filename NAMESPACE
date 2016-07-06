@@ -1,5 +1,9 @@
 import(Matrix)
 import(sp)
+importFrom("graphics", "lines")
+importFrom("methods", "as", "is")
+importFrom("stats", "optimize", "pnorm", "qnorm",
+           "quantile", "rnorm", "uniroot")
 
 export(excursions)
 export(excursions.inla)
