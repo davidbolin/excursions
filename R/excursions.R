@@ -71,8 +71,8 @@ excursions <- function(alpha,
   }
 
   if (!missing(Q.chol) && !is.null(Q.chol)) {
-    ## make the representation unique (i,j,v)
-    Q = private.as.dgTMatrix(Q.chol)
+    ## make the representation unique (i,j,v) and upper triangular
+    Q = private.as.dgTMatrix(private.as.dtCMatrixU(Q.chol))
     is.chol = TRUE
   } else {
     ## make the representation unique (i,j,v)

@@ -51,7 +51,7 @@ gaussint <- function(mu,
     Q <- private.as.dgCMatrix(Q)
 
   if(!missing(Q.chol))
-    Q.chol <- private.as.dtCMatrix(Q.chol)
+    Q.chol <- private.as.dtCMatrixU(Q.chol)
 
 
   n = length(a)
@@ -102,20 +102,18 @@ gaussint <- function(mu,
         reordered = TRUE
       }
 
-      L <- suppressWarnings(private.as.dtCMatrix(
-        Matrix::Cholesky(Q,perm=FALSE)))
+      L <- suppressWarnings(private.Cholesky(Q,perm=FALSE)$R)
 
     } else if(use.reordering == "sparsity"){
-      ## Reorder for sparsity calculated by Matrix...
-      L <- suppressWarnings(Matrix::Cholesky(Q,perm=TRUE))
-      reo = L@perm
-      ireo[reo] = 1:length(reo)
+      ## Reorder for sparsity calculated by Matrix
+      L <- suppressWarnings(private.Cholesky(Q,perm=TRUE))
+      reo <- L$reo
+      ireo <- L$ireo
       reordered = TRUE
-      L <- private.as.dtCMatrix(L)
+      L <- L$R
     } else {
       ## Do not reorder
-      L <- suppressWarnings(private.as.dtCMatrix(
-        Matrix::Cholesky(Q,perm=FALSE)))
+      L <- suppressWarnings(private.Cholesky(Q,perm=FALSE)$R)
     }
   }
 
@@ -141,7 +139,7 @@ gaussint <- function(mu,
   }
 
   if (is(L, "Matrix")) {
-     L <- private.as.dtCMatrix(L)
+     L <- private.as.dtCMatrixU(L)
   } else {
     stop("Unsuported matrix type.")
   }

@@ -42,7 +42,7 @@ simconf <- function(alpha,
     Q <- private.as.dgCMatrix(Q)
 
   if(!missing(Q.chol))
-    Q.chol <- private.as.dtCMatrix(Q.chol)
+    Q.chol <- private.as.dtCMatrixU(Q.chol)
 
   if(!missing(vars))
     vars <- private.as.vector(vars)
@@ -52,10 +52,9 @@ simconf <- function(alpha,
 
 
   if (!missing(Q.chol) && !is.null(Q.chol)) {
-      L = Q.chol
+    L <- private.as.dtCMatrixU(Q.chol)
   } else {
-    L <- suppressWarnings(private.as.dtCMatrix(
-      Matrix::Cholesky(Q, perm=FALSE)))
+    L <- suppressWarnings(private.Cholesky(Q, perm=FALSE)$R)
   }
 
   if(missing(vars)){

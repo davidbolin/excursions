@@ -16,6 +16,20 @@
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+## Calculate upper triangular Cholesky decomposition, optionally with
+## permutation. All Matrix::Cholesky options are allowed.
+## Returns list(R=dtCMatrix, reo=interger vector, ireo=interger vector)
+private.Cholesky <- function(A, ...) {
+  L <- expand(Matrix::Cholesky(private.as.dgCMatrix(A), ...))
+  n <- nrow(A)
+  reo <- integer(n)
+  reo[L$P@perm] <- seq_len(n)
+  ireo = integer(n)
+  ireo[reo] = seq_len(n)
+  list(R=private.as.dtCMatrixU(L$L), reo=reo, ireo=ireo)
+}
+
+
 
 
 ## calculates variances given either a cholesky factor L in Matrix format,
@@ -27,14 +41,12 @@ excursions.variances<-function(L,Q, max.threads=0)
 {
   if(!missing(L) && !is.null(L)){
     ireo = FALSE
-    L <- private.as.dtCMatrix(L)
-    ## "L needs to be in ccs format for now."
+    L <- private.as.dtCMatrixU(L)
   } else {
-    L = Matrix::Cholesky(Q,LDL=FALSE)
+    L <- private.Cholesky(Q, LDL=FALSE)
     ireo = TRUE
-    reo <- 1:(L@Dim[1])
-    reo[L@perm+1] <- 1:(L@Dim[1])
-    L <- private.as.dtCMatrix(L)
+    reo <- L$reo
+    L <- L$R
   }
 
   out<- .C("Qinv",Rir = as.integer(L@i),
@@ -45,9 +57,9 @@ excursions.variances<-function(L,Q, max.threads=0)
                   n_threads = as.integer(max.threads))
 
   if(ireo){
-    return(out$variances[reo])
+    out$variances[reo]
   } else {
-    return(out$variances)
+    out$variances
   }
 }
 
@@ -179,8 +191,7 @@ excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threa
     b.sort = b[reo]
     Q = Q[reo,reo]
 
-    L <- suppressWarnings(private.as.dtCMatrix(
-      Matrix::Cholesky(Q,perm=FALSE)))
+    L <- suppressWarnings(private.Cholesky(Q,perm=FALSE)$R)
 
     res = gaussint(Q.chol = L, a = a.sort, b = b.sort, lim = lim,
                    n.iter = K, max.size = max.size,
@@ -262,6 +273,19 @@ private.as.dtCMatrix <- function(M)
     return (as(as(as(M, "sparseMatrix"), "CsparseMatrix"), "dtCMatrix"))
   }
 }
+
+## Transpose a lower triangular matrix into upper triangular dtCMatrix
+## If already upper triangular dtCMatrix, the matrix is returned unchanged
+private.as.dtCMatrixU <- function(M) {
+  M <- private.as.dtCMatrix(M)
+  if (M@uplo == "L") {
+    t(M)
+  } else {
+    M
+  }
+}
+
+
 
 ##
 # Distribution function of Gaussian mixture \Sum_k w[k]*N(mu[k],sigma[k]^2)
