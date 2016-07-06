@@ -24,8 +24,7 @@ simconf <- function(alpha,
                     ind=NULL,
                     verbose=0,
                     max.threads=0,
-                    seed=NULL,
-                    LDL=TRUE)
+                    seed=NULL)
 {
 
   if(missing(mu)){
@@ -40,10 +39,10 @@ simconf <- function(alpha,
 	  stop('Cannot provide both cholesky factor and indices.')
 
   if(!missing(Q))
-    Q <- private.as.Matrix(Q)
+    Q <- private.as.dgCMatrix(Q)
 
   if(!missing(Q.chol))
-    Q.chol <- private.as.Matrix(Q.chol)
+    Q.chol <- private.as.dtCMatrixU(Q.chol)
 
   if(!missing(vars))
     vars <- private.as.vector(vars)
@@ -53,13 +52,9 @@ simconf <- function(alpha,
 
 
   if (!missing(Q.chol) && !is.null(Q.chol)) {
-      L = Q.chol
+    L <- private.as.dtCMatrixU(Q.chol)
   } else {
-      if(LDL){
-        L = suppressWarnings(t(as(Cholesky(Q),"Matrix")))
-      } else {
-        L = chol(Q)
-      }
+    L <- suppressWarnings(private.Cholesky(Q, perm=FALSE)$R)
   }
 
   if(missing(vars)){
@@ -104,7 +99,6 @@ simconf <- function(alpha,
                      alpha=alpha,
                      n.iter=n.iter,
                      ind=ind,
-                     LDL=LDL,
                      call = match.call())
   class(output) <- "excurobj"
   return(output)

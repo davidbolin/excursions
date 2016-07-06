@@ -64,7 +64,7 @@ contourmap <- function(mu,
     ind <- private.as.vector(ind)
 
   if(!missing(Q))
-    Q <- private.as.Matrix(Q)
+    Q <- private.as.dgCMatrix(Q)
 
 
   measure = NULL

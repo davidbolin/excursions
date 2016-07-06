@@ -1,9 +1,9 @@
 import(Matrix)
 import(sp)
-importFrom("methods", as, is)
-importFrom("stats", optim, optimize, pnorm, qnorm, quantile, rnorm, uniroot)
-importFrom("graphics",lines)
-importFrom("spam", spam, triplet, as.spam, as.dgRMatrix.spam, as.spam.dgCMatrix)
+importFrom("graphics", "lines")
+importFrom("methods", "as", "is")
+importFrom("stats", "optimize", "pnorm", "qnorm",
+           "quantile", "rnorm", "uniroot")
 
 export(excursions)
 export(excursions.inla)
@@ -41,4 +41,4 @@ S3method(print,excurobj)
 S3method(print,summary.excurobj)
 S3method(summary,excurobj)
 
-useDynLib(excursions, .registration=TRUE)
+useDynLib(excursionsdevel, .registration=TRUE)

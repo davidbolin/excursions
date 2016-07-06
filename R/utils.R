@@ -1,6 +1,6 @@
 ## utils.R
 ##
-##   Copyright (C) 2013 David Bolin, Finn Lindgren
+##   Copyright (C) 2013,2016 David Bolin, Finn Lindgren
 ##
 ##   This program is free software: you can redistribute it and/or modify
 ##   it under the terms of the GNU General Public License as published by
@@ -16,37 +16,37 @@
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
+## Calculate upper triangular Cholesky decomposition, optionally with
+## permutation. All Matrix::Cholesky options are allowed.
+## Returns list(R=dtCMatrix, reo=interger vector, ireo=interger vector)
+private.Cholesky <- function(A, ...) {
+  L <- expand(Matrix::Cholesky(private.as.dgCMatrix(A), ...))
+  n <- nrow(A)
+  reo <- integer(n)
+  reo[L$P@perm] <- seq_len(n)
+  ireo = integer(n)
+  ireo[reo] = seq_len(n)
+  list(R=private.as.dtCMatrixU(L$L), reo=reo, ireo=ireo)
+}
 
 
-## calculates variances given either a cholesky factor L in Matrix or spam f
-## format, or given a precision matrix Q. If Q is provided, the cholesky factor
+
+
+## calculates variances given either a cholesky factor L in Matrix format,
+## or given a precision matrix Q. If Q is provided, the cholesky factor
 ## is calculated and the variances are then returned in the same ordering as Q
 ## If L is provided, the variances are returned in the same ordering as L, even
 ## if L@invpivot exists.
-excursions.variances<-function(L,Q, max.threads=0, use.spam=FALSE)
+excursions.variances<-function(L,Q, max.threads=0)
 {
-
   if(!missing(L) && !is.null(L)){
     ireo = FALSE
-    if(is(L,'spam.chol.NgPeyton')){
-     L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)), "TsparseMatrix"),"dtCMatrix")
-   } else {
-      if (!is(L, "dtCMatrix"))
-       stop("L needs to be in ccs format for now.")
-    }
+    L <- private.as.dtCMatrixU(L)
   } else {
-    if (requireNamespace("spam", quietly=TRUE)){
-      L = chol(private.as.spam(Q))
-      ireo = TRUE
-      reo = L@invpivot
-      L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)),
-                "TsparseMatrix"),"dtCMatrix")
-    } else {
-      L = Cholesky(Q,LDL=FALSE)
-      ireo = TRUE
-      reo <- 1:(L@Dim[1])
-      reo[L@perm+1] <- 1:(L@Dim[1])
-    }
+    L <- private.Cholesky(Q, LDL=FALSE)
+    ireo = TRUE
+    reo <- L$reo
+    L <- L$R
   }
 
   out<- .C("Qinv",Rir = as.integer(L@i),
@@ -57,9 +57,9 @@ excursions.variances<-function(L,Q, max.threads=0, use.spam=FALSE)
                   n_threads = as.integer(max.threads))
 
   if(ireo){
-    return(out$variances[reo])
+    out$variances[reo]
   } else {
-    return(out$variances)
+    out$variances
   }
 }
 
@@ -135,13 +135,14 @@ excursions.permutation <- function(rho, ind, use.camd = TRUE,alpha,Q)
 			}
       #change back to original ordering
       for (i in 1:n) {
-				cind[i] = k - cindr[ireo[i]]
-			}
-			#call CAMD
-			out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p),
-		                        Mi = as.integer(Q@i), reo = as.integer(reo),
-		                        cind = as.integer(cind))
-		  reo = out$reo+1
+        cind[i] = k - cindr[ireo[i]]
+      }
+      Q <- private.as.dgCMatrix(Q)
+      ## call CAMD
+      out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p),
+                Mi = as.integer(Q@i), reo = as.integer(reo),
+                cind = as.integer(cind))
+      reo = out$reo+1
     }
   }
   return(reo)
@@ -183,41 +184,25 @@ excursions.setlimits <- function(marg, vars,type,QC,u,mu)
 
 
 
-excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threads, seed,LDL=FALSE)
+excursions.call <- function(a,b,reo,Q, is.chol = FALSE, lim, K, max.size,n.threads, seed)
 {
   if(is.chol == FALSE){
     a.sort = a[reo]
     b.sort = b[reo]
     Q = Q[reo,reo]
 
-    if(LDL){
-  		L = suppressWarnings(t(as(Cholesky(Q,perm=FALSE),"Matrix")))
-    } else {
-      L = suppressWarnings(chol(private.as.spam(Q),pivot = FALSE))
-    }
+    L <- suppressWarnings(private.Cholesky(Q,perm=FALSE)$R)
 
     res = gaussint(Q.chol = L, a = a.sort, b = b.sort, lim = lim,
-                                 n.iter = K, max.size = max.size,
-                                 max.threads = n.threads, seed = seed)
+                   n.iter = K, max.size = max.size,
+                   max.threads = n.threads, seed = seed)
   } else {
     #assume that everything already is ordered
     res = gaussint(Q = Q, a= a, b = b, lim = lim, n.iter = K,
-                    max.size = max.size,
-                    max.threads = n.threads,seed = seed,LDL=LDL)
+                   max.size = max.size,
+                   max.threads = n.threads,seed = seed)
   }
   return(res)
-}
-
-private.as.spam <- function(A)
-{
-  if(is(A,"spam")){
-    return(A)
-  }
-  else if(is(A,"dsyMatrix")){
-    return(spam::as.spam.dgCMatrix(as(as.matrix(A),"dgCMatrix")))
-  } else {
-    return(spam::as.spam.dgCMatrix(as(A,"dgCMatrix")))
-  }
 }
 
 
@@ -245,14 +230,62 @@ private.as.vector <- function(v)
   return(c(v))
 }
 
-private.as.Matrix <- function(M)
+private.sparse.gettriplet <- function(M)
 {
-  if(is.null(M) || is(M,"Matrix")){
+  ## Get unique triplet representation:
+  M <- private.as.dgTMatrix(M)
+  ## Extract triplets:
+  list(i=M@i+1L, j=M@j+1L, x=M@x)
+}
+
+private.as.dgTMatrix <- function(M)
+{
+  if(is.null(M) || is(M,"dgTMatrix")){
     return(M)
   } else {
-    return(as(M,"Matrix"))
+    ## Convert into dgTMatrix format of Matrix. Make sure the
+    ## representation is unique (ie no double triplets etc)
+    ## convert through the 'dgCMatrix'-class to make it unique;
+    return(as(private.as.dgCMatrix(M), "dgTMatrix"))
   }
 }
+
+private.as.dgCMatrix <- function(M)
+{
+  if(is.null(M) || is(M,"dgCMatrix")){
+    return(M)
+  } else {
+    ## Convert into dgCMatrix format of Matrix.
+    ## Convert via virtual class CsparseMatrix;
+    ## this allows more general conversions than direct conversion.
+    return(as(as(as(M, "sparseMatrix"), "CsparseMatrix"), "dgCMatrix"))
+  }
+}
+
+private.as.dtCMatrix <- function(M)
+{
+  if(is.null(M) || is(M,"dtCMatrix")){
+    return(M)
+  } else {
+    ## Convert into dtCMatrix format of Matrix.
+    ## Convert via virtual class CsparseMatrix;
+    ## this allows more general conversions than direct conversion.
+    return (as(as(as(M, "sparseMatrix"), "CsparseMatrix"), "dtCMatrix"))
+  }
+}
+
+## Transpose a lower triangular matrix into upper triangular dtCMatrix
+## If already upper triangular dtCMatrix, the matrix is returned unchanged
+private.as.dtCMatrixU <- function(M) {
+  M <- private.as.dtCMatrix(M)
+  if (M@uplo == "L") {
+    t(M)
+  } else {
+    M
+  }
+}
+
+
 
 ##
 # Distribution function of Gaussian mixture \Sum_k w[k]*N(mu[k],sigma[k]^2)

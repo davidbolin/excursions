@@ -44,7 +44,7 @@ simconf.mixture <- function(alpha,
       stop('Input lists are of different length')
     }
     for(i in seq_len(K)){
-      Q[[k]] <- private.as.Matrix(Q[[k]])
+      Q[[k]] <- private.as.dgCMatrix(Q[[k]])
     }
   }
 
@@ -142,7 +142,7 @@ simconf.mixture <- function(alpha,
     sd.m <- matrix(0,K,n)
     for(k in seq_len(K))
     {
-      Q.chol[[k]] <- t(as(Cholesky(Q[[k]][reo,reo],perm=FALSE),"Matrix"))
+      Q.chol[[k]] <- private.Cholesky(Q[[k]][reo,reo], perm=FALSE)$R
       mu.m[k,] = mu[[k]][reo]
       if(compute.vars){
         vars[[k]] <- excursions.variances(L = Q.chol[[k]])

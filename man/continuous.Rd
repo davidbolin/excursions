@@ -9,7 +9,7 @@
 }
 \usage{
 continuous(ex, geometry, alpha,
-           method = c("log", "logit", "linear", "step"),
+           method = c("log", "linear", "step"),
            output = c("sp", "inla"),
            subdivisions=1,
            calc.credible=TRUE)
@@ -36,8 +36,8 @@ topologically as lattices, and the lattice boxes are assumed convex.
 }
 \item{method}{
   The spatial probability interpolation transformation method to use.
-  One of \code{log}, \code{logit}, \code{linear}, or
-  \code{step}.  For \code{log} and \code{logit}, the probabilities are
+  One of \code{log}, \code{linear}, or
+  \code{step}.  For \code{log}, the probabilities are
   interpolated linearly in the transformed scale. For \code{step}, a
   conservative step function is used.
 }
@@ -48,7 +48,11 @@ topologically as lattices, and the lattice boxes are assumed convex.
 }
 \item{subdivisions}{
   The number of mesh triangle subdivisions to perform for the
-  interpolation of the excursions or contour function. Default=1.
+  interpolation of the excursions or contour function. 0 is no
+  subdivision. The setting has a small effect on the evaluation of
+  \code{P0} for the \code{log} method (higher values giving higher
+  accuracy) but the main effect is on the visual appearance of the
+  interpolation. Default=1.
 }
 \item{calc.credible}{
   Logical, if TRUE (default), calculate credible contour region objects

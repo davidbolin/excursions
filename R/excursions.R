@@ -31,8 +31,7 @@ excursions <- function(alpha,
                        max.size,
                        verbose=0,
                        max.threads=0,
-                       seed,
-                       LDL=TRUE)
+                       seed)
 {
 
   if(method=='QC'){
@@ -72,12 +71,12 @@ excursions <- function(alpha,
   }
 
   if (!missing(Q.chol) && !is.null(Q.chol)) {
-    ## make the representation unique (i,j,v)
-    Q = private.as.Matrix(Q.chol)#private.as.dgTMatrix(Q.chol)
+    ## make the representation unique (i,j,v) and upper triangular
+    Q = private.as.dgTMatrix(private.as.dtCMatrixU(Q.chol))
     is.chol = TRUE
   } else {
     ## make the representation unique (i,j,v)
-    Q = private.as.Matrix(Q)#private.as.dgTMatrix(Q)
+    Q = private.as.dgTMatrix(Q)
     is.chol = FALSE
   }
 
@@ -150,7 +149,7 @@ excursions <- function(alpha,
 
   res <- excursions.call(limits$a,limits$b,reo,Q, is.chol = is.chol,
                          1-F.limit, K = n.iter, max.size = m.size,
-                         n.threads = max.threads,seed = seed,LDL=LDL)
+                         n.threads = max.threads,seed = seed)
 
   n = length(mu)
   ii = which(res$Pv[1:n] > 0)
@@ -212,7 +211,6 @@ excursions <- function(alpha,
                             reo=reo,
                             ireo=ireo,
                             Fe=Fe,
-                            LDL=LDL,
                             call = match.call())))
   class(output) <- "excurobj"
   output

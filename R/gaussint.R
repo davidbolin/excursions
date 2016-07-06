@@ -26,8 +26,7 @@ gaussint <- function(mu,
                      use.reordering = c("natural","sparsity","limits"),
                      max.size,
                      max.threads=0,
-                     seed,
-                     LDL=FALSE)
+                     seed)
 {
 
   if( missing(Q) && missing(Q.chol))
@@ -49,10 +48,10 @@ gaussint <- function(mu,
   b <- private.as.vector(b)
 
   if(!missing(Q))
-    Q <- private.as.Matrix(Q)
+    Q <- private.as.dgCMatrix(Q)
 
   if(!missing(Q.chol))
-    Q.chol <- private.as.Matrix(Q.chol)
+    Q.chol <- private.as.dtCMatrixU(Q.chol)
 
 
   n = length(a)
@@ -74,13 +73,13 @@ gaussint <- function(mu,
     ## Cholesky factor is provided, use that and do not reorder
       L = Q.chol
       if(dim(L)[1] != dim(L)[2]){
-        stop("Q.chol is not symmetric")
+        stop("Q.chol is not square")
       } else if(dim(L)[1] != n) {
         stop("Dimensions of Q.chol is different from the length of the integration limits.")
       }
   } else if(!missing(Q) && !is.null(Q)){
     if(dim(Q)[1] != dim(Q)[2]){
-      stop("Q is not symmetric")
+      stop("Q is not square")
       } else if(dim(Q)[1] != n) {
         stop("Dimensions of Q is different from the length of the integration limits.")
       }
@@ -95,40 +94,28 @@ gaussint <- function(mu,
         cind = rep(1,n)
         cind[inf.ind] = 0
         reo = rep(0,n)
-			  out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p),
-		                        Mi = as.integer(Q@i), reo = as.integer(reo),
-		                        cind = as.integer(cind))
-		    reo = out$reo+1
-		    Q = Q[reo,reo]
-		    reordered = TRUE
-		  }
+        out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p),
+                  Mi = as.integer(Q@i), reo = as.integer(reo),
+                  cind = as.integer(cind))
+        reo = out$reo+1
+        Q = Q[reo,reo]
+        reordered = TRUE
+      }
 
-      if(LDL) {
-  		  L = suppressWarnings(t(as(Cholesky(Q,perm=FALSE),"Matrix")))
-		  } else {
-		     L = chol(private.as.spam(Q),pivot=FALSE)
-		  }
-		} else if(use.reordering == "sparsity"){
-		  #Reorder for sparsity, let spam do it...
-		  if(LDL) {
-  		  L = suppressWarnings(t(as(Cholesky(Q,perm=FALSE),"Matrix")))
-		    reo = L@perm
-		    ireo[reo] = 1:length(reo)
-		  } else {
-		     L = chol(private.as.spam(Q))
-  		  reo = L@pivot
-	  	  ireo = L@invpivot
-		  }
-		  reordered = TRUE
-		} else {
-		  #Do not reorder
-      if(LDL) {
-        L = suppressWarnings(t(as(Cholesky(Q,perm=FALSE),"Matrix")))
-		  } else {
-		    L = chol(private.as.spam(Q),pivot=FALSE)
-		  }
-		}
-	}
+      L <- suppressWarnings(private.Cholesky(Q,perm=FALSE)$R)
+
+    } else if(use.reordering == "sparsity"){
+      ## Reorder for sparsity calculated by Matrix
+      L <- suppressWarnings(private.Cholesky(Q,perm=TRUE))
+      reo <- L$reo
+      ireo <- L$ireo
+      reordered = TRUE
+      L <- L$R
+    } else {
+      ## Do not reorder
+      L <- suppressWarnings(private.Cholesky(Q,perm=FALSE)$R)
+    }
+  }
 
   # Note: If lim > 0 and reorder == TRUE, we should calculate marginal
   # probabilities, see if bound is above lim, and then reorder
@@ -151,10 +138,8 @@ gaussint <- function(mu,
 		b = b[reo]
   }
 
-  if(is(L,'spam.chol.NgPeyton')){
-     L = as(as(spam::as.dgRMatrix.spam(spam::as.spam(L)), "TsparseMatrix"),"dtCMatrix")
-  } else if (is(L, "Matrix")) {
-     L <- as(as(L, "CsparseMatrix"), "dtCMatrix")
+  if (is(L, "Matrix")) {
+     L <- private.as.dtCMatrixU(L)
   } else {
     stop("Unsuported matrix type.")
   }
