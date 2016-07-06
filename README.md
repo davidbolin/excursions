@@ -11,13 +11,13 @@ The stable version of the package can be installed directly from CRAN, or by usi
 ```
 #!r
 
-devtools::install_bitbucket("excursions","davidbolin",ref="default")
+devtools::install_bitbucket("excursions","davidbolin",ref="stable")
 ```
 in R. The development version can be installed using the command 
 ```
 #!r
 
-devtools::install_bitbucket("excursions","davidbolin",ref="devel")
+devtools::install_bitbucket("excursions","davidbolin",ref="default")
 ```
 The development version of the package is called excursionsdevel, so it is loaded by running
 
