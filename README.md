@@ -34,3 +34,42 @@ gcc = "C:\\Rtools\\gcc-4.6.3\\bin"
 Sys.setenv(PATH=paste(c(gcc,rtools, Sys.getenv("PATH")),collapse=";"))
 ```
 where the variables rtools and gcc need to be changed if Rtools is not installed directly on C:.
+
+# Repository branch workflows #
+The package version format is `major.minor.bugfix`. All regular development should be performed on the `default` branch, or on feature branches derived from `default`. The version on the `default` branch is the next version to be prepared for release. The version on the `release` branch is the bugfix version currently being prepared for stable release. Bugfixes may only be applied to the `release` branch, and must be merged into `default`.
+
+   * Prepare a new release:
+```
+hg update release
+hg merge default
+## (Resolve any version number conflict in favour of the default version)
+hg commit -m "Start new release"
+hg update default
+## Update the version number as major.(minor+1).0
+hg commit -m "Start next development version"
+```
+  * Prepare a stable version:
+```
+hg update release
+## Update the date in the DESCRIPTION
+hg commit -m "Update release date"
+## Perform CRAN checks, if unsuccessful then stop, and do a bugfix instead.
+hg update stable
+hg merge release
+## (Resolve package name conflicts in favour of stable name (excursions), and README.md removed)
+hg commit -m "New stable version"
+hg tag vX.X.X
+## X.X.X = major.minor.bugfix from DESCRIPTION
+```
+  * Do a bugfix:
+```
+hg update release
+## Update the version number to major.minor.(bugfix+1)
+## Fix the bug
+hg commit
+hg update default
+hg merge release
+## (Resolve version conflict in favour of the default version)
+hg commit -m "Apply bugfix from release branch: ..."
+## Optionally, prepare a stable version
+```
