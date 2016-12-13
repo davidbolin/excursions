@@ -1,7 +1,7 @@
 # Description #
 Excursions is an R package that contains functions that compute probabilistic excursion sets, contour credibility regions, and simultaneous confidence bands for latent Gaussian random processes and fields. 
 
-The theory of the methods used in the package are described in [Bolin and Lindgren (2014)](http://onlinelibrary.wiley.com/doi/10.1111/rssb.12055/abstract). A manual for the package (version 1.1, so slightly outdated at the moment) can be found [here](http://www.math.chalmers.se/~bodavid/software/excursions/excursions_manual.pdf) and the code used in the manual can be downloaded [here](http://www.math.chalmers.se/~bodavid/software/excursions/code.zip). 
+The theory of the methods used in the package are described in [Bolin and Lindgren (2015)](http://onlinelibrary.wiley.com/doi/10.1111/rssb.12055/abstract). A manual for the package can be found [here](http://www.math.chalmers.se/~bodavid/software/excursions/excursions_manual_v2.pdf) and the code used in the manual can be downloaded [here](http://www.math.chalmers.se/~bodavid/software/excursions/code.zip). 
 
 # Versions #
 The current stable version of the package on CRAN is 2.2.1. The development version of the package contains new features and fixes that are not on CRAN. To install this version, see the instructions below. 
