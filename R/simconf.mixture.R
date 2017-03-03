@@ -33,8 +33,11 @@ simconf.mixture <- function(alpha,
   } else {
     K <- length(mu)
     n <- length(mu[[1]])
-    for(i in seq_len(K)){
+    for(k in seq_len(K)){
       mu[[k]] <- private.as.vector(mu[[k]])
+      if(any(is.na(mu[[k]]))){
+        stop('mu contains NA')
+      }
     }
   }
   if(missing(Q) || !is.list(Q)) {
@@ -43,7 +46,7 @@ simconf.mixture <- function(alpha,
     if(length(Q) != K){
       stop('Input lists are of different length')
     }
-    for(i in seq_len(K)){
+    for(k in seq_len(K)){
       Q[[k]] <- private.as.dgCMatrix(Q[[k]])
     }
   }
@@ -52,13 +55,16 @@ simconf.mixture <- function(alpha,
     stop('Must provide list with mixture weights')
   } else {
     w <- private.as.vector(w)
+    if(any(is.na(w))){
+      stop('w contains NA')
+    }
   }
   if(!missing(vars)){
     compute.vars <- FALSE
     if(length(w) != K){
       stop('Input lists are of different length')
     }
-    for(i in seq_len(K)){
+    for(k in seq_len(K)){
       vars[[k]] <- private.as.vector(vars[[k]])
     }
   } else {
@@ -93,19 +99,19 @@ simconf.mixture <- function(alpha,
 
     limits = c(-1000,1000)
     a.marg = sapply(seq_len(n), function(i) Fmix_inv(p = alpha/2,
-                    mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+                                                     mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
 
     b.marg = sapply(seq_len(n), function(i) Fmix_inv(p = 1-alpha/2,
-                    mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+                                                     mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
 
     while(min(a.marg) == limits[1] || max(b.marg) == limits[2])
     {
       limits = 2*limits
       a.marg = sapply(seq_len(n), function(i) Fmix_inv(p = alpha/2,
-                      mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+                                                       mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
 
       b.marg = sapply(seq_len(n), function(i) Fmix_inv(p = 1-alpha/2,
-                      mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+                                                       mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
     }
     samp <- mix.sample(n.iter,mu,Q.chol,w)
     r.o = optimize(fmix.samp.opt,interval = c(0,alpha),
@@ -113,10 +119,10 @@ simconf.mixture <- function(alpha,
                    sd=sd.m[,ind], w=w, limits = limits,samples=samp[,ind])
 
     a = sapply(seq_len(n), function(i) Fmix_inv(p = r.o$minimum/2,
-               mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+                                                mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
 
     b = sapply(seq_len(n), function(i) Fmix_inv(p = 1-r.o$minimum/2,
-               mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+                                                mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
   } else {
 
     if(!missing(ind)){
@@ -152,19 +158,19 @@ simconf.mixture <- function(alpha,
 
     limits = c(-1000,1000)
     a.marg = sapply(seq_len(n), function(i) Fmix_inv(p = alpha/2,
-                    mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
+                                                     mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
 
     b.marg = sapply(seq_len(n), function(i) Fmix_inv(p = 1-alpha/2,
-                    mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
+                                                     mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
 
     while(min(a.marg) == limits[1] || max(b.marg) == limits[2])
     {
       limits = 2*limits
       a.marg = sapply(seq_len(n), function(i) Fmix_inv(p = alpha/2,
-                      mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
+                                                       mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
 
       b.marg = sapply(seq_len(n), function(i) Fmix_inv(p = 1-alpha/2,
-                      mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
+                                                       mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
     }
 
     r.o = optimize(fmix.opt,interval = c(alpha/n,alpha),
@@ -178,13 +184,13 @@ simconf.mixture <- function(alpha,
                    max.threads = max.threads,
                    verbose=verbose)
 
-      a = sapply(seq_len(n), function(i) Fmix_inv(p = r.o$minimum/2,
+    a = sapply(seq_len(n), function(i) Fmix_inv(p = r.o$minimum/2,
                                                 mu = mu.m[,i],
                                                 sd = sd.m[,i],
                                                 w = w,
                                                 br = limits))[ireo]
 
-      b = sapply(seq_len(n), function(i) Fmix_inv(p = 1-r.o$minimum/2,
+    b = sapply(seq_len(n), function(i) Fmix_inv(p = 1-r.o$minimum/2,
                                                 mu = mu.m[,i],
                                                 sd = sd.m[,i],
                                                 w = w,
