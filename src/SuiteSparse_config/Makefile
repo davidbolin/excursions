@@ -1,5 +1,4 @@
 PKG_CPPFLAGS = -DNTIMER
-include $(MkInclude)
 
 LIB = ../SuiteSparse_config.a
 

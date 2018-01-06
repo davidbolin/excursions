@@ -16,12 +16,16 @@ $(SHLIB): $(OBJECTS) sublibraries
 sublibraries: $(E_LIBS)
 
 CAMD.a:
-	(cd CAMD && CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
-		MAKE="$(MAKE) -f \"$(MkInclude)\" -f Makefile" $(MAKE) -f "$(MkInclude)" -f Makefile library)
+	(cd CAMD && \
+	    $(MAKE) MAKE="$(MAKE) -f\"$(MkInclude)\" -fMakefile" \
+	    CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
+	    -f"$(MkInclude)" -fMakefile library)
 
 SuiteSparse_config.a:
-	(cd SuiteSparse_config && CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
-		MAKE="$(MAKE) -f \"$(MkInclude)\" -f Makefile" $(MAKE) -f "$(MkInclude)" -f Makefile library)
+	(cd SuiteSparse_config && \
+	    $(MAKE) MAKE="$(MAKE) -f\"$(MkInclude)\" -fMakefile" \
+	    CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
+	    -f"$(MkInclude)" -fMakefile library)
 
 clean: subclean
 	@-rm -f *.o
@@ -29,7 +33,7 @@ clean: subclean
 subclean:
 	@-rm -f *.a
 	@for d in $(SUBDIRS); do \
-	  (cd $${d} && MkInclude="" $(MAKE) clean) || exit 0; \
+	  (cd $${d} && $(MAKE) MkInclude="" clean) || exit 0; \
 	done
 
 .PHONY: all sublibraries clean subclean
