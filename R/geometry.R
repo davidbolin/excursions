@@ -324,12 +324,19 @@ connect.segments <-function(segment.set,
 ## Compute simple outline of 1/0 set on a grid, eliminating spikes.
 outline.on.grid <- function(z, grid)
 {
-  ni <- nrow(z)
-  nj <- ncol(z)
-  z <- (z != FALSE)
   if (missing(grid) || is.null(grid)) {
+    if (!is.matrix(z)) {
+      stop("grid not supplied, and z is not a matrix")
+    }
+    ni <- nrow(z)
+    nj <- ncol(z)
+    z <- (z != FALSE)
     grid <- list(x=seq(0,1,length=ni), y=seq(0,1,length=nj))
     grid$loc <- cbind(rep(grid$x, times=nj), rep(grid$y, each=ni))
+  } else {
+    ni <- grid$dims[1]
+    nj <- grid$dims[2]
+    z <- matrix(z != FALSE, ni, nj)
   }
 
   ij2k <-function(i,j) {
@@ -1225,7 +1232,7 @@ probabilitymap.old <-
 ##   list(loc, dims, ...)
 ##   list(x, y, ...)
 ## The last 3 are all treated as topological lattices, and code in
-## build.lattice.mesh() assumes that the lattice boxes are convex.
+## submesh.grid() assumes that the lattice boxes are convex.
 ## Output:
 ##   list(loc, dims, geometry, manifold)
 get.geometry <- function(geometry)
@@ -1262,75 +1269,6 @@ get.geometry <- function(geometry)
   list(loc=loc, dims=dims, geometry=geometrytype, manifold=manifoldtype)
 }
 
-## Input:
-##   loc, dims
-## The input is treated as a topological lattice, and the
-## the lattice boxes are assumed to be convex.
-## Output:
-##   list(loc, graph=list(tv), A, idx=list(loc))
-build.lattice.mesh <- function(loc, dims) {
-  ## Index to node in original lattice,
-  ## i,j in 1...nx, 1...ny
-  ij1 <- function(i,j) {
-    ii <- rep(i, times=length(j))
-    jj <- rep(j, each=length(i))
-    ((jj-1)*nx+ii)
-  }
-  ## Index to node in new sub-lattice,
-  ## i,j in 1...2*nx-1, 1...2*ny-1
-  ij2 <- function(i,j) {
-    ii <- rep(i, times=length(j))
-    jj <- rep(j, each=length(i))
-    ((jj-1)*nx2+ii)
-  }
-
-  nx <- dims[1]
-  ny <- dims[2]
-  nx2 <- 2*nx-1
-  ny2 <- 2*ny-1
-  n1 <- nx*ny
-  n2 <- nx2*ny2
-
-  i0 <- seq_len(nx-1)
-  j0 <- seq_len(ny-1)
-  i0a <- seq_len(nx)
-  j0a <- seq_len(ny)
-  i00 <- seq_len(nx-1)*2-1
-  j00 <- seq_len(ny-1)*2-1
-  i00a <- seq_len(nx)*2-1
-  j00a <- seq_len(ny)*2-1
-  ## Mapping matrix from lattice nodes to sub-lattice nodes
-  idx <- ij2(i00a,j00a)
-  A <- sparseMatrix(i=(c(ij2(i00a,j00a),
-                         rep(ij2(i00+1,j00a), times=2),
-                         rep(ij2(i00a,j00+1), times=2),
-                         rep(ij2(i00+1,j00+1), times=4)
-                         )),
-                    j=(c(ij1(i0a,j0a),
-                         ij1(i0,j0a), ij1(i0+1,j0a),
-                         ij1(i0a,j0), ij1(i0a,j0+1),
-                         ij1(i0,j0), ij1(i0+1,j0),
-                         ij1(i0,j0+1), ij1(i0+1,j0+1)
-                         )),
-                    x=(c(rep(1, n1),
-                         rep(1/2, 2*(nx-1)*ny),
-                         rep(1/2, 2*nx*(ny-1)),
-                         rep(1/4, 4*(nx-1)*(ny-1))
-                         )),
-                    dims=c(n2, n1))
-  loc <- as.matrix(A %*% loc)
-  tv <- rbind(cbind(ij2(i00+1,j00+1), ij2(i00,j00+1), ij2(i00,j00)),
-              cbind(ij2(i00+1,j00+1), ij2(i00,j00), ij2(i00+1,j00)),
-              cbind(ij2(i00+1,j00+1), ij2(i00+1,j00), ij2(i00+2,j00)),
-              cbind(ij2(i00+1,j00+1), ij2(i00+2,j00), ij2(i00+2,j00+1)),
-              cbind(ij2(i00+1,j00+1), ij2(i00+2,j00+1), ij2(i00+2,j00+2)),
-              cbind(ij2(i00+1,j00+1), ij2(i00+2,j00+2), ij2(i00+1,j00+2)),
-              cbind(ij2(i00+1,j00+1), ij2(i00+1,j00+2), ij2(i00,j00+2)),
-              cbind(ij2(i00+1,j00+1), ij2(i00,j00+2), ij2(i00,j00+1))
-              )
-
-  list(loc=loc, graph=list(tv=tv), A=A, idx=list(loc=idx))
-}
 
 ## Input:
 ##   list(loc, graph=list(tv, ...)) or an inla.mesh
@@ -1433,6 +1371,11 @@ continuous.old <- function(ex,
   if (!(info$manifold %in% c("R2"))) {
     stop(paste("Unsupported manifold type '", info$manifold, "'.", sep=""))
   }
+  if (length(ex$F) != prod(info$dims)) {
+    stop(paste("The number of computed F-values (", length(ex$F), ") must match \n",
+               "the number of elements of the continuous geometry definition (",
+               prod(info$dims), ").", sep=""))
+  }
 
   if (ex$meta$type == "=") {
     type <- "!="
@@ -1452,11 +1395,7 @@ continuous.old <- function(ex,
   if (info$geometry == "mesh") {
     mesh <- submesh.mesh(active.nodes, geometry)
   } else if (info$geometry == "lattice") {
-    if (all(active.nodes)) {
-      mesh <- build.lattice.mesh(info$loc, info$dims)
-    } else {
-      mesh <- submesh.grid(active.nodes, geometry)
-    }
+    mesh <- submesh.grid(active.nodes, geometry)
   }
   mesh$graph <-
     generate.trigraph.properties(mesh$graph, Nv=nrow(mesh$loc))
@@ -1925,6 +1864,11 @@ continuous <- function(ex,
   if (!(info$manifold %in% c("R2"))) {
     stop(paste("Unsupported manifold type '", info$manifold, "'.", sep=""))
   }
+  if (length(ex$F) != prod(info$dims)) {
+    stop(paste("The number of computed F-values (", length(ex$F), ") must match \n",
+               "the number of elements of the continuous geometry definition (",
+               prod(info$dims), ").", sep=""))
+  }
 
   if (ex$meta$type == "=") {
     type <- "!="
@@ -1944,11 +1888,7 @@ continuous <- function(ex,
   if (info$geometry == "mesh") {
     mesh <- submesh.mesh(active.nodes, geometry)
   } else if (info$geometry == "lattice") {
-    if (all(active.nodes)) {
-      mesh <- build.lattice.mesh(info$loc, info$dims)
-    } else {
-      mesh <- submesh.grid(active.nodes, geometry)
-    }
+    mesh <- submesh.grid(active.nodes, geometry)
   }
   mesh$graph <-
     generate.trigraph.properties(mesh$graph, Nv=nrow(mesh$loc))
