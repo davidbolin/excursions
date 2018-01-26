@@ -40,10 +40,10 @@ The package version format is `major.minor.bugfix`. All regular development shou
 ```
 hg update release
 hg merge default
-## (Resolve any version number conflict in favour of the default version)
+## Update the version number as major.(minor+1).0
 hg commit -m "Start new release"
 hg update default
-## Update the version number as major.(minor+1).0
+## Resolve the version number conflict in favour of the release version, with bugfix .999
 hg commit -m "Start next development version"
 ```
   * Prepare a stable version:
@@ -54,7 +54,6 @@ hg commit -m "Update release date"
 ## Perform CRAN checks, if unsuccessful then stop, and do a bugfix instead.
 hg update stable
 hg merge release
-## (Resolve package name conflicts in favour of stable name (excursions), and README.md removed)
 hg commit -m "New stable version"
 hg tag vX.X.X
 ## X.X.X = major.minor.bugfix from DESCRIPTION
