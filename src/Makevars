@@ -17,15 +17,17 @@ sublibraries: $(E_LIBS)
 
 CAMD.a:
 	(cd CAMD && \
-	    $(MAKE) MAKE="$(MAKE) -f\"$(MkInclude)\" -fMakefile" \
+	    $(MAKE) -f "$(MkInclude)" -f Makefile \
+	    MAKE="$(MAKE) -f \"$(MkInclude)\" -f Makefile" \
 	    CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
-	    -f"$(MkInclude)" -fMakefile library)
+	    library)
 
 SuiteSparse_config.a:
 	(cd SuiteSparse_config && \
-	    $(MAKE) MAKE="$(MAKE) -f\"$(MkInclude)\" -fMakefile" \
+	    $(MAKE) -f "$(MkInclude)" -f Makefile \
+	    MAKE="$(MAKE) -f \"$(MkInclude)\" -f Makefile" \
 	    CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
-	    -f"$(MkInclude)" -fMakefile library)
+	    library)
 
 clean: subclean
 	@-rm -f *.o
