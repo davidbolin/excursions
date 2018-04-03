@@ -426,7 +426,7 @@ mix.sample <- function(n.samp = 1, mu,Q.chol,w)
   for (k in 1:K){
     if (n.idx[k] > 0) {
       xx = mu[[k]] + solve(Q.chol[[k]],matrix(rnorm(n.idx[k]*n),n,n.idx[k]))
-      samples = rBind(samples,t(as.matrix(xx)))
+      samples = rbind(samples,t(as.matrix(xx)))
     }
   }
   return(samples)
