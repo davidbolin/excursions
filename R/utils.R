@@ -26,7 +26,7 @@ private.Cholesky <- function(A, ...) {
   reo[L$P@perm] <- seq_len(n)
   ireo = integer(n)
   ireo[reo] = seq_len(n)
-  list(R=private.as.dtCMatrixU(L$L), reo=reo, ireo=ireo)
+  list(R=private.as.dtCMatrixU(L$L), reo=ireo, ireo=reo)
 }
 
 
