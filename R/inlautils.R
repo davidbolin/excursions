@@ -97,9 +97,9 @@ inla.get.marginal <- function(i, u,result,effect.name=NULL, u.link, type)
       marg.p = result$marginals.random[[effect.name]][[i]]
   }
 
-	  if(type=='<'){
-		  return(INLA::inla.pmarginal(u,marg.p))
-	  } else {
-		  return(1-INLA::inla.pmarginal(u,marg.p))
-	  }
+  if(type=='<'){
+	  return(INLA::inla.pmarginal(u,marg.p))
+  } else {
+	  return(1-INLA::inla.pmarginal(u,marg.p))
   }
+}
