@@ -1,4 +1,4 @@
-# excursions 2.3.4.9000
+# excursions 2.3.5.9000
 
 * Added a `NEWS.md` file to track changes to the package.
 
