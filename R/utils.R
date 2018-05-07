@@ -22,11 +22,11 @@
 private.Cholesky <- function(A, ...) {
   L <- expand(Matrix::Cholesky(private.as.dgCMatrix(A), ...))
   n <- nrow(A)
-  reo <- integer(n)
-  reo[L$P@perm] <- seq_len(n)
-  ireo = integer(n)
-  ireo[reo] = seq_len(n)
-  list(R=private.as.dtCMatrixU(L$L), reo=ireo, ireo=reo)
+  ireo <- integer(n)
+  ireo[L$P@perm] <- seq_len(n)
+  reo = integer(n)
+  reo[ireo] = seq_len(n)
+  list(R=private.as.dtCMatrixU(L$L), reo=reo, ireo=ireo)
 }
 
 
@@ -40,12 +40,12 @@ private.Cholesky <- function(A, ...) {
 excursions.variances<-function(L,Q, max.threads=0)
 {
   if(!missing(L) && !is.null(L)){
-    ireo = FALSE
+    reordered = FALSE
     L <- private.as.dtCMatrixU(L)
   } else {
+    reordered = TRUE
     L <- private.Cholesky(Q, LDL=FALSE)
-    ireo = TRUE
-    reo <- L$reo
+    ireo = L$ireo
     L <- L$R
   }
 
@@ -56,8 +56,8 @@ excursions.variances<-function(L,Q, max.threads=0)
                   n = as.integer(dim(L)[1]),
                   n_threads = as.integer(max.threads))
 
-  if(ireo){
-    out$variances[reo]
+  if(reordered){
+    out$variances[ireo]
   } else {
     out$variances
   }
