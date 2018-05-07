@@ -68,7 +68,7 @@ hg update release
 hg commit
 hg update default
 hg merge release
-## (Resolve version conflict in favour of the default version)
+## (Resolve version conflict in favour of the release version, with extra .9000)
 hg commit -m "Apply bugfix from release branch: ..."
 ## Optionally, prepare a stable version
 ```
