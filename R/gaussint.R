@@ -160,11 +160,14 @@ gaussint <- function(mu,
               Mv = as.double(L@x), a = as.double(a), b = as.double(b),
               opts = as.integer(opts), lim = as.double(lim),
               Pv = as.double(Pv), Ev = as.double(Ev),seed_in=seed.in)
+
   P = out$Pv[1]
   E = out$Ev[1]
   if(use.reordering == "limits") {
     out$Pv[1:(dim(L)[1]-max.size)] = out$Pv[dim(L)[1]-max.size+1]
     out$Ev[1:(dim(L)[1]-max.size)] = out$Ev[dim(L)[1]-max.size+1]
+    P = out$Pv[1]
+    E = out$Ev[1]
   } else if(use.reordering == "sparsity") {
     out$Pv = out$Pv[ireo]
     out$Ev = out$Ev[ireo]
