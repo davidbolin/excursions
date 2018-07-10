@@ -559,11 +559,21 @@ summary.excurobj <- function(object,...)
         if(!is.null(object$P0))
           out$measures$P0 = object$P0
 
-        if(!is.null(object$P1))
-          out$measures$P1 = object$P1
+        if(!is.null(object$P1)){
+          if(!is.null(object$P1.error)){
+            out$measures$P1 = sprintf("%.4g (error %.5g)",object$P1,object$P1.error)
+          } else {
+            out$measures$P1 = object$P1
+          }
+        }
 
-       if(!is.null(object$P2))
-          out$measures$P2 = object$P2
+       if(!is.null(object$P2)){
+         if(!is.null(object$P2.error)){
+           out$measures$P2 = sprintf("%.4g (error %.5g)",object$P2,object$P2.error)
+         } else {
+           out$measures$P2 = object$P2
+         }
+       }
 
         if(!is.null(object$P0.bound))
           out$measures$P0.bound = object$P0.bound

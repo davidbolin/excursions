@@ -4,6 +4,8 @@
 
 * Updated repository for INLA
 
+* Add n.iter and seed options for `contourmap()` calculations.
+
 # excursions 2.3.6
 
 * Fix bug affecting contourmap calculations, caused by the previous fix to `gaussint()`.

@@ -227,6 +227,9 @@ excursions.levelplot <- function(mu,n.levels,ind,levels,
 	         levels,
 	         2*levels[n.levels]-levels[n.levels-1])
   }
+	if(min(x.mean[ind])<l1[1])
+  	l1[1] <- min(min(x.mean[x.mean>-Inf]),l1[1])
+
 	for(i in 1:(n.levels+1)) u.e[i] = (l1[i]+l1[i+1])/2
 
 	for(i in 1:(n.levels)){
@@ -370,7 +373,7 @@ Pmeasure.bound <- function(lp, mu, vars, type, ind=NULL)
 }
 
 ## Function that calculates the P measure for a given contour map.
-Pmeasure <- function(lp,mu,Q,Q.chol, ind=NULL,type,vars=vars)
+Pmeasure <- function(lp,mu,Q,Q.chol, ind=NULL,type,vars=vars,seed=NULL,n.iter=NULL)
 {
   if(type==0){
     res <- contourfunction(lp=lp,mu=mu,Q=Q,vars=vars,ind=ind)
@@ -381,10 +384,11 @@ Pmeasure <- function(lp,mu,Q,Q.chol, ind=NULL,type,vars=vars)
     }
     limits = excursions.limits(lp=lp,mu=mu,measure=type)
 	  res = gaussint(mu = mu, Q=Q, Q.chol = Q.chol, a=limits$a,
-	                b=limits$b,ind=ind,use.reordering="limits")
+	                b=limits$b,ind=ind,use.reordering="limits",
+	                n.iter=n.iter,seed=seed)
 	  p = res$P[1]
   }
-	return(p)
+	return(list(P = res$P[1],E=res$E[1]))
 }
 
 ## Function that calculates the P measure for a given contour map.

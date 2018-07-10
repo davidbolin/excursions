@@ -139,13 +139,18 @@ contourmap <- function(mu,
       if(measure[i]=="P1") {
         if(n.levels>1){
           if(verbose) cat('Calculating P1-measure\n')
-          lp$P1 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=1)
+          tmp <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=1,seed=seed,n.iter=n.iter)
+          lp$P1 <- tmp$P
+          lp$P1.error <- tmp$E
         } else {
           lp$P1 = 1
+          lp$P1.error <- 0
         }
       } else if(measure[i] == "P2") {
         if(verbose) cat('Calculating P2-measure\n')
-        lp$P2 <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=2)
+        tmp <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=2,seed=seed,n.iter=n.iter)
+        lp$P2 <- tmp$P
+        lp$P2.error <- tmp$E
       } else if (measure[i] == "P0") {
         if(verbose) cat('Calculating P0-measure and contour map function\n')
 
