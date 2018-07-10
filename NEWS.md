@@ -1,8 +1,12 @@
-# excursions 2.3.5.9000
+# excursions 2.3.6.9000
 
 * Added a `NEWS.md` file to track changes to the package.
 
 * Updated repository for INLA
+
+# excursions 2.3.6
+
+* Fix bug affecting contourmap calculations, caused by the previous fix to `gaussint()`.
 
 # excursions 2.3.5
 
