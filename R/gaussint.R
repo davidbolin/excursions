@@ -146,6 +146,7 @@ gaussint <- function(mu,
 
   if(!missing(seed) && !is.null(seed)){
     seed_provided = 1
+    seed <- as.integer(seed)
     if(length(seed)==1){
       seed <- rep(seed,6)
     }
