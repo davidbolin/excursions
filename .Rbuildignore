@@ -2,4 +2,4 @@
 ^\.Rhistory
 ^.*\.Rproj$
 ^\.Rproj\.user$
-^\/.hgflow$
+^\.hgflow$
