@@ -15,6 +15,7 @@ integration.testdata1 <- function()
 testdata.inla <- function()
 {
   if (require("INLA", quietly=TRUE)) {
+  set.seed(1)
   rho = 0.99
   tau = 15
   n = 11

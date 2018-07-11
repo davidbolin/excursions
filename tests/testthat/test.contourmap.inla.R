@@ -19,3 +19,16 @@ test_that("Contourmap.inla, test ind", {
   expect_equal(res2$F,res3$F,tolerance=1e-7)
 }
 })
+
+test_that("Contourmap.inla, P measures", {
+  if (require.nowarnings("INLA")) {
+    data <- testdata.inla()
+
+    res1 = contourmap.inla(data$result, data$stack, tag = "pred",
+                           n.levels=4,seed=data$seed,
+                           compute = list(F = FALSE, measures = c("P2","P1")))
+
+    expect_equal(res1$P1,0.9760582,tolerance=1e-7)
+    expect_equal(res1$P2,0.6282216,tolerance=1e-7)
+  }
+})
