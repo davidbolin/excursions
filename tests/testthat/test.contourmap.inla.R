@@ -2,14 +2,13 @@ context("Contourmap.inla")
 
 test_that("Contourmap.inla, stack extraction", {
   if (require.nowarnings("INLA")) {
-    data <- testdata.inla()
+    data <- testdata.inla.small()
 
     res1 = contourmap.inla(data$result, data$stack, tag = "pred",
                            n.levels=4,seed=data$seed,
                            compute = list(F = FALSE))
 
-    mu <- c(-2.0987990,-0.4124901,1.6699354,2.6138399,4.8317157,4.8170408,
-            1.7105803,-0.4731774,0.8455982,-0.6867296,-0.4645699)
+    mu <- c(-1.3290310,-0.4210768,3.2283824,3.2631843,1.0173736,1.7001533,-3.7534800)
     expect_equal(res1$meta$mu,mu,tolerance=1e-7)
   }
 })
@@ -40,14 +39,14 @@ test_that("Contourmap.inla, test ind", {
 
 test_that("Contourmap.inla, P measures", {
   if (require.nowarnings("INLA")) {
-    data <- testdata.inla()
+    data <- testdata.inla.small()
 
     res1 = contourmap.inla(data$result, data$stack, tag = "pred",
                            n.levels=4,seed=data$seed,
                            max.threads=1,
                            compute = list(F = FALSE, measures = c("P2","P1")))
 
-    expect_equal(res1$P1,0.9760582,tolerance=1e-7)
-    expect_equal(res1$P2,0.6282216,tolerance=1e-7)
+    expect_equal(res1$P1,0.7395756,tolerance=1e-7)
+    expect_equal(res1$P2,0.4400722,tolerance=1e-7)
   }
 })
