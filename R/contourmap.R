@@ -212,6 +212,7 @@ contourmap <- function(mu,
                   contourmap.type = type,
                   n.iter=n.iter,
                   mu.range = range(mu[ind]),
+                  mu = mu[ind],
                   ind = ind,
                   call = match.call())
   class(lp) <- "excurobj"

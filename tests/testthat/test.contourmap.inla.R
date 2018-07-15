@@ -1,5 +1,20 @@
 context("Contourmap.inla")
 
+test_that("Contourmap.inla, stack extraction", {
+  if (require.nowarnings("INLA")) {
+    data <- testdata.inla()
+
+    res1 = contourmap.inla(data$result, data$stack, tag = "pred",
+                           n.levels=4,seed=data$seed,
+                           compute = list(F = FALSE))
+
+    mu <- c(-2.0987990,-0.4124901,1.6699354,2.6138399,4.8317157,4.8170408,
+            1.7105803,-0.4731774,0.8455982,-0.6867296,-0.4645699)
+    expect_equal(res1$meta$mu,mu,tolerance=1e-7)
+  }
+})
+
+
 test_that("Contourmap.inla, test ind", {
   if (require.nowarnings("INLA")) {
   data <- testdata.inla()

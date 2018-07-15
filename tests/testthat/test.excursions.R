@@ -7,6 +7,7 @@ test_that("Excursions, alpha = 1, type = >", {
                     seed = data$seed, max.threads = 1)
   r <- c(2.463175e-15, 1.030394e-09, 7.734328e-06, 0.002534894, 0.07579555,
          0.4188056, 0.8192485, 0.9746894, 0.9984611, 0.9999625, 0.9999997)
+  expect_equal(res$F,r,tolerance=1e-7)
 })
 
 test_that("Excursions, alpha = 1, type = <", {

@@ -28,7 +28,7 @@ testdata.inla <- function()
 
   X <- mu + INLA::inla.qsample(1, Q, seed=12345L)[,1]
 
-  obs.loc = sample(1:n,n.obs)
+  obs.loc = c(3,4,6,8,2,9,5,11,7,1)
   A = sparseMatrix(i=1:n.obs, j=obs.loc, x=rep(1, n.obs), dims=c(n.obs, n))
   Y <- as.vector(A %*% X +
                    INLA::inla.qsample(1, Diagonal(n.obs, 1.0),
