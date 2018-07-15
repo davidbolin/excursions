@@ -1,6 +1,7 @@
 # Description #
 
 [![CRAN_Status_Badge](http://www.r-pkg.org/badges/version-last-release/excursions)](https://cran.r-project.org/package=excursions)
+[![CRAN_Downloads](https://cranlogs.r-pkg.org/badges/grand-total/excursions)](https://cranlogs.r-pkg.org/badges/grand-total/excursions)
 
 `excursions` is an R package that contains functions that compute probabilistic excursion sets, contour credibility regions, and simultaneous confidence bands for latent Gaussian random processes and fields.
 
