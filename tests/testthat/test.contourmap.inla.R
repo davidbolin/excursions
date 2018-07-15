@@ -24,11 +24,14 @@ test_that("Contourmap.inla, test ind", {
   ind3[1:4] = TRUE
 
   res1 = contourmap.inla(data$result, data$stack, tag = "pred",
-                         n.levels=2,ind=ind1, seed=data$seed,alpha=0.1)
+                         n.levels=2,ind=ind1, seed=data$seed,alpha=0.1,
+                         max.threads=1)
   res2 = contourmap.inla(data$result, data$stack, tag = "pred",
-                         n.levels=2,ind=ind2, seed=data$seed,alpha=0.1)
+                         n.levels=2,ind=ind2, seed=data$seed,alpha=0.1,
+                         max.threads=1)
   res3 = contourmap.inla(data$result, data$stack, tag = "pred",
-                         n.levels=2,ind=ind3, seed=data$seed,alpha=0.1)
+                         n.levels=2,ind=ind3, seed=data$seed,alpha=0.1,
+                         max.threads=1)
 
   expect_equal(res1$F,res2$F,tolerance=1e-7)
   expect_equal(res2$F,res3$F,tolerance=1e-7)
@@ -41,6 +44,7 @@ test_that("Contourmap.inla, P measures", {
 
     res1 = contourmap.inla(data$result, data$stack, tag = "pred",
                            n.levels=4,seed=data$seed,
+                           max.threads=1,
                            compute = list(F = FALSE, measures = c("P2","P1")))
 
     expect_equal(res1$P1,0.9760582,tolerance=1e-7)
