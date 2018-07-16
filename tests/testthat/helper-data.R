@@ -42,7 +42,9 @@ testdata.inla <- function()
   result = INLA::inla(formula=formula,
               data = INLA::inla.stack.data(stack),
               control.predictor=list(A=INLA::inla.stack.A(stack),compute=TRUE),
-              control.compute = list(config = TRUE))
+              control.compute = list(config = TRUE),
+              num.threads = 1,
+              blas.num.threads = 1)
 
   seed = 1:6
   return(list(result=result,stack=stack,seed=seed,n=n))
