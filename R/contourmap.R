@@ -200,8 +200,8 @@ contourmap <- function(mu,
     lp$E = p$E
     lp$M = p$M
     lp$rho = p$rho
-  } else {
-    lp$E <- NULL
+  #} else {
+    #lp$E <- NULL
   }
   lp$meta <- list(calculation="contourmap",
                   F.limit=F.limit,

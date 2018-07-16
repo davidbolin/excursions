@@ -65,8 +65,12 @@ contourfunction.mc <- function(lp,mu,X,ind, alpha, verbose=FALSE)
 ## Calculate the contour map function
 contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
                             F.limit, Q.chol,max.threads=0,
-                            seed=seed,verbose=FALSE)
+                            seed=seed,verbose=FALSE,
+                            rho,qc=FALSE)
 {
+  if(qc && missing(rho)){
+    stop('Must supply rho if QC method is used.')
+  }
 	if (!missing(Q.chol) && !is.null(Q.chol)) {
       Q = Q.chol
       is.chol = TRUE
@@ -115,12 +119,19 @@ contourfunction <- function(lp,mu,Q,vars,ind, alpha, n.iter=10000,
     }
   }
   if(verbose) cat("calculate marginals\n")
-  rho <- contourmap.marginals(mu=mu,vars=vars,lim=lim,ind=indices)
+  if(missing(rho) || is.null(rho)){
+    rho <- contourmap.marginals(mu=mu,vars=vars,lim=lim,ind=indices)
+    lim$a <- lim$a - mu
+    lim$b <- lim$b - mu
+  }
+  if(qc){
+    lim$a[indices] <- sqrt(vars[indices])*qnorm(pmin(pmax(rho[indices,1],0),1))
+    lim$b[indices] <- sqrt(vars[indices])*qnorm(pmin(pmax(rho[indices,2],0),1))
+    rho <- rho[,2] - rho[,1]
+  }
 
-  lim$a <- lim$a - mu
-	lim$b <- lim$b - mu
 
-    if(verbose) cat("calculate permutation\n")
+  if(verbose) cat("calculate permutation\n")
   use.camd = !missing(ind) || alpha < 1
   reo <- excursions.permutation(rho = rho, ind = indices,
                                 use.camd = use.camd,alpha = F.limit,Q = Q)
@@ -417,7 +428,7 @@ excursions.limits <- function(lp,mu,measure)
 	a = rep(-Inf,n)
 	b = rep(Inf,n)
 
-	if(measure==2){
+	if(measure==2 || measure == "P2" || measure == "P2-bound"){
 		b[lp$E[[1]]] = lp$u.e[2]
 		a[lp$E[[n.l+1]]] = lp$u.e[n.l]
 
@@ -427,7 +438,7 @@ excursions.limits <- function(lp,mu,measure)
 				b[lp$E[[i]]] = lp$u.e[i+1]
 			}
 		}
-	} else if(measure ==1){
+	} else if(measure ==1 || measure == "P1" || measure == "P1-bound"){
 		if(n.l>1){
 			b[lp$E[[1]]] = lp$u[2]
 			a[lp$E[[n.l+1]]] = lp$u[n.l-1]
@@ -442,7 +453,7 @@ excursions.limits <- function(lp,mu,measure)
 				b[lp$E[[i]]] = lp$u[i+1]
 			}
 		}
-	} else if(measure==0){
+	} else if(measure==0 || measure=="P0" || measure == "P0-bound"){
 
 		b[lp$E[[1]]] = lp$u[1]
 		a[lp$E[[n.l+1]]] = lp$u[n.l]
