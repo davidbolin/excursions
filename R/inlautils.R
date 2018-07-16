@@ -65,10 +65,11 @@ private.link.function <- function(x, link, inv=FALSE)
 private.get.config <- function(result,i)
 {
   mu=result$misc$configs$config[[i]]$mean
-	Q=forceSymmetric(result$misc$configs$config[[i]]$Q)
-	vars = diag(result$misc$configs$config[[i]]$Qinv)
-	m <- max(unlist(lapply(data$result$misc$configs$config,function(x) x$log.posterior)))
-	lp = result$misc$configs$config[[i]]$log.posterior -m
+  Q=forceSymmetric(result$misc$configs$config[[i]]$Q)
+  vars = diag(result$misc$configs$config[[i]]$Qinv)
+  m <- max(unlist(lapply(result$misc$configs$config,
+                         function(x) x$log.posterior)))
+  lp = result$misc$configs$config[[i]]$log.posterior -m
   return(list(mu=mu,Q=Q,vars=vars,lp=lp))
 }
 
