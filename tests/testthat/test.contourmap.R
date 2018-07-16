@@ -26,6 +26,6 @@ test_that("Contourmap, P measures", {
                     seed=data$seed, alpha=0.1,max.threads=1,
                     compute = list(F = FALSE, measures = c("P2","P1")))
 
-  expect_equal(res1$P1,0.9217417,tolerance=1e-7)
-  expect_equal(res1$P2,0.405841,tolerance=1e-7)
+  expect_equal(res1$P1,0.9217417,tolerance=1e-3)
+  expect_equal(res1$P2,0.405841,tolerance=1e-3)
 })

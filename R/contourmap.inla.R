@@ -15,6 +15,85 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#' Contour maps and contour map quality measures for latent Gaussian models
+#'
+#' An interface to the \code{contourmap} function for latent Gaussian models calculated using the INLA method.
+#'
+#' @param result.inla Result object from INLA call.
+#' @param stack The stack object used in the INLA call.
+#' @param name The name of the component for which to do the calculation. This argument should only be used if a stack object is not provided, use the tag argument otherwise.
+#' @param tag The tag of the component in the stack for which to do the calculation. This argument should only be used if a stack object is provided, use the name argument otherwise.
+#' @param method Method for handeling the latent Gaussian structure. Currently only Empirical Bayes (EB) and Quantile corrections (QC) are supported.
+#' @param n.levels Number of levels in contour map.
+#' @param type Type of contour map. One of:
+#'  \itemize{
+#'      \item{'standard' }{Equidistant levels between smallest and largest value of the posterior mean (default).}
+#'      \item{'pretty' }{Equally spaced ‘round’ values which cover the range of the values in the posterior mean.}
+#'      \item{'equalarea' }{Levels such that different spatial regions are approximately equal in size.}
+#'      }
+#' @param compute A list with quality indices to compute
+#' \itemize{
+#'      \item{'F': }{TRUE/FALSE indicating whether the contour map function should be computed (default TRUE)}
+#'      \item{'measures': }{A list with the quality measures to compute ("P0", "P1", "P2") or corresponding bounds based only on the marginal probabilities ("P0-bound", "P1-bound", "P2-bound")}
+#'      }
+#' @param alpha Maximal error probability in contour map function (default=1)
+#' @param F.limit The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.
+#' @param n.iter Number or iterations in the MC sampler that is used for calculating the quantities in \code{compute}. The default value is 10000.
+#' @param verbose Set to TRUE for verbose mode (optional)
+#' @param max.threads Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).
+#' @param seed Random seed (optional).
+#' @param ind If only a part of a component should be used in the calculations, this argument specifies the indices for that part (optional).
+#' @param ... Additional arguments to the contour map function. See the documentation for \code{contourmap} for details.
+#'
+#' @return \code{contourmap.inla} returns an object of class "excurobj" with the same elements as returned by \code{contourmap}.
+#' @note This function requires the \code{INLA} package, which is not a CRAN package.  See \url{http://www.r-inla.org/download} for easy installation instructions.
+#' @author David Bolin \email{davidbolin@gmail.com}
+#' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.
+#'
+#' @examples
+#' \donttest{
+#' if (require.nowarnings("INLA")) {
+#' #Generate mesh and SPDE model
+#' n.lattice = 10 #increase for more interesting, but slower, examples
+#' x=seq(from=0,to=10,length.out=n.lattice)
+#' lattice=inla.mesh.lattice(x=x,y=x)
+#' mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
+#' spde <- inla.spde2.matern(mesh, alpha=2)
+
+#' #Generate an artificial sample
+#' sigma2.e = 0.01
+#' n.obs=100
+#' obs.loc = cbind(runif(n.obs)*diff(range(x))+min(x),
+#'                 runif(n.obs)*diff(range(x))+min(x))
+#' Q = inla.spde2.precision(spde, theta=c(log(sqrt(0.5)), log(sqrt(1))))
+#' x = inla.qsample(Q=Q)
+#' A = inla.spde.make.A(mesh=mesh,loc=obs.loc)
+#' Y = as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
+#'
+#' ## Estimate the parameters using INLA
+#' mesh.index = inla.spde.make.index(name="field",n.spde=spde$n.spde)
+#' ef = list(c(mesh.index,list(Intercept=1)))
+#'
+#' s.obs = inla.stack(data=list(y=Y), A=list(A), effects=ef, tag="obs")
+#' s.pre = inla.stack(data=list(y=NA), A=list(1), effects=ef,tag="pred")
+#' stack = inla.stack(s.obs,s.pre)
+#' formula = y ~ -1 + Intercept + f(field, model=spde)
+#' result = inla(formula=formula, family="normal", data = inla.stack.data(stack),
+#'              control.predictor=list(A=inla.stack.A(stack),compute=TRUE),
+#'              control.compute = list(config = TRUE),
+#'              num.threads = 1)
+#'
+#' ## Calculate contour map with two levels
+#' map = contourmap.inla(result, stack = stack, tag = 'pred',
+#'                      n.levels = 2, alpha=0.1, F.limit = 0.1,
+#'                      max.threads = 1)
+#'
+#' ## Plot the results
+#' cols = contourmap.colors(map, col=heat.colors(100, 1),
+#'                         credible.col = grey(0.5, 1))
+#' image(matrix(map$M[mesh$idx$lattice], n.lattice, n.lattice), col = cols)
+#' }
+#' }
 
 contourmap.inla <- function(result.inla,
                             stack,
@@ -52,18 +131,26 @@ contourmap.inla <- function(result.inla,
   if(missing(n.levels) || is.null(n.levels)){
     stop("Must supply n.levels")
   }
-  if(!is.null(compute$measures))
+  measure = NULL
+  if(!is.null(compute$measures)){
     measure <- match.arg(compute$measures,
                          c("P0", "P1", "P2","P0-bound","P1-bound","P2-bound"),
                          several.ok=TRUE)
+  }
+
   if(compute$F){ #compute P0 measure if F is computed anyway
-    if(("P0" %in% measure)==FALSE){
+    if(is.null(measure)){
+      measure = c("P0")
+    } else if(("P0" %in% measure)==FALSE){
       measure = c(measure,"P0")
     }
   }
   if(method != 'EB' && method != 'QC' )
     stop("Currently only EB and QC methods are implemented")
 
+  qc = FALSE
+  if(method=='QC')
+    qc = TRUE
   #compute indices, here ind will contain the indices that are used to extract the
   #relevant part from the configs, ind.int is the index vector for extracting marginal
   #distributions for random effects, and indices is a logical version of ind
@@ -153,7 +240,7 @@ contourmap.inla <- function(result.inla,
         p <- contourfunction(lp=cm, mu=config$mu,Q=config$Q ,vars=config$vars,
                              ind = ind,alpha=alpha, F.limit = F.limit,
                              rho = rho,n.iter=n.iter,max.threads=max.threads,
-                             seed=seed,verbose=verbose)
+                             seed=seed,verbose=verbose,qc=qc)
         cm$P0 = mean(p$F[ind])
         cm$F = p$F
         cm$E = p$E
