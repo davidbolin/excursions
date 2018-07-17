@@ -20,7 +20,7 @@ contourmap.mc(samples, n.levels, ind, levels, type = c("standard",
 \item{type}{Type of contour map. One of:
 \itemize{
      \item{'standard' }{Equidistant levels between smallest and largest value of the posterior mean (default).}
-     \item{'pretty' }{Equally spaced ‘round’ values which cover the range of the values in the posterior mean.}
+     \item{'pretty' }{Equally spaced 'round' values which cover the range of the values in the posterior mean.}
      \item{'equalarea' }{Levels such that different spatial regions are approximately equal in size.}
      \item{'P0-optimal' }{Levels chosen to maximize the P0 measure.}
      \item{'P1-optimal' }{Levels chosen to maximize the P1 measure.}

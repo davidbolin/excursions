@@ -565,6 +565,15 @@ mcint <- function(X,
 }
 
 
+#' Summarise excurobj objects
+#' 
+#' Summary method for class "excurobj"
+#' 
+#' @param object an object of class "excurobj", usually, a result of a call
+#'   to \code{\link{excursions}}.
+#' @param ... further arguments passed to or from other methods.
+#' @export
+#' @method summary excurobj
 summary.excurobj <- function(object,...)
 {
   out <- list()
@@ -634,6 +643,11 @@ summary.excurobj <- function(object,...)
 }
 
 
+#' @param x an object of class "summary.excurobj", usually, a result of a call
+#'   to \code{\link{summary.excurobj}}.
+#' @export
+#' @method print summary.excurobj
+#' @rdname summary.excurobj
 print.summary.excurobj <- function(x,...)
 {
 
@@ -677,7 +691,9 @@ print.summary.excurobj <- function(x,...)
   }
 }
 
-
+#' @export
+#' @method print excurobj
+#' @rdname summary.excurobj
 print.excurobj <- function(x,...) {
-  print.summary.excurobj(summary(x))
+  print(summary(x))
 }

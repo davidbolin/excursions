@@ -28,7 +28,7 @@
 #' @param type Type of contour map. One of:
 #'  \itemize{
 #'      \item{'standard' }{Equidistant levels between smallest and largest value of the posterior mean (default).}
-#'      \item{'pretty' }{Equally spaced ‘round’ values which cover the range of the values in the posterior mean.}
+#'      \item{'pretty' }{Equally spaced 'round' values which cover the range of the values in the posterior mean.}
 #'      \item{'equalarea' }{Levels such that different spatial regions are approximately equal in size.}
 #'      }
 #' @param compute A list with quality indices to compute
