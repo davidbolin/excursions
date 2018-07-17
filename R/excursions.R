@@ -15,6 +15,70 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#' Excursion sets and contour credible regions for latent Gaussian models
+#'
+#' \code{excursions} is used for calculating excursion sets, contour credible regions,
+#' and contour avoiding sets for latent Gaussian models. The latent structure can be
+#' handled in several different ways. The default strategy is the EB method, which is
+#' exact for problems with Gaussian posterior distributions. For problems with
+#' non-Gaussian posteriors, the QC method can be used for improved results. Other more
+#' complicated methods for handling non-Gaussian posteriors must be implemented manually
+#' unless \code{INLA} is used to fit the model. If the model is fitted using \code{INLA},
+#' the method \code{excursions.inla} can be used.
+#'
+#' @param alpha Error probability for the excursion set.
+#' @param u Excursion or contour level.
+#' @param mu Expectation vector.
+#' @param Q Precision matrix.
+#' @param type Type of region:
+#'  \itemize{
+#'     \item{'>' }{positive excursion region}
+#'     \item{'<' }{negative excursion region}
+#'     \item{'!=' }{contour avoiding region}
+#'     \item{'=' }{contour credibility region}}
+#' @param n.iter Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 10000.
+#' @param Q.chol The Cholesky factor of the precision matrix (optional).
+#' @param F.limit The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.
+#' @param vars Precomputed marginal variances (optional).
+#' @param rho Marginal excursion probabilities (optional). For contour regions, provide \eqn{P(X>u)}.
+#' @param reo Reordering (optional).
+#' @param method Method for handeling the latent Gaussian structure:
+#'  \itemize{
+#'       \item{'EB' }{Empirical Bayes (default)}
+#'       \item{'QC' }{Quantile correction, rho must be provided if QC is used.}}
+#' @param ind Indices of the nodes that should be analysed (optional).
+#' @param max.size Maximum number of nodes to include in the set of interest (optional).
+#' @param verbose Set to TRUE for verbose mode (optional).
+#' @param max.threads Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).
+#' @param seed Random seed (optional).
+#'
+#' @return \code{excursions} returns an object of class "excurobj". This is a list that contains the following arguments:
+#' \item{E }{Excursion set, contour credible region, or contour avoiding set}
+#' \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
+#' \item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes. \eqn{M=0} for nodes where the process is significantly below \code{u} and \eqn{M=1} for all nodes where the field is significantly above \code{u}. Which values that should be present depends on what type of set that is calculated.}
+#' \item{F }{The excursion function corresponding to the set \code{E} calculated or values up to \code{F.limit}}
+#' \item{rho }{Marginal excursion probabilities}
+#' \item{mean }{The mean \code{mu}.}
+#' \item{vars }{Marginal variances.}
+#' \item{meta }{A list containing various information about the calculation.}
+#' @export
+#' @author David Bolin \email{davidbolin@gmail.com} and Finn Lindgren \email{finn.lindgren@gmail.com}
+#' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
+#' @seealso \code{\link{excursions.inla}}, \code{\link{excursions.mc}}
+#'
+#' @examples
+#' ## Create a tridiagonal precision matrix
+#' n = 21
+#' Q.x = sparseMatrix(i=c(1:n, 2:n), j=c(1:n, 1:(n-1)), x=c(rep(1, n), rep(-0.1, n-1)),
+#'                    dims=c(n, n), symmetric=TRUE)
+#' ## Set the mean value function
+#' mu.x = seq(-5, 5, length=n)
+#' ## calculate the level 0 positive excursion function
+#' res.x = excursions(alpha=1, u=0, mu=mu.x, Q=Q.x, type='>', verbose=1, max.threads=2)
+#' ## Plot the excursion function and the marginal excursion probabilities
+#' plot(res.x$F, type="l", main='Excursion function (black) and marginal probabilites (red)')
+#' lines(res.x$rho, col=2)
+
 excursions <- function(alpha,
                        u,
                        mu,

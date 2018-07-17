@@ -15,6 +15,58 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#' Sequential estimation of Gaussian integrals
+#'
+#' \code{gaussint} is used for calculating \eqn{n}-dimensional Gaussian integrals
+#' \deqn{\int_a^b \frac{|Q|^{1/2}}{(2\pi)^{n/2}}
+#' \exp(-\frac1{2}(x-\mu)^{T}Q(x-\mu)) dx}{|Q|^(1/2)*(2\pi)^(-n/2) \int_a^b exp(-0.5*(x-\mu)^T Q (x-\mu)) dx}
+#' A limit value \eqn{lim} can be used to stop the integration if the sequential
+#' estimate goes below the limit, which can result in substantial computational
+#' savings in cases when one only is interested in testing if the integral is above
+#' the limit value. The integral is calculated sequentially, and estimates for
+#' all subintegrals are also returned.
+#'
+#' @param mu Expectation vector for the Gaussian distribution.
+#' @param Q.chol The Cholesky factor of the precision matrix (optional).
+#' @param Q Precision matrix for the Gaussian distribution. If Q is supplied but not Q.chol,
+#' the cholesky factor is computed before integrating.
+#' @param a Lower limit in integral.
+#' @param b Upper limit in integral.
+#' @param lim If this argument is used, the integration is stopped and 0 is returned
+#' if the estimated value goes below \eqn{lim}.
+#' @param n.iter Number or iterations in the MC sampler that is used for approximating
+#' probabilities. The default value is 10000.
+#' @param ind Indices of the nodes that should be analyzed (optional).
+#' @param use.reordering Determines what reordering to use:
+#' \itemize{
+#'   \item{"natural" }{No reordering is performed.}
+#'   \item{"sparsity" }{Reorder for sparsity in the cholesky factor (MMD reordering
+#'   is used).}
+#'   \item{"limits" }{Reorder by moving all nodes with a=-Inf and b=Inf first and
+#'   then reordering for sparsity (CAMD reordering is used).}}
+#' @param max.size The largest number of sub-integrals to compute. Default is the total
+#' dimension of the distribution.
+#' @param max.threads Decides the number of threads the program can use. Set to 0 for
+#' using the maximum number of threads allowed by the system (default).
+#' @param seed The random seed to use (optional).
+#'
+#' @return A list with elements
+#' \item{P }{Value of the integral.}
+#' \item{E }{Estimated error of the P estimate.}
+#' \item{Pv }{A vector with the estimates of all sub-integrals.}
+#' \item{Ev }{A vector with the estimated errors of the Pv estimates.}
+#' @export
+#' @author David Bolin \email{davidbolin@gmail.com}
+#' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
+#' @examples
+#' ## Create mean and a tridiagonal precision matrix
+#' n = 11
+#' mu.x = seq(-5, 5, length=n)
+#' Q.x = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
+#' ## Calculate the probability that the variable is between mu-3 and mu+3
+#' prob = gaussint(mu=mu.x, Q=Q.x, a= mu.x-3, b=mu.x+3, max.threads=2)
+#' prob$P
+
 gaussint <- function(mu,
                      Q.chol,
                      Q,

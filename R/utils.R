@@ -31,12 +31,33 @@ private.Cholesky <- function(A, ...) {
 
 
 
+#' Calculate variances from a sparse precision matrix
+#'
+#' \code{excursions.variances} calculates the diagonal of the inverse of a sparse
+#' symmetric positive definite matrix \code{Q}. The method for calculating the
+#' diagonal requires the Cholesky factor, \code{L}, of \code{Q}, which should be supplied if
+#' available. If \code{Q} is provided, the cholesky factor is
+#' calculated and the variances are then returned in the same ordering as \code{Q}.
+#' If \code{L} is provided, the variances are returned in the same ordering as \code{L},
+#' even if \code{L@invpivot} exists.
+#'
+#' @param L Cholesky factor of precision matrix.
+#' @param Q Precision matrix.
+#' @param max.threads Decides the number of threads the program can use. Set to 0 for using
+#' the maximum number of threads allowed by the system (default).
+#'
+#' @return A vector with the variances.
+#' @export
+#' @author David Bolin \email{davidbolin@gmail.com}
+#'
+#' @examples
+#' ## Create a tridiagonal precision matrix
+#' n = 21
+#' Q = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
+#' v2 = excursions.variances(Q=Q,max.threads=2)
+#' ## var2 should be the same as:
+#' v1 = diag(solve(Q))
 
-## calculates variances given either a cholesky factor L in Matrix format,
-## or given a precision matrix Q. If Q is provided, the cholesky factor
-## is calculated and the variances are then returned in the same ordering as Q
-## If L is provided, the variances are returned in the same ordering as L, even
-## if L@invpivot exists.
 excursions.variances<-function(L,Q, max.threads=0)
 {
   if(!missing(L) && !is.null(L)){
@@ -453,8 +474,32 @@ excursions.rand <- function(n,seed,n.threads=1)
 
 
 
-## Turn off all warnings for require(), to allow clean completion of
-## examples that require unavailable Suggested packages.
+#' Warnings free loading of add-on packages
+#'
+#' Turn off all warnings for require(), to allow clean completion of examples
+#' that require unavailable Suggested packages.
+#'
+#' @param package The name of a package, given as a character string.
+#' @param lib.loc a character vector describing the location of R library trees
+#' to search through, or \code{NULL}.  The default value of \code{NULL}
+#' corresponds to all libraries currently known to \code{.libPaths()}.
+#' Non-existent library trees are silently ignored.
+#' @param character.only a logical indicating whether \code{package} can be
+#' assumed to be a character string.
+#'
+#' @return \code{require.nowarnings} returns (invisibly) a logical indicating whether the
+#' required package is available.
+#' @export
+#' @details \code{require.nowarnings(package)} acts the same as
+#' \code{require(package, quietly = TRUE)}, except that all warnings are turned off.
+#' In particular, no warning is given if the package is unavailable.
+#' @seealso \code{\link{require}}
+#' @examples
+#' ## This should produce no output:
+#' if (require.nowarnings(nonexistent)) {
+#' message("Package loaded successfully")
+#' }
+
 require.nowarnings <- function(package, lib.loc = NULL, character.only = FALSE)
 {
   if (!character.only)

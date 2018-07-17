@@ -49,7 +49,8 @@
 #' @note This function requires the \code{INLA} package, which is not a CRAN package.  See \url{http://www.r-inla.org/download} for easy installation instructions.
 #' @author David Bolin \email{davidbolin@gmail.com}
 #' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.
-#'
+#' @export
+#' @seealso \code{\link{contourmap}}, \code{\link{contourmap.mc}}, \code{\link{contourmap.colors}}
 #' @examples
 #' \donttest{
 #' if (require.nowarnings("INLA")) {
@@ -171,11 +172,6 @@ contourmap.inla <- function(result.inla,
   indices = rep(FALSE,length(config$mu))
   indices[ind] = TRUE
 
-  cm <- contourmap(mu=config$mu,Q = config$Q,
-                   ind=ind,
-                   compute = list(F=FALSE,measures=NULL),
-                   n.levels = n.levels,...)
-
   #Are we interested in a random effect?
   random.effect = FALSE
   if(!missing(name)&&!is.null(name)&&name!="APredictor"&&name!="Predictor"){
@@ -186,6 +182,26 @@ contourmap.inla <- function(result.inla,
 
   if(!random.effect && is.null(result.inla$marginals.linear.predictor))
     stop('INLA result must be calculated using return.marginals.linear.predictor=TRUE if P measures are to be calculated for the linear predictor.')
+
+  #If method=EB, we use the mean of the configuration at the mode for the contourmap
+  #If method=QC, we instead use the total mean.
+  if(method=='EB'){
+    mu = config$mu
+  } else {
+    mu <- matrix(0,length(config$mu),1)
+    if(random.effect){
+      mu[ind] <- result.inla$summary.random[[name]][ind.int]
+    } else {
+      mu[ind] <- result.inla$summary.linear.predictor$mean[ind]
+    }
+  }
+
+  #Compute the contour map
+  cm <- contourmap(mu=config$mu,Q = config$Q,
+                   ind=ind,
+                   compute = list(F=FALSE,measures=NULL),
+                   n.levels = n.levels,...)
+
 
 
   #compute measures

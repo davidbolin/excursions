@@ -15,6 +15,62 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#' Contour maps and contour map quality measures using Monte Carlo samples
+#'
+#' \code{contourmap.mc} is used for calculating contour maps and quality measures for contour maps based on Monte Carlo samples of a model.
+#'
+#' @param samples Matrix with model Monte Carlo samples. Each column contains a sample of the model.
+#' @param n.levels Number of levels in contour map.
+#' @param ind Indices of the nodes that should be analyzed (optional).
+#' @param levels Levels to use in contour map.
+#' @param type Type of contour map. One of:
+#' \itemize{
+#'      \item{'standard' }{Equidistant levels between smallest and largest value of the posterior mean (default).}
+#'      \item{'pretty' }{Equally spaced ‘round’ values which cover the range of the values in the posterior mean.}
+#'      \item{'equalarea' }{Levels such that different spatial regions are approximately equal in size.}
+#'      \item{'P0-optimal' }{Levels chosen to maximize the P0 measure.}
+#'      \item{'P1-optimal' }{Levels chosen to maximize the P1 measure.}
+#'      \item{'P2-optimal' }{Levels chosen to maximize the P2 measure.}
+#' }
+#' @param compute A list with quality indices to compute
+#' \itemize{
+#'      \item{'F': }{TRUE/FALSE indicating whether the contour map function should be computed (default TRUE).}
+#'      \item{'measures': }{A list with the quality measures to compute ("P0", "P1", "P2") or corresponding bounds based only on the marginal probabilities ("P0-bound", "P1-bound", "P2-bound").}
+#'      }
+#' @param alpha Maximal error probability in contour map function (default=0.1).
+#' @param verbose Set to TRUE for verbose mode (optional).
+#'
+#' @return \code{contourmap} returns an object of class "excurobj". This is a list that can contains the following arguments:
+#'     \item{u }{Contour levels used in the contour map.}
+#'     \item{n.levels }{The number of contours used.}
+#'     \item{u.e }{The values associated with the level sets G_k.}
+#'     \item{G }{A vector which shows which of the level sets G_k each node belongs to.}
+#'     \item{map }{Representation of the contour map with map[i]=u.e[k] if i is in G_k.}
+#'     \item{F }{The contour map function (if computed).}
+#'     \item{M }{Contour avoiding sets (if \code{F} is computed). \eqn{M=-1} for all non-significant nodes and  \eqn{M=k} for nodes that belong to \eqn{M_k}.}
+#'     \item{P0/P1/P2 }{Calculated quality measures (if computed).}
+#'     \item{P0bound/P1bound/P2bound }{Calculated upper bounds quality measures (if computed).}
+#'     \item{meta }{A list containing various information about the calculation.}
+#' @author David Bolin \email{davidbolin@gmail.com}
+#' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.
+#' @seealso \code{\link{contourmap}}, \code{\link{contourmap.inla}}, \code{\link{contourmap.colors}}
+
+#' @export
+#'
+#' @examples
+#' n = 100
+#' Q = Matrix(toeplitz(c(1, -0.5, rep(0, n-2))))
+#' mu = seq(-5, 5, length=n)
+#' ## Sample the model 100 times (increase for better estimate)
+#' X = mu + solve(chol(Q),matrix(rnorm(n=n*100),nrow=n,ncol=100))
+#'
+#' lp <- contourmap.mc(X,n.levels = 2, compute=list(F=FALSE, measures = c("P1","P2")))
+#'
+#' #plot contourmap
+#' plot(lp$map)
+#' #display quality measures
+#' c(lp$P1,lp$P2)
+
 contourmap.mc <- function(samples,
                        n.levels,
                        ind,
@@ -126,6 +182,42 @@ contourmap.mc <- function(samples,
   return(lp)
 }
 
+
+#' Simultaneous confidence regions using Monte Carlo samples
+#'
+#' \code{simconf.mc} is used for calculating simultaneous confidence regions based
+#' on Monte Carlo samples. The function returns upper and lower bounds \eqn{a} and
+#' \eqn{b} such that \eqn{P(a<x<b) = 1-alpha}.
+#'
+#' @param samples Matrix with model Monte Carlo samples. Each column contains a sample of the model.
+#' @param alpha Error probability for the region.
+#' @param ind Indices of the nodes that should be analyzed (optional).
+#' @param verbose Set to TRUE for verbose mode (optional).
+#'
+#' @return An object of class "excurobj" with elements
+#' \item{a }{The lower bound.}
+#' \item{b }{The upper bound.}
+#' \item{a.marginal }{The lower bound for pointwise confidence bands.}
+#' \item{b.marginal }{The upper bound for pointwise confidence bands.}
+#' @export
+#' @author David Bolin \email{davidbolin@gmail.com}
+#' @seealso \code{\link{simconf}}, \code{\link{simconf.inla}}
+#'
+#' @examples
+#' ## Create mean and a tridiagonal precision matrix
+#' n = 11
+#' mu.x = seq(-5, 5, length=n)
+#' Q.x = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
+#' ## Sample the model 100 times (increase for better estimate)
+#' X = mu.x + solve(chol(Q.x),matrix(rnorm(n=n*100),nrow=n,ncol=100))
+#' ## calculate the confidence region
+#' conf = simconf.mc(X,0.2)
+#' ## Plot the region
+#' plot(mu.x, type="l", ylim=c(-10, 10),
+#'      main='Mean (black) and confidence region (red)')
+#' lines(conf$a, col=2)
+#' lines(conf$b, col=2)
+
 simconf.mc <- function(samples,
                        alpha,
                        ind,
@@ -186,6 +278,63 @@ simconf.mc <- function(samples,
 }
 
 
+
+#' Excursion sets and contour credible regions using Monte Carlo samples
+#'
+#' \code{excursions.mc} is used for calculating excursion sets, contour credible
+#' regions, and contour avoiding sets based on Monte Carlo samples of models.
+#'
+#' @param samples Matrix with model Monte Carlo samples. Each column contains a
+#' sample of the model.
+#' @param alpha Error probability for the excursion set.
+#' @param u Excursion or contour level.
+#' @param type Type of region:
+#'  \itemize{
+#'      \item{'>' }{positive excursions}
+#'      \item{'<' }{negative excursions}
+#'      \item{'!=' }{contour avoiding function}
+#'      \item{'=' }{contour credibility function}}
+#' @param rho Marginal excursion probabilities (optional). For contour regions,
+#' provide \eqn{P(X>u)}.
+#' @param reo Reordering (optional).
+#' @param ind Indices of the nodes that should be analysed (optional).
+#' @param max.size Maximum number of nodes to include in the set of interest (optional).
+#' @param verbose Set to TRUE for verbose mode (optional).
+#'
+#' @return \code{excursions} returns an object of class "excurobj". This is a list that
+#' contains the following arguments:
+#' \item{E }{Excursion set, contour credible region, or contour avoiding set.}
+#' \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
+#' \item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes.
+#' \eqn{M=0} for nodes where the process is significantly below \code{u} and
+#' \eqn{M=1} for all nodes where the field is significantly above \code{u}.
+#' Which values that should be present depends on what type of set that is calculated.}
+#' \item{F }{The excursion function corresponding to the set \code{E} calculated
+#' for values up to \code{F.limit}}
+#' \item{rho }{Marginal excursion probabilities}
+#' \item{mean }{The mean \code{mu}.}
+#' \item{vars }{Marginal variances.}
+#' \item{meta }{A list containing various information about the calculation.}
+#' @export
+#' @author David Bolin \email{davidbolin@gmail.com} and Finn Lindgren
+#' \email{finn.lindgren@gmail.com}
+#' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour
+#' uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1,
+#' pp 85-106.
+#' @seealso \code{\link{excursions}}, \code{\link{excursions.inla}}
+#' @examples
+#' ## Create mean and a tridiagonal precision matrix
+#' n = 101
+#' mu.x = seq(-5, 5, length=n)
+#' Q.x = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
+#' ## Sample the model 100 times (increase for better estimate)
+#' X = mu.x + solve(chol(Q.x),matrix(rnorm(n=n*1000),nrow=n,ncol=1000))
+#' ## calculate the positive excursion function
+#' res.x = excursions.mc(X,alpha=0.05,type='>',u=0)
+#' ## Plot the excursion function and the marginal excursion probabilities
+#' plot(res.x$F, type="l",
+#'      main='Excursion function (black) and marginal probabilites (red)')
+#' lines(res.x$rho, col=2)
 
 excursions.mc <- function(samples,
                           alpha,

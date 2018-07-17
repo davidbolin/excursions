@@ -107,6 +107,9 @@ image(matrix(map$M[mesh$idx$lattice], n.lattice, n.lattice), col = cols)
 \references{
 Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.
 }
+\seealso{
+\code{\link{contourmap}}, \code{\link{contourmap.mc}}, \code{\link{contourmap.colors}}
+}
 \author{
 David Bolin \email{davidbolin@gmail.com}
 }

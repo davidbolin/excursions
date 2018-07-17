@@ -15,6 +15,71 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#' Simultaneous confidence regions for latent Gaussian models
+#'
+#' \code{simconf.inla} is used for calculating simultaneous confidence regions
+#' for latent Gaussian models estimated using \code{INLA}.
+#'
+#' @param result.inla Result object from INLA call.
+#' @param stack The stack object used in the INLA call.
+#' @param name The name of the component for which to do the calculation. This
+#' argument should only be used if a stack object is not provided, use the tag
+#' argument otherwise.
+#' @param tag The tag of the component in the stack for which to do the calculation.
+#' This argument should only be used if a stack object is provided, use the name
+#' argument otherwise.
+#' @param ind If only a part of a component should be used in the calculations, this
+#' argument specifies the indices for that part.
+#' @param alpha Error probability for the region.
+#' @param method Method for handeling the latent Gaussian structure:
+#' \itemize{
+#' \item{'EB' }{Empirical Bayes (Gaussian approximation of posterior).}
+#' \item{'NI' }{Numerical integration (Calculation based on the Gaussian mixture
+#' approximation of the posterior, as calculated by INLA).}}
+#' @param n.iter Number or iterations in the MC sampler that is used for approximating
+#' probabilities. The default value is 10000.
+#' @param verbose Set to TRUE for verbose mode (optional).
+#' @param link Transform output to the scale of the data using the link function as defined in
+#' the model estimated with INLA (default FALSE).
+#' @param max.threads Decides the number of threads the program can use. Set to 0 for
+#' using the maximum number of threads allowed by the system (default).
+#' @param seed Random seed (optional).
+#' @param inla.sample Set to TRUE if inla.posterior.sample should be used for the MC
+#' integration.
+#'
+#' @return An object of class "excurobj" with elements
+#' \item{a }{The lower bound.}
+#' \item{b }{The upper bound.}
+#' \item{a.marginal }{The lower bound for pointwise confidence bands.}
+#' \item{b.marginal }{The upper bound for pointwise confidence bands.}
+#' @export
+#' @note This function requires the \code{INLA} package, which is not a CRAN package.
+#' See \url{http://www.r-inla.org/download} for easy installation instructions.
+#' @author David Bolin \email{davidbolin@gmail.com}
+#' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
+#' from global temperature}, Statistica Sinica, Vol 25, pp 351-367.
+#' @seealso \code{\link{simconf}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}
+#' @examples
+#' \donttest{
+#' if (require.nowarnings("INLA")) {
+#' n <- 10
+#' x <- seq(0, 6, length.out=n)
+#' y <- sin(x) + rnorm(n)
+#' mu <- 1:n
+#' result <- inla(y ~ 1 + f(mu, model='rw2'),
+#'                data=list(y=y, mu=mu), verbose=FALSE,
+#'                control.compute = list(config=TRUE),
+#'                num.threads = 1)
+#'
+#' res <- simconf.inla(result, name='mu', alpha = 0.05, max.threads = 1)
+#'
+#' plot(result$summary.random$mu$mean,ylim=c(-2,2))
+#' lines(res$a)
+#' lines(res$b)
+#' lines(res$a.marginal,col="2")
+#' lines(res$b.marginal,col="2")
+#' }}
+
 simconf.inla <- function(result.inla,
                          stack,
                          name=NULL,
