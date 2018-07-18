@@ -23,5 +23,5 @@ syntax: regexp
 ^.*/TAGS$
 ^\.Rhistory$
 ^.*/\.Rhistory$
-^\.Rproj.user$
-
+^\.Rproj\.user$
+^.*\.Rproj$
