@@ -47,6 +47,9 @@ for Gaussian mixture models. The distribution for the process \eqn{x} is assumed
 The function returns upper and lower bounds \eqn{a} and \eqn{b} such that
 \eqn{P(a<x<b) = 1-alpha}.
 }
+\details{
+See \code{\link{simconf}} for details.
+}
 \examples{
 n = 11
 K = 3

@@ -53,6 +53,10 @@ contourmap.mc(samples, n.levels, ind, levels, type = c("standard",
 \description{
 \code{contourmap.mc} is used for calculating contour maps and quality measures for contour maps based on Monte Carlo samples of a model.
 }
+\details{
+The contour map is computed for the empirical mean of the samples. 
+See \code{\link{contourmap}} and \code{\link{contourmap.inla}} for further details.
+}
 \examples{
 n = 100
 Q = Matrix(toeplitz(c(1, -0.5, rep(0, n-2))))

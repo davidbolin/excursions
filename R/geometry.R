@@ -492,7 +492,7 @@ outline.on.mesh <- function(z, mesh, complement=FALSE)
 #' @export
 #' @note This function requires the \code{INLA} package, which is not a CRAN
 #' package.  See \url{http://www.r-inla.org/download} for easy installation instructions.
-#' @author Finn Lindgren \email{finn.lindgren@gmail.com}
+#' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @examples
 #' \dontrun{
 #' if (require(INLA)) {
@@ -535,7 +535,7 @@ submesh.grid <- function(z, grid=NULL)
 #' @export
 #' @note This function requires the \code{INLA} package, which is not a CRAN package.
 #' See \url{http://www.r-inla.org/download} for easy installation instructions.
-#' @author Finn Lindgren \email{finn.lindgren@gmail.com}
+#' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @examples
 #' \dontrun{
 #' if (require(INLA)) {

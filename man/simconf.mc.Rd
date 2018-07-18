@@ -27,6 +27,10 @@ An object of class "excurobj" with elements
 on Monte Carlo samples. The function returns upper and lower bounds \eqn{a} and
 \eqn{b} such that \eqn{P(a<x<b) = 1-alpha}.
 }
+\details{
+See \code{\link{simconf}} and \code{\link{simconf.inla}} for 
+details.
+}
 \examples{
 ## Create mean and a tridiagonal precision matrix
 n = 11

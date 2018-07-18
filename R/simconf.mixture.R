@@ -44,7 +44,8 @@
 #' \item{a.marginal }{The lower bound for pointwise confidence bands.}
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
-#' @author David Bolin \email{davidbolin@gmail.com}
+#' @details See \code{\link{simconf}} for details. 
+#' @author David Bolin \email{davidbolin@@gmail.com}
 #' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
 #' from global temperature}, Statistica Sinica, Vol 25, pp 351-367.
 #' @seealso \code{\link{simconf}}, \code{\link{simconf.inla}}, \code{\link{simconf.mc}}

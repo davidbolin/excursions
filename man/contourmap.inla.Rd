@@ -57,6 +57,24 @@ contourmap.inla(result.inla, stack, name = NULL, tag = NULL,
 \description{
 An interface to the \code{contourmap} function for latent Gaussian models calculated using the INLA method.
 }
+\details{
+The INLA approximation of the quantity of interest is in general a weighted sum of 
+Gaussian distributions with different parameters. If \code{method = 'EB'} is used, then 
+the contour map is computed for the mean of the component in the weighted sum that has 
+parameters with the highest likelihood. If on the other hand \code{method='QC'}, then
+the contour map is computed for the posterior mean reported by
+INLA. If the EB method also is used in INLA, then this reported posterior mean is equal
+to the mean of the component with the highest likelihood. 
+Therefore, \code{method='EB'} is
+appropriate if the EB method also is used in INLA, but \code{method='QC'} should be
+used in general.
+
+The \code{n.levels} contours in the contour map are are placed according
+to the argument \code{type}. A number of quality measures can be computed based based 
+on the specified contour map and the distribution of the component of interest. 
+What should be computed is specified using the 
+\code{compute} argument. For details on these quanties, see the reference below.
+}
 \note{
 This function requires the \code{INLA} package, which is not a CRAN package.  See \url{http://www.r-inla.org/download} for easy installation instructions.
 }

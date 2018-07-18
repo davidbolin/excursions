@@ -56,7 +56,24 @@
 #' \item{Pv }{A vector with the estimates of all sub-integrals.}
 #' \item{Ev }{A vector with the estimated errors of the Pv estimates.}
 #' @export
-#' @author David Bolin \email{davidbolin@gmail.com}
+#' @details The function uses sequential importance sampling to estimate the 
+#' Gaussian integral, and returns all computed sub-integrals. This means that if, for 
+#' example, the function is used to compute \eqn{P(x>0)} for an n-dimensional Gaussian
+#' variable \eqn{x}, then all integrals \eqn{P(x_1>0,...,x_i>0)} for \eqn{i=1,...,n} are
+#' computed. 
+#' 
+#' If one is only interested in whether \eqn{P(x>0)>alpha} or not, then one can 
+#' stop the integration as soon as \eqn{P(x_1>0,...,x_i>0)<alpha}. This can save a lot of 
+#' computation time if \eqn{P(x_1>0,...,x_i>0)<alpha} for \eqn{i} much smaller than 
+#' \eqn{n}. This limit value is specified by the \code{lim} argument. 
+#' 
+#' Which reordering to use depends on what the purpose of the calculation is and what
+#' the limit values are. However, in general the \code{limits} reordering is typically
+#' most appropriate since this combines sparisty (which improves accuracy and reduces
+#' computational cost) with automatic handling of dimensions with limits \eqn{a=-Inf} and
+#' \eqn{b=Inf}, which thus do not affect the probability (but affects the computation time
+#' if they are not handled separately). 
+#' @author David Bolin \email{davidbolin@@gmail.com}
 #' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
 #' @examples
 #' ## Create mean and a tridiagonal precision matrix

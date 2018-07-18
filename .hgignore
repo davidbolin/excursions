@@ -15,6 +15,7 @@ syntax: glob
 *.blg
 *.fls
 *.synctex.gz
+*.DS_Store
 
 # switch to regexp syntax.
 syntax: regexp

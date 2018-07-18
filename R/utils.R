@@ -34,12 +34,7 @@ private.Cholesky <- function(A, ...) {
 #' Calculate variances from a sparse precision matrix
 #'
 #' \code{excursions.variances} calculates the diagonal of the inverse of a sparse
-#' symmetric positive definite matrix \code{Q}. The method for calculating the
-#' diagonal requires the Cholesky factor, \code{L}, of \code{Q}, which should be supplied if
-#' available. If \code{Q} is provided, the cholesky factor is
-#' calculated and the variances are then returned in the same ordering as \code{Q}.
-#' If \code{L} is provided, the variances are returned in the same ordering as \code{L},
-#' even if \code{L@invpivot} exists.
+#' symmetric positive definite matrix \code{Q}. 
 #'
 #' @param L Cholesky factor of precision matrix.
 #' @param Q Precision matrix.
@@ -48,7 +43,13 @@ private.Cholesky <- function(A, ...) {
 #'
 #' @return A vector with the variances.
 #' @export
-#' @author David Bolin \email{davidbolin@gmail.com}
+#' @details The method for calculating the
+#' diagonal requires the Cholesky factor, \code{L}, of \code{Q}, which should be supplied if
+#' available. If \code{Q} is provided, the cholesky factor is
+#' calculated and the variances are then returned in the same ordering as \code{Q}.
+#' If \code{L} is provided, the variances are returned in the same ordering as \code{L},
+#' even if \code{L@invpivot} exists.
+#' @author David Bolin \email{davidbolin@@gmail.com}
 #'
 #' @examples
 #' ## Create a tridiagonal precision matrix

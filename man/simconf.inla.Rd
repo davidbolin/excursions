@@ -59,6 +59,9 @@ An object of class "excurobj" with elements
 \code{simconf.inla} is used for calculating simultaneous confidence regions
 for latent Gaussian models estimated using \code{INLA}.
 }
+\details{
+See \code{\link{simconf}} for details.
+}
 \note{
 This function requires the \code{INLA} package, which is not a CRAN package.
 See \url{http://www.r-inla.org/download} for easy installation instructions.

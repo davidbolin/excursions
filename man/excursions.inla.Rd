@@ -76,6 +76,25 @@ for values up to \code{F.limit}}
 Excursion sets and contour credible regions for latent Gaussian models calculated
 using the INLA method.
 }
+\details{
+The different methods for handling the latent Gaussian structure are listed 
+in order of accuracy and computational cost. The \code{EB} method is the simplest and is based on a Gaussian 
+approximation of the posterior of the quantity of interest. The \code{QC} method uses the
+same Gaussian approximation but improves the accuracy by modifying the limits in the 
+integrals that are computed in order to find the region. The other three methods are
+intended for Bayesian models where the posterior distribution for the quantity of 
+interest is obtained by integrating over the parameters in the model. The \code{NI} 
+method approximates this integration in the same way as is done in INLA, and the
+\code{NIQC} and \code{iNIQC} methods combine this apprximation with the QC method
+for improved accuracy. 
+
+If the main purpose of the analysis is to construct excursion or contour sets for low
+values of \code{alpha}, we recommend using \code{QC} for problems with Gaussian
+likelihoods and \code{NIQC} for problems with non-Gaussian likelihoods. The reason for 
+this is that the more accurate methods also are have higher computational costs.
+
+\code
+}
 \note{
 This function requires the \code{INLA} package, which is not a CRAN
 package.  See \url{http://www.r-inla.org/download} for easy installation instructions.

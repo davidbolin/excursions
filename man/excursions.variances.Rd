@@ -19,7 +19,10 @@ A vector with the variances.
 }
 \description{
 \code{excursions.variances} calculates the diagonal of the inverse of a sparse
-symmetric positive definite matrix \code{Q}. The method for calculating the
+symmetric positive definite matrix \code{Q}.
+}
+\details{
+The method for calculating the
 diagonal requires the Cholesky factor, \code{L}, of \code{Q}, which should be supplied if
 available. If \code{Q} is provided, the cholesky factor is
 calculated and the variances are then returned in the same ordering as \code{Q}.

@@ -40,7 +40,16 @@
 #' \item{a.marginal }{The lower bound for pointwise confidence bands.}
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
-#' @author David Bolin \email{davidbolin@gmail.com} and Finn Lindgren \email{finn.lindgren@gmail.com}
+#' @details The pointwise confidence bands are based on the marginal quantiles,
+#' meaning that \code{a.marignal = mu +} \eqn{q_{alpha}} and \code{b.marginal = mu +} 
+#' \eqn{q_{1-alpha}}, where \code{mu} is the mean and \eqn{q_{alpha}} is a 
+#' vector with the alpha-quantiles of \code{x-mu}.
+#' 
+#' The simultaneous confidence bands are defined as
+#' \code{a = mu +} \eqn{c*q_{alpha}} and \code{b = mu +} \eqn{c*q_{1-alpha}}, where \eqn{c} is computed
+#' such that \eqn{P(a < x < b) = 1-alpha}.
+#' 
+#' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
 #' from global temperature}, Statistica Sinica, Vol 25, pp 351-367.
 #' @seealso \code{\link{simconf.inla}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}

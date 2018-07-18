@@ -66,7 +66,17 @@ contourmap(mu, Q, vars, n.levels, ind, levels, type = c("standard", "pretty",
     \item{meta }{A list containing various information about the calculation.}
 }
 \description{
-\code{contourmap} is used for calculating contour maps and quality measures for contour maps for latent Gaussian models.
+\code{contourmap} is used for calculating contour maps and quality measures for contour maps for Gaussian models.
+}
+\details{
+The Gaussian model is specified using the mean \code{mu} and the precision matrix 
+\code{Q}. The contour map is then computed for the mean, using either the contour
+levels specified in \code{levels}, or \code{n.levels} contours that are placed according
+to the argument \code{type}.
+
+A number of quality measures can be computed based based on the specified contour map 
+and the Gaussian distribution. What should be computed is specified using the 
+\code{compute} argument. For details on these quanties, see the reference below.
 }
 \examples{
 n = 10

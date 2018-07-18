@@ -51,7 +51,9 @@
 #'     \item{P0/P1/P2 }{Calculated quality measures (if computed).}
 #'     \item{P0bound/P1bound/P2bound }{Calculated upper bounds quality measures (if computed).}
 #'     \item{meta }{A list containing various information about the calculation.}
-#' @author David Bolin \email{davidbolin@gmail.com}
+#' @author David Bolin \email{davidbolin@@gmail.com}
+#' @details The contour map is computed for the empirical mean of the samples. 
+#' See \code{\link{contourmap}} and \code{\link{contourmap.inla}} for further details.
 #' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.
 #' @seealso \code{\link{contourmap}}, \code{\link{contourmap.inla}}, \code{\link{contourmap.colors}}
 
@@ -200,7 +202,9 @@ contourmap.mc <- function(samples,
 #' \item{a.marginal }{The lower bound for pointwise confidence bands.}
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
-#' @author David Bolin \email{davidbolin@gmail.com}
+#' @details See \code{\link{simconf}} and \code{\link{simconf.inla}} for 
+#' details. 
+#' @author David Bolin \email{davidbolin@@gmail.com}
 #' @seealso \code{\link{simconf}}, \code{\link{simconf.inla}}
 #'
 #' @examples
@@ -316,8 +320,8 @@ simconf.mc <- function(samples,
 #' \item{vars }{Marginal variances.}
 #' \item{meta }{A list containing various information about the calculation.}
 #' @export
-#' @author David Bolin \email{davidbolin@gmail.com} and Finn Lindgren
-#' \email{finn.lindgren@gmail.com}
+#' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren
+#' \email{finn.lindgren@@gmail.com}
 #' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour
 #' uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1,
 #' pp 85-106.

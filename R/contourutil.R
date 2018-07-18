@@ -480,7 +480,7 @@ excursions.limits <- function(lp,mu,measure)
 #' @param credible.col The color that should be used for displaying the credible regions for the contour curves (optional).
 #'
 #' @return A color map.
-#' @author David Bolin \email{davidbolin@gmail.com}
+#' @author David Bolin \email{davidbolin@@gmail.com}
 #' @export
 #'
 #' @examples
