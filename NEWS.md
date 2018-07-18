@@ -1,10 +1,14 @@
-# excursions 2.3.6.9000
+# excursions 2.4.0
 
 * Added a `NEWS.md` file to track changes to the package.
 
 * Updated repository for INLA
 
 * Add n.iter and seed options for `contourmap()` calculations.
+
+* Add support for the QC method for `contourmap.inla()`.
+
+* Updated documentation.
 
 # excursions 2.3.6
 
