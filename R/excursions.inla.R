@@ -85,7 +85,6 @@
 #' likelihoods and \code{NIQC} for problems with non-Gaussian likelihoods. The reason for 
 #' this is that the more accurate methods also are have higher computational costs.
 #' 
-#' \code
 #' @note This function requires the \code{INLA} package, which is not a CRAN
 #' package.  See \url{http://www.r-inla.org/download} for easy installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren \email{finn.lindgren@@gmail.com}

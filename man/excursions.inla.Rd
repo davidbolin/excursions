@@ -92,8 +92,6 @@ If the main purpose of the analysis is to construct excursion or contour sets fo
 values of \code{alpha}, we recommend using \code{QC} for problems with Gaussian
 likelihoods and \code{NIQC} for problems with non-Gaussian likelihoods. The reason for 
 this is that the more accurate methods also are have higher computational costs.
-
-\code
 }
 \note{
 This function requires the \code{INLA} package, which is not a CRAN

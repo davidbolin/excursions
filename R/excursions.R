@@ -38,7 +38,7 @@
 #' \itemize{
 #' \item{\code{\link{excursions}} }{The main function for Gaussian models.}
 #' \item{\code{\link{excursions.inla}} }{Interface for latent Gaussian models estimated using INLA.}
-#' \item{\code{\link{excursions.mc}} }{Function for analyzing models that have been 
+#' \item{\code{\link{excursions.mc}} }{Function for analyzing models that have been
 #' estimated using Monte Carlo methods.}
 #' }
 #' The output from the functions above provides a discrete domain estimate of the regions. 
@@ -54,9 +54,9 @@
 #' The main functions for computing contour maps and the corresponding quality measures
 #' are 
 #' \itemize{
-#' \item{\code{\link{contourmaps}} }{The main function for Gaussian models.}
-#' \item{\code{\link{contourmaps.inla}} }{Interface for latent Gaussian models estimated using INLA.}
-#' \item{\code{\link{contourmaps.mc}} }{Function for analyzing models that have been 
+#' \item{\code{\link{contourmap}} }{The main function for Gaussian models.}
+#' \item{\code{\link{contourmap.inla}} }{Interface for latent Gaussian models estimated using INLA.}
+#' \item{\code{\link{contourmap.mc}} }{Function for analyzing models that have been
 #' estimated using Monte Carlo methods.}
 #' }
 #' Other noteworthy functions relating to contourmaps are \code{\link{tricontour}} and
