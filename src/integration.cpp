@@ -201,8 +201,9 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
         f[j] = f[j]*(d-c);
         fsum += f[j];
         fsum2 += f[j]*f[j];
-
+        
         if (d-c<1e-12) { //no weight is given to this sample
+          rtmp = 0;
           x[i][j] = 0; //just set x to zero
         } else {
           rtmp = c+(d-c)* RngStream_RandU01(RngArray[myrank]);
