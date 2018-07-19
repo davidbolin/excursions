@@ -71,7 +71,7 @@ extern "C" void Qinv(int * Rir, int * Rjc, double * Rpr, double * variances, int
   /* Calculate inverse */
   Qvectype::iterator pos;
   size_t Nmax=0;
-  int Rsize = (int) R[i].size();
+  
   //divide all elemnts in R by the diagonal-elements
   for(i=0; i<n; ++i){
     //find the maximal number of non-zero elements in any row of R
@@ -108,9 +108,11 @@ extern "C" void Qinv(int * Rir, int * Rjc, double * Rpr, double * variances, int
   }
 
   //loop over the columns of the matrix
+  int Rsize;
   i = n;
   while(i>0){
     --i;
+    Rsize = (int) R[i].size();
     //first find the indices of the non-zero elements
     for(pos=R[i].begin(), ++pos, j=0; pos!=R[i].end(); ++pos, j++){
       ii[j] = pos->first; //index of elements
