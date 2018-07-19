@@ -1,3 +1,7 @@
+# excursions 2.4.1
+
+* Minor fixed to C code to avoid warnings.
+
 # excursions 2.4.0
 
 * Added a `NEWS.md` file to track changes to the package.

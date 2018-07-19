@@ -332,19 +332,27 @@ RngStream RngStream_CreateStream (const char name[])
 {
    int i;
    RngStream g;
-   size_t len = strlen (name);
-
+   //size_t len = strlen (name);
+   size_t len;
+   
    g = (RngStream) malloc (sizeof (struct RngStream_InfoState));
    if (g == NULL) {
-   	/* HS 01-25-2012 */
-      	error("RngStream_CreateStream: No more memory\n");
-      /* original code
-      printf ("RngStream_CreateStream: No more memory\n\n");
-      exit (EXIT_FAILURE);
-      */
+     /* HS 01-25-2012 */
+     error("RngStream_CreateStream: No more memory\n");
+     /* original code
+     printf ("RngStream_CreateStream: No more memory\n\n");
+     exit (EXIT_FAILURE);
+     */
    }
-   g->name = (char *) malloc ((len + 1) * sizeof (char));
-   strncpy (g->name, name, len + 1); 
+   //g->name = (char *) malloc ((len + 1) * sizeof (char));
+   //strncpy (g->name, name, len + 1); 
+   if (name) {
+     len = strlen (name);
+     g->name = (char *) malloc ((len + 1) * sizeof (char));
+     strncpy (g->name, name, len + 1);
+   } else{
+     g->name = 0;
+   }
    g->Anti = 0;
    g->IncPrec = 0;
 
