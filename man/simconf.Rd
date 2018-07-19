@@ -49,8 +49,8 @@ meaning that \code{a.marignal = mu +} \eqn{q_{alpha}} and \code{b.marginal = mu 
 vector with the alpha-quantiles of \code{x-mu}.
 
 The simultaneous confidence bands are defined as
-\code{a = mu +} \eqn{c*q_{alpha}} and \code{b = mu +} \eqn{c*q_{1-alpha}}, where \eqn{c} is computed
-such that \eqn{P(a < x < b) = 1-alpha}.
+\code{a = mu +} \eqn{c*q_{alpha}} and \code{b = mu +} \eqn{c*q_{1-alpha}}, where 
+\eqn{c} is a constant computed such that \eqn{P(a < x < b) = 1-alpha}.
 }
 \examples{
 ## Create mean and a tridiagonal precision matrix

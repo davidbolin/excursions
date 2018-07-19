@@ -68,11 +68,11 @@
 #' \eqn{n}. This limit value is specified by the \code{lim} argument. 
 #' 
 #' Which reordering to use depends on what the purpose of the calculation is and what
-#' the limit values are. However, in general the \code{limits} reordering is typically
+#' the integration limits are. However, in general the \code{limits} reordering is typically
 #' most appropriate since this combines sparisty (which improves accuracy and reduces
 #' computational cost) with automatic handling of dimensions with limits \eqn{a=-Inf} and
-#' \eqn{b=Inf}, which thus do not affect the probability (but affects the computation time
-#' if they are not handled separately). 
+#' \eqn{b=Inf}, which do not affect the probability but affect the computation time
+#' if they are not handled separately. 
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
 #' @examples

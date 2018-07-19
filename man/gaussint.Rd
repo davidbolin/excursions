@@ -74,11 +74,11 @@ computation time if \eqn{P(x_1>0,...,x_i>0)<alpha} for \eqn{i} much smaller than
 \eqn{n}. This limit value is specified by the \code{lim} argument. 
 
 Which reordering to use depends on what the purpose of the calculation is and what
-the limit values are. However, in general the \code{limits} reordering is typically
+the integration limits are. However, in general the \code{limits} reordering is typically
 most appropriate since this combines sparisty (which improves accuracy and reduces
 computational cost) with automatic handling of dimensions with limits \eqn{a=-Inf} and
-\eqn{b=Inf}, which thus do not affect the probability (but affects the computation time
-if they are not handled separately).
+\eqn{b=Inf}, which do not affect the probability but affect the computation time
+if they are not handled separately.
 }
 \examples{
 ## Create mean and a tridiagonal precision matrix

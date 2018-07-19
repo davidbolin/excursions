@@ -91,7 +91,7 @@ for improved accuracy.
 If the main purpose of the analysis is to construct excursion or contour sets for low
 values of \code{alpha}, we recommend using \code{QC} for problems with Gaussian
 likelihoods and \code{NIQC} for problems with non-Gaussian likelihoods. The reason for 
-this is that the more accurate methods also are have higher computational costs.
+this is that the more accurate methods also have higher computational costs.
 }
 \note{
 This function requires the \code{INLA} package, which is not a CRAN

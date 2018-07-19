@@ -202,8 +202,7 @@ contourmap.mc <- function(samples,
 #' \item{a.marginal }{The lower bound for pointwise confidence bands.}
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
-#' @details See \code{\link{simconf}} and \code{\link{simconf.inla}} for 
-#' details. 
+#' @details See \code{\link{simconf}} for details. 
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @seealso \code{\link{simconf}}, \code{\link{simconf.inla}}
 #'
