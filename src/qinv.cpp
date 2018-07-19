@@ -71,6 +71,7 @@ extern "C" void Qinv(int * Rir, int * Rjc, double * Rpr, double * variances, int
   /* Calculate inverse */
   Qvectype::iterator pos;
   size_t Nmax=0;
+  int Rsize = (int) R[i].size();
   //divide all elemnts in R by the diagonal-elements
   for(i=0; i<n; ++i){
     //find the maximal number of non-zero elements in any row of R
@@ -119,7 +120,7 @@ extern "C" void Qinv(int * Rir, int * Rjc, double * Rpr, double * variances, int
 
     //multiply the row of R with the rows of iQ
     #pragma omp parallel for private(pos)
-    for(int j2=0; j2<(R[i].size()-1); ++j2){
+    for(int j2=0; j2<(Rsize-1); ++j2){
       Qvectype::iterator iQpos_tmp = iQpos[j2];
       Qvectype::iterator iQend = iQ[ii[j2]].end();
       for(pos=R[i].begin(), ++pos; pos!=R[i].end(); ++pos){
