@@ -32,7 +32,7 @@ mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
 
 #extract a part of the mesh inside a circle
 xy.in <- rowSums((mesh$loc[,1:2]-2)^2)<1
-submesh <- excursionsdevel:::submesh.mesh(matrix(xy.in,nxy,nxy),mesh)
+submesh <- excursions:::submesh.mesh(matrix(xy.in,nxy,nxy),mesh)
 plot(mesh$loc[,1:2])
 lines(2+cos(seq(0,2*pi,length.out=100)), 2+sin(seq(0,2*pi,length.out=100)))
 plot(submesh,add=TRUE)
