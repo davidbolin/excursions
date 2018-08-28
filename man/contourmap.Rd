@@ -91,7 +91,9 @@ plot(lp$map)
 cat(c(lp$P1,lp$P2))
 }
 \references{
-Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.
+Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, vol 26, no 3, pp 513-524.
+
+Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 }
 \seealso{
 \code{\link{contourmap.inla}}, \code{\link{contourmap.mc}}, \code{\link{contourmap.colors}}

@@ -58,7 +58,9 @@
 #' See \url{http://www.r-inla.org/download} for easy installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
-#' from global temperature}, Statistica Sinica, Vol 25, pp 351-367.
+#' from global temperature}, Statistica Sinica, vol 25, pp 351-367.
+#' 
+#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #' @seealso \code{\link{simconf}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}
 #' @examples
 #' \donttest{

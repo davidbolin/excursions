@@ -55,6 +55,8 @@
 #' @details The contour map is computed for the empirical mean of the samples. 
 #' See \code{\link{contourmap}} and \code{\link{contourmap.inla}} for further details.
 #' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.
+#' 
+#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, 86(5), 1--20.
 #' @seealso \code{\link{contourmap}}, \code{\link{contourmap.inla}}, \code{\link{contourmap.colors}}
 
 #' @export
@@ -324,6 +326,8 @@ simconf.mc <- function(samples,
 #' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour
 #' uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1,
 #' pp 85-106.
+#' 
+#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #' @seealso \code{\link{excursions}}, \code{\link{excursions.inla}}
 #' @examples
 #' ## Create mean and a tridiagonal precision matrix

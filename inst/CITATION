@@ -1,5 +1,28 @@
 citHeader("To cite excursions in publications use:")
 
+bibentry(bibtype = "Article",
+  title        = "Calculating Probabilistic Excursion Sets and Related Quantities Using {excursions}",
+  author       = c(person(given = "David",
+                          family = "Bolin",
+                          email = "david.bolin@chalmers.se"),
+                   person(given = "Finn",
+                          family = "Lindgren",
+                          email = "finn.lindgren@ed.ac.uk")),
+  journal      = "Journal of Statistical Software",
+  year         = "2018",
+  volume       = "86",
+  number       = "5",
+  pages        = "1--20",
+  doi          = "10.18637/jss.v086.i05",
+  textVersion  =
+      paste0("David Bolin, Finn Lindgren (2018), ",
+             "Calculating Probabilistic Excursion Sets and Related Quantities ",
+             "Using excursions, ",
+             "Journal of Statistical Software, ",
+             "86(5), 1--20.")
+)
+
+
 citEntry(
     entry        = "Article",
     title        = "Excursion and contour uncertainty regions for latent {Gaussian} models",
@@ -12,9 +35,9 @@ citEntry(
     pages        = "85--106",
     textVersion  =
       paste0("David Bolin, Finn Lindgren (2015), ",
-             "Excursion and contour uncertainty regions for",
+             "Excursion and contour uncertainty regions for ",
              "latent Gaussian models, ",
-             "Journal of the Royal Statistical Sociecy, Series B,",
+             "Journal of the Royal Statistical Sociecy, Series B, ",
              "77(1), 85-106.")
 )
 
@@ -34,17 +57,3 @@ citEntry(
           "Quantifying the uncertainty of contour maps, ",
         "Journal of Computational and Graphical Statistics, 26:3, 513-524 .")
 )
-
-citEntry(
-    entry        = "Article",
-    author       =
-      personList(as.person("David Bolin"), as.person("Finn Lindgren")),
-    title        = "Calculating probabilistic excursion sets and related quantities using excursions",
-    journal      = "Journal of Statistical Software",
-    year         = "2018",
-    pages        = "NA--NA",
-    textVersion  = paste0("David Bolin and Finn Lindgren (2018), ",
-          "Calculating probabilistic excursion sets and related quantities using excursions, ",
-        "Journal of Statistical Software (in press).")
-)
-

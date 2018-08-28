@@ -73,6 +73,8 @@ c(lp$P1,lp$P2)
 }
 \references{
 Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.
+
+Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, 86(5), 1--20.
 }
 \seealso{
 \code{\link{contourmap}}, \code{\link{contourmap.inla}}, \code{\link{contourmap.colors}}

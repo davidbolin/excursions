@@ -66,6 +66,8 @@
 #' What should be computed is specified using the 
 #' \code{compute} argument. For details on these quanties, see the reference below. 
 #' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.
+#' 
+#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #' @export
 #' @seealso \code{\link{contourmap}}, \code{\link{contourmap.mc}}, \code{\link{contourmap.colors}}
 #' @examples
