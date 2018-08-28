@@ -1,3 +1,8 @@
+# excursions 2.4.1.9000
+
+* Add support for general manifolds in continuous interpretation methods
+* Bug fixes to continuous interpretation methods
+
 # excursions 2.4.1
 
 * Minor fixed to C code to avoid warnings.
