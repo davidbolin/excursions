@@ -1,5 +1,6 @@
 # excursions 2.4.3.9000
 
+* Set fixed buffer size for RngStream.c stream name
 
 # excursions 2.4.3
 

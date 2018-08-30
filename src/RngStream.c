@@ -327,13 +327,13 @@ static int CheckSeed (unsigned long seed[6])
 /* Public part.                                                        */
 /*---------------------------------------------------------------------*/
 
-
+#define MAX_RNGSTREAM_NAME_LENGTH 1023
 RngStream RngStream_CreateStream (const char name[])
 {
    int i;
    RngStream g;
    //size_t len = strlen (name);
-   size_t len;
+   // size_t len;
    
    g = (RngStream) malloc (sizeof (struct RngStream_InfoState));
    if (g == NULL) {
@@ -347,9 +347,17 @@ RngStream RngStream_CreateStream (const char name[])
    //g->name = (char *) malloc ((len + 1) * sizeof (char));
    //strncpy (g->name, name, len + 1); 
    if (name) {
-     len = strlen (name);
-     g->name = (char *) malloc ((len + 1) * sizeof (char));
-     strncpy (g->name, name, len + 1);
+     /* strncpy will fill with \0 if the string is shorter than max allowed,
+        so we don't need to compute the string length. */
+     /* len = strlen (name); */
+     g->name = (char *) malloc ((MAX_RNGSTREAM_NAME_LENGTH + 1) * sizeof (char));
+     if (g->name) {
+       strncpy (g->name, name, MAX_RNGSTREAM_NAME_LENGTH + 1);
+       /* Make absolutely sure there is a '\0' terminator: */
+       g->name[MAX_RNGSTREAM_NAME_LENGTH] = '\0';
+     } else {
+       error("RngStream_CreateStream: No more memory\n");
+     }
    } else{
      g->name = 0;
    }
