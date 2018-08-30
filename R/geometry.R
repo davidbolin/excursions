@@ -1631,7 +1631,8 @@ gaussquad <- function(mesh, method = c("direct", "make.A")) {
 
   ## Construct cubic Gauss-quadrature points and weights
   nT <- nrow(mesh$graph$tv)
-  I.w <- INLA::inla.mesh.fem(mesh, order = 0)$ta
+  # Recent INLA would allow order = 0 (2018-08-30)
+  I.w <- INLA::inla.mesh.fem(mesh, order = 1)$ta
   if (method == "make.A") {
     ## Old method, kept for sanity checking.
     I.loc <-
@@ -1686,10 +1687,12 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
   subF <- rep(NA, length(active.nodes.idx))
   subF[submesh$idx$loc[active.nodes.idx]] <- F[active.nodes.idx]
 
-  tot.area <- sum(INLA::inla.mesh.fem(F.geometry, order = 0)$ta)
+  # Recent INLA would allow order = 0 (2018-08-30)
+  tot.area <- sum(INLA::inla.mesh.fem(F.geometry, order = 1)$ta)
 
   if (method == "linear") {
-    I.w <- INLA::inla.mesh.fem(submesh, order = 0)$va
+    # Recent INLA would allow order = 0 (2018-08-30)
+    I.w <- INLA::inla.mesh.fem(submesh, order = 1)$va
     P0 <- sum(I.w * subF) / tot.area
   } else if (method == "log") {
     II <- gaussquad(submesh)
@@ -1697,7 +1700,8 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
     P0 <- sum(II$w * tmp) / tot.area
   } else {
     ## "step"
-    I.w <- INLA::inla.mesh.fem(submesh, order = 0)$ta
+    # Recent INLA would allow order = 0 (2018-08-30)
+    I.w <- INLA::inla.mesh.fem(submesh, order = 1)$ta
     tmp <- matrix(subF[submesh$graph$tv],
                   nrow(submesh$graph$tv),
                   ncol(submesh$graph$tv))

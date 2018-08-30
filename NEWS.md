@@ -1,5 +1,7 @@
 # excursions 2.4.2.9000
 
+* Improved INLA backwards compatibility
+
 # excursions 2.4.2
 
 * Add support for general manifolds in continuous interpretation methods
