@@ -1,4 +1,4 @@
-# excursions 2.4.2.9000
+# excursions 2.4.3
 
 * Improved INLA backwards compatibility
 
