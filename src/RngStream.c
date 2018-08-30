@@ -349,8 +349,10 @@ RngStream RngStream_CreateStream (const char name[])
    if (name) {
      g->name = (char *) malloc ((MAX_RNGSTREAM_NAME_LENGTH + 1) * sizeof (char));
      if (g->name) {
-       len = strnlen (name, MAX_RNGSTREAM_NAME_LENGTH);
-       memcpy (g->name, name, len);
+       //       len = strnlen (name, MAX_RNGSTREAM_NAME_LENGTH);
+       //       memcpy (g->name, name, len);
+       len = 4;
+       memcpy (g->name, "name", len);
        /* Make absolutely sure there is a '\0' terminator: */
        g->name[len] = '\0';
        /* For good measure, fill the rest of the buffer as well */
