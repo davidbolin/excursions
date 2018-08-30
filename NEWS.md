@@ -1,7 +1,8 @@
-# excursions 2.4.1.9000
+# excursions 2.4.2
 
 * Add support for general manifolds in continuous interpretation methods
 * Bug fixes to continuous interpretation methods
+* Update CITATION information with new JSS manuscript
 
 # excursions 2.4.1
 
