@@ -1,6 +1,7 @@
-# excursions 2.4.3.9000
+# excursions 2.4.4
 
 * Set fixed buffer size for RngStream.c stream name
+* Update Makevars to avoid OpenMP warning
 
 # excursions 2.4.3
 
