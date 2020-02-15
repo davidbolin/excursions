@@ -1,5 +1,9 @@
 # excursions 2.4.4.9000
 
+* Fix bug to handle empty sets in continuous interpretations
+* Fix compiler warnings; unused variable and mismatching Qinv declaration
+* Update COPYRIGHT information
+
 # excursions 2.4.4
 
 * Set fixed buffer size for RngStream.c stream name

@@ -1599,16 +1599,20 @@ probabilitymap <-
     } else {
       spout.joined <- sp::SpatialPolygons(spout)
       spout.union <- rgeos::gUnaryUnion(spout.joined)
-      spout[[ID]] <- rgeos::gDifference(sp.domain, spout.union)
-      spout[[ID]] <- spout[[ID]]@polygons[[1]]
+      sp.diff <- rgeos::gDifference(sp.domain, spout.union)
+      if (!is.null(sp.diff)) {
+        spout[[ID]] <- sp.diff@polygons[[1]]
+      }
     }
-    spout[[ID]]@ID <- ID
-
-    if (output == "inla.mesh.segment") {
-      inlaout[[ID]] <- INLA::inla.sp2segment(spout[[ID]])
+    if (!is.null(spout[[ID]])) {
+      spout[[ID]]@ID <- ID
+      
+      if (output == "inla.mesh.segment") {
+        inlaout[[ID]] <- INLA::inla.sp2segment(spout[[ID]])
+      }
     }
   }
-
+  
   if ((output == "sp") && (length(spout) > 0)) {
     out <- sp::SpatialPolygons(spout)
   } else if ((output == "inla.mesh.segment") && (length(inlaout) > 0)) {
