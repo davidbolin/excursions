@@ -1,6 +1,6 @@
 ## utils.R
 ##
-##   Copyright (C) 2013,2016 David Bolin, Finn Lindgren
+##   Copyright (C) 2013,2016,2020 David Bolin, Finn Lindgren
 ##
 ##   This program is free software: you can redistribute it and/or modify
 ##   it under the terms of the GNU General Public License as published by
@@ -477,8 +477,8 @@ excursions.rand <- function(n,seed,n.threads=1)
 
 #' Warnings free loading of add-on packages
 #'
-#' Turn off all warnings for require(), to allow clean completion of examples
-#' that require unavailable Suggested packages.
+#' Turn off all warnings for require(), to allow clean completion
+#' of examples that require unavailable Suggested packages.
 #'
 #' @param package The name of a package, given as a character string.
 #' @param lib.loc a character vector describing the location of R library trees
@@ -488,27 +488,30 @@ excursions.rand <- function(n,seed,n.threads=1)
 #' @param character.only a logical indicating whether \code{package} can be
 #' assumed to be a character string.
 #'
-#' @return \code{require.nowarnings} returns (invisibly) a logical indicating whether the
-#' required package is available.
-#' @export
-#' @details \code{require.nowarnings(package)} acts the same as
-#' \code{require(package, quietly = TRUE)}, except that all warnings are turned off.
-#' In particular, no warning is given if the package is unavailable.
+#' @return \code{require.nowarnings} returns (invisibly) \code{TRUE} if it succeeds, otherwise \code{FALSE}
+#' @details \code{require(package)} acts the same as
+#' \code{require(package, quietly = TRUE)} but with warnings turned off.
+#' In particular, no warning or error is given if the package is unavailable.
+#' Most cases should use \code{requireNamespace(package, quietly = TRUE)} instead,
+#' which doesn't produce warnings.
 #' @seealso \code{\link{require}}
+#' @export
 #' @examples
 #' ## This should produce no output:
 #' if (require.nowarnings(nonexistent)) {
-#' message("Package loaded successfully")
+#'   message("Package loaded successfully")
 #' }
 
 require.nowarnings <- function(package, lib.loc = NULL, character.only = FALSE)
 {
   if (!character.only)
     package <- as.character(substitute(package))
-  op <- options("warn")
-  on.exit(options(op))
-  options(warn = -1)
-  require(package, lib.loc = lib.loc, quietly = TRUE, character.only = TRUE)
+  suppressWarnings(
+    require(package,
+            lib.loc = lib.loc,
+            quietly = TRUE,
+            character.only = TRUE)
+    )
 }
 
 

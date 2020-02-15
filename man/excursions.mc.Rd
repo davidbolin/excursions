@@ -4,8 +4,17 @@
 \alias{excursions.mc}
 \title{Excursion sets and contour credible regions using Monte Carlo samples}
 \usage{
-excursions.mc(samples, alpha, u, type, rho, reo, ind, max.size,
-  verbose = FALSE)
+excursions.mc(
+  samples,
+  alpha,
+  u,
+  type,
+  rho,
+  reo,
+  ind,
+  max.size,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{samples}{Matrix with model Monte Carlo samples. Each column contains a

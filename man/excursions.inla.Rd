@@ -4,9 +4,23 @@
 \alias{excursions.inla}
 \title{Excursion sets and contour credible regions for latent Gaussian models}
 \usage{
-excursions.inla(result.inla, stack, name = NULL, tag = NULL, ind = NULL,
-  method, alpha = 1, F.limit, u, u.link = FALSE, type, n.iter = 10000,
-  verbose = 0, max.threads = 0, seed = NULL)
+excursions.inla(
+  result.inla,
+  stack,
+  name = NULL,
+  tag = NULL,
+  ind = NULL,
+  method,
+  alpha = 1,
+  F.limit,
+  u,
+  u.link = FALSE,
+  type,
+  n.iter = 10000,
+  verbose = 0,
+  max.threads = 0,
+  seed = NULL
+)
 }
 \arguments{
 \item{result.inla}{Result object from INLA call.}
@@ -119,7 +133,7 @@ X = mu+solve(chol(Q), rnorm(n))
 n.obs = 50
 obs.loc = sample(1:n,n.obs)
 A = sparseMatrix(i=1:n.obs, j=obs.loc, x=rep(1, n.obs), dims=c(n.obs, n))
-Y = as.vector(A \\\%*\\\% X + rnorm(n.obs)/sqrt(tau.e))
+Y = as.vector(A \%*\% X + rnorm(n.obs)/sqrt(tau.e))
 
 ## Estimate the parameters using INLA
 ef = list(c(list(ar=x),list(cov=mu)))

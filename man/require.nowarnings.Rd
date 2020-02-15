@@ -18,22 +18,23 @@ Non-existent library trees are silently ignored.}
 assumed to be a character string.}
 }
 \value{
-\code{require.nowarnings} returns (invisibly) a logical indicating whether the
-required package is available.
+\code{require.nowarnings} returns (invisibly) \code{TRUE} if it succeeds, otherwise \code{FALSE}
 }
 \description{
-Turn off all warnings for require(), to allow clean completion of examples
-that require unavailable Suggested packages.
+Turn off all warnings for require(), to allow clean completion
+of examples that require unavailable Suggested packages.
 }
 \details{
-\code{require.nowarnings(package)} acts the same as
-\code{require(package, quietly = TRUE)}, except that all warnings are turned off.
-In particular, no warning is given if the package is unavailable.
+\code{require(package)} acts the same as
+\code{require(package, quietly = TRUE)} but with warnings turned off.
+In particular, no warning or error is given if the package is unavailable.
+Most cases should use \code{requireNamespace(package, quietly = TRUE)} instead,
+which doesn't produce warnings.
 }
 \examples{
 ## This should produce no output:
 if (require.nowarnings(nonexistent)) {
-message("Package loaded successfully")
+  message("Package loaded successfully")
 }
 }
 \seealso{

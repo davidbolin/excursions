@@ -4,9 +4,21 @@
 \alias{simconf.inla}
 \title{Simultaneous confidence regions for latent Gaussian models}
 \usage{
-simconf.inla(result.inla, stack, name = NULL, tag = NULL, ind = NULL,
-  alpha, method = "NI", n.iter = 10000, verbose = 0, link = FALSE,
-  max.threads = 0, seed = NULL, inla.sample = TRUE)
+simconf.inla(
+  result.inla,
+  stack,
+  name = NULL,
+  tag = NULL,
+  ind = NULL,
+  alpha,
+  method = "NI",
+  n.iter = 10000,
+  verbose = 0,
+  link = FALSE,
+  max.threads = 0,
+  seed = NULL,
+  inla.sample = TRUE
+)
 }
 \arguments{
 \item{result.inla}{Result object from INLA call.}

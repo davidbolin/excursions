@@ -4,9 +4,16 @@
 \alias{contourmap.mc}
 \title{Contour maps and contour map quality measures using Monte Carlo samples}
 \usage{
-contourmap.mc(samples, n.levels, ind, levels, type = c("standard",
-  "equalarea", "P0-optimal", "P1-optimal", "P2-optimal"), compute = list(F =
-  TRUE, measures = NULL), alpha, verbose = FALSE)
+contourmap.mc(
+  samples,
+  n.levels,
+  ind,
+  levels,
+  type = c("standard", "equalarea", "P0-optimal", "P1-optimal", "P2-optimal"),
+  compute = list(F = TRUE, measures = NULL),
+  alpha,
+  verbose = FALSE
+)
 }
 \arguments{
 \item{samples}{Matrix with model Monte Carlo samples. Each column contains a sample of the model.}

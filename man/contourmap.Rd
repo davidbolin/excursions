@@ -4,10 +4,23 @@
 \alias{contourmap}
 \title{Contour maps and contour map quality measures for latent Gaussian models}
 \usage{
-contourmap(mu, Q, vars, n.levels, ind, levels, type = c("standard", "pretty",
-  "equalarea", "P0-optimal", "P1-optimal", "P2-optimal"), compute = list(F =
-  TRUE, measures = NULL), use.marginals = TRUE, alpha, F.limit,
-  n.iter = 10000, verbose = FALSE, max.threads = 0, seed = NULL)
+contourmap(
+  mu,
+  Q,
+  vars,
+  n.levels,
+  ind,
+  levels,
+  type = c("standard", "pretty", "equalarea", "P0-optimal", "P1-optimal", "P2-optimal"),
+  compute = list(F = TRUE, measures = NULL),
+  use.marginals = TRUE,
+  alpha,
+  F.limit,
+  n.iter = 10000,
+  verbose = FALSE,
+  max.threads = 0,
+  seed = NULL
+)
 }
 \arguments{
 \item{mu}{Expectation vector.}

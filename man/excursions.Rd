@@ -5,8 +5,25 @@
 \alias{excursions}
 \title{Excursion Sets and Contour Credibility Regions for Random Fields}
 \usage{
-excursions(alpha, u, mu, Q, type, n.iter = 10000, Q.chol, F.limit, vars, rho,
-  reo, method = "EB", ind, max.size, verbose = 0, max.threads = 0, seed)
+excursions(
+  alpha,
+  u,
+  mu,
+  Q,
+  type,
+  n.iter = 10000,
+  Q.chol,
+  F.limit,
+  vars,
+  rho,
+  reo,
+  method = "EB",
+  ind,
+  max.size,
+  verbose = 0,
+  max.threads = 0,
+  seed
+)
 }
 \arguments{
 \item{alpha}{Error probability for the excursion set.}

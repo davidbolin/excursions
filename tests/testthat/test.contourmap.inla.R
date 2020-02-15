@@ -1,7 +1,7 @@
 context("INLA interface")
 
 test_that("stack extraction", {
-  if (require.nowarnings("INLA")) {
+  if (requireNamespace("INLA", quietly = TRUE)) {
     data <- testdata.inla.small()
     ind <- excursions:::inla.output.indices(data$result,stack=data$stack,tag="pred")
     expect_equal(ind,c(6,7,8,9,10,11,12),tolerance=1e-7)
@@ -27,7 +27,7 @@ test_that("stack extraction", {
 context("Contourmap.inla")
 
 test_that("Contourmap.inla, test ind", {
-  if (require.nowarnings("INLA")) {
+  if (requireNamespace("INLA", quietly = TRUE)) {
   data <- testdata.inla()
   ind1 = c(1,2,3,4)
   ind2 = c(4,3,2,1)
@@ -50,7 +50,7 @@ test_that("Contourmap.inla, test ind", {
 })
 
 test_that("Contourmap.inla, P measures", {
-  if (require.nowarnings("INLA")) {
+  if (requireNamespace("INLA", quietly = TRUE)) {
     data <- testdata.inla.small()
 
     res1 = contourmap.inla(data$result, data$stack, tag = "pred",
