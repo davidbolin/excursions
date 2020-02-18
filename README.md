@@ -18,11 +18,11 @@ The development version of the package contains new features and fixes that are 
 The latest CRAN release of the package can be installed directly from CRAN with `install.packages("excursions")`.
 The latest stable version (which is sometimes slightly more recent than the CRAN version), can be installed by using the command
 ```r
-remotes::install_bitbucket("excursions/davidbolin", ref = "master")
+remotes::install_bitbucket("davidbolin/excursions", ref = "master")
 ```
 in R. The development version can be installed using the command
 ```r
-remotes::install_bitbucket("excursions/davidbolin", ref = "devel")
+remotes::install_bitbucket("davidbolin/excursions", ref = "devel")
 ```
 
 If you want to install the package using the `remotes::install_bitbucket`-method on Windows, you first need to install `Rtools` and add the paths to `Rtools` and `gcc` to the Windows `PATH` environment variable. This can be done for the current R session only using the commands
