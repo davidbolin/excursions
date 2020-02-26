@@ -115,7 +115,7 @@
 #' n.obs = 50
 #' obs.loc = sample(1:n,n.obs)
 #' A = sparseMatrix(i=1:n.obs, j=obs.loc, x=rep(1, n.obs), dims=c(n.obs, n))
-#' Y = as.vector(A \%*\% X + rnorm(n.obs)/sqrt(tau.e))
+#' Y = as.vector(A %*% X + rnorm(n.obs)/sqrt(tau.e))
 #'
 #' ## Estimate the parameters using INLA
 #' ef = list(c(list(ar=x),list(cov=mu)))

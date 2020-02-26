@@ -13,7 +13,7 @@
 
 using namespace std;
 
-extern "C" void Qinv(int * Rir, int * Rjc, double * Rpr, double * variances, int * nin, int n_threads){
+extern "C" void Qinv(int * Rir, int * Rjc, double * Rpr, double * variances, int * nin, int * n_threads){
   int n = nin[0];
 
   typedef pair<size_t,double> Qpairtype;
@@ -25,10 +25,10 @@ extern "C" void Qinv(int * Rir, int * Rjc, double * Rpr, double * variances, int
   #ifdef _OPENMP
     const int max_nP = omp_get_num_procs();
     int nPtmp;
-    if(n_threads == 0){
+    if(n_threads[0] == 0){
       nPtmp = max_nP;
     } else {
-      nPtmp = min(max_nP, max(n_threads,1));
+      nPtmp = min(max_nP, max(n_threads[0],1));
     }
     const int nP = nPtmp;
     omp_set_num_threads(nP);

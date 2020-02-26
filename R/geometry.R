@@ -742,11 +742,11 @@ as.Lines.raw <- function(cl, ID=" ") {
 #'     Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
 #'     x <- inla.qsample(Q = Q)
 #'     A <- inla.spde.make.A(mesh = mesh, loc = obs.loc)
-#'     Y <- as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
+#'     Y <- as.vector(A %*% x + rnorm(n.obs) * sqrt(sigma2.e))
 #'     
 #'     ## Calculate posterior
-#'     Q.post <- (Q + (t(A)\%*\%A)/sigma2.e)
-#'     mu.post <- as.vector(solve(Q.post,(t(A)\%*\%Y)/sigma2.e))
+#'     Q.post <- (Q + (t(A) %*% A)/sigma2.e)
+#'     mu.post <- as.vector(solve(Q.post,(t(A) %*% Y)/sigma2.e))
 #'     
 #'     ## Calculate continuous contours
 #'     tric <- tricontour(mesh, z = mu.post,
@@ -833,7 +833,7 @@ generate.trigraph.properties <- function(x, Nv=NULL) {
                              j=as.vector(x$ev),
                              x=rep(1,x$Ne*2),
                              dims=c(x$Ne, x$Nv))
-  ev.tr <- private.sparse.gettriplet(ev%*%t(ev))
+  ev.tr <- private.sparse.gettriplet(ev %*% t(ev))
   ee <- cbind(ev.tr$i[(ev.tr$x==2) & (ev.tr$i!=ev.tr$j)],
               ev.tr$j[(ev.tr$x==2) & (ev.tr$i!=ev.tr$j)])
   x$ee <- rep(NA, x$Ne)
@@ -1599,16 +1599,20 @@ probabilitymap <-
     } else {
       spout.joined <- sp::SpatialPolygons(spout)
       spout.union <- rgeos::gUnaryUnion(spout.joined)
-      spout[[ID]] <- rgeos::gDifference(sp.domain, spout.union)
-      spout[[ID]] <- spout[[ID]]@polygons[[1]]
+      sp.diff <- rgeos::gDifference(sp.domain, spout.union)
+      if (!is.null(sp.diff)) {
+        spout[[ID]] <- sp.diff@polygons[[1]]
+      }
     }
-    spout[[ID]]@ID <- ID
-
-    if (output == "inla.mesh.segment") {
-      inlaout[[ID]] <- INLA::inla.sp2segment(spout[[ID]])
+    if (!is.null(spout[[ID]])) {
+      spout[[ID]]@ID <- ID
+      
+      if (output == "inla.mesh.segment") {
+        inlaout[[ID]] <- INLA::inla.sp2segment(spout[[ID]])
+      }
     }
   }
-
+  
   if ((output == "sp") && (length(spout) > 0)) {
     out <- sp::SpatialPolygons(spout)
   } else if ((output == "inla.mesh.segment") && (length(inlaout) > 0)) {
@@ -1774,11 +1778,11 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #' Q = inla.spde2.precision(spde, theta=c(log(sqrt(0.5)), log(sqrt(1))))
 #' x = inla.qsample(Q=Q)
 #' A = inla.spde.make.A(mesh=mesh,loc=obs.loc)
-#' Y = as.vector(A \%*\% x + rnorm(n.obs)*sqrt(sigma2.e))
+#' Y = as.vector(A %*% x + rnorm(n.obs)*sqrt(sigma2.e))
 #'
 #' ## Calculate posterior
-#' Q.post = (Q + (t(A)\%*\%A)/sigma2.e)
-#' mu.post = as.vector(solve(Q.post,(t(A)\%*\%Y)/sigma2.e))
+#' Q.post = (Q + (t(A) %*% A)/sigma2.e)
+#' mu.post = as.vector(solve(Q.post,(t(A) %*% Y)/sigma2.e))
 #' vars.post = excursions.variances(chol(Q.post))
 #'
 #' ## Calculate contour map with two levels

@@ -4,9 +4,20 @@
 \alias{gaussint}
 \title{Sequential estimation of Gaussian integrals}
 \usage{
-gaussint(mu, Q.chol, Q, a, b, lim = 0, n.iter = 10000, ind,
-  use.reordering = c("natural", "sparsity", "limits"), max.size,
-  max.threads = 0, seed)
+gaussint(
+  mu,
+  Q.chol,
+  Q,
+  a,
+  b,
+  lim = 0,
+  n.iter = 10000,
+  ind,
+  use.reordering = c("natural", "sparsity", "limits"),
+  max.size,
+  max.threads = 0,
+  seed
+)
 }
 \arguments{
 \item{mu}{Expectation vector for the Gaussian distribution.}

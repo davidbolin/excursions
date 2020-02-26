@@ -74,11 +74,11 @@
 #' \donttest{
 #' if (require.nowarnings("INLA")) {
 #' #Generate mesh and SPDE model
-#' n.lattice = 10 #increase for more interesting, but slower, examples
-#' x=seq(from=0,to=10,length.out=n.lattice)
-#' lattice=inla.mesh.lattice(x=x,y=x)
-#' mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
-#' spde <- inla.spde2.matern(mesh, alpha=2)
+#' n.lattice <- 10 # increase for more interesting, but slower, examples
+#' x <- seq(from = 0, to = 10, length.out = n.lattice)
+#' lattice <- inla.mesh.lattice(x = x, y = x)
+#' mesh <- inla.mesh.create(lattice = lattice, extend = FALSE, refine = FALSE)
+#' spde <- inla.spde2.matern(mesh, alpha = 2)
 
 #' #Generate an artificial sample
 #' sigma2.e = 0.01
@@ -88,7 +88,7 @@
 #' Q = inla.spde2.precision(spde, theta=c(log(sqrt(0.5)), log(sqrt(1))))
 #' x = inla.qsample(Q=Q)
 #' A = inla.spde.make.A(mesh=mesh,loc=obs.loc)
-#' Y = as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
+#' Y = as.vector(A %*% x + rnorm(n.obs) * sqrt(sigma2.e))
 #'
 #' ## Estimate the parameters using INLA
 #' mesh.index = inla.spde.make.index(name="field",n.spde=spde$n.spde)
@@ -133,9 +133,9 @@ contourmap.inla <- function(result.inla,
                             seed=NULL,
                             ind,...)
 {
-  if (!requireNamespace("INLA", quietly=TRUE))
+  if (!requireNamespace("INLA", quietly = TRUE))
     stop('This function requires the INLA package (see www.r-inla.org/download)')
-  if(missing(result.inla))
+  if (missing(result.inla))
     stop('Must supply INLA result object')
 
   type <- match.arg(type)

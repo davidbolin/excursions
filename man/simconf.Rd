@@ -4,8 +4,18 @@
 \alias{simconf}
 \title{Simultaneous confidence regions for Gaussian models}
 \usage{
-simconf(alpha, mu, Q, n.iter = 10000, Q.chol, vars, ind = NULL,
-  verbose = 0, max.threads = 0, seed = NULL)
+simconf(
+  alpha,
+  mu,
+  Q,
+  n.iter = 10000,
+  Q.chol,
+  vars,
+  ind = NULL,
+  verbose = 0,
+  max.threads = 0,
+  seed = NULL
+)
 }
 \arguments{
 \item{alpha}{Error probability for the region.}

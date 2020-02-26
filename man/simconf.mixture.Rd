@@ -4,8 +4,19 @@
 \alias{simconf.mixture}
 \title{Simultaneous confidence regions for Gaussian mixture models}
 \usage{
-simconf.mixture(alpha, mu, Q, w, ind, n.iter = 10000, vars, verbose = 0,
-  max.threads = 0, seed = NULL, mix.samp = TRUE)
+simconf.mixture(
+  alpha,
+  mu,
+  Q,
+  w,
+  ind,
+  n.iter = 10000,
+  vars,
+  verbose = 0,
+  max.threads = 0,
+  seed = NULL,
+  mix.samp = TRUE
+)
 }
 \arguments{
 \item{alpha}{Error probability for the region.}

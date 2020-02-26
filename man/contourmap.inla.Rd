@@ -4,10 +4,24 @@
 \alias{contourmap.inla}
 \title{Contour maps and contour map quality measures for latent Gaussian models}
 \usage{
-contourmap.inla(result.inla, stack, name = NULL, tag = NULL,
-  method = "QC", n.levels, type = c("standard", "pretty", "equalarea"),
-  compute = list(F = TRUE, measures = NULL), alpha, F.limit, n.iter = 10000,
-  verbose = FALSE, max.threads = 0, seed = NULL, ind, ...)
+contourmap.inla(
+  result.inla,
+  stack,
+  name = NULL,
+  tag = NULL,
+  method = "QC",
+  n.levels,
+  type = c("standard", "pretty", "equalarea"),
+  compute = list(F = TRUE, measures = NULL),
+  alpha,
+  F.limit,
+  n.iter = 10000,
+  verbose = FALSE,
+  max.threads = 0,
+  seed = NULL,
+  ind,
+  ...
+)
 }
 \arguments{
 \item{result.inla}{Result object from INLA call.}
@@ -82,11 +96,11 @@ This function requires the \code{INLA} package, which is not a CRAN package.  Se
 \donttest{
 if (require.nowarnings("INLA")) {
 #Generate mesh and SPDE model
-n.lattice = 10 #increase for more interesting, but slower, examples
-x=seq(from=0,to=10,length.out=n.lattice)
-lattice=inla.mesh.lattice(x=x,y=x)
-mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
-spde <- inla.spde2.matern(mesh, alpha=2)
+n.lattice <- 10 # increase for more interesting, but slower, examples
+x <- seq(from = 0, to = 10, length.out = n.lattice)
+lattice <- inla.mesh.lattice(x = x, y = x)
+mesh <- inla.mesh.create(lattice = lattice, extend = FALSE, refine = FALSE)
+spde <- inla.spde2.matern(mesh, alpha = 2)
 #Generate an artificial sample
 sigma2.e = 0.01
 n.obs=100
@@ -95,7 +109,7 @@ obs.loc = cbind(runif(n.obs)*diff(range(x))+min(x),
 Q = inla.spde2.precision(spde, theta=c(log(sqrt(0.5)), log(sqrt(1))))
 x = inla.qsample(Q=Q)
 A = inla.spde.make.A(mesh=mesh,loc=obs.loc)
-Y = as.vector(A \\\%*\\\% x + rnorm(n.obs) * sqrt(sigma2.e))
+Y = as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
 
 ## Estimate the parameters using INLA
 mesh.index = inla.spde.make.index(name="field",n.spde=spde$n.spde)

@@ -1,8 +1,8 @@
 Package: excursions
 Type: Package
 Title: Excursion Sets and Contour Credibility Regions for Random Fields
-Version: 2.4.4
-Date: 2018-08-31
+Version: 2.4.5
+Date: 2020-02-24
 Authors@R: c(
     person("David", "Bolin", email = "davidbolin@gmail.com", role = c("cre", "aut")),
     person("Finn", "Lindgren", email = "finn.lindgren@gmail.com", role = "aut"))
@@ -14,4 +14,4 @@ Additional_repositories: https://inla.r-inla-download.org/R/stable
 License: GPL (>=3)
 Copyright: The R package and code, and the main programs, were written by and are Copyright by David Bolin and Finn Lindgren, and are redistributable under the GNU Public License, version 3 or later.  The package also includes code from the libraries CAMD from the SuiteSparse collection of Tim Davis, as well as functions from the GNU Scientific library and the RngStreams library by Pierre L'Ecuyer.  For details see the COPYRIGHTS file.
 NeedsCompilation: yes
-RoxygenNote: 6.0.1
+RoxygenNote: 7.0.2

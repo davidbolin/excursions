@@ -1,7 +1,7 @@
 context("Continuous")
 
 test_that("Continous on contourmap, R2 mesh", {
-  if (require.nowarnings("INLA")) {
+  if (requireNamespace("INLA", quietly = TRUE)) {
     data <- integration.testdata1()
     res1 = contourmap(data$mu, data$Q, n.levels=2,
                       seed=data$seed, alpha=0.1,max.threads=1,
@@ -39,7 +39,7 @@ test_that("Continous on contourmap, R2 mesh", {
 })
 
 test_that("Continous on contourmap, M mesh", {
-  if (require.nowarnings("INLA")) {
+  if (requireNamespace("INLA", quietly = TRUE)) {
     data <- integration.testdata1()
     res1 = contourmap(data$mu, data$Q, n.levels=2,
                       seed=data$seed, alpha=0.1,max.threads=1)

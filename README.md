@@ -18,14 +18,14 @@ The development version of the package contains new features and fixes that are 
 The latest CRAN release of the package can be installed directly from CRAN with `install.packages("excursions")`.
 The latest stable version (which is sometimes slightly more recent than the CRAN version), can be installed by using the command
 ```r
-devtools::install_bitbucket("excursions", "davidbolin", ref = "release")
+remotes::install_bitbucket("davidbolin/excursions", ref = "master")
 ```
 in R. The development version can be installed using the command
 ```r
-devtools::install_bitbucket("excursions", "davidbolin", ref = "default")
+remotes::install_bitbucket("davidbolin/excursions", ref = "devel")
 ```
 
-If you want to install the package using the `devtools::install_bitbucket`-method on Windows, you first need to install `Rtools` and add the paths to `Rtools` and `gcc` to the Windows `PATH` environment variable. This can be done for the current R session only using the commands
+If you want to install the package using the `remotes::install_bitbucket`-method on Windows, you first need to install `Rtools` and add the paths to `Rtools` and `gcc` to the Windows `PATH` environment variable. This can be done for the current R session only using the commands
 ```r
 rtools = "C:\\Rtools\\bin"
 gcc = "C:\\Rtools\\gcc-4.6.3\\bin"
@@ -34,53 +34,36 @@ Sys.setenv(PATH = paste(c(gcc, rtools, Sys.getenv("PATH")), collapse = ";"))
 where the variables `rtools` and `gcc` need to be changed if `Rtool`s is not installed directly on `C:`.
 
 # Repository branch workflows #
-The package version format for released versions is `major.minor.bugfix`. All regular development should be performed on the `default` branch, or on feature branches derived from `default`. On the `default` branch, the vestion number is `major.minor.bugfix.9000`, where the first three component reflect the latest released version with changes present in the `default` branch. The version on the `release` branch is the bugfix version currently being prepared for stable release. Bugfixes may only be applied to the `release` branch, and must be merged into `default`.
+The package version format for released versions is `major.minor.bugfix`. All regular development should be performed on the `devel` branch or in a feature branch, managed with `git flow feature`. On the `devel` branch, the vestion number is `major.minor.bugfix.9000`, where the first three components reflect the latest released version with changes present in the `default` branch. Bugfixes should be applied via the `git flow bugfix` and `git flow hotfix` methods, as indicated below. For `git flow` configuration, use `master` as the stable master branch, `devel` as the develop branch, and `v` as the version tag prefix. See [the `git flow` tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) for more information.
 
-  * Prepare a new release:
+For non `master` and `devel` branches that collaborators need access to (e.g. release branches, feature branches, etc, use the `git flow publish` mechanism).
+
+  * Prepare a new stable release with CRAN submission:
 ```
-hg update release
-hg merge default
-## Update the version number as major.(minor+1).0
+git flow release start major.(minor+1).0
+## Update the DESCRIPTION version number as major.(minor+1).0
 ## Update the version in NEWS.md
-hg commit -m "Start new release"
-hg update default
-hg merge release
-## Resolve/update the version number conflict in favour of the release version, with extra .9000
-## Update the version in NEWS.md
-hg commit -m "Start next development version"
+## Commit the changes
+## At this point, see the CRAN submission section below.
+git flow release finish 'VERSION'
+## Resolve/update the DESCRIPTION and NEWS.md version number conflict
+## in favour of the released version, with extra .9000, e.g. with
+## the help of  git mergetool
+## Add a new version section in NEWS.md
+## Commit the merge
 ```
-  * Prepare a stable version:
+  * Do a hotfix (branch from stable master; use bugfix for release branch bugfixes):
 ```
-hg update release
-## Update the date in the DESCRIPTION
-hg commit -m "Update release date"
-## Perform CRAN checks, if unsuccessful then stop, and do a bugfix instead.
-hg update stable
-hg merge release
-hg commit -m "New stable version"
-hg tag vX.X.X
-## X.X.X = major.minor.bugfix from DESCRIPTION
+git flow hotfix start hotfix_branch_name
+## Do the bugfix, update the verison number major.minor.(bugfix+1), and commit
+## Optionally, do CRAN submission
+git flow hotfix finish hotfix_branch_name
+## Resolve merge conflicts (hopefully mostly due to version numbers)
 ```
-  * Do a bugfix:
+  * CRAN submission
 ```
-hg update release
-## Update the version number to major.minor.(bugfix+1)
-## Fix the bug
-hg commit
-hg update default
-hg merge release
-## (Resolve version conflict in favour of the release version, with extra .9000)
-hg commit -m "Apply bugfix from release branch: ..."
-## Optionally, prepare a stable version
-```
-  * Submit to CRAN
-```
-## If not already done, prepare a stable version
-## Perform CRAN checks, if unsuccessful then stop, and do bugfixes
+## Perform CRAN checks (usually on the release branch version)
+## If unsuccessful then do bugfixes with increasing bugfix version, until ok
 ## Submit to CRAN
-## If not accepted then stop, and do bugfixes
-## If accepted, do
-hg update default
-## Update CRAN version in README.md
-hg commit -m "Update CRAN version in README.md"
+## If not accepted then do more bugfixes and repeat
 ```
