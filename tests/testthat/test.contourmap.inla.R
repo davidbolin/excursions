@@ -53,7 +53,8 @@ test_that("Contourmap.inla, test ind", {
 
 test_that("Contourmap.inla, P measures", {
   skip_on_cran()
-  if (requireNamespace("INLA", quietly = TRUE)) {
+  local_exc_safe_inla()
+
     data <- testdata.inla.small()
 
     res1 = contourmap.inla(data$result, data$stack, tag = "pred",
@@ -70,7 +71,7 @@ test_that("Contourmap.inla, P measures", {
                            max.threads=1,
                            compute = list(F = FALSE, measures = c("P2","P1")),
                            method='QC')
-    expect_equal(res1$P1,0.7669963,tolerance=1e-3)
-    expect_equal(res1$P2,0.6613112,tolerance=1e-3)
-  }
+    expect_equal(res1$P1,0.7669963,tolerance=2e-3)
+    expect_equal(res1$P2,0.6613112,tolerance=2e-3)
+
 })
