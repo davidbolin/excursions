@@ -63,7 +63,7 @@
 #' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #' @seealso \code{\link{simconf}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' if (require.nowarnings("INLA")) {
 #' n <- 10
 #' x <- seq(0, 6, length.out=n)

@@ -1,6 +1,7 @@
 context("Excursions.inla")
 
 test_that("excursions.inla, test ind", {
+  skip_on_cran()
   if (requireNamespace("INLA", quietly = TRUE)) {
   data <- testdata.inla()
   ind1 = c(1,2,3,4)

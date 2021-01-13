@@ -71,7 +71,7 @@
 #' @export
 #' @seealso \code{\link{contourmap}}, \code{\link{contourmap.mc}}, \code{\link{contourmap.colors}}
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' if (require.nowarnings("INLA")) {
 #' #Generate mesh and SPDE model
 #' n.lattice <- 10 # increase for more interesting, but slower, examples

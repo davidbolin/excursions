@@ -1,6 +1,7 @@
 context("Continuous")
 
 test_that("Continous on contourmap, R2 mesh", {
+  skip_on_cran()
   if (requireNamespace("INLA", quietly = TRUE)) {
     data <- integration.testdata1()
     res1 = contourmap(data$mu, data$Q, n.levels=2,
@@ -39,6 +40,7 @@ test_that("Continous on contourmap, R2 mesh", {
 })
 
 test_that("Continous on contourmap, M mesh", {
+  skip_on_cran()
   if (requireNamespace("INLA", quietly = TRUE)) {
     data <- integration.testdata1()
     res1 = contourmap(data$mu, data$Q, n.levels=2,
