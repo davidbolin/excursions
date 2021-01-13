@@ -13,4 +13,4 @@ Additional_repositories: https://inla.r-inla-download.org/R/stable
 License: GPL (>=3)
 Copyright: The R package and code, and the main programs, were written by and are Copyright by David Bolin and Finn Lindgren, and are redistributable under the GNU Public License, version 3 or later.  The package also includes code from the libraries CAMD from the SuiteSparse collection of Tim Davis, as well as functions from the GNU Scientific library and the RngStreams library by Pierre L'Ecuyer.  For details see the COPYRIGHTS file.
 NeedsCompilation: yes
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1

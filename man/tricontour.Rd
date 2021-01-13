@@ -134,7 +134,7 @@ Calculates contour curves and/or regions between them,
 for functions defined on a triangulation
 }
 \examples{
-\donttest{
+\dontrun{
   if (require.nowarnings("INLA")) {
     ## Generate mesh and SPDE model
     n.lattice <- 20 #increase for more interesting, but slower, examples
