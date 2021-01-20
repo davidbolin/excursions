@@ -1,4 +1,4 @@
-# excursions 2.5.0.9000
+# excursions 2.5.1
 
 * Update links to INLA in documentation
 
