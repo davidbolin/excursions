@@ -11,7 +11,9 @@ Depends: R (>= 3.2.0), Matrix, sp
 Suggests: INLA (>= 0.0-1468840039), testthat, rgeos
 Imports: graphics, methods, stats
 Additional_repositories: https://inla.r-inla-download.org/R/stable
+BugReports: https://github.com/davidbolin/excursions/issues
 License: GPL (>=3)
+URL: https://github.com/davidbolin/excursions
 Copyright: The R package and code, and the main programs, were written by and are Copyright by David Bolin and Finn Lindgren, and are redistributable under the GNU Public License, version 3 or later.  The package also includes code from the libraries CAMD from the SuiteSparse collection of Tim Davis, as well as functions from the GNU Scientific library and the RngStreams library by Pierre L'Ecuyer.  For details see the COPYRIGHTS file.
 NeedsCompilation: yes
 RoxygenNote: 7.0.2
