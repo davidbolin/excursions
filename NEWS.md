@@ -1,6 +1,3 @@
-# excursions (development version)
-
-# excursions 2.5.0.9000
 
 # excursions 2.5.0
 
