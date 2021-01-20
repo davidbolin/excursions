@@ -1,3 +1,12 @@
+# excursions 2.5.0.9000
+
+# excursions 2.5.0
+
+* Remove dependency on INLA for tests on CRAN 
+* Fix bug for diagonal matrices of size 1x1 
+* Add fields URL and BugReports to DESCRIPTION
+
+
 # excursions 2.4.5
 
 * Fix bug to handle empty sets in continuous interpretations

@@ -61,7 +61,7 @@ input).}
 Calculates continuous domain excursion and credible contour sets
 }
 \examples{
-\donttest{
+\dontrun{
 if (require.nowarnings("INLA")) {
 #Generate mesh and SPDE model
 n.lattice = 10 #Increase for more interesting, but slower, examples

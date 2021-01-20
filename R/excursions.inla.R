@@ -96,7 +96,7 @@
 #' @examples
 #' ## In this example, we calculate the excursion function
 #' ## for a partially observed AR process.
-#' \donttest{
+#' \dontrun{
 #' if (require.nowarnings("INLA")) {
 #' ## Sample the process:
 #' rho = 0.9

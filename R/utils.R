@@ -292,9 +292,10 @@ private.as.dtCMatrix <- function(M)
     ## Convert into dtCMatrix format of Matrix.
     ## Convert via virtual class CsparseMatrix;
     ## this allows more general conversions than direct conversion.
-    return (as(as(as(M, "sparseMatrix"), "CsparseMatrix"), "dtCMatrix"))
+    return (as(as(as(M, "CsparseMatrix"), "dgCMatrix"), "dtCMatrix"))
   }
 }
+
 
 ## Transpose a lower triangular matrix into upper triangular dtCMatrix
 ## If already upper triangular dtCMatrix, the matrix is returned unchanged

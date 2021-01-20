@@ -725,7 +725,7 @@ as.Lines.raw <- function(cl, ID=" ") {
 #' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' 
 #' @examples
-#' \donttest{
+#' \dontrun{
 #'   if (require.nowarnings("INLA")) {
 #'     ## Generate mesh and SPDE model
 #'     n.lattice <- 20 #increase for more interesting, but slower, examples
@@ -1761,7 +1761,7 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #'
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' if (require.nowarnings("INLA")) {
 #' #Generate mesh and SPDE model
 #' n.lattice = 10 #Increase for more interesting, but slower, examples

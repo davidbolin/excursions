@@ -93,7 +93,7 @@ What should be computed is specified using the
 This function requires the \code{INLA} package, which is not a CRAN package.  See \url{http://www.r-inla.org/download} for easy installation instructions.
 }
 \examples{
-\donttest{
+\dontrun{
 if (require.nowarnings("INLA")) {
 #Generate mesh and SPDE model
 n.lattice <- 10 # increase for more interesting, but slower, examples

@@ -1,7 +1,9 @@
 context("Continuous")
 
 test_that("Continous on contourmap, R2 mesh", {
-  if (requireNamespace("INLA", quietly = TRUE)) {
+  skip_on_cran()
+  local_exc_safe_inla()
+
     data <- integration.testdata1()
     res1 = contourmap(data$mu, data$Q, n.levels=2,
                       seed=data$seed, alpha=0.1,max.threads=1,
@@ -35,11 +37,12 @@ test_that("Continous on contourmap, R2 mesh", {
     expect_s3_class(res3$M, "inla.mesh.segment")
     expect_s3_class(res4$M, "inla.mesh.segment")
     expect_s3_class(res5$M, "inla.mesh.segment")
-  }
 })
 
 test_that("Continous on contourmap, M mesh", {
-  if (requireNamespace("INLA", quietly = TRUE)) {
+  skip_on_cran()
+  local_exc_safe_inla()
+
     data <- integration.testdata1()
     res1 = contourmap(data$mu, data$Q, n.levels=2,
                       seed=data$seed, alpha=0.1,max.threads=1)
@@ -73,5 +76,5 @@ test_that("Continous on contourmap, M mesh", {
                        calc.credible = FALSE)
     
     expect_s3_class(res4$M, "inla.mesh.segment")
-  }
+
 })

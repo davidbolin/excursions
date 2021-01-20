@@ -15,6 +15,7 @@ integration.testdata1 <- function()
 testdata.inla <- function()
 {
   if (require("INLA", quietly=TRUE)) {
+    local_exc_safe_inla()
   set.seed(1)
   rho = 0.99
   tau = 15
@@ -53,6 +54,7 @@ testdata.inla <- function()
 testdata.inla.small <- function()
 {
   if (require("INLA", quietly=TRUE)) {
+    local_exc_safe_inla()
     set.seed(1)
     rho = 0.99
     tau = 15
