@@ -55,7 +55,7 @@
 #' @export
 #' @details See \code{\link{simconf}} for details.
 #' @note This function requires the \code{INLA} package, which is not a CRAN package.
-#' See \url{http://www.r-inla.org/download} for easy installation instructions.
+#' See \url{https://www.r-inla.org/download-install} for easy installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
 #' from global temperature}, Statistica Sinica, vol 25, pp 351-367.

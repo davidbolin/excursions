@@ -86,7 +86,7 @@
 #' this is that the more accurate methods also have higher computational costs.
 #' 
 #' @note This function requires the \code{INLA} package, which is not a CRAN
-#' package.  See \url{http://www.r-inla.org/download} for easy installation instructions.
+#' package.  See \url{https://www.r-inla.org/download-install} for easy installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
 #' 

@@ -1,5 +1,7 @@
 # excursions 2.5.0.9000
 
+* Update links to INLA in documentation
+
 # excursions 2.5.0
 
 * Remove dependency on INLA for tests on CRAN 
