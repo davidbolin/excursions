@@ -500,7 +500,7 @@ outline.on.mesh <- function(z, mesh, complement=FALSE)
 #' @return An \code{inla.mesh} object.
 #' @export
 #' @note This function requires the \code{INLA} package, which is not a CRAN
-#' package.  See \url{http://www.r-inla.org/download} for easy installation instructions.
+#' package.  See \url{https://www.r-inla.org/download-install} for easy installation instructions.
 #' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @examples
 #' \dontrun{
@@ -543,7 +543,7 @@ submesh.grid <- function(z, grid=NULL)
 #' @return An \code{inla.mesh} object.
 #' @export
 #' @note This function requires the \code{INLA} package, which is not a CRAN package.
-#' See \url{http://www.r-inla.org/download} for easy installation instructions.
+#' See \url{https://www.r-inla.org/download-install} for easy installation instructions.
 #' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @examples
 #' \dontrun{

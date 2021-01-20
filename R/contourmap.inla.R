@@ -46,7 +46,7 @@
 #' @param ... Additional arguments to the contour map function. See the documentation for \code{contourmap} for details.
 #'
 #' @return \code{contourmap.inla} returns an object of class "excurobj" with the same elements as returned by \code{contourmap}.
-#' @note This function requires the \code{INLA} package, which is not a CRAN package.  See \url{http://www.r-inla.org/download} for easy installation instructions.
+#' @note This function requires the \code{INLA} package, which is not a CRAN package.  See \url{https://www.r-inla.org/download-install} for easy installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @details 
 #' The INLA approximation of the quantity of interest is in general a weighted sum of 
