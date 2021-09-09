@@ -41,7 +41,7 @@
 #' value is 1.
 #' @param F.limit Error probability for when to stop the calculation of the excursion
 #' function. The default value is \code{alpha}, and the value cannot be smaller than
-#' \code{alpha}. A smaller value of \code{F.limit} results in asmaller compontation time.
+#' \code{alpha}. A smaller value of \code{F.limit} results in a smaller computation time.
 #' @param u Excursion or contour level.
 #' @param u.link If u.link is TRUE, \code{u} is assumed to be in the scale of the
 #' data and is then transformed to the scale of the linear predictor (default FALSE).
