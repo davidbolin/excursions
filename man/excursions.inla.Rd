@@ -43,7 +43,7 @@ argument specifies the indices for that part.}
 \item{'QC' }{Quantile correction}
 \item{'NI' }{Numerical integration}
 \item{'NIQC' }{Numerical integration with quantile correction}
-\item{'iNIQC' }{Improved integration with quantle correction}}}
+\item{'iNIQC' }{Improved integration with quantile correction}}}
 
 \item{alpha}{Error probability for the excursion set of interest. The default
 value is 1.}

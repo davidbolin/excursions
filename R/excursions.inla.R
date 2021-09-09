@@ -36,7 +36,7 @@
 #' \item{'QC' }{Quantile correction}
 #' \item{'NI' }{Numerical integration}
 #' \item{'NIQC' }{Numerical integration with quantile correction}
-#' \item{'iNIQC' }{Improved integration with quantle correction}}
+#' \item{'iNIQC' }{Improved integration with quantile correction}}
 #' @param alpha Error probability for the excursion set of interest. The default
 #' value is 1.
 #' @param F.limit Error probability for when to stop the calculation of the excursion
