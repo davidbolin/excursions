@@ -143,7 +143,8 @@ stack = inla.stack(s.obs,s.pre)
 formula = y ~ -1 + cov + f(ar,model="ar1")
 result = inla(formula=formula, family="normal", data = inla.stack.data(stack),
               control.predictor=list(A=inla.stack.A(stack),compute=TRUE),
-              control.compute = list(config = TRUE))
+              control.compute = list(config = TRUE,
+                                     return.marginals.predictor = TRUE))
 
 ## calculate the level 0 positive excursion function
 res.qc = excursions.inla(result, stack = stack, tag = 'pred', alpha=0.99, u=0,

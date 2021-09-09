@@ -1,5 +1,8 @@
 # excursions (development version)
 
+* Add `return.marginals.predictor = TRUE` option to tests and examples, for
+  new INLA compatibility
+
 # excursions 2.5.1
 
 * Update links to INLA in documentation

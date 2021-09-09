@@ -99,8 +99,10 @@
 #' stack = inla.stack(s.obs,s.pre)
 #' formula = y ~ -1 + Intercept + f(field, model=spde)
 #' result = inla(formula=formula, family="normal", data = inla.stack.data(stack),
-#'              control.predictor=list(A=inla.stack.A(stack),compute=TRUE),
-#'              control.compute = list(config = TRUE),
+#'              control.predictor=list(A = inla.stack.A(stack),
+#'                                     compute = TRUE),
+#'              control.compute = list(config = TRUE,
+#'                                     return.marginals.predictor = TRUE),
 #'              num.threads = 1)
 #'
 #' ## Calculate contour map with two levels
@@ -200,7 +202,7 @@ contourmap.inla <- function(result.inla,
   }
 
   if(!random.effect && is.null(result.inla$marginals.linear.predictor))
-    stop('INLA result must be calculated using return.marginals.linear.predictor=TRUE if P measures are to be calculated for the linear predictor.')
+    stop('INLA result must be calculated using return.marginals.predictor=TRUE if P measures are to be calculated for the linear predictor.')
 
   #If method=EB, we use the mean of the configuration at the mode for the contourmap
   #If method=QC, we instead use the total mean.
