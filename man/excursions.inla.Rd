@@ -43,14 +43,14 @@ argument specifies the indices for that part.}
 \item{'QC' }{Quantile correction}
 \item{'NI' }{Numerical integration}
 \item{'NIQC' }{Numerical integration with quantile correction}
-\item{'iNIQC' }{Improved integration with quantle correction}}}
+\item{'iNIQC' }{Improved integration with quantile correction}}}
 
 \item{alpha}{Error probability for the excursion set of interest. The default
 value is 1.}
 
 \item{F.limit}{Error probability for when to stop the calculation of the excursion
 function. The default value is \code{alpha}, and the value cannot be smaller than
-\code{alpha}. A smaller value of \code{F.limit} results in asmaller compontation time.}
+\code{alpha}. A smaller value of \code{F.limit} results in a smaller computation time.}
 
 \item{u}{Excursion or contour level.}
 
@@ -143,7 +143,8 @@ stack = inla.stack(s.obs,s.pre)
 formula = y ~ -1 + cov + f(ar,model="ar1")
 result = inla(formula=formula, family="normal", data = inla.stack.data(stack),
               control.predictor=list(A=inla.stack.A(stack),compute=TRUE),
-              control.compute = list(config = TRUE))
+              control.compute = list(config = TRUE,
+                                     return.marginals.predictor = TRUE))
 
 ## calculate the level 0 positive excursion function
 res.qc = excursions.inla(result, stack = stack, tag = 'pred', alpha=0.99, u=0,

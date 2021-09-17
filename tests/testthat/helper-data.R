@@ -42,8 +42,10 @@ testdata.inla <- function()
   formula = y ~ -1 + cov + f(ar,model="ar1")
   result = INLA::inla(formula=formula,
               data = INLA::inla.stack.data(stack),
-              control.predictor=list(A=INLA::inla.stack.A(stack),compute=TRUE),
-              control.compute = list(config = TRUE),
+              control.predictor=list(A = INLA::inla.stack.A(stack),
+                                     compute = TRUE),
+              control.compute = list(config = TRUE,
+                                     return.marginals.predictor = TRUE),
               num.threads = 1)
 
   seed = 1:6
@@ -81,8 +83,10 @@ testdata.inla.small <- function()
     formula = y ~ -1 + cov + f(ar,model="ar1")
     result = INLA::inla(formula=formula,
                         data = INLA::inla.stack.data(stack),
-                        control.predictor=list(A=INLA::inla.stack.A(stack),compute=TRUE),
-                        control.compute = list(config = TRUE))
+                        control.predictor=list(A = INLA::inla.stack.A(stack),
+                                               compute = TRUE),
+                        control.compute = list(config = TRUE,
+                                               return.marginals.predictor = TRUE))
 
     seed = 1:6
     return(list(result=result,stack=stack,seed=seed,n=n))

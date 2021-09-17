@@ -120,8 +120,10 @@ s.pre = inla.stack(data=list(y=NA), A=list(1), effects=ef,tag="pred")
 stack = inla.stack(s.obs,s.pre)
 formula = y ~ -1 + Intercept + f(field, model=spde)
 result = inla(formula=formula, family="normal", data = inla.stack.data(stack),
-             control.predictor=list(A=inla.stack.A(stack),compute=TRUE),
-             control.compute = list(config = TRUE),
+             control.predictor=list(A = inla.stack.A(stack),
+                                    compute = TRUE),
+             control.compute = list(config = TRUE,
+                                    return.marginals.predictor = TRUE),
              num.threads = 1)
 
 ## Calculate contour map with two levels

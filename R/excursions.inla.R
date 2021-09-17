@@ -36,12 +36,12 @@
 #' \item{'QC' }{Quantile correction}
 #' \item{'NI' }{Numerical integration}
 #' \item{'NIQC' }{Numerical integration with quantile correction}
-#' \item{'iNIQC' }{Improved integration with quantle correction}}
+#' \item{'iNIQC' }{Improved integration with quantile correction}}
 #' @param alpha Error probability for the excursion set of interest. The default
 #' value is 1.
 #' @param F.limit Error probability for when to stop the calculation of the excursion
 #' function. The default value is \code{alpha}, and the value cannot be smaller than
-#' \code{alpha}. A smaller value of \code{F.limit} results in asmaller compontation time.
+#' \code{alpha}. A smaller value of \code{F.limit} results in a smaller computation time.
 #' @param u Excursion or contour level.
 #' @param u.link If u.link is TRUE, \code{u} is assumed to be in the scale of the
 #' data and is then transformed to the scale of the linear predictor (default FALSE).
@@ -125,7 +125,8 @@
 #' formula = y ~ -1 + cov + f(ar,model="ar1")
 #' result = inla(formula=formula, family="normal", data = inla.stack.data(stack),
 #'               control.predictor=list(A=inla.stack.A(stack),compute=TRUE),
-#'               control.compute = list(config = TRUE))
+#'               control.compute = list(config = TRUE,
+#'                                      return.marginals.predictor = TRUE))
 #'
 #' ## calculate the level 0 positive excursion function
 #' res.qc = excursions.inla(result, stack = stack, tag = 'pred', alpha=0.99, u=0,
@@ -218,7 +219,7 @@ excursions.inla <- function(result.inla,
   }
 
   if(!random.effect && is.null(result.inla$marginals.linear.predictor))
-    stop('INLA result must be calculated using return.marginals.linear.predictor=TRUE if excursion sets are to be calculated for the linear predictor.')
+    stop('INLA result must be calculated using return.marginals.predictor=TRUE if excursion sets are to be calculated for the linear predictor.')
 
   if(random.effect) {
     rho.ind <- sapply(1:length(ind), function(j) inla.get.marginal(ind.int[j],
@@ -290,11 +291,16 @@ excursions.inla <- function(result.inla,
   		r.i <- INLA::inla(result.inla$.args$formula,
                         family = result.inla$.args$family,
                         data=result.inla$.args$data,
-                        control.compute = list(config = TRUE),
+                        control.compute = list(config = TRUE,
+                                               return.marginals.predictor = TRUE),
                         control.predictor=result.inla$.args$control.predictor,
                         control.mode = list(theta=
                          as.vector(result.inla$misc$configs$config[[i]]$theta),
-                                  fixed=TRUE))
+                                  fixed=TRUE),
+  		                  num.threads = "1:1")
+  		# TODO: May refine the num.threads argument above to make it configurable, but
+  		# since the inla() call is only constructing the model and optimising over the
+  		# latent field once, for fixed hyperparameters, single threads is probably ok.
 
       if(random.effect) {
         p1.i <- sapply(1:length(ind), function(j) inla.get.marginal(ind.int[j],

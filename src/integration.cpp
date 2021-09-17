@@ -10,17 +10,17 @@
 #include <time.h>
 #include "gsl_fix.h"
 
-#include <R.h>
-#include <Rmath.h>
-#include <Rdefines.h>
-#include <R_ext/PrtUtil.h>
-
 /* Needed on Linux: */
 #include <unistd.h>
 
 #ifdef _OPENMP
-	#include<omp.h>
+#include<omp.h>
 #endif
+
+#include <R.h>
+#include <Rmath.h>
+#include <Rdefines.h>
+#include <R_ext/PrtUtil.h>
 
 extern "C"{
   #include "RngStream.h"

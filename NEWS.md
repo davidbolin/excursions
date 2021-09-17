@@ -1,3 +1,10 @@
+# excursions 2.5.2
+
+* Add `return.marginals.predictor = TRUE` option to tests and examples, for
+  new INLA compatibility
+* Move inclusion of `omp.h` to before R-related header includes, for clang
+  version 13 compatibility
+
 # excursions 2.5.1
 
 * Update links to INLA in documentation

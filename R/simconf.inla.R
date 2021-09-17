@@ -31,7 +31,7 @@
 #' @param ind If only a part of a component should be used in the calculations, this
 #' argument specifies the indices for that part.
 #' @param alpha Error probability for the region.
-#' @param method Method for handeling the latent Gaussian structure:
+#' @param method Method for handling the latent Gaussian structure:
 #' \itemize{
 #' \item{'EB' }{Empirical Bayes (Gaussian approximation of posterior).}
 #' \item{'NI' }{Numerical integration (Calculation based on the Gaussian mixture
@@ -54,6 +54,8 @@
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
 #' @details See \code{\link{simconf}} for details.
+#' 
+#' 
 #' @note This function requires the \code{INLA} package, which is not a CRAN package.
 #' See \url{https://www.r-inla.org/download-install} for easy installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com}
@@ -71,8 +73,9 @@
 #' mu <- 1:n
 #' result <- inla(y ~ 1 + f(mu, model='rw2'),
 #'                data=list(y=y, mu=mu), verbose=FALSE,
-#'                control.compute = list(config=TRUE),
-#'                num.threads = 1)
+#'                control.compute = list(config=TRUE,
+#'                                       return.marginals.predictor = TRUE),
+#'                num.threads = "1:1")
 #'
 #' res <- simconf.inla(result, name='mu', alpha = 0.05, max.threads = 1)
 #'
@@ -98,7 +101,7 @@ simconf.inla <- function(result.inla,
                          inla.sample=TRUE)
 {
   if (!requireNamespace("INLA", quietly=TRUE))
-    stop('This function requires the INLA package (see www.r-inla.org/download)')
+    stop('This function requires the INLA package (see www.r-inla.org/download-install)')
   if(missing(result.inla))
     stop('Must supply INLA result object')
 
