@@ -1,3 +1,5 @@
+# excursions (development version)
+
 # excursions 2.5.2
 
 * Add `return.marginals.predictor = TRUE` option to tests and examples, for
