@@ -21,3 +21,20 @@ test_that("excursions.inla, test ind", {
   expect_equal(res2$F,res3$F,tolerance=1e-7)
 
 })
+
+test_that("excursions.inla, experimental mode", {
+  skip_on_cran()
+  local_exc_safe_inla()
+  
+  data1 <- testdata.inla(inla.mode = "classic")
+  data2 <- testdata.inla(inla.mode = "experimental")
+  
+  res1 = excursions.inla(data1$result, name = "ar", method="QC",
+                         u=0, type='>', seed = data1$seed)
+  res2 = excursions.inla(data2$result, name = "ar", method="QC",
+                         u=0, type='>', seed = data1$seed)
+  
+  expect_equal(res1$F,res2$F,tolerance=1e-3)
+  
+  
+})

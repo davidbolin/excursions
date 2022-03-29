@@ -12,7 +12,7 @@ integration.testdata1 <- function()
 }
 
 
-testdata.inla <- function()
+testdata.inla <- function(inla.mode = "classic")
 {
   if (require("INLA", quietly=TRUE)) {
     local_exc_safe_inla()
@@ -46,7 +46,8 @@ testdata.inla <- function()
                                      compute = TRUE),
               control.compute = list(config = TRUE,
                                      return.marginals.predictor = TRUE),
-              num.threads = 1)
+              num.threads = 1,
+              inla.mode = inla.mode)
 
   seed = 1:6
   return(list(result=result,stack=stack,seed=seed,n=n))

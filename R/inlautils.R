@@ -4,6 +4,13 @@
 ## result : an inla object
 inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, ...)
 {
+  
+    if (!is.null(result$misc$configs$.preopt) && result$misc$configs$.preopt) {
+      inla.experimental <- TRUE
+    } else {
+      inla.experimental <- FALSE  
+    }
+    
     if (!is.null(name) && !is.null(tag)) {
         stop("At most one of 'name' and 'tag' may be non-null.")
     }
@@ -22,15 +29,33 @@ inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, ...)
             name <- "Predictor"
         }
     }
-
+  
+    if (inla.experimental && (name == "APredictor" || name == "Predictor") ){
+      stop("INLA was run in experimental mode, so you can only 
+           compute excursion sets for model components.")
+    }
+  
     ## Find variables
     if (!is.null(name)) {
         if (!(name %in% result$misc$configs$contents$tag)) {
           stop("'name' not found in result.")
         }
-        nameindex <- which(result$misc$configs$contents$tag == name)
-        index <- (result$misc$configs$contents$start[nameindex] - 1L +
-                  seq_len(result$misc$configs$contents$length[nameindex]))
+        ct <- result$misc$configs$contents
+        
+        #Shift indices for experimental mode
+        if (inla.experimental){ 
+          for(nm in c("APredictor", "Predictor")) {
+            if (ct$tag[1] == nm) {
+              ct$tag <- ct$tag[-1]
+              ct$start <- ct$start[-1] - ct$start[2] + 1
+              ct$length <- ct$length[-1]
+            }
+          }
+        }
+        
+        nameindex <- which(ct$tag == name)
+        index <- (ct$start[nameindex] - 1L + seq_len(ct$length[nameindex]))  
+        
     } else { ## Have tag
         index <- stack$data$index[[tag]]
     }
