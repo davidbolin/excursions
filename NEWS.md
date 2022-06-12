@@ -1,5 +1,7 @@
 # excursions (development version)
 
+* Add support for INLA results computed with the `experimental` option.
+
 # excursions 2.5.2
 
 * Add `return.marginals.predictor = TRUE` option to tests and examples, for
