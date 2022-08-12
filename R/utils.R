@@ -268,7 +268,7 @@ private.as.dgTMatrix <- function(M)
     ## Convert into dgTMatrix format of Matrix. Make sure the
     ## representation is unique (ie no double triplets etc)
     ## convert through the 'dgCMatrix'-class to make it unique;
-    return(as(private.as.dgCMatrix(M), "dgTMatrix"))
+    return(as(private.as.dgCMatrix(M), "TsparseMatrix"))
   }
 }
 
@@ -280,7 +280,7 @@ private.as.dgCMatrix <- function(M)
     ## Convert into dgCMatrix format of Matrix.
     ## Convert via virtual class CsparseMatrix;
     ## this allows more general conversions than direct conversion.
-    return(as(as(as(M, "sparseMatrix"), "CsparseMatrix"), "dgCMatrix"))
+    return(as(as(as(M, "dMatrix"), "generalMatrix"), "CsparseMatrix"))
   }
 }
 
@@ -292,7 +292,7 @@ private.as.dtCMatrix <- function(M)
     ## Convert into dtCMatrix format of Matrix.
     ## Convert via virtual class CsparseMatrix;
     ## this allows more general conversions than direct conversion.
-    return (as(as(as(M, "CsparseMatrix"), "dgCMatrix"), "dtCMatrix"))
+    return(as(as(as(M, "dMatrix"), "triangularMatrix"), "CsparseMatrix"))
   }
 }
 
@@ -702,3 +702,10 @@ print.summary.excurobj <- function(x,...)
 print.excurobj <- function(x,...) {
   print(summary(x))
 }
+
+
+
+#.onLoad <- function(libname, pkgname) {
+#  # For Matrix coercion deprecation testing: 1=warn, 2=stop, NA=something else
+#  # options(Matrix.warnDeprecatedCoerce = 2)
+#}

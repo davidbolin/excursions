@@ -23,11 +23,11 @@ Local helper functions for package unit tests
 }
 \section{Functions}{
 \itemize{
-\item \code{local_exc_safe_inla}: Tests should set num.threads = "1:1" to ensure
+\item \code{local_exc_safe_inla()}: Tests should set num.threads = "1:1" to ensure
 within-system repeatability by calling `local_exc_safe_inla()`;
 see also [exc_safe_inla()]
-}}
 
+}}
 \examples{
 \dontrun{
 local_exc_safe_inla(multicore = FALSE)
