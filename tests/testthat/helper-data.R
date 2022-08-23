@@ -59,15 +59,15 @@ testdata.inla.small <- function()
   if (require("INLA", quietly=TRUE)) {
     local_exc_safe_inla()
     set.seed(1)
-    rho = 0.99
-    tau = 15
+    rho = 0.9
+    sigma = 3
     n = 7
     n.obs  = 5
     x = 1:n
     mu = 10*((x < n/2)*(x - n/2) + (x >= n/2)*(n/2 - x) + n/4)/n
-    Q <- tau*sparseMatrix(i=c(1:n, 2:n), j=c(1:n, 1:(n-1)),
+    Q <- sparseMatrix(i=c(1:n, 2:n), j=c(1:n, 1:(n-1)),
                           x=c(1,rep(1+rho^2, n-2),1, rep(-rho, n-1)),
-                          dims=c(n, n), symmetric=TRUE)
+                          dims=c(n, n), symmetric=TRUE) / (1 - rho^2) / sigma^2
 
     X <- mu + INLA::inla.qsample(1, Q, seed=12345L)[,1]
 
