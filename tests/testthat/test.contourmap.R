@@ -1,5 +1,3 @@
-context("Contourmap")
-
 test_that("Contourmap, test ind", {
   data <- integration.testdata1()
   ind1 = c(1,2,3,4)

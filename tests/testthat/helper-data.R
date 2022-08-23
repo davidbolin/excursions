@@ -74,7 +74,7 @@ testdata.inla.small <- function()
     obs.loc = c(3,4,6,2,5)
     A = sparseMatrix(i=1:n.obs, j=obs.loc, x=rep(1, n.obs), dims=c(n.obs, n))
     Y <- as.vector(A %*% X +
-                     INLA::inla.qsample(1, Diagonal(n.obs, 1.0),
+                     INLA::inla.qsample(1, Diagonal(n.obs, 10.0),
                                         seed=98765L)[,1])
 
     ef = list(c(list(ar=x),list(cov=mu)))

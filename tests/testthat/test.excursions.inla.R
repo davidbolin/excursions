@@ -1,5 +1,3 @@
-context("Excursions.inla")
-
 test_that("excursions.inla, test ind", {
   skip_on_cran()
   local_exc_safe_inla()

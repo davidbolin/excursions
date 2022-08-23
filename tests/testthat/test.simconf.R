@@ -1,5 +1,3 @@
-context("Simconf")
-
 test_that("Simconf", {
   data <- integration.testdata1()
   res = simconf(Q = data$Q, mu = data$mu, seed = data$seed, alpha= 0.1)

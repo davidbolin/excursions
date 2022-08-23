@@ -1,6 +1,3 @@
-context("Excursions")
-
-
 test_that("Excursions, alpha = 1, type = >", {
   data <- integration.testdata1()
   res <- excursions(alpha=1, u=0, mu=data$mu, Q=data$Q, type='>',
