@@ -277,6 +277,9 @@ private.as.dgCMatrix <- function(M)
   if(is.null(M) || is(M,"dgCMatrix")){
     return(M)
   } else {
+    if (!inherits(M, "Matrix")) {
+      M <- as(M, "Matrix")
+    }
     ## Convert into dgCMatrix format of Matrix.
     ## Convert via virtual class CsparseMatrix;
     ## this allows more general conversions than direct conversion.
@@ -289,6 +292,9 @@ private.as.dtCMatrix <- function(M)
   if(is.null(M) || is(M,"dtCMatrix")){
     return(M)
   } else {
+    if (!inherits(M, "Matrix")) {
+      M <- as(M, "Matrix")
+    }
     ## Convert into dtCMatrix format of Matrix.
     ## Convert via virtual class CsparseMatrix;
     ## this allows more general conversions than direct conversion.
