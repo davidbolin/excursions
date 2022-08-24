@@ -53,15 +53,15 @@ test_that("Contourmap.inla, P measures", {
                            compute = list(F = FALSE, measures = c("P2","P1")),
                            method='EB')
 
-    expect_equal(res1$P1,0.936,tolerance=2e-2)
-    expect_equal(res1$P2,0.544,tolerance=2e-2)
+    expect_equal(res1$P1,0.8257824,tolerance=2e-2)
+    expect_equal(res1$P2,0.6947792,tolerance=2e-2)
 
     res1 = contourmap.inla(data$result, data$stack, tag = "pred",
                            n.levels=4,seed=data$seed,
                            max.threads=1,
                            compute = list(F = FALSE, measures = c("P2","P1")),
                            method='QC')
-    expect_equal(res1$P1,0.923,tolerance=2e-2)
-    expect_equal(res1$P2,0.4997,tolerance=2e-2)
+    expect_equal(res1$P1,0.826818,tolerance=2e-2)
+    expect_equal(res1$P2,0.7113431,tolerance=2e-2)
 
 })

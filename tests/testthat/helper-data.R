@@ -46,7 +46,7 @@ testdata.inla <- function(inla.mode = "classic")
                                      compute = TRUE),
               control.compute = list(config = TRUE,
                                      return.marginals.predictor = TRUE),
-              num.threads = 1,
+              num.threads = '1:1',
               inla.mode = inla.mode)
 
   seed = 1:6
@@ -87,7 +87,8 @@ testdata.inla.small <- function()
                         control.predictor=list(A = INLA::inla.stack.A(stack),
                                                compute = TRUE),
                         control.compute = list(config = TRUE,
-                                               return.marginals.predictor = TRUE))
+                                               return.marginals.predictor = TRUE),
+                        num.threads = '1:1')
 
     seed = 1:6
     return(list(result=result,stack=stack,seed=seed,n=n))
