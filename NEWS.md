@@ -1,3 +1,8 @@
+# excursions 2.5.3
+
+* Add support for INLA results computed with the `experimental` option.
+* Avoid deprecated Matrix (>=1.4-2) class coercion methods
+
 # excursions 2.5.2
 
 * Add `return.marginals.predictor = TRUE` option to tests and examples, for

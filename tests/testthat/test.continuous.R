@@ -1,5 +1,3 @@
-context("Continuous")
-
 test_that("Continous on contourmap, R2 mesh", {
   skip_on_cran()
   local_exc_safe_inla()

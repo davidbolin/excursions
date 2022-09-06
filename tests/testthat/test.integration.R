@@ -1,4 +1,3 @@
-context("Integration")
 test_that("Integration L", {
   data <- integration.testdata1()
   prob1 <- gaussint(Q.chol = data$L, a = data$a, b = data$b,

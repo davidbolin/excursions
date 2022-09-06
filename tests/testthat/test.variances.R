@@ -1,4 +1,3 @@
-context("Variances")
 test_that("Variances", {
   data <- integration.testdata1()
   vars <- excursions.variances(data$L, max.threads=1)
