@@ -7,3 +7,4 @@
 ^\.hgignore$
 ^docs$
 ^\.github$
+^configure.ac$
