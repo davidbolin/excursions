@@ -50,6 +50,7 @@ jobs:
           brew install pkg-config
           brew install proj@9
           brew install gdal
+          brew install gsl
 
       - name: Has inla? Check.
         run: |

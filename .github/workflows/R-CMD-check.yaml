@@ -56,6 +56,7 @@ jobs:
           brew install pkg-config
           brew install proj@9
           brew install gdal
+          brew install gsl
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
