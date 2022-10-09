@@ -11,8 +11,12 @@ test_that("stack extraction", {
         break
     }
 
-    expect_snapshot_value(config$mu, tolerance=1e-2, style = "serialize")
-    expect_snapshot_value(config$vars, tolerance=1e-2, style = "serialize")
+    expect_equal(config$mu[7],
+                 2.3713355,
+                 tolerance=1e-2)
+    expect_equal(config$vars[6],
+                 1.3726,
+                 tolerance=1e-2)
 
 })
 
