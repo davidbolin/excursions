@@ -1,5 +1,5 @@
-^README\.md
-^\.Rhistory
+^README\.md$
+^\.Rhistory$
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^\.gitignore$
@@ -7,3 +7,4 @@
 ^\.hgignore$
 ^docs$
 ^\.github$
+^misc$
