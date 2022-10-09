@@ -1,5 +1,7 @@
 # excursions (development version)
 
+* Remove local gsl code, and rely on SystemRequirements instead
+
 # excursions 2.5.3
 
 * Add support for INLA results computed with the `experimental` option.
