@@ -32,6 +32,7 @@ gcc = "C:\\Rtools\\gcc-4.6.3\\bin"
 Sys.setenv(PATH = paste(c(gcc, rtools, Sys.getenv("PATH")), collapse = ";"))
 ```
 where the variables `rtools` and `gcc` need to be changed if `Rtool`s is not installed directly on `C:`.
+You also need to install the `gsl` library.
 
 # Repository branch workflows #
 The package version format for released versions is `major.minor.bugfix`. All regular development should be performed on the `devel` branch or in a feature branch, managed with `git flow feature`. On the `devel` branch, the version number is `major.minor.bugfix.9000`, where the first three components reflect the latest released version with changes present in the `default` branch. Bugfixes should be applied via the `git flow bugfix` and `git flow hotfix` methods, as indicated below. For `git flow` configuration, use `stable` as the stable release branch, `devel` as the develop branch, and `v` as the version tag prefix. See [the `git flow` tutorial](https://www.atlassian.com/git/tutorials/comparing-workflows/gitflow-workflow) for more information.
@@ -64,3 +65,6 @@ git flow hotfix finish hotfix_branch_name
 ## Submit to CRAN
 ## If not accepted then do more bugfixes and repeat
 ```
+
+For the build system, if any edits are made to `configure.ac`, run `autoconf configure.ac > configure`.
+

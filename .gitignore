@@ -5,3 +5,5 @@ src/*.o
 src/*.a
 src/*.so
 *.tar.gz
+config.*
+autom4te.cache

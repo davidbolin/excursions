@@ -6,8 +6,8 @@ E_LIBS = CAMD.a SuiteSparse_config.a
 SUBDIRS = CAMD SuiteSparse_config
 
 # From github.c/RobinHankin/gsl src/Makevars.in
-GSL_CFLAGS = -I/usr/include
-GSL_LIBS = -L/usr/lib/x86_64-linux-gnu -lgsl -lgslcblas -lm
+GSL_CFLAGS = @GSL_CFLAGS@
+GSL_LIBS = @GSL_LIBS@
 
 PKG_CFLAGS = $(IEXTLIBS) $(GSL_CFLAGS) -I.
 PKG_CXXFLAGS = $(GSL_CFLAGS) $(SHLIB_OPENMP_CXXFLAGS) $(IEXTLIBS) -I.
