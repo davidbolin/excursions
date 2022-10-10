@@ -62,7 +62,10 @@ jobs:
         if: runner.os == 'Windows'
         run: |
           # Adapted from https://github.com/r-universe-org/build-and-check/blob/windows/action.yml
-          pacman -Sy --noconfirm --needed mingw-w64-{i686,x86_64}-{gsl,fftw,libjpeg,libpng,openssl} || true
+          url="https://cran.microsoft.com/snapshot/2022-10-09/bin/windows/Rtools/rtools42/files/rtools42-toolchain-libs-full-5355.tar.zst"
+          curl -sSL $url | tar x --zstd -C /c/ || true
+          echo "R_CUSTOM_TOOLS_PATH=c:/x86_64-w64-mingw32.static.posix/bin;c:/msys64/usr/bin" >> $GITHUB_ENV
+          echo "R_CUSTOM_TOOLS_SOFT=c:/x86_64-w64-mingw32.static.posix" >> $GITHUB_ENV
         shell: c:\rtools42\usr\bin\bash.exe --login {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
