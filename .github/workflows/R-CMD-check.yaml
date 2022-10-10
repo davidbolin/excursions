@@ -61,12 +61,15 @@ jobs:
       - name: Install system dependencies on Windows (gsl)
         if: runner.os == 'Windows'
         run: |
-          if (!file.exists("../windows/gsl-2.7/include/gsl/gsl_blas.h")) {
+          if (!file.exists("../windows/gsl-2.7/include/gsl/gsl_machine.h")) {
             download.file("https://github.com/rwinlib/gsl/archive/v2.7.zip", "lib.zip", quiet = TRUE)
             dir.create("../windows", showWarnings = FALSE)
             unzip("lib.zip", exdir = "../windows")
             unlink("lib.zip")
           }
+          dir("../windows")
+          dir("../windows/gsl-2.7")
+          dir("../windows/gsl-2.7/include")
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
