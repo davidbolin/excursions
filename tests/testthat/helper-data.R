@@ -46,6 +46,8 @@ testdata.inla <- function(inla.mode = "classic")
                                      compute = TRUE),
               control.compute = list(config = TRUE,
                                      return.marginals.predictor = TRUE),
+              control.family = list(hyper = list(
+                  prec = list(initial = log(10), fixed = TRUE))),
               num.threads = '1:1',
               inla.mode = inla.mode)
 
@@ -88,6 +90,8 @@ testdata.inla.small <- function()
                                                compute = TRUE),
                         control.compute = list(config = TRUE,
                                                return.marginals.predictor = TRUE),
+                        control.family = list(hyper = list(
+                            prec = list(initial = log(10), fixed = TRUE))),
                         num.threads = '1:1')
 
     seed = 1:6

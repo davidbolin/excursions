@@ -1,0 +1,8 @@
+# stack extraction
+
+    WAoAAAACAAQCAQACAwAAAAAOAAAAAj/fBts8gfy0v+bYEhBdnoQ=
+
+---
+
+    WAoAAAACAAQCAQACAwAAAAAOAAAAAj/ziGl4cGaEP/aCmBCF5Q0=
+
