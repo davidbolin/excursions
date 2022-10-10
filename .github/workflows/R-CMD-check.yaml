@@ -78,12 +78,12 @@ jobs:
           sessioninfo::session_info(pkgs, include_base = TRUE)
         shell: Rscript {0}
 
-      - name: Build and check (Linux or macOS)
+      - name: Build and check (Windows)
         if: runner.os == 'Windows'
         uses: r-lib/actions/check-r-package@v2
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
-          LIB_GSL=/mingw32
+          LIB_GSL: /mingw32
         with:
           args: 'c("--no-manual", "--as-cran")'
 
