@@ -72,7 +72,8 @@ jobs:
       - name: Set system variable on Windows (gsl)
         if: runner.os == 'Windows'
         run: |
-          export LIB_GSL="../windows/gsl-2.7"
+          set LIB_GSL="../windows/gsl-2.7"
+          set LIB_GSL
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
