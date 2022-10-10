@@ -67,9 +67,11 @@ jobs:
             unzip("lib.zip", exdir = "../windows")
             unlink("lib.zip")
           }
-          dir("../windows")
-          dir("../windows/gsl-2.7")
-          dir("../windows/gsl-2.7/include")
+          print(getwd())
+          print(normalizePath("."))
+          print(normalizePath(getwd()))
+          print(normalizePath("../windows/gsl-2.7"))
+          print(normalizePath(file.path(getwd(), "../windows/gsl-2.7")))
         shell: Rscript {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
