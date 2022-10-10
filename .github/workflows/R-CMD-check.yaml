@@ -79,6 +79,16 @@ jobs:
         shell: Rscript {0}
 
       - name: Build and check (Linux or macOS)
+        if: runner.os == 'Windows'
+        uses: r-lib/actions/check-r-package@v2
+        env:
+          _R_CHECK_CRAN_INCOMING_REMOTE_: false
+          LIB_GSL=/mingw32
+        with:
+          args: 'c("--no-manual", "--as-cran")'
+
+      - name: Build and check (Linux or macOS)
+        if: runner.os != 'Windows'
         uses: r-lib/actions/check-r-package@v2
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
