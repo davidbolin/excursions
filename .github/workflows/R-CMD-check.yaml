@@ -61,16 +61,9 @@ jobs:
       - name: Install system dependencies on Windows (gsl)
         if: runner.os == 'Windows'
         run: |
-          # From the r-universe windows build logs
-          echo "Setting up rtools40"
-          if [ "ucrt" = "ucrt" ]; then
-            pacman -Sy --noconfirm --needed mingw-w64-ucrt-x86_64-{gsl,fftw,libjpeg,libpng,openssl,lapack} || true
-            echo "R_CUSTOM_TOOLS_PATH=C:/rtools40/ucrt64/bin;C:/rtools40/bin" >> $GITHUB_ENV
-            echo "R_CUSTOM_TOOLS_SOFT=C:/rtools40/ucrt64" >> $GITHUB_ENV
-          else
-            pacman -Sy --noconfirm --needed mingw-w64-{i686,x86_64}-{gsl,fftw,libjpeg,libpng,openssl} || true
-          fi
-          
+          # Adapted from https://github.com/r-universe-org/build-and-check/blob/windows/action.yml
+          pacman -Sy --noconfirm --needed mingw-w64-{i686,x86_64}-{gsl,fftw,libjpeg,libpng,openssl} || true
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: '"all"'
