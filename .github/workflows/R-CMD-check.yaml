@@ -87,7 +87,7 @@ jobs:
         if: runner.os == 'Windows'
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
-          LIB_GSL: "../windows/gsl-2.7"
+          LIB_GSL: "../../windows/gsl-2.7"
         with:
           args: 'c("--no-manual", "--as-cran")'
 
