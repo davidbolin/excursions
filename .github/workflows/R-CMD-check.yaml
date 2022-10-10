@@ -49,7 +49,7 @@ jobs:
 
       - uses: r-lib/actions/setup-pandoc@v2
 
-      - name: Install system dependencies on MacOS (X11, gdal)
+      - name: Install system dependencies on MacOS (X11, gdal, gsl)
         if: runner.os == 'macOS'
         run: |
           brew install --cask xquartz
@@ -57,6 +57,22 @@ jobs:
           brew install proj@9
           brew install gdal
           brew install gsl
+          
+      - name: Install system dependencies on Windows (gsl)
+        if: runner.os == 'Windows'
+        run: |
+          if (!file.exists("../windows/gsl-2.7/include/gsl/gsl_blas.h")) {
+            download.file("https://github.com/rwinlib/gsl/archive/v2.7.zip", "lib.zip", quiet = TRUE)
+            dir.create("../windows", showWarnings = FALSE)
+            unzip("lib.zip", exdir = "../windows")
+            unlink("lib.zip")
+          }
+        shell: Rscript {0}
+
+      - name: Set system variable on Windows (gsl)
+        if: runner.os == 'Windows'
+        run: |
+          export LIB_GSL="../windows/gsl-2.7"
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
