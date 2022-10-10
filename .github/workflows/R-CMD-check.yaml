@@ -63,7 +63,7 @@ jobs:
         run: |
           # Adapted from https://github.com/r-universe-org/build-and-check/blob/windows/action.yml
           pacman -Sy --noconfirm --needed mingw-w64-{i686,x86_64}-{gsl,fftw,libjpeg,libpng,openssl} || true
-        shell: c:\rtools40\usr\bin\bash.exe --login {0}
+        shell: c:\rtools42\usr\bin\bash.exe --login {0}
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
