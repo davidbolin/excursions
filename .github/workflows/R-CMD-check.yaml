@@ -27,11 +27,11 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: windows-latest, r: 'release'}
           - {os: macOS-latest, r: 'release'}
           - {os: ubuntu-20.04, r: 'release', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
           - {os: ubuntu-20.04, r: 'oldrel', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
           - {os: ubuntu-20.04, r: 'devel', rspm: "https://packagemanager.rstudio.com/cran/__linux__/focal/latest"}
+#          - {os: windows-latest, r: 'release'}
 
     env:
       R_REMOTES_NO_ERRORS_FROM_WARNINGS: true
@@ -58,16 +58,6 @@ jobs:
           brew install gdal
           brew install gsl
           
-      - name: Install system dependencies on Windows (gsl)
-        if: runner.os == 'Windows'
-        run: |
-          # Adapted from https://github.com/r-universe-org/build-and-check/blob/windows/action.yml
-          url="https://cran.microsoft.com/snapshot/2022-10-09/bin/windows/Rtools/rtools42/files/rtools42-toolchain-libs-full-5355.tar.zst"
-          curl -sSL $url | tar x --zstd -C /c/ || true
-          echo "R_CUSTOM_TOOLS_PATH=c:/x86_64-w64-mingw32.static.posix/bin;c:/msys64/usr/bin" >> $GITHUB_ENV
-          echo "R_CUSTOM_TOOLS_SOFT=c:/x86_64-w64-mingw32.static.posix" >> $GITHUB_ENV
-        shell: c:\rtools42\usr\bin\bash.exe --login {0}
-
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: '"all"'
@@ -80,15 +70,6 @@ jobs:
           pkgs <- installed.packages()[, "Package"]
           sessioninfo::session_info(pkgs, include_base = TRUE)
         shell: Rscript {0}
-
-      - name: Build and check (Windows)
-        if: runner.os == 'Windows'
-        uses: r-lib/actions/check-r-package@v2
-        env:
-          _R_CHECK_CRAN_INCOMING_REMOTE_: false
-          LIB_GSL: /mingw32
-        with:
-          args: 'c("--no-manual", "--as-cran")'
 
       - name: Build and check (Linux or macOS)
         if: runner.os != 'Windows'
