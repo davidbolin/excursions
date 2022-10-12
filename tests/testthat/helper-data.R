@@ -67,18 +67,18 @@ testdata.inla.small <- function()
     n.obs  = 5
     x = 1:n
     mu = 10*((x < n/2)*(x - n/2) + (x >= n/2)*(n/2 - x) + n/4)/n
-    Q <- sparseMatrix(i=c(1:n, 2:n), j=c(1:n, 1:(n-1)),
-                          x=c(1,rep(1+rho^2, n-2),1, rep(-rho, n-1)),
-                          dims=c(n, n), symmetric=TRUE) / (1 - rho^2) / sigma^2
+    #Q <- sparseMatrix(i=c(1:n, 2:n), j=c(1:n, 1:(n-1)),
+    #                      x=c(1,rep(1+rho^2, n-2),1, rep(-rho, n-1)),
+    #                      dims=c(n, n), symmetric=TRUE) / (1 - rho^2) / sigma^2
 
-    X <- mu + INLA::inla.qsample(1, Q, seed=12345L)[,1]
+    #X <- mu + INLA::inla.qsample(1, Q, seed=12345L)[,1]
 
     obs.loc = c(3,4,6,2,5)
     A = sparseMatrix(i=1:n.obs, j=obs.loc, x=rep(1, n.obs), dims=c(n.obs, n))
-    Y <- as.vector(A %*% X +
-                     INLA::inla.qsample(1, Diagonal(n.obs, 10.0),
-                                        seed=98765L)[,1])
-
+    #Y <- as.vector(A %*% X +
+    #                 INLA::inla.qsample(1, Diagonal(n.obs, 10.0),
+    #                                    seed=98765L)[,1])
+    Y <- c(4.812842, 5.165710, 2.786433, 1.391536, 3.094942)
     ef = list(c(list(ar=x),list(cov=mu)))
     s.obs = INLA::inla.stack(data=list(y=Y), A=list(A), effects=ef, tag="obs")
     s.pre = INLA::inla.stack(data=list(y=NA), A=list(1), effects=ef,tag="pred")

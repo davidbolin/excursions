@@ -57,8 +57,14 @@ test_that("Contourmap.inla, P measures", {
                            compute = list(F = FALSE, measures = c("P2","P1")),
                            method='EB')
 
-    expect_equal(res1$P1,0.9963946,tolerance=2e-2)
-    expect_equal(res1$P2,0.8983837,tolerance=2e-2)
+    expect_snapshot_value(res1$P1,
+                          style = "serialize",
+                          tolerance = 1e-2)
+    expect_snapshot_value(res1$P2,
+                          style = "serialize",
+                          tolerance = 1e-2)
+    #expect_equal(res1$P1,0.9963946,tolerance=2e-2)
+    #expect_equal(res1$P2,0.8983837,tolerance=2e-2)
 
     res2 = contourmap.inla(data$result, data$stack, tag = "pred",
                            n.levels=4,seed=data$seed,
@@ -66,7 +72,13 @@ test_that("Contourmap.inla, P measures", {
                            ind = ind,
                            compute = list(F = FALSE, measures = c("P2","P1")),
                            method='QC')
-    expect_equal(res2$P1,0.9953097,tolerance=2e-2)
-    expect_equal(res2$P2,0.8893297,tolerance=2e-2)
+    expect_snapshot_value(res2$P1,
+                          style = "serialize",
+                          tolerance = 1e-2)
+    expect_snapshot_value(res2$P2,
+                          style = "serialize",
+                          tolerance = 1e-2)
+    #expect_equal(res2$P1,0.9953097,tolerance=2e-2)
+    #expect_equal(res2$P2,0.8893297,tolerance=2e-2)
 
 })
