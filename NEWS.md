@@ -1,4 +1,4 @@
-# excursions (development version)
+# excursions 2.5.4
 
 * Remove local gsl code, and rely on SystemRequirements instead
 
