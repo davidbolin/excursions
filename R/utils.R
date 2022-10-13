@@ -260,9 +260,9 @@ private.sparse.gettriplet <- function(M)
   list(i=M@i+1L, j=M@j+1L, x=M@x)
 }
 
-private.as.dgTMatrix <- function(M)
+private.as.dgTMatrix <- function(M, make_unique = TRUE)
 {
-  if(is.null(M) || is(M,"dgTMatrix")){
+  if(is.null(M) || (!make_unique && is(M, "dgTMatrix"))) {
     return(M)
   } else {
     ## Convert into dgTMatrix format of Matrix. Make sure the

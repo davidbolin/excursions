@@ -36,6 +36,11 @@ R/simconf.inla.R
 R/simconf.mixture.R
 R/simconf.R
 
+Copyright: Finn Lindgren (2014)
+License: GPL version 3 or later
+src/gsl_fix.h
+
+
 Copyright: Håvard Rue, David Bolin, Finn Lindgren (2013)
 License: GPL version 3 or later
 R/utils.R
@@ -49,10 +54,6 @@ src/RngStream.h
 
 Copyright information in copying/CAMD.txt
 src/CAMD/ (entire directory)
-
-Copyright information in copying/GSL.txt
-src/gsl_fix.c
-src/gsl_fix.h
 
 Copyright information in copying/SuiteSparse_config.txt
 src/SuiteSparse_config/ (entire directory)

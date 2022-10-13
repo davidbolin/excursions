@@ -11,8 +11,10 @@ test_that("stack extraction", {
         break
     }
 
-    expect_snapshot_value(config$mu, tolerance=1e-2, style = "serialize")
-    expect_snapshot_value(config$vars, tolerance=1e-2, style = "serialize")
+    # Only check prediction of unobserved values
+    expect_snapshot_value(config$mu[ind[2:6]],
+                          style = "serialize",
+                          tolerance = 1e-2)
 
 })
 
@@ -47,21 +49,32 @@ test_that("Contourmap.inla, P measures", {
 
     data <- testdata.inla.small()
 
+    ind <- 2:6
     res1 = contourmap.inla(data$result, data$stack, tag = "pred",
                            n.levels=4,seed=data$seed,
                            max.threads=1,
+                           ind = ind,
                            compute = list(F = FALSE, measures = c("P2","P1")),
                            method='EB')
 
-    expect_equal(res1$P1,0.8257824,tolerance=2e-2)
-    expect_equal(res1$P2,0.6947792,tolerance=2e-2)
+    expect_snapshot_value(res1$P1,
+                          style = "serialize",
+                          tolerance = 1e-2)
+    expect_snapshot_value(res1$P2,
+                          style = "serialize",
+                          tolerance = 1e-2)
 
-    res1 = contourmap.inla(data$result, data$stack, tag = "pred",
+    res2 = contourmap.inla(data$result, data$stack, tag = "pred",
                            n.levels=4,seed=data$seed,
                            max.threads=1,
+                           ind = ind,
                            compute = list(F = FALSE, measures = c("P2","P1")),
                            method='QC')
-    expect_equal(res1$P1,0.826818,tolerance=2e-2)
-    expect_equal(res1$P2,0.7113431,tolerance=2e-2)
+    expect_snapshot_value(res2$P1,
+                          style = "serialize",
+                          tolerance = 1e-2)
+    expect_snapshot_value(res2$P2,
+                          style = "serialize",
+                          tolerance = 1e-2)
 
 })

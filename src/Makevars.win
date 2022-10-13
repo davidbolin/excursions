@@ -5,9 +5,13 @@ LEXTLIBS =
 E_LIBS = CAMD.a SuiteSparse_config.a
 SUBDIRS = CAMD SuiteSparse_config
 
-PKG_CFLAGS = $(IEXTLIBS)
-PKG_CXXFLAGS = $(SHLIB_OPENMP_CXXFLAGS) $(IEXTLIBS)
-PKG_LIBS = $(E_LIBS) -lm $(SHLIB_OPENMP_CXXFLAGS)
+# From github.c/RobinHankin/gsl src/Makevars.in
+GSL_CFLAGS = -I$(LIB_GSL)/include
+GSL_LIBS = -L$(LIB_GSL)/lib -lgsl
+
+PKG_CFLAGS = $(IEXTLIBS) $(GSL_CFLAGS) -I.
+PKG_CXXFLAGS = $(GSL_CFLAGS) $(SHLIB_OPENMP_CXXFLAGS) $(IEXTLIBS) -I.
+PKG_LIBS = $(E_LIBS) -lm $(SHLIB_OPENMP_CXXFLAGS) $(GSL_LIBS)
 
 all : $(SHLIB)
 

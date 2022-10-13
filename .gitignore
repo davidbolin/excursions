@@ -1,3 +1,11 @@
 .Rhistory
 .Rproj.user
 inst/doc
+src/*.o
+src/*.a
+src/*.so
+*.tar.gz
+config.status
+config.log
+autom4te.cache
+src/Makevars

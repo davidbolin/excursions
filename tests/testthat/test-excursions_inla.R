@@ -32,7 +32,8 @@ test_that("excursions.inla, experimental mode", {
   res2 = excursions.inla(data2$result, name = "ar", method="QC",
                          u=0, type='>', seed = data1$seed)
   
-  expect_equal(res1$F,res2$F,tolerance=1e-3)
-  
+  # The inla estimates for different inla.mode will be different,
+  # but should be similar
+  expect_equal(res1$F,res2$F,tolerance=1e-2)
   
 })
