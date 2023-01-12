@@ -1580,8 +1580,8 @@ probabilitymap <-
 
   if (calc.complement) {
     ## Find contour set
-    if (!requireNamespace("rgeos", quietly=TRUE)) {
-      stop("Package 'rgeos' required for set complement calculations.")
+    if (!requireNamespace("sf", quietly=TRUE)) {
+      stop("Package 'sf' required for set complement calculations.")
     }
 
     ID <- "-1"
@@ -1598,8 +1598,9 @@ probabilitymap <-
       spout[[ID]] <- sp.domain@polygons[[1]]
     } else {
       spout.joined <- sp::SpatialPolygons(spout)
-      spout.union <- rgeos::gUnaryUnion(spout.joined)
-      sp.diff <- rgeos::gDifference(sp.domain, spout.union)
+      spout.union <- sf::st_union(sf::st_as_sfc(spout.joined))
+      sp.diff <- sf::st_difference(sf::st_as_sfc(sp.domain), spout.union)
+      sp.diff <- sf::as_Spatial(sp.diff)
       if (!is.null(sp.diff)) {
         spout[[ID]] <- sp.diff@polygons[[1]]
       }

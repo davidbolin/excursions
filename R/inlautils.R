@@ -63,6 +63,11 @@ inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, ...)
             stop("INLA was run in experimental mode, so you can only 
            compute excursion sets for model components. This may be improved in a future version.")
         }
+        # FL 2023-01-12: the internal latent mean is in improved.mean for each
+        # configuration, and the A-matrices are available:
+        # result$misc$configs$pA %*% result$misc$configs$A
+        # Together with the Qinv info in each configuration, this should cover the needed
+        # information.
         index <- stack$data$index[[tag]]
     }
 
