@@ -1,5 +1,7 @@
 # excursions (Development version)
 
+* Add R compiler configuration extraction to configure.ac
+
 # excursions 2.5.4
 
 * Remove local gsl code, and rely on SystemRequirements instead
