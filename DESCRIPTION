@@ -10,7 +10,8 @@ Depends: R (>= 3.5), Matrix, sp
 Suggests: 
     INLA (>= 21.08.31),
     testthat (>= 3.0.0),
-    sf
+    sf,
+    rgdal
 Imports: graphics, methods, stats, withr
 SystemRequirements: Gnu Scientific Library version >= 2.1
 Additional_repositories: https://inla.r-inla-download.org/R/testing
