@@ -28,69 +28,90 @@ contourmap.inla(
 
 \item{stack}{The stack object used in the INLA call.}
 
-\item{name}{The name of the component for which to do the calculation. This argument should only be used if a stack object is not provided, use the tag argument otherwise.}
+\item{name}{The name of the component for which to do the calculation. This
+argument should only be used if a stack object is not provided, use the tag
+argument otherwise.}
 
-\item{tag}{The tag of the component in the stack for which to do the calculation. This argument should only be used if a stack object is provided, use the name argument otherwise.}
+\item{tag}{The tag of the component in the stack for which to do the
+calculation. This argument should only be used if a stack object is provided,
+use the name argument otherwise.}
 
-\item{method}{Method for handeling the latent Gaussian structure. Currently only Empirical Bayes (EB) and Quantile corrections (QC) are supported.}
+\item{method}{Method for handeling the latent Gaussian structure. Currently
+only Empirical Bayes (EB) and Quantile corrections (QC) are supported.}
 
 \item{n.levels}{Number of levels in contour map.}
 
 \item{type}{Type of contour map. One of:
 \itemize{
-    \item{'standard' }{Equidistant levels between smallest and largest value of the posterior mean (default).}
-    \item{'pretty' }{Equally spaced 'round' values which cover the range of the values in the posterior mean.}
-    \item{'equalarea' }{Levels such that different spatial regions are approximately equal in size.}
+    \item{'standard' }{Equidistant levels between smallest and largest value
+    of the posterior mean (default).}
+    \item{'pretty' }{Equally spaced 'round' values which cover the range of
+    the values in the posterior mean.}
+    \item{'equalarea' }{Levels such that different spatial regions are
+    approximately equal in size.}
     }}
 
 \item{compute}{A list with quality indices to compute
 \itemize{
-     \item{'F': }{TRUE/FALSE indicating whether the contour map function should be computed (default TRUE)}
-     \item{'measures': }{A list with the quality measures to compute ("P0", "P1", "P2") or corresponding bounds based only on the marginal probabilities ("P0-bound", "P1-bound", "P2-bound")}
+     \item{'F': }{TRUE/FALSE indicating whether the contour map function
+     should be computed (default TRUE)}
+     \item{'measures': }{A list with the quality measures to compute ("P0",
+     "P1", "P2") or corresponding bounds based only on the marginal 
+     probabilities ("P0-bound", "P1-bound", "P2-bound")}
      }}
 
 \item{alpha}{Maximal error probability in contour map function (default=1)}
 
-\item{F.limit}{The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.}
+\item{F.limit}{The limit value for the computation of the F function. F is 
+set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.}
 
-\item{n.iter}{Number or iterations in the MC sampler that is used for calculating the quantities in \code{compute}. The default value is 10000.}
+\item{n.iter}{Number or iterations in the MC sampler that is used for 
+calculating the quantities in \code{compute}. The default value is 10000.}
 
 \item{verbose}{Set to TRUE for verbose mode (optional)}
 
-\item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
+\item{max.threads}{Decides the number of threads the program can use. Set to 
+0 for using the maximum number of threads allowed by the system (default).}
 
 \item{seed}{Random seed (optional).}
 
-\item{ind}{If only a part of a component should be used in the calculations, this argument specifies the indices for that part (optional).}
+\item{ind}{If only a part of a component should be used in the calculations, 
+this argument specifies the indices for that part (optional).}
 
-\item{...}{Additional arguments to the contour map function. See the documentation for \code{contourmap} for details.}
+\item{...}{Additional arguments to the contour map function. See the 
+documentation for \code{contourmap} for details.}
 }
 \value{
-\code{contourmap.inla} returns an object of class "excurobj" with the same elements as returned by \code{contourmap}.
+\code{contourmap.inla} returns an object of class "excurobj" with the 
+same elements as returned by \code{contourmap}.
 }
 \description{
-An interface to the \code{contourmap} function for latent Gaussian models calculated using the INLA method.
+An interface to the \code{contourmap} function for latent Gaussian models
+calculated using the INLA method.
 }
 \details{
-The INLA approximation of the quantity of interest is in general a weighted sum of 
-Gaussian distributions with different parameters. If \code{method = 'EB'} is used, then 
-the contour map is computed for the mean of the component in the weighted sum that has 
-parameters with the highest likelihood. If on the other hand \code{method='QC'}, then
-the contour map is computed for the posterior mean reported by
-INLA. If the EB method also is used in INLA, then this reported posterior mean is equal
-to the mean of the component with the highest likelihood. 
-Therefore, \code{method='EB'} is
-appropriate if the EB method also is used in INLA, but \code{method='QC'} should be
-used in general.
+The INLA approximation of the quantity of interest is in general a weighted 
+sum of Gaussian distributions with different parameters. If 
+\code{method = 'EB'} is used, then the contour map is computed for the mean 
+of the component in the weighted sum that has parameters with the highest 
+likelihood. If on the other hand \code{method='QC'}, then the contour map is 
+computed for the posterior mean reported by INLA. If the EB method also is 
+used in INLA, then this reported posterior mean is equal to the mean of the 
+component with the highest likelihood. Therefore, \code{method='EB'} is
+appropriate if the EB method also is used in INLA, but \code{method='QC'} 
+should be used in general.
 
 The \code{n.levels} contours in the contour map are are placed according
-to the argument \code{type}. A number of quality measures can be computed based based 
-on the specified contour map and the distribution of the component of interest. 
-What should be computed is specified using the 
-\code{compute} argument. For details on these quanties, see the reference below.
+to the argument \code{type}. A number of quality measures can be computed 
+based based on the specified contour map and the distribution of the 
+component of interest. What should be computed is specified using the 
+\code{compute} argument. For details on these quanties, see the reference 
+below.
 }
 \note{
-This function requires the \code{INLA} package, which is not a CRAN package.  See \url{https://www.r-inla.org/download-install} for easy installation instructions.
+This function requires the \code{INLA} package, which is not a CRAN 
+package.  See \url{https://www.r-inla.org/download-install} for easy 
+installation instructions.
 }
 \examples{
 \dontrun{
@@ -102,26 +123,26 @@ lattice <- inla.mesh.lattice(x = x, y = x)
 mesh <- inla.mesh.create(lattice = lattice, extend = FALSE, refine = FALSE)
 spde <- inla.spde2.matern(mesh, alpha = 2)
 #Generate an artificial sample
-sigma2.e = 0.01
-n.obs=100
-obs.loc = cbind(runif(n.obs)*diff(range(x))+min(x),
-                runif(n.obs)*diff(range(x))+min(x))
-Q = inla.spde2.precision(spde, theta=c(log(sqrt(0.5)), log(sqrt(1))))
-x = inla.qsample(Q=Q)
-A = inla.spde.make.A(mesh=mesh,loc=obs.loc)
-Y = as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
+sigma2.e <- 0.01
+n.obs <- 100
+obs.loc <- cbind(runif(n.obs) * diff(range(x)) + min(x),
+                 runif(n.obs) * diff(range(x)) + min(x))
+Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
+x <- inla.qsample(Q = Q)
+A <- inla.spde.make.A(mesh = mesh, loc = obs.loc)
+Y <- as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
 
 ## Estimate the parameters using INLA
-mesh.index = inla.spde.make.index(name="field",n.spde=spde$n.spde)
-ef = list(c(mesh.index,list(Intercept=1)))
+mesh.index = inla.spde.make.index(name = "field", n.spde = spde$n.spde)
+ef <- list(c(mesh.index, list(Intercept = 1)))
 
-s.obs = inla.stack(data=list(y=Y), A=list(A), effects=ef, tag="obs")
-s.pre = inla.stack(data=list(y=NA), A=list(1), effects=ef,tag="pred")
-stack = inla.stack(s.obs,s.pre)
-formula = y ~ -1 + Intercept + f(field, model=spde)
-result = inla(formula=formula, family="normal", data = inla.stack.data(stack),
-             control.predictor=list(A = inla.stack.A(stack),
-                                    compute = TRUE),
+s.obs <- inla.stack(data = list(y = Y), A = list(A), effects = ef, tag = "obs")
+s.pre <- inla.stack(data = list(y = NA), A = list(1), effects = ef,tag = "pred")
+stack <- inla.stack(s.obs,s.pre)
+formula = y ~ -1 + Intercept + f(field, model = spde)
+result <- inla(formula = formula, family = "normal", data = inla.stack.data(stack),
+             control.predictor = list(A = inla.stack.A(stack),
+                                      compute = TRUE),
              control.compute = list(config = TRUE,
                                     return.marginals.predictor = TRUE),
              num.threads = 1)
@@ -139,12 +160,17 @@ image(matrix(map$M[mesh$idx$lattice], n.lattice, n.lattice), col = cols)
 }
 }
 \references{
-Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.
+Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the 
+uncertainty of contour maps}, Journal of Computational and Graphical 
+Statistics, 26:3, 513-524.
 
-Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
+Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion 
+Sets and Related Quantities Using excursions}, Journal of Statistical 
+Software, vol 86, no 1, pp 1-20.
 }
 \seealso{
-\code{\link{contourmap}}, \code{\link{contourmap.mc}}, \code{\link{contourmap.colors}}
+\code{\link{contourmap}}, \code{\link{contourmap.mc}}, 
+\code{\link{contourmap.colors}}
 }
 \author{
 David Bolin \email{davidbolin@gmail.com}

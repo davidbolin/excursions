@@ -20,12 +20,12 @@ test_that("excursions.inla, test ind", {
 
 })
 
-test_that("excursions.inla, experimental mode", {
+test_that("excursions.inla, compact mode", {
   skip_on_cran()
   local_exc_safe_inla()
   
   data1 <- testdata.inla(inla.mode = "classic")
-  data2 <- testdata.inla(inla.mode = "experimental")
+  data2 <- testdata.inla(inla.mode = "compact")
   
   res1 = excursions.inla(data1$result, name = "ar", method="QC",
                          u=0, type='>', seed = data1$seed)
