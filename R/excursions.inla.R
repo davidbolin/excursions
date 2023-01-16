@@ -58,6 +58,9 @@
 #' @param verbose Set to TRUE for verbose mode (optional).
 #' @param max.threads Decides the number of threads the program can use. Set to 
 #' 0 for using the maximum number of threads allowed by the system (default).
+#' @param compressed If INLA is run in compressed mode and a part of the linear 
+#' predictor is to be used, then only add the relevant part. Otherwise the 
+#' entire linear predictor is added internally (default TRUE). 
 #' @param seed Random seed (optional).
 #'
 #' @return \code{excursions.inla} returns an object of class "excurobj". This is 
@@ -167,6 +170,7 @@ excursions.inla <- function(result.inla,
                             n.iter = 10000,
                             verbose = 0,
                             max.threads = 0,
+                            compressed = TRUE,
                             seed = NULL)
 {
   if (!requireNamespace("INLA", quietly = TRUE))
@@ -192,26 +196,27 @@ excursions.inla <- function(result.inla,
   }
 
   #Get indices for the component of interest in the configs
-  tmp <- inla.output.indices(result.inla, name = name, stack = stack, tag = tag)
+  tmp <- inla.output.indices(result.inla, name = name, stack = stack,
+                               tag = tag, compressed = compressed)
   ind.stack <- tmp$index
-  if(tmp$result.updated) {
+  if (tmp$result.updated) {
       result.inla <- tmp$result
+      ind.stack.original <- tmp$index.original
+  } else {
+      ind.stack.original <- ind.stack
   }
-  
   n = length(result.inla$misc$configs$config[[1]]$mean)
-  n.out = length(ind.stack)
-  
-  #Index vector for the nodes in the component of interest
+  n.out <- length(ind.stack)
   ind.int <- seq_len(n.out)
-
   #ind is assumed to contain indices within the component of interest
-  if(!missing(ind) && !is.null(ind)){
-    ind <- private.as.vector(ind)
+  if (!missing(ind) && !is.null(ind)) {
     ind.int <- ind.int[ind]
     ind.stack <- ind.stack[ind]
+    ind.stack.original <- ind.stack.original[ind]
   }
   ind = ind.stack
-
+  ind.original <- ind.stack.original
+    
   # If u.link is TRUE, the limit is given in linear scale
   # then transform to the scale of the linear predictor
   u.t = rho = rep(0,n)
@@ -248,7 +253,7 @@ excursions.inla <- function(result.inla,
                            u=u,result = result.inla,
                            effect.name=name, u.link = u.link, type = type))
   } else {
-    rho.ind <- sapply(1:length(ind), function(j) inla.get.marginal(ind[j],
+    rho.ind <- sapply(1:length(ind), function(j) inla.get.marginal(ind.original[j],
                            u=u,result = result.inla, u.link = u.link, type = type))
   }
   rho[ind] = rho.ind

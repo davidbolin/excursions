@@ -57,6 +57,9 @@
 #' @param max.threads Decides the number of threads the program can use. Set to 
 #' 0 for using the maximum number of threads allowed by the system (default).
 #' @param seed Random seed (optional).
+#' @param compressed If INLA is run in compressed mode and a part of the linear 
+#' predictor is to be used, then only add the relevant part. Otherwise the 
+#' entire linear predictor is added internally (default TRUE). 
 #' @param ind If only a part of a component should be used in the calculations, 
 #' this argument specifies the indices for that part (optional).
 #' @param ... Additional arguments to the contour map function. See the 
@@ -158,6 +161,7 @@ contourmap.inla <- function(result.inla,
                             n.iter = 10000,
                             verbose = FALSE,
                             max.threads = 0,
+                            compressed = TRUE,
                             seed = NULL,
                             ind,...)
 {
@@ -202,10 +206,15 @@ contourmap.inla <- function(result.inla,
   #compute indices, here ind will contain the indices that are used to extract the
   #relevant part from the configs, ind.int is the index vector for extracting marginal
   #distributions for random effects, and indices is a logical version of ind
-  tmp <- inla.output.indices(result.inla, name = name, stack = stack, tag = tag)
+  tmp <- inla.output.indices(result.inla, name = name, stack = stack,
+                             tag = tag, compressed = compressed)
   ind.stack <- tmp$index
+  
   if (tmp$result.updated) {
       result.inla <- tmp$result
+      ind.stack.original <- tmp$index.original
+  } else {
+      ind.stack.original <- ind.stack
   }
   
   n.out <- length(ind.stack)
@@ -213,8 +222,10 @@ contourmap.inla <- function(result.inla,
   if (!missing(ind) && !is.null(ind)) {
     ind.int <- ind.int[ind]
     ind.stack <- ind.stack[ind]
+    ind.stack.original <- ind.stack.original[ind]
   }
   ind = ind.stack
+  ind.original <- ind.stack.original
 
   for (i in 1:result.inla$misc$configs$nconfig) {
     config = private.get.config(result.inla, i)
@@ -271,7 +282,7 @@ contourmap.inla <- function(result.inla,
                                                                              result = result.inla,
                                                                              effect.name = name))
         } else {
-          rho.ind <- sapply(1:length(ind), function(j) inla.get.marginal.int(ind[j],
+          rho.ind <- sapply(1:length(ind), function(j) inla.get.marginal.int(ind.original[j],
                                                                              a = limits$a[ind[j]],
                                                                              b = limits$b[ind[j]],
                                                                              result = result.inla))

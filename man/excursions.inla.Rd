@@ -19,6 +19,7 @@ excursions.inla(
   n.iter = 10000,
   verbose = 0,
   max.threads = 0,
+  compressed = TRUE,
   seed = NULL
 )
 }
@@ -73,6 +74,10 @@ approximating probabilities. The default value is 10000.}
 
 \item{max.threads}{Decides the number of threads the program can use. Set to 
 0 for using the maximum number of threads allowed by the system (default).}
+
+\item{compressed}{If INLA is run in compressed mode and a part of the linear 
+predictor is to be used, then only add the relevant part. Otherwise the 
+entire linear predictor is added internally (default TRUE).}
 
 \item{seed}{Random seed (optional).}
 }

@@ -1,9 +1,13 @@
 ## For a result object computed in experimental mode, add back the linear 
 ## predictor to the configs
-inla.add.linearpredictor <- function(result) {
+inla.add.linearpredictor <- function(result, ind = NULL) {
     tau <- 1e9
     A <- rbind(result$misc$configs$pA %*% result$misc$configs$A,
                result$misc$configs$A)
+    if(!is.null(ind)) {
+        A <- A[ind, ]
+    }
+    
     I <- Diagonal(dim(A)[1])
     Abar <- rbind(cbind(I, -A), cbind(-t(A), t(A)%*%A))
     for(i in 1:result$misc$configs$nconfig) {
@@ -28,7 +32,8 @@ inla.add.linearpredictor <- function(result) {
 ## to a specific predictor, effect name, or inla.stack tag.
 ##
 ## result : an inla object
-inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, ...)
+inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, 
+                               compressed = TRUE)
 {
   
     if (!is.null(result$misc$configs$.preopt) && result$misc$configs$.preopt) {
@@ -73,23 +78,46 @@ inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, ...)
                     ct$length <- ct$length[-1]
                 }
             }
+            nameindex <- which(ct$tag == name)
+            index <- (ct$start[nameindex] - 1L + seq_len(ct$length[nameindex]))  
         } else if (inla.experimental) {
-            result <- inla.add.linearpredictor(result)
+            #only add the part to be predicted
+            nameindex <- which(ct$tag == name)
+            index.original <- (ct$start[nameindex] - 1L + seq_len(ct$length[nameindex]))
+            if(compressed) {
+                result <- inla.add.linearpredictor(result, index.original)    
+                index <- 1:length(index.original)
+            } else {
+                result <- inla.add.linearpredictor(result)    
+                index <- index.original
+            }
             result.updated <- TRUE
+            
+        } else {
+            nameindex <- which(ct$tag == name)
+            index <- (ct$start[nameindex] - 1L + seq_len(ct$length[nameindex]))
         }
-        
-        nameindex <- which(ct$tag == name)
-        index <- (ct$start[nameindex] - 1L + seq_len(ct$length[nameindex]))  
-        
     } else { ## Have tag
+        index.original <- stack$data$index[[tag]]
         if(inla.experimental) {
-            result <- inla.add.linearpredictor(result)
+            #only add the part to be predicted
+            if(compressed) {
+                result <- inla.add.linearpredictor(result, index.original)    
+                index <- 1:length(index.original)
+            } else {
+                result <- inla.add.linearpredictor(result) 
+                index <- index.original
+            }
             result.updated <- TRUE    
+        } else {
+            index <- index.original
         }
-        index <- stack$data$index[[tag]]
     }
     if(result.updated) {
-        return(list(index = index, result = result, result.updated = result.updated))
+        return(list(index = index, 
+                    index.original = index.original,
+                    result = result, 
+                    result.updated = result.updated))
     } else {
         return(list(index = index, result.updated = result.updated))
     }
