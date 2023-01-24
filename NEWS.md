@@ -1,6 +1,7 @@
-# excursions (Development version)
+# excursions 2.5.5
 
 * Add R compiler configuration extraction to configure.ac
+* Add support for results computed with the new default `compact` mode in INLA
 
 # excursions 2.5.4
 
