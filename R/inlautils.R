@@ -1,8 +1,39 @@
+## For a result object computed in experimental mode, add back the linear 
+## predictor to the configs
+inla.add.linearpredictor <- function(result, ind = NULL) {
+    tau <- 1e9
+    A <- rbind(result$misc$configs$pA %*% result$misc$configs$A,
+               result$misc$configs$A)
+    if(!is.null(ind)) {
+        A <- A[ind, ]
+    }
+    
+    I <- Diagonal(dim(A)[1])
+    Abar <- rbind(cbind(I, -A), cbind(-t(A), t(A)%*%A))
+    for(i in 1:result$misc$configs$nconfig) {
+        Q <- bdiag(Matrix(0, nrow = dim(A)[1], ncol = dim(A)[1]), 
+                   result$misc$configs$config[[i]]$Q)
+        result$misc$configs$config[[i]]$Q <- Q + tau*Abar
+        
+        result$misc$configs$config[[i]]$Qinv <- bdiag(A %*% result$misc$configs$config[[i]]$Qinv %*% t(A),
+                                                      result$misc$configs$config[[i]]$Qinv)
+        
+        result$misc$configs$config[[i]]$mean <- c(as.double(A %*% result$misc$configs$config[[i]]$mean),
+                                                     result$misc$configs$config[[i]]$mean)
+        result$misc$configs$config[[i]]$improved.mean <- c(as.double(A %*% result$misc$configs$config[[i]]$improved.mean),
+                                                              result$misc$configs$config[[i]]$improved.mean)
+        
+    
+    }
+    result
+}
+
 ## Find the indices into inla output config structures corresponding
 ## to a specific predictor, effect name, or inla.stack tag.
 ##
 ## result : an inla object
-inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, ...)
+inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, 
+                               compressed = TRUE)
 {
   
     if (!is.null(result$misc$configs$.preopt) && result$misc$configs$.preopt) {
@@ -29,13 +60,7 @@ inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, ...)
             name <- "Predictor"
         }
     }
-    
-    if (inla.experimental &&
-        !is.null(name) &&
-        (name == "APredictor" || name == "Predictor") ){
-        stop("INLA was run in experimental mode, so you can only 
-           compute excursion sets for model components. This may be improved in a future version.")
-    }
+    result.updated <- FALSE
     
     ## Find variables
     if (!is.null(name)) {
@@ -45,7 +70,7 @@ inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, ...)
         ct <- result$misc$configs$contents
         
         #Shift indices for experimental mode
-        if (inla.experimental){ 
+        if (inla.experimental && !(name %in% c("APredictor", "Predictor"))){ 
             for(nm in c("APredictor", "Predictor")) {
                 if (ct$tag[1] == nm) {
                     ct$tag <- ct$tag[-1]
@@ -53,20 +78,49 @@ inla.output.indices = function(result, name=NULL, stack=NULL, tag=NULL, ...)
                     ct$length <- ct$length[-1]
                 }
             }
+            nameindex <- which(ct$tag == name)
+            index <- (ct$start[nameindex] - 1L + seq_len(ct$length[nameindex]))  
+        } else if (inla.experimental) {
+            #only add the part to be predicted
+            nameindex <- which(ct$tag == name)
+            index.original <- (ct$start[nameindex] - 1L + seq_len(ct$length[nameindex]))
+            if(compressed) {
+                result <- inla.add.linearpredictor(result, index.original)    
+                index <- 1:length(index.original)
+            } else {
+                result <- inla.add.linearpredictor(result)    
+                index <- index.original
+            }
+            result.updated <- TRUE
+            
+        } else {
+            nameindex <- which(ct$tag == name)
+            index <- (ct$start[nameindex] - 1L + seq_len(ct$length[nameindex]))
         }
-        
-        nameindex <- which(ct$tag == name)
-        index <- (ct$start[nameindex] - 1L + seq_len(ct$length[nameindex]))  
-        
     } else { ## Have tag
-        if (inla.experimental) {
-            stop("INLA was run in experimental mode, so you can only 
-           compute excursion sets for model components. This may be improved in a future version.")
+        index.original <- stack$data$index[[tag]]
+        if(inla.experimental) {
+            #only add the part to be predicted
+            if(compressed) {
+                result <- inla.add.linearpredictor(result, index.original)    
+                index <- 1:length(index.original)
+            } else {
+                result <- inla.add.linearpredictor(result) 
+                index <- index.original
+            }
+            result.updated <- TRUE    
+        } else {
+            index <- index.original
         }
-        index <- stack$data$index[[tag]]
     }
-
-    index
+    if(result.updated) {
+        return(list(index = index, 
+                    index.original = index.original,
+                    result = result, 
+                    result.updated = result.updated))
+    } else {
+        return(list(index = index, result.updated = result.updated))
+    }
 }
 
 private.simconf.link <- function(res,links,trans=TRUE)

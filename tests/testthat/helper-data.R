@@ -56,7 +56,7 @@ testdata.inla <- function(inla.mode = "classic")
   }
 }
 
-testdata.inla.small <- function()
+testdata.inla.small <- function(inla.mode = "classic")
 {
   if (require("INLA", quietly=TRUE)) {
     local_exc_safe_inla()
@@ -92,7 +92,8 @@ testdata.inla.small <- function()
                                                return.marginals.predictor = TRUE),
                         control.family = list(hyper = list(
                             prec = list(initial = log(10), fixed = TRUE))),
-                        num.threads = '1:1')
+                        num.threads = '1:1',
+                        inla.mode = inla.mode)
 
     seed = 1:6
     return(list(result=result,stack=stack,seed=seed,n=n))

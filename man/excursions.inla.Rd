@@ -19,6 +19,7 @@ excursions.inla(
   n.iter = 10000,
   verbose = 0,
   max.threads = 0,
+  compressed = TRUE,
   seed = NULL
 )
 }
@@ -27,15 +28,16 @@ excursions.inla(
 
 \item{stack}{The stack object used in the INLA call.}
 
-\item{name}{The name of the component for which to do the calculation. This argument
-should only be used if a stack object is not provided, use the tag argument otherwise.}
+\item{name}{The name of the component for which to do the calculation. This 
+argument should only be used if a stack object is not provided, use the tag 
+argument otherwise.}
 
 \item{tag}{The tag of the component in the stack for which to do the calculation.
-This argument should only be used if a stack object is provided, use the name argument
-otherwise.}
+This argument should only be used if a stack object is provided, use the name 
+argument otherwise.}
 
-\item{ind}{If only a part of a component should be used in the calculations, this
-argument specifies the indices for that part.}
+\item{ind}{If only a part of a component should be used in the calculations, 
+this argument specifies the indices for that part.}
 
 \item{method}{Method for handeling the latent Gaussian structure:
 \itemize{
@@ -48,9 +50,10 @@ argument specifies the indices for that part.}
 \item{alpha}{Error probability for the excursion set of interest. The default
 value is 1.}
 
-\item{F.limit}{Error probability for when to stop the calculation of the excursion
-function. The default value is \code{alpha}, and the value cannot be smaller than
-\code{alpha}. A smaller value of \code{F.limit} results in a smaller computation time.}
+\item{F.limit}{Error probability for when to stop the calculation of the 
+excursion function. The default value is \code{alpha}, and the value cannot 
+be smaller than \code{alpha}. A smaller value of \code{F.limit} results in a 
+smaller computation time.}
 
 \item{u}{Excursion or contour level.}
 
@@ -64,52 +67,64 @@ data and is then transformed to the scale of the linear predictor (default FALSE
     \item{'!=' }{contour avoiding function}
     \item{'=' }{contour credibility function}}}
 
-\item{n.iter}{Number or iterations in the MC sampler that is used for approximating
-probabilities. The default value is 10000.}
+\item{n.iter}{Number or iterations in the MC sampler that is used for 
+approximating probabilities. The default value is 10000.}
 
 \item{verbose}{Set to TRUE for verbose mode (optional).}
 
-\item{max.threads}{Decides the number of threads the program can use. Set to 0 for using
-the maximum number of threads allowed by the system (default).}
+\item{max.threads}{Decides the number of threads the program can use. Set to 
+0 for using the maximum number of threads allowed by the system (default).}
+
+\item{compressed}{If INLA is run in compressed mode and a part of the linear 
+predictor is to be used, then only add the relevant part. Otherwise the 
+entire linear predictor is added internally (default TRUE).}
 
 \item{seed}{Random seed (optional).}
 }
 \value{
-\code{excursions.inla} returns an object of class "excurobj". This is a list that contains the following arguments:
+\code{excursions.inla} returns an object of class "excurobj". This is 
+a list that contains the following arguments:
 \item{E }{Excursion set, contour credible region, or contour avoiding set}
 \item{F }{The excursion function corresponding to the set \code{E} calculated
 for values up to \code{F.limit}}
 \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
-\item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes. \eqn{M=0} for nodes where the process is significantly below \code{u} and \eqn{M=1} for all nodes where the field is significantly above \code{u}. Which values that should be present depends on what type of set that is calculated.}
+\item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes. 
+\eqn{M=0} for nodes where the process is significantly below \code{u} and 
+\eqn{M=1} for all nodes where the field is significantly above \code{u}. 
+Which values that should be present depends on what type of set that is 
+calculated.}
 \item{rho }{Marginal excursion probabilities}
 \item{mean }{Posterior mean}
 \item{vars }{Marginal variances}
 \item{meta }{A list containing various information about the calculation.}
 }
 \description{
-Excursion sets and contour credible regions for latent Gaussian models calculated
-using the INLA method.
+Excursion sets and contour credible regions for latent Gaussian models 
+calculated using the INLA method.
 }
 \details{
-The different methods for handling the latent Gaussian structure are listed 
-in order of accuracy and computational cost. The \code{EB} method is the simplest and is based on a Gaussian 
-approximation of the posterior of the quantity of interest. The \code{QC} method uses the
-same Gaussian approximation but improves the accuracy by modifying the limits in the 
-integrals that are computed in order to find the region. The other three methods are
-intended for Bayesian models where the posterior distribution for the quantity of 
-interest is obtained by integrating over the parameters in the model. The \code{NI} 
-method approximates this integration in the same way as is done in INLA, and the
-\code{NIQC} and \code{iNIQC} methods combine this apprximation with the QC method
-for improved accuracy. 
+The different methods for handling the latent Gaussian structure are 
+listed in order of accuracy and computational cost. The \code{EB} method is 
+the simplest and is based on a Gaussian approximation of the posterior of the 
+quantity of interest. The \code{QC} method uses the same Gaussian approximation 
+but improves the accuracy by modifying the limits in the integrals that are 
+computed in order to find the region. The other three methods are intended for 
+Bayesian models where the posterior distribution for the quantity of  interest 
+is obtained by integrating over the parameters in the model. The \code{NI} 
+method approximates this integration in the same way as is done in INLA, and 
+the \code{NIQC} and \code{iNIQC} methods combine this apprximation with the 
+QC method for improved accuracy. 
 
-If the main purpose of the analysis is to construct excursion or contour sets for low
-values of \code{alpha}, we recommend using \code{QC} for problems with Gaussian
-likelihoods and \code{NIQC} for problems with non-Gaussian likelihoods. The reason for 
-this is that the more accurate methods also have higher computational costs.
+If the main purpose of the analysis is to construct excursion or contour sets 
+for low values of \code{alpha}, we recommend using \code{QC} for problems with 
+Gaussian likelihoods and \code{NIQC} for problems with non-Gaussian likelihoods. 
+The reason for this is that the more accurate methods also have higher 
+computational costs.
 }
 \note{
 This function requires the \code{INLA} package, which is not a CRAN
-package.  See \url{https://www.r-inla.org/download-install} for easy installation instructions.
+package.  See \url{https://www.r-inla.org/download-install} for easy 
+installation instructions.
 }
 \examples{
 ## In this example, we calculate the excursion function
@@ -123,46 +138,52 @@ tau.e = 1
 n = 100
 x = 1:n
 mu = 10*((x<n/2)*(x-n/2) + (x>=n/2)*(n/2-x)+n/4)/n
-Q = tau*sparseMatrix(i=c(1:n, 2:n), j=c(1:n, 1:(n-1)),
-                     x=c(1,rep(1+rho^2, n-2),1, rep(-rho, n-1)),
-                     dims=c(n, n), symmetric=TRUE)
-X = mu+solve(chol(Q), rnorm(n))
+Q = tau * sparseMatrix(i = c(1:n, 2:n), j=c(1:n, 1:(n-1)),
+                       x = c(1,rep(1+rho^2, n-2),1, rep(-rho, n-1)),
+                       dims = c(n, n), symmetric = TRUE)
+X = mu + solve(chol(Q), rnorm(n))
 
 ## measure the sampled process at n.obs random locations
 ## under Gaussian measurement noise.
 n.obs = 50
-obs.loc = sample(1:n,n.obs)
-A = sparseMatrix(i=1:n.obs, j=obs.loc, x=rep(1, n.obs), dims=c(n.obs, n))
+obs.loc = sample(1:n, n.obs)
+A = sparseMatrix(i = 1:n.obs, j = obs.loc, x = rep(1, n.obs), 
+                 dims = c(n.obs, n))
 Y = as.vector(A \%*\% X + rnorm(n.obs)/sqrt(tau.e))
 
 ## Estimate the parameters using INLA
-ef = list(c(list(ar=x),list(cov=mu)))
-s.obs = inla.stack(data=list(y=Y), A=list(A), effects=ef, tag="obs")
-s.pre = inla.stack(data=list(y=NA), A=list(1), effects=ef,tag="pred")
+ef = list(c(list(ar = x), list(cov = mu)))
+s.obs = inla.stack(data = list(y = Y), A = list(A), effects = ef, tag = "obs")
+s.pre = inla.stack(data = list(y = NA), A = list(1), effects = ef, tag = "pred")
 stack = inla.stack(s.obs,s.pre)
-formula = y ~ -1 + cov + f(ar,model="ar1")
-result = inla(formula=formula, family="normal", data = inla.stack.data(stack),
-              control.predictor=list(A=inla.stack.A(stack),compute=TRUE),
+formula = y ~ -1 + cov + f(ar, model = "ar1")
+result = inla(formula = formula, family = "normal", data = inla.stack.data(stack),
+              control.predictor = list(A = inla.stack.A(stack), compute = TRUE),
               control.compute = list(config = TRUE,
                                      return.marginals.predictor = TRUE))
 
 ## calculate the level 0 positive excursion function
 res.qc = excursions.inla(result, stack = stack, tag = 'pred', alpha=0.99, u=0,
-                         method='QC', type='>', max.threads=2)
+                         method = 'QC', type = '>', max.threads = 2)
 ## plot the excursion function and marginal probabilities
-plot(res.qc$rho,type="l",
-     main="marginal probabilities (black) and excursion function (red)")
-lines(res.qc$F,col=2)
+plot(res.qc$rho, type="l",
+     main = "marginal probabilities (black) and excursion function (red)")
+lines(res.qc$F, col = 2)
 }}
 }
 \references{
-Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
+Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour 
+uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, 
+pp 85-106.
 
-Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
+Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion 
+Sets and Related Quantities Using excursions}, Journal of Statistical Software, 
+vol 86, no 1, pp 1-20.
 }
 \seealso{
 \code{\link{excursions}}, \code{\link{excursions.mc}}
 }
 \author{
-David Bolin \email{davidbolin@gmail.com} and Finn Lindgren \email{finn.lindgren@gmail.com}
+David Bolin \email{davidbolin@gmail.com} and Finn Lindgren 
+\email{finn.lindgren@gmail.com}
 }

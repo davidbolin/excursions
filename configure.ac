@@ -1,8 +1,30 @@
-# From https://raw.githubusercontent.com/RobinHankin/gsl/master/configure.ac
-
 AC_INIT
 AC_CONFIG_SRCDIR([src/gsl_fix.h])
 
+# From https://cran.r-project.org/doc/manuals/r-devel/R-exts.html#Configure-and-cleanup :
+: ${R_HOME=`R RHOME`}
+if test -z "${R_HOME}"; then
+  echo "could not determine R_HOME"
+  exit 1
+fi
+CC=`"${R_HOME}/bin/R" CMD config CC`
+CFLAGS=`"${R_HOME}/bin/R" CMD config CFLAGS`
+CPPFLAGS=`"${R_HOME}/bin/R" CMD config CPPFLAGS`
+
+LDFLAGS=`"${R_HOME}/bin/R" CMD config LDFLAGS`
+
+CXX=`"${R_HOME}/bin/R" CMD config CXX`
+if test -z "$CXX"; then
+  AC_MSG_ERROR([No C++ compiler is available])
+fi
+CXXFLAGS=`"${R_HOME}/bin/R" CMD config CXXFLAGS`
+CPPFLAGS=`"${R_HOME}/bin/R" CMD config CPPFLAGS`
+AC_LANG(C++)
+
+AC_PROG_CC()
+AC_PROG_CXX()
+
+# From https://raw.githubusercontent.com/RobinHankin/gsl/master/configure.ac
 # Following lines kindly supplied by Dirk Eddelbuettel
 ## Use gsl-config to find arguments for compiler and linker flags
 ##
@@ -13,7 +35,8 @@ if test "${GSL_CONFIG}" != ""; then
    # Use gsl-config for header and linker arguments
    GSL_CFLAGS=`${GSL_CONFIG} --cflags`
    GSL_LIBS=`${GSL_CONFIG} --libs`
-   CFLAGS="$CFLAGS $GSL_CFLAGS"  # kindly supplied by Ray Brownrigg
+   CFLAGS="$CFLAGS $GSL_CFLAGS"  # kindly supplied by Ray Brownrigg.
+   CXXFLAGS="$CFLAGS $GSL_CFLAGS"
 else
    AC_MSG_ERROR([gsl-config not found, is GSL installed?])
 fi
