@@ -9,7 +9,7 @@ The theory of the methods used in the package are described in the papers [Bolin
 
 
 # Manual #
-A manual for the package (version 2.2.2) can be found [here](http://www.math.chalmers.se/~bodavid/software/excursions/excursions_manual_v2.pdf) and the code used in the manual can be downloaded [here](http://www.math.chalmers.se/~bodavid/software/excursions/code.zip).
+A manual for the package (version 2.2.2) can be found [here](https://www.jstatsoft.org/article/view/v086i05). 
 
 # Versions #
 The development version of the package contains new features and fixes that are not on CRAN, see `NEWS.md`. To install this version, see the instructions below.
