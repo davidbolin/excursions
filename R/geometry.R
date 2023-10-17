@@ -526,9 +526,9 @@ submesh.grid <- function(z, grid=NULL)
     stop("The 'INLA' package is needed.")
   }
   outline <- outline.on.grid(z, grid)
-  INLA::inla.mesh.create(loc=grid$loc,
-                         boundary=as.inla.mesh.segment.outline(outline),
-                         refine=FALSE)
+  fmesher::fm_rcdt_2d_inla(loc=grid$loc,
+                           boundary=as.fm_segm.outline(outline),
+                           refine=FALSE)
 }
 
 
@@ -538,20 +538,18 @@ submesh.grid <- function(z, grid=NULL)
 #'
 #' @param z A matrix with values indicating which nodes that should be
 #' present in the submesh.
-#' @param mesh An \code{inla.mesh} object.
+#' @param mesh An \code{fm_mesh_2d} object.
 #'
-#' @return An \code{inla.mesh} object.
+#' @return An \code{fm_mesh_2d} object.
 #' @export
-#' @note This function requires the \code{INLA} package, which is not a CRAN package.
-#' See \url{https://www.r-inla.org/download-install} for easy installation instructions.
 #' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @examples
 #' \dontrun{
-#' if (require(INLA)) {
+#' if (require(fmesher)) {
 #' nxy = 30
 #' x=seq(from=0,to=4,length.out=nxy)
-#' lattice=inla.mesh.lattice(x=x,y=x)
-#' mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
+#' lattice=fm_lattice_2d(x=x,y=x)
+#' mesh=fm_mesh_2d_inla(lattice=lattice, extend=FALSE, refine=FALSE)
 #'
 #' #extract a part of the mesh inside a circle
 #' xy.in <- rowSums((mesh$loc[,1:2]-2)^2)<1
@@ -564,16 +562,10 @@ submesh.grid <- function(z, grid=NULL)
 
 submesh.mesh <- function(z, mesh)
 {
-  if (!requireNamespace("INLA", quietly=TRUE)) {
-    stop("The 'INLA' package is needed.")
-  }
   submesh.mesh.tri(outlinetri.on.mesh(z, mesh), mesh)
 }
 submesh.mesh.tri <- function(tri, mesh)
 {
-  if (!requireNamespace("INLA", quietly=TRUE)) {
-    stop("The 'INLA' package is needed.")
-  }
 
   tv <- mesh$graph$tv[tri,,drop=FALSE]
   v <- sort(unique(as.vector(tv)))
@@ -582,7 +574,7 @@ submesh.mesh.tri <- function(tri, mesh)
   tv <- matrix(idx[tv], nrow(tv), 3)
   loc <- mesh$loc[v,,drop=FALSE]
 
-  mesh <- INLA::inla.mesh.create(loc=loc, tv=tv, refine=FALSE)
+  mesh <- fmesher::fm_rcdt_2d_inla(loc=loc, tv=tv, refine=FALSE)
 
   idx <- rep(as.integer(NA), length(idx))
   idx[v] <- mesh$idx$loc
@@ -621,24 +613,21 @@ as.sp.outline <- function(outline,
 }
 
 
-as.inla.mesh.segment.outline <- function(outline,
-                                         grp.ccw=unique(outline$grp),
-                                         grp.cw=integer(0),
-                                         grp,
-                                         ...)
+as.fm_segm.outline <- function(outline,
+                               grp.ccw=unique(outline$grp),
+                               grp.cw=integer(0),
+                               grp,
+                               ...)
 {
-  if (!requireNamespace("INLA", quietly=TRUE)) {
-    stop("The 'INLA' package is needed.")
-  }
   ik.ccw = outline$grp %in% grp.ccw
   ik.cw = outline$grp %in% grp.cw
   if (missing(grp)) {
     grp <- c(outline$grp[ik.ccw], outline$grp[ik.cw])
   }
-  INLA::inla.mesh.segment(loc=outline$loc,
-                          idx=rbind(outline$idx[ik.ccw,,drop=FALSE],
-                          outline$idx[ik.cw, 2:1, drop=FALSE]),
-                          grp=grp)
+  fmesher::fm_segm(loc=outline$loc,
+                   idx=rbind(outline$idx[ik.ccw,,drop=FALSE],
+                             outline$idx[ik.cw, 2:1, drop=FALSE]),
+                   grp=grp)
 }
 
 
@@ -885,7 +874,7 @@ tricontour.list <- function(x, z, nlevels = 10,
   ##   inla.mesh.segment(val$loc, val$idx[val$grp==k], val$idx[val$grp==k])
   ##     (supports R2 and S2)
   ## and, for odd k=1,3,...,nlevels*2-1,nlevels*2+1,
-  ##   seg <- as.inla.mesh.segment.outline(val, grp.ccw=c(k-1,k), grp.cw=c(k+1))
+  ##   seg <- as.fm_segm.outline(val, grp.ccw=c(k-1,k), grp.cw=c(k+1))
   ##   sp <- as.sp.outline(val, grp.ccw=c(k-1,k), grp.cw=c(k+1), ccw=FALSE)
 
     type <- match.arg(type)
@@ -1151,6 +1140,7 @@ tricontourmap.matrix <-
 #' @param output The format of the generated output.  Implemented options
 #'   are \code{"sp"} (default) and \code{"inla.mesh.segment"} (requires the
 #'                                                             INLA package).
+#' @importFrom fmesher fm_segm                                                           
 #' @export
 tricontourmap.list <-
   function(x, z, nlevels = 10,
@@ -1191,16 +1181,16 @@ tricontourmap.list <-
       }
     } else {
       out$map[[ID]] <-
-        as.inla.mesh.segment.outline(tric,
-                                     grp.ccw=c(k-1,k),
-                                     grp.cw=c(k+1),
-                                     grp=(k-1)/2)
+        as.fm_segm.outline(tric,
+                           grp.ccw=c(k-1,k),
+                           grp.cw=c(k+1),
+                           grp=(k-1)/2)
     }
   }
   if (output == "sp") {
     out$map <- sp::SpatialPolygons(out$map)
   } else {
-    out$map <- do.call(INLA::inla.mesh.segment, out$map)
+    out$map <- do.call(fm_segm, out$map)
   }
   for (k in seq_len(nlevels)) {
     if (output == "sp") {
@@ -1216,9 +1206,9 @@ tricontourmap.list <-
       }
     } else {
       out$contour[[as.character(k)]] <-
-        as.inla.mesh.segment.outline(tric,
-                                     grp.ccw=k*2L,
-                                     grp=k)
+        as.fm_segm.outline(tric,
+                           grp.ccw=k*2L,
+                           grp=k)
     }
   }
   if (output == "sp") {
@@ -1228,7 +1218,7 @@ tricontourmap.list <-
       out$contour <- NULL
     }
   } else {
-    out$contour <- do.call(INLA::inla.mesh.segment, out$contour)
+    out$contour <- do.call(fm_segm, out$contour)
   }
 
   out
@@ -1272,12 +1262,12 @@ get.geometry <- function(geometry)
 {
   geometrytype <- ""
   manifoldtype <- ""
-  if (inherits(geometry, "inla.mesh")) {
+  if (inherits(geometry, c("fm_mesh_2d", "inla.mesh"))) {
     loc <- geometry$loc
     dims <- nrow(loc)
     geometrytype <- "mesh"
     manifoldtype <- geometry$manifold
-  } else if (inherits(geometry, "inla.mesh.lattice") ||
+  } else if (inherits(geometry, c("fm_lattice_2d", "inla.mesh.lattice")) ||
              is.list(geometry)) {
     if (("loc" %in% names(geometry)) && ("dims" %in% names(geometry))) {
       loc <- geometry$loc
@@ -1360,10 +1350,7 @@ subdivide.mesh <- function(mesh)
                     edge.split.v[graph$te[,1]])
               )
 
-  if (!requireNamespace("INLA", quietly=TRUE)) {
-    stop("Requires package 'INLA'.")
-  }
-  newmesh <- INLA::inla.mesh.create(loc=loc, tv=tv)
+  newmesh <- fmesher::fm_rcdt_2d_inla(loc=loc, tv=tv)
   ## Handle possible node reordering in inla.mesh.create()
   newmesh$idx$loc <- newmesh$idx$loc[idx]
   ## Add mapping matrix
@@ -1447,15 +1434,13 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions=1)
   F[G.interp == -1] <- 0
   G <- G.interp
 
-  if (requireNamespace("INLA", quietly=TRUE)) {
-    F.geometry <-
-      INLA::inla.mesh.create(loc=F.geometry$loc,
+  F.geometry <-
+    fmesher::fm_rcdt_2d_inla(loc=F.geometry$loc,
                              tv=F.geometry$graph$tv)
-    ## Handle possible node reordering in inla.mesh.create()
-    F[F.geometry$idx$loc] <- F
-    G[F.geometry$idx$loc] <- G
-  }
-
+  ## Handle possible node reordering in inla.mesh.create()
+  F[F.geometry$idx$loc] <- F
+  G[F.geometry$idx$loc] <- G
+  
   list(F=F, G=G, F.geometry=F.geometry)
 }
 
@@ -1474,24 +1459,23 @@ probabilitymap <-
   function(mesh, F, level, G,
            calc.complement=TRUE,
            tol=1e-7,
-           output=c("sp", "inla.mesh.segment"),
+           output=c("sp", "fm", "inla.mesh.segment"),
            method, ...)
 {
   output <- match.arg(output)
+  if (output == "inla.mesh.segment") {
+    output = "fm"
+  }
 
   if (output == "sp") {
     if (!requireNamespace("sp", quietly=TRUE)) {
       stop("The 'sp' package is needed.")
     }
-  } else {
-    if (!requireNamespace("INLA", quietly=TRUE)) {
-      stop("The 'INLA' package is needed.")
-    }
   }
 
   if (calc.complement &&
-      (output == "inla.mesh.segment")) {
-    stop("Output format 'inla.mesh.segment' not supported for 'calc.complement = TRUE'.")
+      (output == "fm")) {
+    stop("Output format '", output, "' not supported for 'calc.complement = TRUE'.")
   }
     
   spout <- list()
@@ -1567,12 +1551,12 @@ probabilitymap <-
           }
         }
       }
-      if (output == "inla.mesh.segment") {
+      if (output == "fm") {
         inlaout[[ID]] <-
-          as.inla.mesh.segment.outline(tric,
-                                       grp.ccw=c(2,3),
-                                       grp.cw=c(),
-                                       grp=k)
+          as.fm_segm.outline(tric,
+                             grp.ccw=c(2,3),
+                             grp.cw=c(),
+                             grp=k)
       }
       }
     }
@@ -1585,7 +1569,7 @@ probabilitymap <-
     }
 
     ID <- "-1"
-    outline <- INLA::inla.mesh.boundary(mesh)[[1]]
+    outline <- fmesher::fm_segm(mesh, boundary = TRUE)
     sp.domain <- as.sp.outline(outline,
                                grp.ccw=unique(outline$grp),
                                grp.cw=integer(0),
@@ -1608,16 +1592,16 @@ probabilitymap <-
     if (!is.null(spout[[ID]])) {
       spout[[ID]]@ID <- ID
       
-      if (output == "inla.mesh.segment") {
-        inlaout[[ID]] <- INLA::inla.sp2segment(spout[[ID]])
+      if (output == "fm") {
+        inlaout[[ID]] <- fmesher::fm_as_segm(spout[[ID]])
       }
     }
   }
   
   if ((output == "sp") && (length(spout) > 0)) {
     out <- sp::SpatialPolygons(spout)
-  } else if ((output == "inla.mesh.segment") && (length(inlaout) > 0)) {
-    out <- do.call(INLA::inla.mesh.segment, inlaout)
+  } else if ((output == "fm") && (length(inlaout) > 0)) {
+    out <- do.call(fm_segm, do.call(c, inlaout))
   } else {
     out <- NULL
   }
@@ -1636,8 +1620,7 @@ gaussquad <- function(mesh, method = c("direct", "make.A")) {
 
   ## Construct cubic Gauss-quadrature points and weights
   nT <- nrow(mesh$graph$tv)
-  # Recent INLA would allow order = 0 (2018-08-30)
-  I.w <- INLA::inla.mesh.fem(mesh, order = 1)$ta
+  I.w <- fmesher::fm_fem(mesh, order = 0)$ta
   if (method == "make.A") {
     ## Old method, kept for sanity checking.
     I.loc <-
@@ -1657,7 +1640,7 @@ gaussquad <- function(mesh, method = c("direct", "make.A")) {
     if (mesh$manifold == "S2") {
       I.loc <- I.loc / sqrt(rowSums(I.loc^2))
     }
-    A <- INLA::inla.spde.make.A(mesh, I.loc)
+    A <- fmesher::fm_basis(mesh, I.loc)
   } else {
     A <- sparseMatrix(i = (rep(seq_len(nT), times = 3 * 4) +
                              rep(c(0, 1, 2, 3) * nT, each = nT * 3)),
@@ -1692,12 +1675,10 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
   subF <- rep(NA, length(active.nodes.idx))
   subF[submesh$idx$loc[active.nodes.idx]] <- F[active.nodes.idx]
 
-  # Recent INLA would allow order = 0 (2018-08-30)
-  tot.area <- sum(INLA::inla.mesh.fem(F.geometry, order = 1)$ta)
+  tot.area <- sum(fmesher::fm_fem(F.geometry, order = 0)$ta)
 
   if (method == "linear") {
-    # Recent INLA would allow order = 0 (2018-08-30)
-    I.w <- INLA::inla.mesh.fem(submesh, order = 1)$va
+    I.w <- fmesher::fm_fem(submesh, order = 0)$va
     P0 <- sum(I.w * subF) / tot.area
   } else if (method == "log") {
     II <- gaussquad(submesh)
@@ -1705,8 +1686,7 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
     P0 <- sum(II$w * tmp) / tot.area
   } else {
     ## "step"
-    # Recent INLA would allow order = 0 (2018-08-30)
-    I.w <- INLA::inla.mesh.fem(submesh, order = 1)$ta
+    I.w <- fmesher::fm_fem(submesh, order = 0)$ta
     tmp <- matrix(subF[submesh$graph$tv],
                   nrow(submesh$graph$tv),
                   ncol(submesh$graph$tv))
@@ -1724,7 +1704,8 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #' @param ex An \code{excurobj} object generated by a call to \code{\link{excursions}}
 #' or \code{\link{contourmap}}.
 #' @param geometry Specification of the lattice or triangulation geometry of the input.
-#' One of \code{list(x, y)}, \code{list(loc, dims)}, \code{inla.mesh.lattice}, or
+#' One of \code{list(x, y)}, \code{list(loc, dims)}, \code{fm_lattice_2d},
+#' \code{inla.mesh.lattice}, \code{fm_mesh_2d}, or
 #' \code{inla.mesh}, where \code{x} and \code{y} are vectors, \code{loc} is
 #' a two-column matrix of coordinates, and \code{dims} is the lattice size vector.
 #' The first three versions are all treated topologically as lattices, and the
@@ -1737,7 +1718,7 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #' are interpolated linearly in the transformed scale. For \code{step}, a conservative
 #' step function is used.
 #' @param output Specifies what type of object should be generated. \code{sp} gives a
-#' \code{SpatialPolygons} object, and \code{inla} gives a \code{inla.mesh.segment} object.
+#' \code{SpatialPolygons} object, and \code{fm} or \code{inla} gives a \code{fm_segm} object.
 #' @param subdivisions The number of mesh triangle subdivisions to perform for the
 #' interpolation of the excursions or contour function. 0 is no subdivision.
 #' The setting has a small effect on the evaluation of \code{P0} for the \code{log}
@@ -1767,8 +1748,8 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #' #Generate mesh and SPDE model
 #' n.lattice = 10 #Increase for more interesting, but slower, examples
 #' x=seq(from=0,to=10,length.out=n.lattice)
-#' lattice=inla.mesh.lattice(x=x,y=x)
-#' mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
+#' lattice=fm_lattice_2d(x=x,y=x)
+#' mesh=fmesher::fm_rcdt_2d_inla(lattice=lattice, extend=FALSE, refine=FALSE)
 #' spde <- inla.spde2.matern(mesh, alpha=2)
 #'
 #' #Generate an artificial sample
@@ -1813,13 +1794,16 @@ continuous <- function(ex,
                        geometry,
                        alpha,
                        method=c("log", "linear", "step"),
-                       output=c("sp", "inla"),
+                       output=c("sp", "fm", "inla"),
                        subdivisions=1,
                        calc.credible=TRUE)
 {
   stopifnot(inherits(ex, "excurobj"))
   method <- match.arg(method)
   output <- match.arg(output)
+  if (output == "inla") {
+    output = "fm"
+  }
 
   if (!(ex$meta$calculation %in% c("excursions",
                                    "contourmap"))) {
@@ -1836,15 +1820,15 @@ continuous <- function(ex,
   }
 
   info <- get.geometry(geometry)
-  if (!(info$manifold %in% c("M", "R2", "S2"))) {
-    stop(paste("Unsupported manifold type '", info$manifold, "'.", sep=""))
+  if (!fmesher::fm_manifold(info, c("M", "R2", "S2"))) {
+    stop(paste("Unsupported manifold type '", fmesher::fm_manifold(info), "'.", sep=""))
   }
-  if ((output == "sp") && !(info$manifold %in% c("R2"))) {
-    stop(paste("Unsupported manifold type '", info$manifold, "' for 'sp' output.", sep=""))
+  if ((output == "sp") && !fmesher::fm_manifold(info, c("R2"))) {
+    stop(paste("Unsupported manifold type '", fmesher::fm_manifold(info), "' for 'sp' output.", sep=""))
   }
   if (calc.credible &&
-      (output == "inla")) {
-    stop("Output format 'inla' not supported for 'calc.credible = TRUE'.")
+      (output == "fm")) {
+    stop("Output format 'fm' not supported for 'calc.credible = TRUE'.")
   }
 
   if (length(ex$F) != prod(info$dims)) {

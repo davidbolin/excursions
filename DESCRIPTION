@@ -1,7 +1,7 @@
 Package: excursions
 Type: Package
 Title: Excursion Sets and Contour Credibility Regions for Random Fields
-Version: 2.5.5.9001
+Version: 2.5.5.9002
 Authors@R: c(
     person("David", "Bolin", email = "davidbolin@gmail.com", role = c("cre", "aut")),
     person("Finn", "Lindgren", email = "finn.lindgren@gmail.com", role = "aut"))
@@ -10,9 +10,8 @@ Depends: R (>= 3.5), Matrix, sp
 Suggests: 
     INLA (>= 21.08.31),
     testthat (>= 3.0.0),
-    sf,
-    rgdal
-Imports: graphics, methods, stats, withr
+    sf
+Imports: fmesher (>= 0.1.2), graphics, methods, stats, withr
 SystemRequirements: Gnu Scientific Library version >= 2.1
 Additional_repositories: https://inla.r-inla-download.org/R/testing
 BugReports: https://github.com/davidbolin/excursions/issues

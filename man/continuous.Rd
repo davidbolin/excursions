@@ -9,7 +9,7 @@ continuous(
   geometry,
   alpha,
   method = c("log", "linear", "step"),
-  output = c("sp", "inla"),
+  output = c("sp", "fm", "inla"),
   subdivisions = 1,
   calc.credible = TRUE
 )
@@ -19,7 +19,8 @@ continuous(
 or \code{\link{contourmap}}.}
 
 \item{geometry}{Specification of the lattice or triangulation geometry of the input.
-One of \code{list(x, y)}, \code{list(loc, dims)}, \code{inla.mesh.lattice}, or
+One of \code{list(x, y)}, \code{list(loc, dims)}, \code{fm_lattice_2d},
+\code{inla.mesh.lattice}, \code{fm_mesh_2d}, or
 \code{inla.mesh}, where \code{x} and \code{y} are vectors, \code{loc} is
 a two-column matrix of coordinates, and \code{dims} is the lattice size vector.
 The first three versions are all treated topologically as lattices, and the
@@ -35,7 +36,7 @@ are interpolated linearly in the transformed scale. For \code{step}, a conservat
 step function is used.}
 
 \item{output}{Specifies what type of object should be generated. \code{sp} gives a
-\code{SpatialPolygons} object, and \code{inla} gives a \code{inla.mesh.segment} object.}
+\code{SpatialPolygons} object, and \code{fm} or \code{inla} gives a \code{fm_segm} object.}
 
 \item{subdivisions}{The number of mesh triangle subdivisions to perform for the
 interpolation of the excursions or contour function. 0 is no subdivision.
@@ -66,8 +67,8 @@ if (require.nowarnings("INLA")) {
 #Generate mesh and SPDE model
 n.lattice = 10 #Increase for more interesting, but slower, examples
 x=seq(from=0,to=10,length.out=n.lattice)
-lattice=inla.mesh.lattice(x=x,y=x)
-mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
+lattice=fm_lattice_2d(x=x,y=x)
+mesh=fmesher::fm_rcdt_2d_inla(lattice=lattice, extend=FALSE, refine=FALSE)
 spde <- inla.spde2.matern(mesh, alpha=2)
 
 #Generate an artificial sample
