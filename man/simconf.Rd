@@ -54,26 +54,28 @@ and \eqn{b} such that \eqn{P(a<x<b) = 1-alpha}.
 }
 \details{
 The pointwise confidence bands are based on the marginal quantiles,
-meaning that \code{a.marignal = mu +} \eqn{q_{alpha}} and \code{b.marginal = mu +} 
-\eqn{q_{1-alpha}}, where \code{mu} is the mean and \eqn{q_{alpha}} is a 
+meaning that \code{a.marignal = mu +} \eqn{q_{alpha}} and \code{b.marginal = mu +}
+\eqn{q_{1-alpha}}, where \code{mu} is the mean and \eqn{q_{alpha}} is a
 vector with the alpha-quantiles of \code{x-mu}.
 
 The simultaneous confidence bands are defined as
-\code{a = mu +} \eqn{c*q_{alpha}} and \code{b = mu +} \eqn{c*q_{1-alpha}}, where 
+\code{a = mu +} \eqn{c*q_{alpha}} and \code{b = mu +} \eqn{c*q_{1-alpha}}, where
 \eqn{c} is a constant computed such that \eqn{P(a < x < b) = 1-alpha}.
 }
 \examples{
 ## Create mean and a tridiagonal precision matrix
-n = 11
-mu.x = seq(-5, 5, length=n)
-Q.x = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
+n <- 11
+mu.x <- seq(-5, 5, length = n)
+Q.x <- Matrix(toeplitz(c(1, -0.1, rep(0, n - 2))))
 ## calculate the confidence region
-conf = simconf(0.05, mu.x, Q.x, max.threads=2)
+conf <- simconf(0.05, mu.x, Q.x, max.threads = 2)
 ## Plot the region
-plot(mu.x, type="l", ylim=c(-10, 10),
-     main='Mean (black) and confidence region (red)')
-lines(conf$a, col=2)
-lines(conf$b, col=2)
+plot(mu.x,
+  type = "l", ylim = c(-10, 10),
+  main = "Mean (black) and confidence region (red)"
+)
+lines(conf$a, col = 2)
+lines(conf$b, col = 2)
 }
 \references{
 Bolin et al. (2015) \emph{Statistical prediction of global sea level

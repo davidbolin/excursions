@@ -82,26 +82,28 @@ contourmap(
 \code{contourmap} is used for calculating contour maps and quality measures for contour maps for Gaussian models.
 }
 \details{
-The Gaussian model is specified using the mean \code{mu} and the precision matrix 
+The Gaussian model is specified using the mean \code{mu} and the precision matrix
 \code{Q}. The contour map is then computed for the mean, using either the contour
 levels specified in \code{levels}, or \code{n.levels} contours that are placed according
 to the argument \code{type}.
 
-A number of quality measures can be computed based based on the specified contour map 
-and the Gaussian distribution. What should be computed is specified using the 
+A number of quality measures can be computed based based on the specified contour map
+and the Gaussian distribution. What should be computed is specified using the
 \code{compute} argument. For details on these quanties, see the reference below.
 }
 \examples{
-n = 10
-Q = Matrix(toeplitz(c(1, -0.5, rep(0, n-2))))
-mu = seq(-5, 5, length=n)
-lp <- contourmap(mu,Q,n.levels = 2,
-                 compute=list(F=FALSE, measures = c("P1","P2")),
-                 max.threads=1)
-#Plot the contourmap
+n <- 10
+Q <- Matrix(toeplitz(c(1, -0.5, rep(0, n - 2))))
+mu <- seq(-5, 5, length = n)
+lp <- contourmap(mu, Q,
+  n.levels = 2,
+  compute = list(F = FALSE, measures = c("P1", "P2")),
+  max.threads = 1
+)
+# Plot the contourmap
 plot(lp$map)
-#Display the quality measures
-cat(c(lp$P1,lp$P2))
+# Display the quality measures
+cat(c(lp$P1, lp$P2))
 }
 \references{
 Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, vol 26, no 3, pp 513-524.

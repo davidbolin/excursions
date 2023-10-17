@@ -59,233 +59,250 @@
 #'     \item{P0bound/P1bound/P2bound }{Calculated upper bounds quality measures (if computed).}
 #'     \item{meta }{A list containing various information about the calculation.}
 #' @export
-#' @details 
-#' The Gaussian model is specified using the mean \code{mu} and the precision matrix 
+#' @details
+#' The Gaussian model is specified using the mean \code{mu} and the precision matrix
 #' \code{Q}. The contour map is then computed for the mean, using either the contour
 #' levels specified in \code{levels}, or \code{n.levels} contours that are placed according
 #' to the argument \code{type}.
-#' 
-#' A number of quality measures can be computed based based on the specified contour map 
-#' and the Gaussian distribution. What should be computed is specified using the 
-#' \code{compute} argument. For details on these quanties, see the reference below. 
-#' 
+#'
+#' A number of quality measures can be computed based based on the specified contour map
+#' and the Gaussian distribution. What should be computed is specified using the
+#' \code{compute} argument. For details on these quanties, see the reference below.
+#'
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, vol 26, no 3, pp 513-524.
-#' 
+#'
 #' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #' @seealso \code{\link{contourmap.inla}}, \code{\link{contourmap.mc}}, \code{\link{contourmap.colors}}
 #' @examples
-#' n = 10
-#' Q = Matrix(toeplitz(c(1, -0.5, rep(0, n-2))))
-#' mu = seq(-5, 5, length=n)
-#' lp <- contourmap(mu,Q,n.levels = 2,
-#'                  compute=list(F=FALSE, measures = c("P1","P2")),
-#'                  max.threads=1)
-#' #Plot the contourmap
+#' n <- 10
+#' Q <- Matrix(toeplitz(c(1, -0.5, rep(0, n - 2))))
+#' mu <- seq(-5, 5, length = n)
+#' lp <- contourmap(mu, Q,
+#'   n.levels = 2,
+#'   compute = list(F = FALSE, measures = c("P1", "P2")),
+#'   max.threads = 1
+#' )
+#' # Plot the contourmap
 #' plot(lp$map)
-#' #Display the quality measures
-#' cat(c(lp$P1,lp$P2))
-
+#' # Display the quality measures
+#' cat(c(lp$P1, lp$P2))
 contourmap <- function(mu,
                        Q,
                        vars,
                        n.levels,
                        ind,
                        levels,
-                       type = c("standard",
-                                "pretty",
-                                "equalarea",
-                                "P0-optimal",
-                                "P1-optimal",
-                                "P2-optimal"),
-                       compute = list(F=TRUE, measures = NULL),
-                       use.marginals=TRUE,
+                       type = c(
+                         "standard",
+                         "pretty",
+                         "equalarea",
+                         "P0-optimal",
+                         "P1-optimal",
+                         "P2-optimal"
+                       ),
+                       compute = list(F = TRUE, measures = NULL),
+                       use.marginals = TRUE,
                        alpha,
                        F.limit,
-                       n.iter=10000,
-                       verbose=FALSE,
-                       max.threads=0,
-                       seed=NULL)
-{
+                       n.iter = 10000,
+                       verbose = FALSE,
+                       max.threads = 0,
+                       seed = NULL) {
   type <- match.arg(type)
 
-  if(missing(alpha) || is.null(alpha)){
-    alpha = 0.1
+  if (missing(alpha) || is.null(alpha)) {
+    alpha <- 0.1
   }
-  if(missing(F.limit)) {
-    F.limit = 0.99
+  if (missing(F.limit)) {
+    F.limit <- 0.99
   } else {
-    F.limit = max(alpha,F.limit)
+    F.limit <- max(alpha, F.limit)
   }
-  if(missing(n.levels) || is.null(n.levels)){
-    if(missing(levels) || is.null(levels)){
+  if (missing(n.levels) || is.null(n.levels)) {
+    if (missing(levels) || is.null(levels)) {
       stop("Must supply levels or n.levels")
     } else {
-      n.levels = length(levels)
+      n.levels <- length(levels)
     }
   }
 
-  if(!missing(mu))
+  if (!missing(mu)) {
     mu <- private.as.vector(mu)
+  }
 
-  if(!missing(vars))
+  if (!missing(vars)) {
     vars <- private.as.vector(vars)
+  }
 
-  if(!missing(ind))
+  if (!missing(ind)) {
     ind <- private.as.vector(ind)
+  }
 
-  if(!missing(Q))
+  if (!missing(Q)) {
     Q <- private.as.dgCMatrix(Q)
+  }
 
 
-  measure = NULL
-  if(!is.null(compute$measures))
+  measure <- NULL
+  if (!is.null(compute$measures)) {
     measure <- match.arg(compute$measures,
-                         c("P0", "P1", "P2","P0-bound","P1-bound","P2-bound"),
-                         several.ok=TRUE)
+      c("P0", "P1", "P2", "P0-bound", "P1-bound", "P2-bound"),
+      several.ok = TRUE
+    )
+  }
 
-  if(type == 'standard')
-  {
-    if(verbose) cat('Creating contour map\n')
-    lp <- excursions.levelplot(mu=mu,n.levels = n.levels,ind = ind,
-                               levels = levels,equal.area=FALSE)
-  }
-  else if(type == 'pretty')
-  {
-    if(verbose) cat('Creating pretty contour map\n')
-    lp <- excursions.levelplot(mu=mu,n.levels = n.levels,ind = ind,
-                               levels = levels,equal.area=FALSE,pretty.cm=TRUE)
-    n.levels = lp$n.levels
-  }
-  else if(type == 'equalarea')
-  {
-    if(verbose) cat('Creating equal area contour map\n')
-    lp <- excursions.levelplot(mu = mu,n.levels = n.levels,ind = ind,
-                               levels = levels,equal.area=TRUE)
-  }
-  else if(type == 'P0-optimal' || type == 'P1-optimal' || type == 'P2-optimal')
-  {
-    if(!missing(levels)){
-      warning('Not using supplied levels for optimal contour map\n')
-      if(!missing(n.levels)){
-        if(n.levels != length(levels)){
-          warning('n.levels != length(levels), using n.levels\n')
+  if (type == "standard") {
+    if (verbose) cat("Creating contour map\n")
+    lp <- excursions.levelplot(
+      mu = mu, n.levels = n.levels, ind = ind,
+      levels = levels, equal.area = FALSE
+    )
+  } else if (type == "pretty") {
+    if (verbose) cat("Creating pretty contour map\n")
+    lp <- excursions.levelplot(
+      mu = mu, n.levels = n.levels, ind = ind,
+      levels = levels, equal.area = FALSE, pretty.cm = TRUE
+    )
+    n.levels <- lp$n.levels
+  } else if (type == "equalarea") {
+    if (verbose) cat("Creating equal area contour map\n")
+    lp <- excursions.levelplot(
+      mu = mu, n.levels = n.levels, ind = ind,
+      levels = levels, equal.area = TRUE
+    )
+  } else if (type == "P0-optimal" || type == "P1-optimal" || type == "P2-optimal") {
+    if (!missing(levels)) {
+      warning("Not using supplied levels for optimal contour map\n")
+      if (!missing(n.levels)) {
+        if (n.levels != length(levels)) {
+          warning("n.levels != length(levels), using n.levels\n")
         }
       } else {
-        n.levels = length(levels)
+        n.levels <- length(levels)
       }
     }
-    if(missing(vars) && missing(Q)){
-      stop('Variances must be supplied when creating optimal contour map')
-    } else if(missing(vars)) {
-      vars = excursions.variances(Q=Q)
+    if (missing(vars) && missing(Q)) {
+      stop("Variances must be supplied when creating optimal contour map")
+    } else if (missing(vars)) {
+      vars <- excursions.variances(Q = Q)
     }
-    if(use.marginals == TRUE){
-      if(missing(Q))
-        stop('The precision matrix must be supplied unless marginals are used')
-    }
-
-    if(type == 'P0-optimal'){
-      if(verbose) cat('Creating P0-optimal contour map\n')
-      opt.measure = 0
-    }else if(type == 'P1-optimal'){
-      if(verbose) cat('Creating P1-optimal contour map\n')
-      opt.measure = 1
-    } else if (type == 'P2-optimal'){
-      if(verbose) cat('Creating P2-optimal contour map\n')
-      opt.measure = 2
+    if (use.marginals == TRUE) {
+      if (missing(Q)) {
+        stop("The precision matrix must be supplied unless marginals are used")
+      }
     }
 
-    lp <- excursions.opt.levelplot(mu = mu,vars = vars,Q = Q,
-                                   n.levels = n.levels, measure = opt.measure,
-                                   use.marginals = use.marginals,ind = ind)
+    if (type == "P0-optimal") {
+      if (verbose) cat("Creating P0-optimal contour map\n")
+      opt.measure <- 0
+    } else if (type == "P1-optimal") {
+      if (verbose) cat("Creating P1-optimal contour map\n")
+      opt.measure <- 1
+    } else if (type == "P2-optimal") {
+      if (verbose) cat("Creating P2-optimal contour map\n")
+      opt.measure <- 2
+    }
+
+    lp <- excursions.opt.levelplot(
+      mu = mu, vars = vars, Q = Q,
+      n.levels = n.levels, measure = opt.measure,
+      use.marginals = use.marginals, ind = ind
+    )
   }
 
-  F.calculated = FALSE
-  if(!is.null(measure)){
-    if(missing(Q))
-      stop('precision matrix must be supplied if measure should be calculated')
+  F.calculated <- FALSE
+  if (!is.null(measure)) {
+    if (missing(Q)) {
+      stop("precision matrix must be supplied if measure should be calculated")
+    }
 
-    for( i in 1:length(measure)){
-      if(measure[i]=="P1") {
-        if(n.levels>1){
-          if(verbose) cat('Calculating P1-measure\n')
-          tmp <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=1,seed=seed,n.iter=n.iter)
+    for (i in 1:length(measure)) {
+      if (measure[i] == "P1") {
+        if (n.levels > 1) {
+          if (verbose) cat("Calculating P1-measure\n")
+          tmp <- Pmeasure(lp = lp, mu = mu, Q = Q, ind = ind, type = 1, seed = seed, n.iter = n.iter)
           lp$P1 <- tmp$P
           lp$P1.error <- tmp$E
         } else {
-          lp$P1 = 1
+          lp$P1 <- 1
           lp$P1.error <- 0
         }
-      } else if(measure[i] == "P2") {
-        if(verbose) cat('Calculating P2-measure\n')
-        tmp <- Pmeasure(lp=lp,mu=mu,Q=Q,ind=ind,type=2,seed=seed,n.iter=n.iter)
+      } else if (measure[i] == "P2") {
+        if (verbose) cat("Calculating P2-measure\n")
+        tmp <- Pmeasure(lp = lp, mu = mu, Q = Q, ind = ind, type = 2, seed = seed, n.iter = n.iter)
         lp$P2 <- tmp$P
         lp$P2.error <- tmp$E
       } else if (measure[i] == "P0") {
-        if(verbose) cat('Calculating P0-measure and contour map function\n')
+        if (verbose) cat("Calculating P0-measure and contour map function\n")
 
-        p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
-                             alpha=alpha, F.limit = F.limit,
-                             n.iter=n.iter,max.threads=max.threads,
-                             seed=seed,verbose=verbose)
-        F.calculated = TRUE
-      } else if(measure[i] == "P0-bound"){
-        if(missing(vars)){
-          vars = excursions.variances(Q=Q)
+        p <- contourfunction(
+          lp = lp, mu = mu, Q = Q, vars = vars, ind = ind,
+          alpha = alpha, F.limit = F.limit,
+          n.iter = n.iter, max.threads = max.threads,
+          seed = seed, verbose = verbose
+        )
+        F.calculated <- TRUE
+      } else if (measure[i] == "P0-bound") {
+        if (missing(vars)) {
+          vars <- excursions.variances(Q = Q)
         }
-        lp$P0.bound <- Pmeasure.bound(lp=lp, mu=mu, vars, type=0, ind=ind)
-      } else if(measure[i] == "P1-bound"){
-        if(missing(vars)){
-          vars = excursions.variances(Q=Q)
+        lp$P0.bound <- Pmeasure.bound(lp = lp, mu = mu, vars, type = 0, ind = ind)
+      } else if (measure[i] == "P1-bound") {
+        if (missing(vars)) {
+          vars <- excursions.variances(Q = Q)
         }
-        lp$P1.bound <- Pmeasure.bound(lp=lp, mu=mu, vars, type=1, ind=ind)
-      } else if(measure[i] == "P2-bound"){
-        if(missing(vars)){
-          vars = excursions.variances(Q=Q)
+        lp$P1.bound <- Pmeasure.bound(lp = lp, mu = mu, vars, type = 1, ind = ind)
+      } else if (measure[i] == "P2-bound") {
+        if (missing(vars)) {
+          vars <- excursions.variances(Q = Q)
         }
-        lp$P2.bound <- Pmeasure.bound(lp=lp, mu=mu, vars, type=2, ind=ind)
+        lp$P2.bound <- Pmeasure.bound(lp = lp, mu = mu, vars, type = 2, ind = ind)
       }
     }
   }
-  if(!F.calculated){
-    if(is.null(compute$F) || compute$F){
-      if(verbose) cat('Calculating contour map function\n')
-      p <- contourfunction(lp=lp, mu=mu,Q=Q ,vars=vars, ind = ind,
-                           alpha=alpha, F.limit = F.limit,
-                           n.iter=n.iter, max.threads=max.threads,
-                           seed=seed,verbose=verbose)
-      F.calculated = TRUE
+  if (!F.calculated) {
+    if (is.null(compute$F) || compute$F) {
+      if (verbose) cat("Calculating contour map function\n")
+      p <- contourfunction(
+        lp = lp, mu = mu, Q = Q, vars = vars, ind = ind,
+        alpha = alpha, F.limit = F.limit,
+        n.iter = n.iter, max.threads = max.threads,
+        seed = seed, verbose = verbose
+      )
+      F.calculated <- TRUE
     }
   }
 
   if (missing(ind) || is.null(ind)) {
     ind <- seq_len(length(mu))
-  } else if(is.logical(ind)){
+  } else if (is.logical(ind)) {
     ind <- which(ind)
   }
 
-  if(F.calculated){
-    lp$P0 = mean(p$F[ind])
-    lp$F = p$F
-    lp$E = p$E
-    lp$M = p$M
-    lp$rho = p$rho
-  #} else {
-    #lp$E <- NULL
+  if (F.calculated) {
+    lp$P0 <- mean(p$F[ind])
+    lp$F <- p$F
+    lp$E <- p$E
+    lp$M <- p$M
+    lp$rho <- p$rho
+    # } else {
+    # lp$E <- NULL
   }
-  lp$meta <- list(calculation="contourmap",
-                  F.limit=F.limit,
-                  F.computed = compute$F,
-                  alpha=alpha,
-                  levels=lp$u,
-                  type="!=",
-                  contourmap.type = type,
-                  n.iter=n.iter,
-                  mu.range = range(mu[ind]),
-                  mu = mu[ind],
-                  ind = ind,
-                  call = match.call())
+  lp$meta <- list(
+    calculation = "contourmap",
+    F.limit = F.limit,
+    F.computed = compute$F,
+    alpha = alpha,
+    levels = lp$u,
+    type = "!=",
+    contourmap.type = type,
+    n.iter = n.iter,
+    mu.range = range(mu[ind]),
+    mu = mu[ind],
+    ind = ind,
+    call = match.call()
+  )
   class(lp) <- "excurobj"
   return(lp)
 }

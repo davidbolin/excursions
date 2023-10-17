@@ -21,8 +21,7 @@
 ##
 contour.segment.pixels <- function(c.x, c.y,
                                    edge.x, edge.y,
-                                   pairs=FALSE)
-{
+                                   pairs = FALSE) {
   nx <- length(edge.x)
   ny <- length(edge.y)
   d.x <- diff(c.x)
@@ -30,51 +29,51 @@ contour.segment.pixels <- function(c.x, c.y,
   if (abs(d.x) < abs(d.y)) {
     ## Swap x and y
     idx <- contour.segment.pixels(c.y, c.x, edge.y, edge.x, TRUE)
-    idx <- list(x=idx$y, y=idx$x)
+    idx <- list(x = idx$y, y = idx$x)
   } else if (d.y < 0) {
     ## Flip ordering of segment
     idx <- contour.segment.pixels(c.x[2:1], c.y[2:1], edge.x, edge.y, TRUE)
-    idx <- list(x=idx$x[length(idx$x):1], y=idx$y[length(idx$y):1])
+    idx <- list(x = idx$x[length(idx$x):1], y = idx$y[length(idx$y):1])
   } else {
-    idx <- list(x=numeric(0), y=numeric(0))
+    idx <- list(x = numeric(0), y = numeric(0))
     ## |d.x| >= d.y >= 0
     dir.x <- sign(d.x) ## Can be 0 only if dir.y is 0
     dir.y <- sign(d.y) ## Must now be >= 0
     if (dir.y == 0) {
       start.y <- min(which((c.y[1] >= edge.y[-ny]) &
-                           (c.y[1] <= edge.y[-1])))
+        (c.y[1] <= edge.y[-1])))
       if (dir.x == 0) {
         start.x <- min(which((c.x[1] >= edge.x[-nx]) &
-                             (c.x[1] <= edge.x[-1])))
+          (c.x[1] <= edge.x[-1])))
         end.x <- start.x
       } else if (dir.x > 0) {
         start.x <- min(which((c.x[1] >= edge.x[-nx]) &
-                             (c.x[1] < edge.x[-1])))
+          (c.x[1] < edge.x[-1])))
         end.x <- min(which((c.x[2] > edge.x[-nx]) &
-                           (c.x[2] <= edge.x[-1])))
+          (c.x[2] <= edge.x[-1])))
       } else { ## dir.x < 0
         start.x <- min(which((c.x[1] > edge.x[-nx]) &
-                             (c.x[1] <= edge.x[-1])))
+          (c.x[1] <= edge.x[-1])))
         end.x <- min(which((c.x[2] >= edge.x[-nx]) &
-                           (c.x[2] < edge.x[-1])))
+          (c.x[2] < edge.x[-1])))
       }
       idx$x <- start.x:end.x
       idx$y <- rep(start.y, length(idx$x))
     } else { ## dir.y > 0
       start.y <- min(which((c.y[1] >= edge.y[-ny]) &
-                           (c.y[1] < edge.y[-1])))
+        (c.y[1] < edge.y[-1])))
       end.y <- min(which((c.y[2] > edge.y[-ny]) &
-                         (c.y[2] <= edge.y[-1])))
+        (c.y[2] <= edge.y[-1])))
       if (dir.x > 0) {
         start.x <- min(which((c.x[1] >= edge.x[-nx]) &
-                             (c.x[1] < edge.x[-1])))
+          (c.x[1] < edge.x[-1])))
         end.x <- min(which((c.x[2] > edge.x[-nx]) &
-                           (c.x[2] <= edge.x[-1])))
+          (c.x[2] <= edge.x[-1])))
       } else { ## dir.x < 0
         start.x <- min(which((c.x[1] > edge.x[-nx]) &
-                             (c.x[1] <= edge.x[-1])))
+          (c.x[1] <= edge.x[-1])))
         end.x <- min(which((c.x[2] >= edge.x[-nx]) &
-                           (c.x[2] < edge.x[-1])))
+          (c.x[2] < edge.x[-1])))
       }
       if (start.y == end.y) {
         idx$x <- start.x:end.x
@@ -87,13 +86,13 @@ contour.segment.pixels <- function(c.x, c.y,
           next.y <- curr.y + 1
           ## Find intersection with edge.y[next.y]
           ## (x-c.x[1])*d.y/d.x + c.y[1] = edge.y[next.y]
-          intersect.x <- c.x[1]+d.x/d.y*(edge.y[next.y]-c.y[1])
+          intersect.x <- c.x[1] + d.x / d.y * (edge.y[next.y] - c.y[1])
           if (dir.x > 0) {
             next.x <- min(which((intersect.x >= edge.x[-nx]) &
-                                (intersect.x < edge.x[-1])))
+              (intersect.x < edge.x[-1])))
           } else { ## dir.x < 0
             next.x <- min(which((intersect.x > edge.x[-nx]) &
-                                (intersect.x <= edge.x[-1])))
+              (intersect.x <= edge.x[-1])))
           }
           idx$x <- c(idx$x, curr.x:next.x)
           idx$y <- c(idx$y, rep(curr.y, length(curr.x:next.x)))
@@ -113,20 +112,19 @@ contour.segment.pixels <- function(c.x, c.y,
 }
 
 
-contour.pixels <- function(contourlines, pixelgrid, do.plot=0)
-{
+contour.pixels <- function(contourlines, pixelgrid, do.plot = 0) {
   if (inherits(pixelgrid, "pgrid")) {
     mid.x <- pixelgrid$upx
     mid.y <- pixelgrid$upy
     edge.x <- pixelgrid$ubx
     edge.y <- pixelgrid$uby
-  } else if (inherits(pixelgrid, "inla.mesh.lattice")) {
+  } else if (inherits(pixelgrid, c("fm_lattice_2d", "inla.mesh.lattice"))) {
     mid.x <- pixelgrid$x
     mid.y <- pixelgrid$y
-    step.x <- mid.x[2]-mid.x[1]
-    step.y <- mid.y[2]-mid.y[1]
-    edge.x <- c(mid.x[1]-step.x/2, mid.x+step.x/2)
-    edge.y <- c(mid.y[1]-step.y/2, mid.y+step.y/2)
+    step.x <- mid.x[2] - mid.x[1]
+    step.y <- mid.y[2] - mid.y[1]
+    edge.x <- c(mid.x[1] - step.x / 2, mid.x + step.x / 2)
+    edge.y <- c(mid.y[1] - step.y / 2, mid.y + step.y / 2)
   } else {
     stop("Unsupported grid specification class.")
   }
@@ -136,22 +134,26 @@ contour.pixels <- function(contourlines, pixelgrid, do.plot=0)
   for (level in seq_along(contourlines)) {
     c.x <- contourlines[[level]]$x
     c.y <- contourlines[[level]]$y
-    for (segment in seq_len(length(c.x)-1)) {
-      tmp <- contour.segment.pixels(c.x[segment+(0:1)],
-                                    c.y[segment+(0:1)],
-                                    edge.x,
-                                    edge.y)
+    for (segment in seq_len(length(c.x) - 1)) {
+      tmp <- contour.segment.pixels(
+        c.x[segment + (0:1)],
+        c.y[segment + (0:1)],
+        edge.x,
+        edge.y
+      )
       which.pixel[[level]] <- c(which.pixel[[level]], tmp)
       if (do.plot > 1) {
-        setvec <- rep(0, nx*ny)
+        setvec <- rep(0, nx * ny)
         setvec[sort(unique(unlist(which.pixel)))] <- 1
         image(mid.x, mid.y, matrix(setvec, nx, ny), col = c(0, 3))
-        setvec <- rep(0, nx*ny)
+        setvec <- rep(0, nx * ny)
         setvec[tmp] <- 1
-        image(mid.x, mid.y, matrix(setvec, nx, ny), col = c(0, 4),
-              add=TRUE)
-        #plot.contourLines(contourlines, add=TRUE)
-        lines(c.x[segment+(0:1)], c.y[segment+(0:1)], col=2)
+        image(mid.x, mid.y, matrix(setvec, nx, ny),
+          col = c(0, 4),
+          add = TRUE
+        )
+        # plot.contourLines(contourlines, add=TRUE)
+        lines(c.x[segment + (0:1)], c.y[segment + (0:1)], col = 2)
         if (do.plot > 2) {
           readline("next")
         }
@@ -159,11 +161,11 @@ contour.pixels <- function(contourlines, pixelgrid, do.plot=0)
     }
   }
   if (do.plot > 0) {
-    setvec <- rep(0, nx*ny)
+    setvec <- rep(0, nx * ny)
     setvec[sort(unique(unlist(which.pixel)))] <- 1
     image(mid.x, mid.y, matrix(setvec, nx, ny), col = c(0, 3))
-    #plot.contourLines(contourlines, add=TRUE)
-    lines(c.x[segment+(0:1)], c.y[segment+(0:1)], col=2)
+    # plot.contourLines(contourlines, add=TRUE)
+    lines(c.x[segment + (0:1)], c.y[segment + (0:1)], col = 2)
   }
 
   sort(unique(unlist(which.pixel)))
@@ -189,45 +191,52 @@ contour.pixels <- function(contourlines, pixelgrid, do.plot=0)
 ## seg[[k]] : segment index vector for a single sequence
 ## grp : list
 ## grp[[k]] : group index vector for a single sequence
-connect.segments <-function(segment.set,
-                            segment.grp=rep(0L, nrow(segment.set)),
-                            grp.ccw=unique(segment.grp),
-                            grp.cw=integer(0),
-                            ccw=TRUE,
-                            ambiguous.warning=FALSE)
-{
+connect.segments <- function(segment.set,
+                             segment.grp = rep(0L, nrow(segment.set)),
+                             grp.ccw = unique(segment.grp),
+                             grp.cw = integer(0),
+                             ccw = TRUE,
+                             ambiguous.warning = FALSE) {
   ## Remove unneeded segments
   segment.idx <- seq_len(nrow(segment.set))
-  segment.idx <- c(segment.idx[segment.grp %in% grp.ccw],
-                   segment.idx[segment.grp %in% grp.cw])
-  segment.set <- segment.set[segment.idx,,drop=FALSE]
+  segment.idx <- c(
+    segment.idx[segment.grp %in% grp.ccw],
+    segment.idx[segment.grp %in% grp.cw]
+  )
+  segment.set <- segment.set[segment.idx, , drop = FALSE]
   segment.grp <- as.integer(segment.grp[segment.idx])
   ## Unneeded segment removal done
   ## Reverse the direction of segments in grp.cw
   segment.set[segment.grp %in% grp.cw, ] <-
-    segment.set[segment.grp %in% grp.cw, 2:1, drop=FALSE]
+    segment.set[segment.grp %in% grp.cw, 2:1, drop = FALSE]
   ## Segment reversion done
   nE <- nrow(segment.set)
   if (nE == 0) {
-    return(list(sequences=list(), seg=list(), grp=list()))
+    return(list(sequences = list(), seg = list(), grp = list()))
   }
   ## Remap nodes into 1...nV
   segments <- sort(unique(as.vector(segment.set)))
   nV <- length(segments)
-  segments.reo <- Matrix::sparseMatrix(i=segments,
-                                       j=rep(1, nV),
-                                       x=seq_len(nV),
-                                       dims=c(max(segments), 1))
-  segment.set <- matrix(segments.reo[as.vector(segment.set)],
-                        nrow(segment.set), ncol(segment.set))
+  segments.reo <- Matrix::sparseMatrix(
+    i = segments,
+    j = rep(1, nV),
+    x = seq_len(nV),
+    dims = c(max(segments), 1)
+  )
+  segment.set <- matrix(
+    segments.reo[as.vector(segment.set)],
+    nrow(segment.set), ncol(segment.set)
+  )
   ## Node remapping done
 
   segment.unused <- rep(TRUE, nE)
   segment.unused.idx <- which(segment.unused)
-  segment.VV <- Matrix::sparseMatrix(i=segment.set[,1],
-                                     j=segment.set[,2],
-                                     x=seq_len(nE),
-                                     dims=c(nV, nV))
+  segment.VV <- Matrix::sparseMatrix(
+    i = segment.set[, 1],
+    j = segment.set[, 2],
+    x = seq_len(nE),
+    dims = c(nV, nV)
+  )
   loops.seg <- list()
   loops <- list()
   grp <- list()
@@ -240,7 +249,7 @@ connect.segments <-function(segment.set,
       if (n == 0) {
         si <- segment.unused.idx[1]
       } else {
-        si <- as.vector(as.matrix(segment.VV[segment.set[si,2],]))
+        si <- as.vector(as.matrix(segment.VV[segment.set[si, 2], ]))
         si <- si[si %in% segment.unused.idx]
         if (length(si) == 0) {
           ## End of sequence
@@ -256,21 +265,21 @@ connect.segments <-function(segment.set,
         segment.unused.idx[segment.unused.idx != si]
       segment.unused[si] <- FALSE
       loop.seg <- c(loop.seg, si)
-      n <- n+1
+      n <- n + 1
 
       ##            print(loop.seg)
       ##            loop <- c(segment.set[loop.seg,1],
       ##                      segment.set[loop.seg[n],2])
       ##            print(loop)
     }
-    if ((segment.set[loop.seg[n],2] != segment.set[loop.seg[1],1]) &&
-        (length(segment.unused.idx) > 0)) {
+    if ((segment.set[loop.seg[n], 2] != segment.set[loop.seg[1], 1]) &&
+      (length(segment.unused.idx) > 0)) {
       ## No closed sequence found
       ## Backward loop
       ##            message("Backwards")
       si <- loop.seg[1]
       while (length(segment.unused.idx) > 0) {
-        si <- as.vector(as.matrix(segment.VV[,segment.set[si,1]]))
+        si <- as.vector(as.matrix(segment.VV[, segment.set[si, 1]]))
         si <- si[si %in% segment.unused.idx]
         if (length(si) == 0) {
           ## End of sequence
@@ -285,7 +294,7 @@ connect.segments <-function(segment.set,
           segment.unused.idx[segment.unused.idx != si]
         segment.unused[si] <- FALSE
         loop.seg <- c(si, loop.seg)
-        n <- n+1
+        n <- n + 1
 
         ##                print(loop.seg)
         ##                loop <- c(segment.set[loop.seg,1],
@@ -294,8 +303,10 @@ connect.segments <-function(segment.set,
       }
     }
 
-    loop <- c(segment.set[loop.seg,1],
-              segment.set[loop.seg[n],2])
+    loop <- c(
+      segment.set[loop.seg, 1],
+      segment.set[loop.seg[n], 2]
+    )
     loop.grp <- segment.grp[loop.seg]
 
     loops.seg <- c(loops.seg, list(loop.seg))
@@ -318,12 +329,11 @@ connect.segments <-function(segment.set,
     }
   }
 
-  return(list(sequences=loops, seg=loops.seg, grp=grp))
+  return(list(sequences = loops, seg = loops.seg, grp = grp))
 }
 
 ## Compute simple outline of 1/0 set on a grid, eliminating spikes.
-outline.on.grid <- function(z, grid)
-{
+outline.on.grid <- function(z, grid) {
   if (missing(grid) || is.null(grid)) {
     if (!is.matrix(z)) {
       stop("grid not supplied, and z is not a matrix")
@@ -331,161 +341,208 @@ outline.on.grid <- function(z, grid)
     ni <- nrow(z)
     nj <- ncol(z)
     z <- (z != FALSE)
-    grid <- list(x=seq(0,1,length=ni), y=seq(0,1,length=nj))
-    grid$loc <- cbind(rep(grid$x, times=nj), rep(grid$y, each=ni))
+    grid <- list(x = seq(0, 1, length = ni), y = seq(0, 1, length = nj))
+    grid$loc <- cbind(rep(grid$x, times = nj), rep(grid$y, each = ni))
   } else {
     ni <- grid$dims[1]
     nj <- grid$dims[2]
     z <- matrix(z != FALSE, ni, nj)
   }
 
-  ij2k <-function(i,j) {
-    return((j-1)*ni+i)
+  ij2k <- function(i, j) {
+    return((j - 1) * ni + i)
   }
 
   seg <- matrix(integer(), 0, 2)
   bnd.seg <- matrix(integer(), 0, 2)
 
   ## Extract horizontal segment locations:
-  zz.p <- z[-ni,-c(1,2),drop=FALSE] + z[-1,-c(1,2),drop=FALSE]
-  zz.n <- z[-ni,-c(1,nj),drop=FALSE] + z[-1,-c(1,nj),drop=FALSE]
-  zz.m <- z[-ni,-c(nj-1,nj),drop=FALSE] + z[-1,-c(nj-1,nj),drop=FALSE]
-  zz <- (zz.n == 2) * (zz.p+zz.m > 0) * ((zz.p == 0)*1 + (zz.m == 0)*2)
+  zz.p <- z[-ni, -c(1, 2), drop = FALSE] + z[-1, -c(1, 2), drop = FALSE]
+  zz.n <- z[-ni, -c(1, nj), drop = FALSE] + z[-1, -c(1, nj), drop = FALSE]
+  zz.m <- z[-ni, -c(nj - 1, nj), drop = FALSE] + z[-1, -c(nj - 1, nj), drop = FALSE]
+  zz <- (zz.n == 2) * (zz.p + zz.m > 0) * ((zz.p == 0) * 1 + (zz.m == 0) * 2)
   ## zz=0 : No segment, zz=1 : set is below, zz=2 : set is above
   ijv <- private.sparse.gettriplet(zz == 1)
   idx <- which(ijv$x > 0)
-  seg <- rbind(seg,
-               cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]+1),
-                     ij2k(ijv$i[idx], ijv$j[idx]+1)))
+  seg <- rbind(
+    seg,
+    cbind(
+      ij2k(ijv$i[idx] + 1, ijv$j[idx] + 1),
+      ij2k(ijv$i[idx], ijv$j[idx] + 1)
+    )
+  )
   ijv <- private.sparse.gettriplet(zz == 2)
   idx <- which(ijv$x > 0)
-  seg <- rbind(seg,
-               cbind(ij2k(ijv$i[idx], ijv$j[idx]+1),
-                     ij2k(ijv$i[idx]+1, ijv$j[idx]+1)))
+  seg <- rbind(
+    seg,
+    cbind(
+      ij2k(ijv$i[idx], ijv$j[idx] + 1),
+      ij2k(ijv$i[idx] + 1, ijv$j[idx] + 1)
+    )
+  )
 
   ## Extract vertical segment locations:
-  zz.p <- z[-c(1,2),-nj,drop=FALSE] + z[-c(1,2),-1,drop=FALSE]
-  zz.n <- z[-c(1,ni),-nj,drop=FALSE] + z[-c(1,ni),-1,drop=FALSE]
-  zz.m <- z[-c(ni-1,ni),-nj,drop=FALSE] + z[-c(ni-1,ni),-1,drop=FALSE]
-  zz <- (zz.n == 2) * (zz.p+zz.m > 0) * ((zz.p == 0)*1 + (zz.m == 0)*2)
+  zz.p <- z[-c(1, 2), -nj, drop = FALSE] + z[-c(1, 2), -1, drop = FALSE]
+  zz.n <- z[-c(1, ni), -nj, drop = FALSE] + z[-c(1, ni), -1, drop = FALSE]
+  zz.m <- z[-c(ni - 1, ni), -nj, drop = FALSE] + z[-c(ni - 1, ni), -1, drop = FALSE]
+  zz <- (zz.n == 2) * (zz.p + zz.m > 0) * ((zz.p == 0) * 1 + (zz.m == 0) * 2)
   ## zz=0 : No segment, zz=1 : set is on left, zz=2 : set is on right
   ijv <- private.sparse.gettriplet(zz == 1)
   idx <- which(ijv$x > 0)
-  seg <- rbind(seg,
-               cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]),
-                     ij2k(ijv$i[idx]+1, ijv$j[idx]+1)))
+  seg <- rbind(
+    seg,
+    cbind(
+      ij2k(ijv$i[idx] + 1, ijv$j[idx]),
+      ij2k(ijv$i[idx] + 1, ijv$j[idx] + 1)
+    )
+  )
   ijv <- private.sparse.gettriplet(zz == 2)
   idx <- which(ijv$x > 0)
-  seg <- rbind(seg,
-               cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]+1),
-                     ij2k(ijv$i[idx]+1, ijv$j[idx])))
+  seg <- rbind(
+    seg,
+    cbind(
+      ij2k(ijv$i[idx] + 1, ijv$j[idx] + 1),
+      ij2k(ijv$i[idx] + 1, ijv$j[idx])
+    )
+  )
 
   ## Extract diagonal segment locations;
   ## Quadruples with three 1, one 0
-  zz <- (z[-ni,-nj,drop=FALSE] + z[-1,-nj,drop=FALSE] +
-         z[-ni,-1,drop=FALSE] + z[-1,-1,drop=FALSE])
+  zz <- (z[-ni, -nj, drop = FALSE] + z[-1, -nj, drop = FALSE] +
+    z[-ni, -1, drop = FALSE] + z[-1, -1, drop = FALSE])
   ## Which element was 0?
   zz <- (zz == 3) *
-    (15 - (z[-ni,-nj,drop=FALSE]*1 + z[-1,-nj,drop=FALSE]*2 +
-           z[-ni,-1,drop=FALSE]*4 + z[-1,-1,drop=FALSE]*8))
+    (15 - (z[-ni, -nj, drop = FALSE] * 1 + z[-1, -nj, drop = FALSE] * 2 +
+      z[-ni, -1, drop = FALSE] * 4 + z[-1, -1, drop = FALSE] * 8))
   ## zz=0 : No diagonal
   ## zz=1 : (0,0), zz=2 : (1,0), zz=4 : (0,1), zz=8 : (1,1)
   ijv <- private.sparse.gettriplet(zz == 1)
   idx <- which(ijv$x > 0)
-  seg <- rbind(seg,
-               cbind(ij2k(ijv$i[idx], ijv$j[idx]+1),
-                     ij2k(ijv$i[idx]+1, ijv$j[idx])))
+  seg <- rbind(
+    seg,
+    cbind(
+      ij2k(ijv$i[idx], ijv$j[idx] + 1),
+      ij2k(ijv$i[idx] + 1, ijv$j[idx])
+    )
+  )
   ijv <- private.sparse.gettriplet(zz == 2)
   idx <- which(ijv$x > 0)
-  seg <- rbind(seg,
-               cbind(ij2k(ijv$i[idx], ijv$j[idx]),
-                     ij2k(ijv$i[idx]+1, ijv$j[idx]+1)))
+  seg <- rbind(
+    seg,
+    cbind(
+      ij2k(ijv$i[idx], ijv$j[idx]),
+      ij2k(ijv$i[idx] + 1, ijv$j[idx] + 1)
+    )
+  )
   ijv <- private.sparse.gettriplet(zz == 4)
   idx <- which(ijv$x > 0)
-  seg <- rbind(seg,
-               cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]+1),
-                     ij2k(ijv$i[idx], ijv$j[idx])))
+  seg <- rbind(
+    seg,
+    cbind(
+      ij2k(ijv$i[idx] + 1, ijv$j[idx] + 1),
+      ij2k(ijv$i[idx], ijv$j[idx])
+    )
+  )
   ijv <- private.sparse.gettriplet(zz == 8)
   idx <- which(ijv$x > 0)
-  seg <- rbind(seg,
-               cbind(ij2k(ijv$i[idx]+1, ijv$j[idx]),
-                     ij2k(ijv$i[idx], ijv$j[idx]+1)))
+  seg <- rbind(
+    seg,
+    cbind(
+      ij2k(ijv$i[idx] + 1, ijv$j[idx]),
+      ij2k(ijv$i[idx], ijv$j[idx] + 1)
+    )
+  )
 
   ## Extract horizontal boundary segment locations:
-  zz.pm <- z[-ni,c(2,nj-1),drop=FALSE] + z[-1,c(2,nj-1),drop=FALSE]
-  zz.n <- z[-ni,c(1,nj),drop=FALSE] + z[-1,c(1,nj),drop=FALSE]
-  zz <- (zz.n == 2) * (zz.pm > 0) * matrix(rep(c(2,1), each=ni-1), ni-1, 2)
+  zz.pm <- z[-ni, c(2, nj - 1), drop = FALSE] + z[-1, c(2, nj - 1), drop = FALSE]
+  zz.n <- z[-ni, c(1, nj), drop = FALSE] + z[-1, c(1, nj), drop = FALSE]
+  zz <- (zz.n == 2) * (zz.pm > 0) * matrix(rep(c(2, 1), each = ni - 1), ni - 1, 2)
   ## zz=0 : No segment, zz=1 : set is below, zz=2 : set is above
   ijv <- private.sparse.gettriplet(zz == 1)
   idx <- which(ijv$x > 0)
-  bnd.seg <- rbind(bnd.seg,
-                   cbind(ij2k(ijv$i[idx]+1, nj),
-                         ij2k(ijv$i[idx], nj)))
+  bnd.seg <- rbind(
+    bnd.seg,
+    cbind(
+      ij2k(ijv$i[idx] + 1, nj),
+      ij2k(ijv$i[idx], nj)
+    )
+  )
   ijv <- private.sparse.gettriplet(zz == 2)
   idx <- which(ijv$x > 0)
-  bnd.seg <- rbind(bnd.seg,
-                   cbind(ij2k(ijv$i[idx], 1),
-                         ij2k(ijv$i[idx]+1, 1)))
+  bnd.seg <- rbind(
+    bnd.seg,
+    cbind(
+      ij2k(ijv$i[idx], 1),
+      ij2k(ijv$i[idx] + 1, 1)
+    )
+  )
 
   ## Extract vertical boundary segment locations:
-  zz.pm <- z[c(2,ni-1),-nj,drop=FALSE] + z[c(2,ni-1),-1,drop=FALSE]
-  zz.n <- z[c(1,ni),-nj,drop=FALSE] + z[c(1,ni),-1,drop=FALSE]
-  zz <- (zz.n == 2) * (zz.pm > 0) * matrix(rep(c(2,1), times=nj-1), 2, nj-1)
+  zz.pm <- z[c(2, ni - 1), -nj, drop = FALSE] + z[c(2, ni - 1), -1, drop = FALSE]
+  zz.n <- z[c(1, ni), -nj, drop = FALSE] + z[c(1, ni), -1, drop = FALSE]
+  zz <- (zz.n == 2) * (zz.pm > 0) * matrix(rep(c(2, 1), times = nj - 1), 2, nj - 1)
   ## zz=0 : No segment, zz=1 : set is on left, zz=2 : set is on right
   ijv <- private.sparse.gettriplet(zz == 1)
   idx <- which(ijv$x > 0)
-  bnd.seg <- rbind(bnd.seg,
-                   cbind(ij2k(ni, ijv$j[idx]),
-                         ij2k(ni, ijv$j[idx]+1)))
+  bnd.seg <- rbind(
+    bnd.seg,
+    cbind(
+      ij2k(ni, ijv$j[idx]),
+      ij2k(ni, ijv$j[idx] + 1)
+    )
+  )
   ijv <- private.sparse.gettriplet(zz == 2)
   idx <- which(ijv$x > 0)
-  bnd.seg <- rbind(bnd.seg,
-                   cbind(ij2k(1, ijv$j[idx]+1),
-                         ij2k(1, ijv$j[idx])))
+  bnd.seg <- rbind(
+    bnd.seg,
+    cbind(
+      ij2k(1, ijv$j[idx] + 1),
+      ij2k(1, ijv$j[idx])
+    )
+  )
 
   segment.grp <- rep(c(1L, 0L), c(nrow(seg), nrow(bnd.seg)))
   segment.set <- rbind(seg, bnd.seg)
 
-  list(loc=grid$loc, idx=segment.set, grp=segment.grp)
+  list(loc = grid$loc, idx = segment.set, grp = segment.grp)
 }
 
 ## Compute simple outline of 1/0 set on a mesh, eliminating spikes.
 ## Returns a vector of triangle indices for the indicator set.
-outlinetri.on.mesh <- function(z, mesh, complement=FALSE)
-{
+outlinetri.on.mesh <- function(z, mesh, complement = FALSE) {
   t.count <- rowSums(matrix((z >= 0.5)[mesh$graph$tv], nrow(mesh$graph$tv), 3))
-  
+
   if (complement) {
     t.keep <- which(t.count < 3)
   } else {
     t.keep <- which(t.count == 3)
   }
-  
+
   t.keep
 }
 
 ## Compute simple outline of 1/0 set on a mesh, eliminating spikes.
-outline.on.mesh <- function(z, mesh, complement=FALSE)
-{
+outline.on.mesh <- function(z, mesh, complement = FALSE) {
   t.keep <- outlinetri.on.mesh(z, mesh, complement)
 
   if (length(t.keep) > 0) {
     graph <-
       generate.trigraph.properties(
-        list(tv=mesh$graph$tv[t.keep,,drop=FALSE]),
-        Nv=nrow(mesh$loc))
-    idx <- graph$ev[is.na(graph$ee),,drop=FALSE]
+        list(tv = mesh$graph$tv[t.keep, , drop = FALSE]),
+        Nv = nrow(mesh$loc)
+      )
+    idx <- graph$ev[is.na(graph$ee), , drop = FALSE]
   } else {
-    idx <- matrix(0L, 0,2)
+    idx <- matrix(0L, 0, 2)
   }
-  
+
   if (complement) {
     grp <- rep(1L, nrow(idx))
   } else {
     grp <- rep(3L, nrow(idx))
   }
-  
-  list(loc=mesh$loc, idx=idx, grp=grp)
+
+  list(loc = mesh$loc, idx = idx, grp = grp)
 }
 
 
@@ -504,28 +561,32 @@ outline.on.mesh <- function(z, mesh, complement=FALSE)
 #' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @examples
 #' \dontrun{
-#' if (require(INLA)) {
-#' nxy = 40
-#' x=seq(from=0,to=4,length.out=nxy)
-#' lattice=inla.mesh.lattice(x=x,y=x)
-#' mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
+#' if (require.nowarnings("INLA") && require("fmesher")) {
+#'   nxy <- 40
+#'   x <- seq(from = 0, to = 4, length.out = nxy)
+#'   lattice <- fm_lattice_2d(x = x, y = x)
+#'   mesh <- fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
 #'
-#' #extract a part of the mesh inside a circle
-#' xy.in <- rowSums((mesh$loc[,1:2]-2)^2)<1
-#' submesh <- submesh.grid(matrix(xy.in,nxy,nxy),
-#'                         list(loc=mesh$loc,dim=c(nxy,nxy)))
-#' plot(mesh$loc[,1:2])
-#' lines(2+cos(seq(0,2*pi,length.out=100)), 2+sin(seq(0,2*pi,length.out=100)))
-#' plot(submesh,add=TRUE)
-#' points(mesh$loc[xy.in,1:2],col="2")
-#' }}
-
-submesh.grid <- function(z, grid=NULL)
-{
+#'   # extract a part of the mesh inside a circle
+#'   xy.in <- rowSums((mesh$loc[, 1:2] - 2)^2) < 1
+#'   submesh <- submesh.grid(
+#'     matrix(xy.in, nxy, nxy),
+#'     list(loc = mesh$loc, dim = c(nxy, nxy))
+#'   )
+#'   plot(mesh$loc[, 1:2])
+#'   lines(2 + cos(seq(0, 2 * pi, length.out = 100)), 2 + sin(seq(0, 2 * pi, length.out = 100)))
+#'   plot(submesh, add = TRUE)
+#'   points(mesh$loc[xy.in, 1:2], col = "2")
+#' }
+#' }
+#'
+submesh.grid <- function(z, grid = NULL) {
   outline <- outline.on.grid(z, grid)
-  fmesher::fm_rcdt_2d_inla(loc=grid$loc,
-                           boundary=as.fm_segm.outline(outline),
-                           refine=FALSE)
+  fmesher::fm_rcdt_2d_inla(
+    loc = grid$loc,
+    boundary = as.fm_segm.outline(outline),
+    refine = FALSE
+  )
 }
 
 
@@ -543,35 +604,33 @@ submesh.grid <- function(z, grid=NULL)
 #' @examples
 #' \dontrun{
 #' if (require(fmesher)) {
-#' nxy = 30
-#' x=seq(from=0,to=4,length.out=nxy)
-#' lattice=fm_lattice_2d(x=x,y=x)
-#' mesh=fm_mesh_2d_inla(lattice=lattice, extend=FALSE, refine=FALSE)
+#'   nxy <- 30
+#'   x <- seq(from = 0, to = 4, length.out = nxy)
+#'   lattice <- fm_lattice_2d(x = x, y = x)
+#'   mesh <- fm_mesh_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
 #'
-#' #extract a part of the mesh inside a circle
-#' xy.in <- rowSums((mesh$loc[,1:2]-2)^2)<1
-#' submesh <- excursions:::submesh.mesh(matrix(xy.in,nxy,nxy),mesh)
-#' plot(mesh$loc[,1:2])
-#' lines(2+cos(seq(0,2*pi,length.out=100)), 2+sin(seq(0,2*pi,length.out=100)))
-#' plot(submesh,add=TRUE)
-#' points(mesh$loc[xy.in,1:2],col="2")
-#' }}
-
-submesh.mesh <- function(z, mesh)
-{
+#'   # extract a part of the mesh inside a circle
+#'   xy.in <- rowSums((mesh$loc[, 1:2] - 2)^2) < 1
+#'   submesh <- excursions:::submesh.mesh(matrix(xy.in, nxy, nxy), mesh)
+#'   plot(mesh$loc[, 1:2])
+#'   lines(2 + cos(seq(0, 2 * pi, length.out = 100)), 2 + sin(seq(0, 2 * pi, length.out = 100)))
+#'   plot(submesh, add = TRUE)
+#'   points(mesh$loc[xy.in, 1:2], col = "2")
+#' }
+#' }
+#'
+submesh.mesh <- function(z, mesh) {
   submesh.mesh.tri(outlinetri.on.mesh(z, mesh), mesh)
 }
-submesh.mesh.tri <- function(tri, mesh)
-{
-
-  tv <- mesh$graph$tv[tri,,drop=FALSE]
+submesh.mesh.tri <- function(tri, mesh) {
+  tv <- mesh$graph$tv[tri, , drop = FALSE]
   v <- sort(unique(as.vector(tv)))
   idx <- rep(as.integer(NA), nrow(mesh$loc))
   idx[v] <- seq_len(length(v))
   tv <- matrix(idx[tv], nrow(tv), 3)
-  loc <- mesh$loc[v,,drop=FALSE]
+  loc <- mesh$loc[v, , drop = FALSE]
 
-  mesh <- fmesher::fm_rcdt_2d_inla(loc=loc, tv=tv, refine=FALSE)
+  mesh <- fmesher::fm_rcdt_2d_inla(loc = loc, tv = tv, refine = FALSE)
 
   idx <- rep(as.integer(NA), length(idx))
   idx[v] <- mesh$idx$loc
@@ -582,98 +641,106 @@ submesh.mesh.tri <- function(tri, mesh)
 
 
 as.sp.outline <- function(outline,
-                          grp.ccw=unique(outline$grp),
-                          grp.cw=integer(0),
-                          ccw=FALSE,
-                          ambiguous.warning=FALSE,
-                          ID="outline",
-                          closed=TRUE,
-                          ...)
-{
+                          grp.ccw = unique(outline$grp),
+                          grp.cw = integer(0),
+                          ccw = FALSE,
+                          ambiguous.warning = FALSE,
+                          ID = "outline",
+                          closed = TRUE,
+                          ...) {
   seg <- connect.segments(outline$idx, outline$grp,
-                          grp.ccw=grp.ccw,
-                          grp.cw=grp.cw,
-                          ccw=ccw,
-                          ambiguous.warning=ambiguous.warning)
+    grp.ccw = grp.ccw,
+    grp.cw = grp.cw,
+    ccw = ccw,
+    ambiguous.warning = ambiguous.warning
+  )
 
   coords <- list()
   for (k in seq_along(seg$sequences)) {
     coords <- c(coords, list(outline$loc[seg$sequences[[k]],
-                                         1:2, drop=FALSE]))
+      1:2,
+      drop = FALSE
+    ]))
   }
 
   if (closed) {
-    as.Polygons.raw(coords, ID=ID)
+    as.Polygons.raw(coords, ID = ID)
   } else {
-    as.Lines.raw(coords, ID=ID)
+    as.Lines.raw(coords, ID = ID)
   }
 }
 
 
 as.fm_segm.outline <- function(outline,
-                               grp.ccw=unique(outline$grp),
-                               grp.cw=integer(0),
+                               grp.ccw = unique(outline$grp),
+                               grp.cw = integer(0),
                                grp,
-                               ...)
-{
-  ik.ccw = outline$grp %in% grp.ccw
-  ik.cw = outline$grp %in% grp.cw
+                               ...) {
+  ik.ccw <- outline$grp %in% grp.ccw
+  ik.cw <- outline$grp %in% grp.cw
   if (missing(grp)) {
     grp <- c(outline$grp[ik.ccw], outline$grp[ik.cw])
   }
-  fmesher::fm_segm(loc=outline$loc,
-                   idx=rbind(outline$idx[ik.ccw,,drop=FALSE],
-                             outline$idx[ik.cw, 2:1, drop=FALSE]),
-                   grp=grp)
+  fmesher::fm_segm(
+    loc = outline$loc,
+    idx = rbind(
+      outline$idx[ik.ccw, , drop = FALSE],
+      outline$idx[ik.cw, 2:1, drop = FALSE]
+    ),
+    grp = grp
+  )
 }
 
 
 
-as.Polygons.raw <- function(sequences, ID=" ") {
-  if (!requireNamespace("sp", quietly=TRUE)) {
+as.Polygons.raw <- function(sequences, ID = " ") {
+  if (!requireNamespace("sp", quietly = TRUE)) {
     stop("The 'sp' package is needed.")
   }
-  polys <- lapply(sequences,
-                  function(x)
-  {
-    if (is.list(x)) {
-      p <- sp::Polygon(cbind(x$x, x$y))
-    } else {
-      p <- sp::Polygon(x)
+  polys <- lapply(
+    sequences,
+    function(x) {
+      if (is.list(x)) {
+        p <- sp::Polygon(cbind(x$x, x$y))
+      } else {
+        p <- sp::Polygon(x)
+      }
+      if (p@area > 0) {
+        p
+      } else {
+        warning("Skipping zero area polygon, in as.Polygons.raw.")
+        NULL
+      }
     }
-    if (p@area > 0) {
-      p
-    } else {
-      warning("Skipping zero area polygon, in as.Polygons.raw.")
-      NULL
-    }
-  })
+  )
   if (length(polys) == 0) {
     sp <- NULL
   } else {
     ok <- unlist(lapply(polys, function(x) is(x, "Polygon")))
-    sp <- sp::Polygons(polys[ok], ID=ID)
+    sp <- sp::Polygons(polys[ok], ID = ID)
   }
   sp
 }
 
-as.Lines.raw <- function(cl, ID=" ") {
-  if (!requireNamespace("sp", quietly=TRUE)) {
+as.Lines.raw <- function(cl, ID = " ") {
+  if (!requireNamespace("sp", quietly = TRUE)) {
     stop("The 'sp' package is needed.")
   }
-  polys <- lapply(cl,
-                  function(x) {
-                    if (is.list(x)) {
-                      p <- sp::Line(cbind(x$x, x$y))
-                    } else {
-                      p <- sp::Line(x)
-                    }
-                    p
-                  })
+  polys <- lapply(
+    cl,
+    function(x) {
+      if (is.list(x)) {
+        p <- sp::Line(cbind(x$x, x$y))
+      } else {
+        p <- sp::Line(x)
+      }
+      p
+    }
+  )
   if (length(polys) == 0) {
     sp <- NULL
   } else {
-    sp <- sp::Lines(polys, ID=ID)
+    sp <- sp::Lines(polys, ID = ID)
   }
   sp
 }
@@ -682,7 +749,7 @@ as.Lines.raw <- function(cl, ID=" ") {
 #'
 #' Calculates contour curves and/or regions between them,
 #' for functions defined on a triangulation
-#' 
+#'
 #' @export
 #' @param x An object generated by a call to \code{inla.mesh.2d} or
 #'   \code{inla.mesh.create}, a triangle-vertex index matrix, or a list
@@ -709,76 +776,87 @@ as.Lines.raw <- function(cl, ID=" ") {
 #'     enclosing regions between level sets}
 #'
 #' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
-#' 
+#'
 #' @examples
 #' \dontrun{
-#'   if (require.nowarnings("INLA")) {
-#'     ## Generate mesh and SPDE model
-#'     n.lattice <- 20 #increase for more interesting, but slower, examples
-#'     x <- seq(from = 0, to = 10, length.out = n.lattice)
-#'     lattice <- inla.mesh.lattice(x = x, y = x)
-#'     mesh <- inla.mesh.create(lattice = lattice, extend = FALSE, refine = FALSE)
-#'     spde <- inla.spde2.matern(mesh, alpha = 2)
-#'     
-#'     ## Generate an artificial sample
-#'     sigma2.e <- 0.01
-#'     n.obs <-1000
-#'     obs.loc <- cbind(runif(n.obs) * diff(range(x)) + min(x),
-#'                      runif(n.obs) * diff(range(x)) + min(x))
-#'     Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
-#'     x <- inla.qsample(Q = Q)
-#'     A <- inla.spde.make.A(mesh = mesh, loc = obs.loc)
-#'     Y <- as.vector(A %*% x + rnorm(n.obs) * sqrt(sigma2.e))
-#'     
-#'     ## Calculate posterior
-#'     Q.post <- (Q + (t(A) %*% A)/sigma2.e)
-#'     mu.post <- as.vector(solve(Q.post,(t(A) %*% Y)/sigma2.e))
-#'     
-#'     ## Calculate continuous contours
-#'     tric <- tricontour(mesh, z = mu.post,
-#'                        levels = as.vector(quantile(x, c(0.25, 0.75))))
-#'    
-#'     ## Discrete domain contours
-#'     map <- contourmap(n.levels = 2, mu = mu.post, Q = Q.post,
-#'                       alpha=0.1, compute = list(F = FALSE), max.threads=1)
+#' if (require.nowarnings("INLA") && require("fmesher")) {
+#'   ## Generate mesh and SPDE model
+#'   n.lattice <- 20 # increase for more interesting, but slower, examples
+#'   x <- seq(from = 0, to = 10, length.out = n.lattice)
+#'   lattice <- fm_lattice_2d(x = x, y = x)
+#'   mesh <- fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+#'   spde <- inla.spde2.matern(mesh, alpha = 2)
 #'
-#'     ## Calculate continuous contour map
-#'     setsc <- tricontourmap(mesh, z = mu.post,
-#'                            levels = as.vector(quantile(x, c(0.25, 0.75))))
+#'   ## Generate an artificial sample
+#'   sigma2.e <- 0.01
+#'   n.obs <- 1000
+#'   obs.loc <- cbind(
+#'     runif(n.obs) * diff(range(x)) + min(x),
+#'     runif(n.obs) * diff(range(x)) + min(x)
+#'   )
+#'   Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
+#'   x <- inla.qsample(Q = Q)
+#'   A <- inla.spde.make.A(mesh = mesh, loc = obs.loc)
+#'   Y <- as.vector(A %*% x + rnorm(n.obs) * sqrt(sigma2.e))
 #'
-#'     ## Plot the results
-#'     reo <- mesh$idx$lattice
-#'     idx.setsc <- setdiff(names(setsc$map), "-1")
-#'     cols2 <- contourmap.colors(map, col=heat.colors(100, 0.5),
-#'                                credible.col = grey(0.5, 0))
-#'     names(cols2) <- as.character(-1:2)
-#' 
-#'     par(mfrow = c(1,2))
-#'     image(matrix(mu.post[reo], n.lattice, n.lattice),
-#'                  main = "mean", axes = FALSE)
-#'     plot(setsc$map[idx.setsc], col = cols2[idx.setsc])
-#'     par(mfrow = c(1,1))
-#'   }
+#'   ## Calculate posterior
+#'   Q.post <- (Q + (t(A) %*% A) / sigma2.e)
+#'   mu.post <- as.vector(solve(Q.post, (t(A) %*% Y) / sigma2.e))
+#'
+#'   ## Calculate continuous contours
+#'   tric <- tricontour(mesh,
+#'     z = mu.post,
+#'     levels = as.vector(quantile(x, c(0.25, 0.75)))
+#'   )
+#'
+#'   ## Discrete domain contours
+#'   map <- contourmap(
+#'     n.levels = 2, mu = mu.post, Q = Q.post,
+#'     alpha = 0.1, compute = list(F = FALSE), max.threads = 1
+#'   )
+#'
+#'   ## Calculate continuous contour map
+#'   setsc <- tricontourmap(mesh,
+#'     z = mu.post,
+#'     levels = as.vector(quantile(x, c(0.25, 0.75)))
+#'   )
+#'
+#'   ## Plot the results
+#'   reo <- mesh$idx$lattice
+#'   idx.setsc <- setdiff(names(setsc$map), "-1")
+#'   cols2 <- contourmap.colors(map,
+#'     col = heat.colors(100, 0.5),
+#'     credible.col = grey(0.5, 0)
+#'   )
+#'   names(cols2) <- as.character(-1:2)
+#'
+#'   par(mfrow = c(1, 2))
+#'   image(matrix(mu.post[reo], n.lattice, n.lattice),
+#'     main = "mean", axes = FALSE
+#'   )
+#'   plot(setsc$map[idx.setsc], col = cols2[idx.setsc])
+#'   par(mfrow = c(1, 1))
+#' }
 #' }
 tricontour <-
   function(x, z, nlevels = 10,
            levels = pretty(range(z, na.rm = TRUE), nlevels),
-           ...)
-{
-  UseMethod("tricontour")
-}
+           ...) {
+    UseMethod("tricontour")
+  }
 
 #' @rdname tricontour
 #' @export
 tricontour.inla.mesh <-
   function(x, z, nlevels = 10,
            levels = pretty(range(z, na.rm = TRUE), nlevels),
-           ...)
-{
-  tricontour.list(x$graph, z=z,
-                  nlevels=nlevels, levels=levels,
-                  loc=x$loc, ...)
-}
+           ...) {
+    tricontour.list(x$graph,
+      z = z,
+      nlevels = nlevels, levels = levels,
+      loc = x$loc, ...
+    )
+  }
 
 #' @rdname tricontour
 #' @export
@@ -787,46 +865,53 @@ tricontour.inla.mesh <-
 tricontour.matrix <-
   function(x, z, nlevels = 10,
            levels = pretty(range(z, na.rm = TRUE), nlevels),
-           loc, ...)
-{
-  tricontour.list(list(tv=x), z=z,
-                  nlevels=nlevels, levels=levels,
-                  loc=loc, ...)
-}
+           loc, ...) {
+    tricontour.list(list(tv = x),
+      z = z,
+      nlevels = nlevels, levels = levels,
+      loc = loc, ...
+    )
+  }
 
 
 
 ## Generate triangulation graph properties
 ## Nt,Ne,Nv,ev,et,eti,ee,te,tt,tti
-generate.trigraph.properties <- function(x, Nv=NULL) {
+generate.trigraph.properties <- function(x, Nv = NULL) {
   stopifnot(is.list(x))
   stopifnot("tv" %in% names(x))
 
   x$Nt <- nrow(x$tv)
-  x$Ne <- 3*x$Nt ## number of unidirectional edges
+  x$Ne <- 3 * x$Nt ## number of unidirectional edges
   if (is.null(Nv)) {
     x$Nv <- max(as.vector(x$tv))
   } else {
     x$Nv <- Nv
   }
 
-  x$ev <- cbind(as.vector(x$tv[,c(2,3,1)]),
-                as.vector(x$tv[,c(3,1,2)]))
-  x$et <- rep(seq_len(x$Nt), times=3)
-  x$eti <- rep(1:3, each=x$Nt) ## Opposing vertex within-triangle-indices
+  x$ev <- cbind(
+    as.vector(x$tv[, c(2, 3, 1)]),
+    as.vector(x$tv[, c(3, 1, 2)])
+  )
+  x$et <- rep(seq_len(x$Nt), times = 3)
+  x$eti <- rep(1:3, each = x$Nt) ## Opposing vertex within-triangle-indices
   x$te <- matrix(seq_len(x$Ne), x$Nt, 3)
-  ev <- Matrix::sparseMatrix(i=rep(seq_len(x$Ne), times=2),
-                             j=as.vector(x$ev),
-                             x=rep(1,x$Ne*2),
-                             dims=c(x$Ne, x$Nv))
+  ev <- Matrix::sparseMatrix(
+    i = rep(seq_len(x$Ne), times = 2),
+    j = as.vector(x$ev),
+    x = rep(1, x$Ne * 2),
+    dims = c(x$Ne, x$Nv)
+  )
   ev.tr <- private.sparse.gettriplet(ev %*% t(ev))
-  ee <- cbind(ev.tr$i[(ev.tr$x==2) & (ev.tr$i!=ev.tr$j)],
-              ev.tr$j[(ev.tr$x==2) & (ev.tr$i!=ev.tr$j)])
+  ee <- cbind(
+    ev.tr$i[(ev.tr$x == 2) & (ev.tr$i != ev.tr$j)],
+    ev.tr$j[(ev.tr$x == 2) & (ev.tr$i != ev.tr$j)]
+  )
   x$ee <- rep(NA, x$Ne)
-  x$ee[ee[,1]] <- ee[,2]
+  x$ee[ee[, 1]] <- ee[, 2]
 
   if (is.null(x$tt) ||
-      (nrow(x$tt) != x$Nt)) { ## Workaround for bug in fmesher < 2014-09-12
+    (nrow(x$tt) != x$Nt)) { ## Workaround for bug in fmesher < 2014-09-12
     x$tt <- matrix(x$et[x$ee], x$Nt, 3)
   }
   if (is.null(x$tti)) {
@@ -839,18 +924,21 @@ generate.trigraph.properties <- function(x, Nv=NULL) {
 
 
 display.dim.list <- function(x) {
-  lapply(as.list(sort(names(x))),
-         function(xx) {
-           sz <- dim(x[[xx]])
-           type <- mode(x[[xx]])
-           cl <- class(x[[xx]])[[1]]
-           if (is.null(sz)) {
-             sz <- length(x[[xx]])
-           }
-           message(paste(xx, " = ", paste(sz, collapse=" x "),
-                         " (", type, ", ", cl, ")", sep=""))
-         }
-         )
+  lapply(
+    as.list(sort(names(x))),
+    function(xx) {
+      sz <- dim(x[[xx]])
+      type <- mode(x[[xx]])
+      cl <- class(x[[xx]])[[1]]
+      if (is.null(sz)) {
+        sz <- length(x[[xx]])
+      }
+      message(paste(xx, " = ", paste(sz, collapse = " x "),
+        " (", type, ", ", cl, ")",
+        sep = ""
+      ))
+    }
+  )
   invisible()
 }
 
@@ -863,8 +951,7 @@ display.dim.list <- function(x) {
 #' @param tol tolerance for determining if the value at a vertex lies on a level.
 tricontour.list <- function(x, z, nlevels = 10,
                             levels = pretty(range(z, na.rm = TRUE), nlevels),
-                            loc, type=c("+", "-"), tol=1e-7, ...)
-{
+                            loc, type = c("+", "-"), tol = 1e-7, ...) {
   ## Returns val=list(loc, idx, grp), where
   ##   grp = 1,...,nlevels*2+1, level groups are even, 2,4,...
   ## Suitable for
@@ -874,7 +961,7 @@ tricontour.list <- function(x, z, nlevels = 10,
   ##   seg <- as.fm_segm.outline(val, grp.ccw=c(k-1,k), grp.cw=c(k+1))
   ##   sp <- as.sp.outline(val, grp.ccw=c(k-1,k), grp.cw=c(k+1), ccw=FALSE)
 
-    type <- match.arg(type)
+  type <- match.arg(type)
   nlevels <- length(levels)
 
   x <- generate.trigraph.properties(x)
@@ -892,31 +979,31 @@ tricontour.list <- function(x, z, nlevels = 10,
   ## For each triangle, find non-level edge crossings, and
   ##   store new vertex-edge crossing edges
   ##   store new edge-edge crossing edges
-  idx <- matrix(0,0,2)
+  idx <- matrix(0, 0, 2)
   grp <- integer(0)
 
   ## Find vertices on levels
   vcross.lev <- integer(length(z))
   for (lev in seq_along(levels)) {
-    signv <- (z > levels[lev]+tol) - (z < levels[lev]-tol)
-    vcross.lev[ signv == 0 ] <- lev
+    signv <- (z > levels[lev] + tol) - (z < levels[lev] - tol)
+    vcross.lev[signv == 0] <- lev
   }
   ## Find level crossing span for each edge (includes flat edges in levels)
   ecross.grp.lower <- rep(1L, x$Ne)
-  ecross.grp.upper <- rep(2L*length(levels)+1L, x$Ne)
+  ecross.grp.upper <- rep(2L * length(levels) + 1L, x$Ne)
   for (lev in seq_along(levels)) {
-    signv <- (z > levels[lev]+tol) - (z < levels[lev]-tol)
-    lev.grp <- 2L*lev
-    i <- pmin(signv[x$ev[,1]], signv[x$ev[,2]])
-    ecross.grp.lower[ i == 0 ] <- lev.grp
-    ecross.grp.lower[ i > 0 ] <- lev.grp+1L
+    signv <- (z > levels[lev] + tol) - (z < levels[lev] - tol)
+    lev.grp <- 2L * lev
+    i <- pmin(signv[x$ev[, 1]], signv[x$ev[, 2]])
+    ecross.grp.lower[i == 0] <- lev.grp
+    ecross.grp.lower[i > 0] <- lev.grp + 1L
   }
   for (lev in rev(seq_along(levels))) {
-    signv <- (z > levels[lev]+tol) - (z < levels[lev]-tol)
-    lev.grp <- 2L*lev
-    i <- pmax(signv[x$ev[,1]], signv[x$ev[,2]])
-    ecross.grp.upper[ i == 0 ] <- lev.grp
-    ecross.grp.upper[ i  < 0 ] <- lev.grp-1L
+    signv <- (z > levels[lev] + tol) - (z < levels[lev] - tol)
+    lev.grp <- 2L * lev
+    i <- pmax(signv[x$ev[, 1]], signv[x$ev[, 2]])
+    ecross.grp.upper[i == 0] <- lev.grp
+    ecross.grp.upper[i < 0] <- lev.grp - 1L
   }
 
   ## For each edge on a level, store edge if ...
@@ -924,116 +1011,126 @@ tricontour.list <- function(x, z, nlevels = 10,
   ##   opposing vertices are +/-, and either
   ##     0/- (type="+", u1 <= z < u2) or
   ##     +/0 (type="-", u1 < z <= u2)
-  cross1 <- vcross.lev[x$ev[,1]] ## left neighbour
-  cross2 <- vcross.lev[x$ev[,2]] ## right neighbour
+  cross1 <- vcross.lev[x$ev[, 1]] ## left neighbour
+  cross2 <- vcross.lev[x$ev[, 2]] ## right neighbour
   vv.edges <- which((cross1 > 0) & (cross2 > 0) & (cross1 == cross2))
   for (edge in vv.edges) {
     lev <- cross1[edge]
-    v1 <- x$tv[x$et[edge],x$eti[edge]]
-    sign1 <- (z[v1] > levels[lev]+tol) - (z[v1] < levels[lev]-tol)
-    neighb.t <- x$tt[x$et[edge]+(x$eti[edge]-1)*x$Nt]
+    v1 <- x$tv[x$et[edge], x$eti[edge]]
+    sign1 <- (z[v1] > levels[lev] + tol) - (z[v1] < levels[lev] - tol)
+    neighb.t <- x$tt[x$et[edge] + (x$eti[edge] - 1) * x$Nt]
     if (is.na(neighb.t)) {
       v2 <- NA
       sign2 <- NA
     } else {
-      v2 <- x$tv[neighb.t, x$tti[x$et[edge]+(x$eti[edge]-1)*x$Nt] ]
-      sign2 <- (z[v2] > levels[lev]+tol) - (z[v2] < levels[lev]-tol)
+      v2 <- x$tv[neighb.t, x$tti[x$et[edge] + (x$eti[edge] - 1) * x$Nt]]
+      sign2 <- (z[v2] > levels[lev] + tol) - (z[v2] < levels[lev] - tol)
     }
     if (is.na(neighb.t)) {
       ## Make sure the edge gets the right label
       if (sign1 != 0) {
-        idx <- rbind(idx, x$ev[edge,])
+        idx <- rbind(idx, x$ev[edge, ])
         ## Associate with the neighbour
-        grp <- c(grp, lev*2L + sign1)
+        grp <- c(grp, lev * 2L + sign1)
       } else {
-        idx <- rbind(idx, x$ev[edge,])
-        grp <- c(grp, lev*2L + (type=="+")-(type=="-"))
+        idx <- rbind(idx, x$ev[edge, ])
+        grp <- c(grp, lev * 2L + (type == "+") - (type == "-"))
       }
     } else if (((sign1 > 0) && (sign2 < 0)) ||
-               ((type=="+") && ((sign1 == 0) && (sign2 < 0))) ||
-               ((type=="-") && ((sign1 > 0) && (sign2 == 0))) ) {
-      idx <- rbind(idx, x$ev[edge,])
-      grp <- c(grp, lev*2L)
+      ((type == "+") && ((sign1 == 0) && (sign2 < 0))) ||
+      ((type == "-") && ((sign1 > 0) && (sign2 == 0)))) {
+      idx <- rbind(idx, x$ev[edge, ])
+      grp <- c(grp, lev * 2L)
     }
   }
 
   ## For each boundary edge entirely between levels
   ##   store edge
-  e.lower <- ecross.grp.lower + ((ecross.grp.lower-1) %% 2)
-  e.upper <- ecross.grp.upper - ((ecross.grp.upper-1) %% 2)
-  e.on.bnd <- which(is.na(x$tti[x$et+(x$eti-1)*x$Nt]))
-  e.noncrossing <- e.on.bnd[ e.lower[e.on.bnd] == e.upper[e.on.bnd] ]
-  idx <- rbind(idx, x$ev[e.noncrossing,,drop=FALSE])
+  e.lower <- ecross.grp.lower + ((ecross.grp.lower - 1) %% 2)
+  e.upper <- ecross.grp.upper - ((ecross.grp.upper - 1) %% 2)
+  e.on.bnd <- which(is.na(x$tti[x$et + (x$eti - 1) * x$Nt]))
+  e.noncrossing <- e.on.bnd[e.lower[e.on.bnd] == e.upper[e.on.bnd]]
+  idx <- rbind(idx, x$ev[e.noncrossing, , drop = FALSE])
   grp <- c(grp, as.integer(e.lower[e.noncrossing]))
 
   ## For each edge crossing at least one level,
   ##   calculate splitting vertices
   ##   if boundary edge, store new split edges
   e.crossing <- which(e.lower < e.upper)
-  e.bndcrossing <- e.on.bnd[ e.lower[e.on.bnd] < e.upper[e.on.bnd] ]
-  Nnewv <- (sum(e.upper[e.crossing]-e.lower[e.crossing])/2 +
-            sum(e.upper[e.bndcrossing]-e.lower[e.bndcrossing])/2)/2
+  e.bndcrossing <- e.on.bnd[e.lower[e.on.bnd] < e.upper[e.on.bnd]]
+  Nnewv <- (sum(e.upper[e.crossing] - e.lower[e.crossing]) / 2 +
+    sum(e.upper[e.bndcrossing] - e.lower[e.bndcrossing]) / 2) / 2
   loc.new <- matrix(NA, Nnewv, ncol(loc))
   loc.last <- 0L
-  e.newv <- sparseMatrix(i=integer(0), j=integer(0), x=double(0),
-                         dims=c(x$Ne, length(levels)))
+  e.newv <- sparseMatrix(
+    i = integer(0), j = integer(0), x = double(0),
+    dims = c(x$Ne, length(levels))
+  )
   for (edge in e.crossing) {
-    is.boundary.edge <- is.na(x$tt[x$et[edge],x$eti[edge]])
+    is.boundary.edge <- is.na(x$tt[x$et[edge], x$eti[edge]])
     if (is.boundary.edge) {
       edge.reverse <- NA
     } else {
       ## Interior edges appear twice; handle each only once.
-      if (x$ev[edge,1] > x$ev[edge,2]) {
+      if (x$ev[edge, 1] > x$ev[edge, 2]) {
         next
       }
-      edge.reverse <- x$te[x$tt[x$et[edge],x$eti[edge]],
-                           x$tti[x$et[edge],x$eti[edge]]]
+      edge.reverse <- x$te[
+        x$tt[x$et[edge], x$eti[edge]],
+        x$tti[x$et[edge], x$eti[edge]]
+      ]
     }
     ## lev = (1-beta_lev) * z1 + beta_lev * z2
     ##     = z1 + beta_lev * (z2-z1)
     ## beta_lev = (lev-z1)/(z2-z1)
-    e.levels <- ((e.lower[edge]+1)/2):((e.upper[edge]-1)/2)
-    loc.new.idx <- loc.last+seq_along(e.levels)
-    beta <- ((levels[e.levels] - z[x$ev[edge,1]]) /
-               (z[x$ev[edge,2]] - z[x$ev[edge,1]]))
-    ##print(str(loc.new))
-    ##print(e.levels)
-    ##print(c(loc.last, loc.new.idx))
-##    message("???")
-##    message(paste(paste(dim(loc.new), collapse=", "),
-##                  loc.new.idx, collapse="; "))
+    e.levels <- ((e.lower[edge] + 1) / 2):((e.upper[edge] - 1) / 2)
+    loc.new.idx <- loc.last + seq_along(e.levels)
+    beta <- ((levels[e.levels] - z[x$ev[edge, 1]]) /
+      (z[x$ev[edge, 2]] - z[x$ev[edge, 1]]))
+    ## print(str(loc.new))
+    ## print(e.levels)
+    ## print(c(loc.last, loc.new.idx))
+    ##    message("???")
+    ##    message(paste(paste(dim(loc.new), collapse=", "),
+    ##                  loc.new.idx, collapse="; "))
     ## Temporary workaround for boundary part error:
     if (max(loc.new.idx) > nrow(loc.new)) {
-##      browser()
-      loc.new <- rbind(loc.new,
-                       matrix(NA,
-                              max(loc.new.idx) - nrow(loc.new),
-                              ncol(loc.new)))
+      ##      browser()
+      loc.new <- rbind(
+        loc.new,
+        matrix(
+          NA,
+          max(loc.new.idx) - nrow(loc.new),
+          ncol(loc.new)
+        )
+      )
     }
 
-##    xxx <-
-##      (as.matrix(1-beta) %*% loc[x$ev[edge,1],,drop=FALSE]+
-##       as.matrix(beta) %*% loc[x$ev[edge,2],,drop=FALSE])
+    ##    xxx <-
+    ##      (as.matrix(1-beta) %*% loc[x$ev[edge,1],,drop=FALSE]+
+    ##       as.matrix(beta) %*% loc[x$ev[edge,2],,drop=FALSE])
 
-    loc.new[loc.new.idx,] <-
-      (as.matrix(1-beta) %*% loc[x$ev[edge,1],,drop=FALSE]+
-       as.matrix(beta) %*% loc[x$ev[edge,2],,drop=FALSE])
+    loc.new[loc.new.idx, ] <-
+      (as.matrix(1 - beta) %*% loc[x$ev[edge, 1], , drop = FALSE] +
+        as.matrix(beta) %*% loc[x$ev[edge, 2], , drop = FALSE])
 
     e.newv[edge, e.levels] <- Nv + loc.new.idx
     if (!is.boundary.edge) {
       e.newv[edge.reverse, e.levels] <- Nv + loc.new.idx
     } else { ## edge is a boundary edge, handle now
-      ev <- x$ev[edge,]
-      the.levels <- which(e.newv[edge,] > 0)
-      the.loc.idx <- e.newv[edge, the.levels ]
-      the.levels <- c(min(the.levels)-1L, the.levels)*2L+1L
+      ev <- x$ev[edge, ]
+      the.levels <- which(e.newv[edge, ] > 0)
+      the.loc.idx <- e.newv[edge, the.levels]
+      the.levels <- c(min(the.levels) - 1L, the.levels) * 2L + 1L
       if (z[ev[1]] > z[ev[2]]) {
         the.loc.idx <- the.loc.idx[length(the.loc.idx):1]
         the.levels <- the.levels[length(the.levels):1]
       }
 
-      idx <- rbind(idx, cbind(c(ev[1], the.loc.idx),
-                              c(the.loc.idx, ev[2])))
+      idx <- rbind(idx, cbind(
+        c(ev[1], the.loc.idx),
+        c(the.loc.idx, ev[2])
+      ))
       grp <- c(grp, the.levels)
     }
     loc.last <- loc.last + length(e.levels)
@@ -1047,19 +1144,19 @@ tricontour.list <- function(x, z, nlevels = 10,
   tris <- unique(x$et[e.crossing])
   for (tri in tris) {
     ## connect vertex-edge
-    v.lev <- vcross.lev[x$tv[tri,]]
+    v.lev <- vcross.lev[x$tv[tri, ]]
     for (vi in which(v.lev > 0)) {
-      opposite.edge <- x$te[tri,vi]
+      opposite.edge <- x$te[tri, vi]
       opposite.v <- e.newv[opposite.edge, v.lev[vi]]
       if (opposite.v > 0) {
         ## v2 on the right, v3 on the left
-        v123 <- x$tv[tri, ((vi+(0:2)-1) %% 3) + 1]
+        v123 <- x$tv[tri, ((vi + (0:2) - 1) %% 3) + 1]
         if (z[v123[3]] > z[v123[1]]) {
           idx <- rbind(idx, cbind(v123[1], opposite.v))
         } else {
           idx <- rbind(idx, cbind(opposite.v, v123[1]))
         }
-        grp <- c(grp, v.lev[vi]*2L)
+        grp <- c(grp, v.lev[vi] * 2L)
       }
     }
     ## connect edge-edge
@@ -1067,30 +1164,34 @@ tricontour.list <- function(x, z, nlevels = 10,
       edge <- x$te[tri, ei]
       next.edge <- x$te[tri, (ei %% 3L) + 1L]
       e.lev <- which(e.newv[edge, ] > 0)
-      e.lev <- e.lev[ e.newv[next.edge, e.lev] > 0 ]
+      e.lev <- e.lev[e.newv[next.edge, e.lev] > 0]
       if (length(e.lev) > 0) {
         ## v1 on the left, v2 on the right
-        v12 <- x$ev[edge,]
-        if (z[ v12[1] ] > z[ v12[2] ]) {
-          idx <- rbind(idx, cbind(e.newv[edge, e.lev],
-                                  e.newv[next.edge, e.lev]))
+        v12 <- x$ev[edge, ]
+        if (z[v12[1]] > z[v12[2]]) {
+          idx <- rbind(idx, cbind(
+            e.newv[edge, e.lev],
+            e.newv[next.edge, e.lev]
+          ))
         } else {
-          idx <- rbind(idx, cbind(e.newv[next.edge, e.lev],
-                                  e.newv[edge, e.lev]))
+          idx <- rbind(idx, cbind(
+            e.newv[next.edge, e.lev],
+            e.newv[edge, e.lev]
+          ))
         }
-        grp <- c(grp, e.lev*2L)
+        grp <- c(grp, e.lev * 2L)
       }
     }
   }
 
   ## Filter out unused nodes
   reo <- sort(unique(as.vector(idx)))
-  loc <- loc[reo,,drop=FALSE]
+  loc <- loc[reo, , drop = FALSE]
   ireo <- integer(Nv)
   ireo[reo] <- seq_along(reo)
   idx <- matrix(ireo[idx], nrow(idx), 2)
 
-  list(loc=loc, idx=idx, grp=grp)
+  list(loc = loc, idx = idx, grp = grp)
 }
 
 
@@ -1102,8 +1203,7 @@ tricontour.list <- function(x, z, nlevels = 10,
 #' @export
 tricontourmap <- function(x, z, nlevels = 10,
                           levels = pretty(range(z, na.rm = TRUE), nlevels),
-                          ...)
-{
+                          ...) {
   UseMethod("tricontourmap")
 }
 
@@ -1112,125 +1212,137 @@ tricontourmap <- function(x, z, nlevels = 10,
 tricontourmap.inla.mesh <-
   function(x, z, nlevels = 10,
            levels = pretty(range(z, na.rm = TRUE), nlevels),
-           ...)
-{
-  tricontourmap.list(x$graph, z=z,
-                     nlevels=nlevels, levels=levels,
-                     loc=x$loc, ...)
-}
+           ...) {
+    tricontourmap.list(x$graph,
+      z = z,
+      nlevels = nlevels, levels = levels,
+      loc = x$loc, ...
+    )
+  }
 
 #' @rdname tricontour
 #' @export
 tricontourmap.matrix <-
   function(x, z, nlevels = 10,
            levels = pretty(range(z, na.rm = TRUE), nlevels),
-           loc, ...)
-{
-  tricontourmap.list(list(tv=x), z=z,
-                     nlevels=nlevels, levels=levels,
-                     loc=loc, ...)
-}
+           loc, ...) {
+    tricontourmap.list(list(tv = x),
+      z = z,
+      nlevels = nlevels, levels = levels,
+      loc = loc, ...
+    )
+  }
 
 
 
 #' @rdname tricontour
 #' @param output The format of the generated output.  Implemented options
 #'   are \code{"sp"} (default) and \code{"fm"} (and deprecated \code{"inla.mesh.segment"}).
-#' @importFrom fmesher fm_segm                                                           
+#' @importFrom fmesher fm_segm
 #' @export
 tricontourmap.list <-
   function(x, z, nlevels = 10,
            levels = pretty(range(z, na.rm = TRUE), nlevels),
-           loc, type=c("+", "-"), tol=1e-7,
-           output=c("sp", "fm", "inla.mesh.segment"), ...)
-{
-  type <- match.arg(type)
-  output <- match.arg(output)
-  if (output == "inla.mesh.segment") {
-    output <- "fm"
-  }
-  nlevels <- length(levels)
-
-  if (output == "sp") {
-    if (!requireNamespace("sp", quietly=TRUE)) {
-      stop("The 'sp' package is needed.")
+           loc, type = c("+", "-"), tol = 1e-7,
+           output = c("sp", "fm", "inla.mesh.segment"), ...) {
+    type <- match.arg(type)
+    output <- match.arg(output)
+    if (output == "inla.mesh.segment") {
+      output <- "fm"
     }
-  }
+    nlevels <- length(levels)
 
-  tric <- tricontour(x=x, z=z, nlevels=nlevels, levels=levels,
-                     loc=loc, type=type, tol=tol, ...)
-
-  out <- list(map=list(), contour=list())
-  for (k in seq_len(nlevels+1L)*2L-1L) {
-    ID <- as.character((k-1)/2)
     if (output == "sp") {
-      spobj <- tryCatch(as.sp.outline(tric,
-                                      grp.ccw=c(k-1,k),
-                                      grp.cw=c(k+1),
-                                      ccw=FALSE,
-                                      closed=TRUE,
-                                      ID=ID),
-                        error=function(e) NULL)
-      if (!is.null(spobj)) {
-        out$map[[ID]] <- spobj
+      if (!requireNamespace("sp", quietly = TRUE)) {
+        stop("The 'sp' package is needed.")
+      }
+    }
+
+    tric <- tricontour(
+      x = x, z = z, nlevels = nlevels, levels = levels,
+      loc = loc, type = type, tol = tol, ...
+    )
+
+    out <- list(map = list(), contour = list())
+    for (k in seq_len(nlevels + 1L) * 2L - 1L) {
+      ID <- as.character((k - 1) / 2)
+      if (output == "sp") {
+        spobj <- tryCatch(
+          as.sp.outline(tric,
+            grp.ccw = c(k - 1, k),
+            grp.cw = c(k + 1),
+            ccw = FALSE,
+            closed = TRUE,
+            ID = ID
+          ),
+          error = function(e) NULL
+        )
+        if (!is.null(spobj)) {
+          out$map[[ID]] <- spobj
+        }
+      } else {
+        out$map[[ID]] <-
+          as.fm_segm.outline(tric,
+            grp.ccw = c(k - 1, k),
+            grp.cw = c(k + 1),
+            grp = (k - 1) / 2
+          )
+      }
+    }
+    if (output == "sp") {
+      out$map <- sp::SpatialPolygons(out$map)
+    } else {
+      out$map <- do.call(fm_segm, out$map)
+    }
+    for (k in seq_len(nlevels)) {
+      if (output == "sp") {
+        ID <- as.character(k)
+        spobj <- tryCatch(
+          as.sp.outline(tric,
+            grp.ccw = k * 2L,
+            ccw = FALSE,
+            closed = FALSE,
+            ID = ID
+          ),
+          error = function(e) NULL
+        )
+        if (!is.null(spobj)) {
+          out$contour[[ID]] <- spobj
+        }
+      } else {
+        out$contour[[as.character(k)]] <-
+          as.fm_segm.outline(tric,
+            grp.ccw = k * 2L,
+            grp = k
+          )
+      }
+    }
+    if (output == "sp") {
+      if (length(out$contour) > 0) {
+        out$contour <- sp::SpatialLines(out$contour)
+      } else {
+        out$contour <- NULL
       }
     } else {
-      out$map[[ID]] <-
-        as.fm_segm.outline(tric,
-                           grp.ccw=c(k-1,k),
-                           grp.cw=c(k+1),
-                           grp=(k-1)/2)
+      out$contour <- do.call(fm_segm, out$contour)
     }
-  }
-  if (output == "sp") {
-    out$map <- sp::SpatialPolygons(out$map)
-  } else {
-    out$map <- do.call(fm_segm, out$map)
-  }
-  for (k in seq_len(nlevels)) {
-    if (output == "sp") {
-      ID <- as.character(k)
-      spobj <- tryCatch(as.sp.outline(tric,
-                                      grp.ccw=k*2L,
-                                      ccw=FALSE,
-                                      closed=FALSE,
-                                      ID=ID),
-                        error=function(e) NULL)
-      if (!is.null(spobj)) {
-        out$contour[[ID]] <- spobj
-      }
-    } else {
-      out$contour[[as.character(k)]] <-
-        as.fm_segm.outline(tric,
-                           grp.ccw=k*2L,
-                           grp=k)
-    }
-  }
-  if (output == "sp") {
-    if (length(out$contour) > 0) {
-      out$contour <- sp::SpatialLines(out$contour)
-    } else {
-      out$contour <- NULL
-    }
-  } else {
-    out$contour <- do.call(fm_segm, out$contour)
+
+    out
   }
 
-  out
-}
 
-
-tricontour_step <- function(x, z, levels, loc, ...)
-{
+tricontour_step <- function(x, z, levels, loc, ...) {
   stopifnot(length(levels) == 1)
 
-  x <- list(loc=loc, graph=x)
+  x <- list(loc = loc, graph = x)
   outline.lower <- outline.on.mesh(z >= levels, x, TRUE)
   outline.upper <- outline.on.mesh(z >= levels, x, FALSE)
 
-  list(loc=loc,
-       idx=rbind(outline.lower$idx, outline.upper$idx),
-       grp=c(outline.lower$grp, outline.upper$grp))
+  list(
+    loc = loc,
+    idx = rbind(outline.lower$idx, outline.upper$idx),
+    grp = c(outline.lower$grp, outline.upper$grp)
+  )
 }
 
 
@@ -1253,8 +1365,7 @@ tricontour_step <- function(x, z, levels, loc, ...)
 ## submesh.grid() assumes that the lattice boxes are convex.
 ## Output:
 ##   list(loc, dims, geometry, manifold)
-get.geometry <- function(geometry)
-{
+get.geometry <- function(geometry) {
   geometrytype <- ""
   manifoldtype <- ""
   if (inherits(geometry, c("fm_mesh_2d", "inla.mesh"))) {
@@ -1263,14 +1374,14 @@ get.geometry <- function(geometry)
     geometrytype <- "mesh"
     manifoldtype <- geometry$manifold
   } else if (inherits(geometry, c("fm_lattice_2d", "inla.mesh.lattice")) ||
-             is.list(geometry)) {
+    is.list(geometry)) {
     if (("loc" %in% names(geometry)) && ("dims" %in% names(geometry))) {
       loc <- geometry$loc
       dims <- geometry$dims
-      geometrytype = "lattice"
+      geometrytype <- "lattice"
       manifoldtype <- "R2"
     } else if ("x" %in% names(geometry)) {
-      geometrytype = "lattice"
+      geometrytype <- "lattice"
       if ("y" %in% names(geometry)) {
         loc <- as.matrix(expand.grid(geometry$x, geometry$y))
         dims <- c(length(geometry$x), length(geometry$y))
@@ -1284,7 +1395,7 @@ get.geometry <- function(geometry)
   }
   geometrytype <- match.arg(geometrytype, c("mesh", "lattice"))
   manifoldtype <- match.arg(manifoldtype, c("M", "R1", "R2", "S2"))
-  list(loc=loc, dims=dims, geometry=geometrytype, manifold=manifoldtype)
+  list(loc = loc, dims = dims, geometry = geometrytype, manifold = manifoldtype)
 }
 
 
@@ -1292,15 +1403,14 @@ get.geometry <- function(geometry)
 ##   list(loc, graph=list(tv, ...)) or an inla.mesh
 ## Output:
 ##   list(loc, graph=list(tv), A, idx=list(loc))
-subdivide.mesh <- function(mesh)
-{
+subdivide.mesh <- function(mesh) {
   graph <- generate.trigraph.properties(mesh$graph, nrow(mesh$loc))
 
   v1 <- seq_len(graph$Nv)
   edges.boundary <- which(is.na(graph$ee))
   edges.interior <- which(!is.na(graph$ee))
-  edges.interior.main <- edges.interior[graph$ev[edges.interior,1] <
-                                        graph$ev[edges.interior,2]]
+  edges.interior.main <- edges.interior[graph$ev[edges.interior, 1] <
+    graph$ev[edges.interior, 2]]
   edges.interior.secondary <- graph$ee[edges.interior.main]
   Neb <- length(edges.boundary)
   Nei <- length(edges.interior.main)
@@ -1315,37 +1425,51 @@ subdivide.mesh <- function(mesh)
   ## Mapping matrix from mesh nodes to sub-mesh nodes
   idx <- seq_len(graph$Nv) ## Same indices as in input mesh
   ridx <- seq_len(graph$Nv)
-##  ridx[mesh$idx$loc[!is.na(mesh$idx$loc)]] <-
-##    which(!is.na(mesh$idx$loc))
-  A <- sparseMatrix(i=(c(v1,
-                         rep(v2.boundary, times=2),
-                         rep(v2.interior, times=2)
-                         )),
-                    j=(ridx[c(v1,
-                              as.vector(graph$ev[edges.boundary,]),
-                              as.vector(graph$ev[edges.interior.main,])
-                              )]),
-                    x=(c(rep(1, graph$Nv),
-                         rep(1/2, 2*Neb),
-                         rep(1/2, 2*Nei)
-                         )),
-                    dims=c(Nv2, length(ridx)))
-  loc <- as.matrix(A[,ridx,drop=FALSE] %*% mesh$loc)
-  tv <- rbind(cbind(edge.split.v[graph$te[,1]],
-                    edge.split.v[graph$te[,2]],
-                    edge.split.v[graph$te[,3]]),
-              cbind(graph$tv[,1],
-                    edge.split.v[graph$te[,3]],
-                    edge.split.v[graph$te[,2]]),
-              cbind(graph$tv[,2],
-                    edge.split.v[graph$te[,1]],
-                    edge.split.v[graph$te[,3]]),
-              cbind(graph$tv[,3],
-                    edge.split.v[graph$te[,2]],
-                    edge.split.v[graph$te[,1]])
-              )
+  ##  ridx[mesh$idx$loc[!is.na(mesh$idx$loc)]] <-
+  ##    which(!is.na(mesh$idx$loc))
+  A <- sparseMatrix(
+    i = (c(
+      v1,
+      rep(v2.boundary, times = 2),
+      rep(v2.interior, times = 2)
+    )),
+    j = (ridx[c(
+      v1,
+      as.vector(graph$ev[edges.boundary, ]),
+      as.vector(graph$ev[edges.interior.main, ])
+    )]),
+    x = (c(
+      rep(1, graph$Nv),
+      rep(1 / 2, 2 * Neb),
+      rep(1 / 2, 2 * Nei)
+    )),
+    dims = c(Nv2, length(ridx))
+  )
+  loc <- as.matrix(A[, ridx, drop = FALSE] %*% mesh$loc)
+  tv <- rbind(
+    cbind(
+      edge.split.v[graph$te[, 1]],
+      edge.split.v[graph$te[, 2]],
+      edge.split.v[graph$te[, 3]]
+    ),
+    cbind(
+      graph$tv[, 1],
+      edge.split.v[graph$te[, 3]],
+      edge.split.v[graph$te[, 2]]
+    ),
+    cbind(
+      graph$tv[, 2],
+      edge.split.v[graph$te[, 1]],
+      edge.split.v[graph$te[, 3]]
+    ),
+    cbind(
+      graph$tv[, 3],
+      edge.split.v[graph$te[, 2]],
+      edge.split.v[graph$te[, 1]]
+    )
+  )
 
-  newmesh <- fmesher::fm_rcdt_2d_inla(loc=loc, tv=tv)
+  newmesh <- fmesher::fm_rcdt_2d_inla(loc = loc, tv = tv)
   ## Handle possible node reordering in inla.mesh.create()
   newmesh$idx$loc <- newmesh$idx$loc[idx]
   ## Add mapping matrix
@@ -1364,9 +1488,7 @@ subdivide.mesh <- function(mesh)
 ## New geometry implementation
 
 ## Copy 'G' and interpolate 'F' within coherent single level regions.
-F.interpolation <- function(F.geometry, F, G, type, method, subdivisions=1)
-{
-
+F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
   ## Construct interpolation mesh
   F.geometry.A <- list()
   for (subdivision in seq_len(subdivisions)) {
@@ -1401,20 +1523,20 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions=1)
     F.interp <- rep(F.zero, nrow(F.geometry.A[[subdivision]]))
     for (k in unique(G[G >= 0])) {
       ok.in <- (G.input == k)
-      ok.out <- (rowSums(F.geometry.A[[subdivision]][,ok.in,drop=FALSE]) >
-                 1 - 1e-12)
+      ok.out <- (rowSums(F.geometry.A[[subdivision]][, ok.in, drop = FALSE]) >
+        1 - 1e-12)
       G.interp[ok.out] <- k
     }
     ok.in <- (G.input >= 0)
-    ok.out <- (G.interp >=0)
-    if (method =="step") {
+    ok.out <- (G.interp >= 0)
+    if (method == "step") {
       for (vtx in which(ok.out)) {
         F.interp[vtx] <- min(F.input[F.geometry.A[[subdivision]][vtx, ] > 0])
       }
     } else {
       F.interp[ok.out] <-
-        as.vector(F.geometry.A[[subdivision]][ok.out,ok.in,drop=FALSE] %*%
-                  F.input[ok.in])
+        as.vector(F.geometry.A[[subdivision]][ok.out, ok.in, drop = FALSE] %*%
+          F.input[ok.in])
     }
   }
 
@@ -1430,13 +1552,15 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions=1)
   G <- G.interp
 
   F.geometry <-
-    fmesher::fm_rcdt_2d_inla(loc=F.geometry$loc,
-                             tv=F.geometry$graph$tv)
+    fmesher::fm_rcdt_2d_inla(
+      loc = F.geometry$loc,
+      tv = F.geometry$graph$tv
+    )
   ## Handle possible node reordering in inla.mesh.create()
   F[F.geometry$idx$loc] <- F
   G[F.geometry$idx$loc] <- G
-  
-  list(F=F, G=G, F.geometry=F.geometry)
+
+  list(F = F, G = G, F.geometry = F.geometry)
 }
 
 
@@ -1452,157 +1576,167 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions=1)
 ##   and let calc.complement=FALSE
 probabilitymap <-
   function(mesh, F, level, G,
-           calc.complement=TRUE,
-           tol=1e-7,
-           output=c("sp", "fm", "inla.mesh.segment"),
-           method, ...)
-{
-  output <- match.arg(output)
-  if (output == "inla.mesh.segment") {
-    output = "fm"
-  }
-
-  if (output == "sp") {
-    if (!requireNamespace("sp", quietly=TRUE)) {
-      stop("The 'sp' package is needed.")
+           calc.complement = TRUE,
+           tol = 1e-7,
+           output = c("sp", "fm", "inla.mesh.segment"),
+           method, ...) {
+    output <- match.arg(output)
+    if (output == "inla.mesh.segment") {
+      output <- "fm"
     }
-  }
 
-  if (calc.complement &&
-      (output == "fm")) {
-    stop("Output format '", output, "' not supported for 'calc.complement = TRUE'.")
-  }
-    
-  spout <- list()
-  inlaout <- list()
-
-  ## Find individual avoidance/between-level/under/over sets.
-  for (k in sort(unique(G[G >= 0]))) {
-    active.triangles <-
-      which((rowSums(matrix(G[mesh$graph$tv] == k,
-                           nrow(mesh$graph$tv), 3)) == 3)
-            &
-            (rowSums(matrix(is.finite(F[mesh$graph$tv]),
-                           nrow(mesh$graph$tv), 3)) == 3)
-            )
-
-    if (length(active.triangles) > 0) {
-      submesh <- submesh.mesh.tri(active.triangles, mesh)
-      active.nodes.idx <- which(!is.na(submesh$idx$loc))
-      subF <- rep(NA, length(active.nodes.idx))
-      subF[submesh$idx$loc[active.nodes.idx]] <- F[active.nodes.idx]
-
-      if (nrow(submesh$loc) > 0) {
-##      submesh$n <- nrow(submesh$loc)
-##      submesh$graph <-
-##        generate.trigraph.properties(
-##          list(tv=submesh$graph$tv),
-##          Nv=nrow(submesh$loc))
-
-#      if (FALSE) { ## Debugging plots
-#        op <- par(mfrow=c(2,1))
-#        on.exit(par(op))
-
-#        class(mesh) <- "inla.mesh"
-#        mesh$n <- nrow(mesh$loc)
-#        mesh$manifold <- "R2"
-#        proj <- inla.mesh.projector(mesh)
-#        image(proj$x, proj$y, inla.mesh.project(proj, field=exp(F)),
-#              zlim=range(exp(F)))
-#        if (length(spout) > 0) {
-#          plot(sp::SpatialPolygons(spout), add=TRUE, col="blue")
-#        }
-#        proj <- inla.mesh.projector(submesh)
-#        image.plot(proj$x, proj$y, inla.mesh.project(proj, field=exp(subF)),
-#                   xlim=range(mesh$loc[,1]), ylim=range(mesh$loc[,1]),
-#                   zlim=range(exp(F)))
-#        plot(submesh, add=TRUE)
-                                        #      }
-
-      subF[is.na(subF)] <- 0
-
-      if (method == "step") {
-        tric <- tricontour_step(x=submesh$graph, z=subF, levels=level,
-                                loc=submesh$loc)
-      } else {
-        tric <- tricontour(x=submesh$graph, z=subF, levels=level,
-                           loc=submesh$loc, type="+", tol=tol, ...)
+    if (output == "sp") {
+      if (!requireNamespace("sp", quietly = TRUE)) {
+        stop("The 'sp' package is needed.")
       }
-      ID <- as.character(k)
+    }
 
-      if (output == "sp" || calc.complement) {
-        spobj <- tryCatch(as.sp.outline(tric,
-                                        grp.ccw=c(2,3),
-                                        grp.cw=c(),
-                                        ccw=FALSE,
-                                        closed=TRUE,
-                                        ID=ID),
-                          error=function(e) NULL)
-        if (!is.null(spobj)) {
-          if (spobj@area == 0) {
-            warning("Skipping zero area polygon in probabilitymap.")
+    if (calc.complement &&
+      (output == "fm")) {
+      stop("Output format '", output, "' not supported for 'calc.complement = TRUE'.")
+    }
+
+    spout <- list()
+    inlaout <- list()
+
+    ## Find individual avoidance/between-level/under/over sets.
+    for (k in sort(unique(G[G >= 0]))) {
+      active.triangles <-
+        which((rowSums(matrix(
+          G[mesh$graph$tv] == k,
+          nrow(mesh$graph$tv), 3
+        )) == 3) &
+          (rowSums(matrix(
+            is.finite(F[mesh$graph$tv]),
+            nrow(mesh$graph$tv), 3
+          )) == 3))
+
+      if (length(active.triangles) > 0) {
+        submesh <- submesh.mesh.tri(active.triangles, mesh)
+        active.nodes.idx <- which(!is.na(submesh$idx$loc))
+        subF <- rep(NA, length(active.nodes.idx))
+        subF[submesh$idx$loc[active.nodes.idx]] <- F[active.nodes.idx]
+
+        if (nrow(submesh$loc) > 0) {
+          ##      submesh$n <- nrow(submesh$loc)
+          ##      submesh$graph <-
+          ##        generate.trigraph.properties(
+          ##          list(tv=submesh$graph$tv),
+          ##          Nv=nrow(submesh$loc))
+
+          #      if (FALSE) { ## Debugging plots
+          #        op <- par(mfrow=c(2,1))
+          #        on.exit(par(op))
+
+          #        class(mesh) <- "inla.mesh"
+          #        mesh$n <- nrow(mesh$loc)
+          #        mesh$manifold <- "R2"
+          #        proj <- inla.mesh.projector(mesh)
+          #        image(proj$x, proj$y, inla.mesh.project(proj, field=exp(F)),
+          #              zlim=range(exp(F)))
+          #        if (length(spout) > 0) {
+          #          plot(sp::SpatialPolygons(spout), add=TRUE, col="blue")
+          #        }
+          #        proj <- inla.mesh.projector(submesh)
+          #        image.plot(proj$x, proj$y, inla.mesh.project(proj, field=exp(subF)),
+          #                   xlim=range(mesh$loc[,1]), ylim=range(mesh$loc[,1]),
+          #                   zlim=range(exp(F)))
+          #        plot(submesh, add=TRUE)
+          #      }
+
+          subF[is.na(subF)] <- 0
+
+          if (method == "step") {
+            tric <- tricontour_step(
+              x = submesh$graph, z = subF, levels = level,
+              loc = submesh$loc
+            )
           } else {
-            spout[[ID]] <- spobj
+            tric <- tricontour(
+              x = submesh$graph, z = subF, levels = level,
+              loc = submesh$loc, type = "+", tol = tol, ...
+            )
+          }
+          ID <- as.character(k)
+
+          if (output == "sp" || calc.complement) {
+            spobj <- tryCatch(
+              as.sp.outline(tric,
+                grp.ccw = c(2, 3),
+                grp.cw = c(),
+                ccw = FALSE,
+                closed = TRUE,
+                ID = ID
+              ),
+              error = function(e) NULL
+            )
+            if (!is.null(spobj)) {
+              if (spobj@area == 0) {
+                warning("Skipping zero area polygon in probabilitymap.")
+              } else {
+                spout[[ID]] <- spobj
+              }
+            }
+          }
+          if (output == "fm") {
+            inlaout[[ID]] <-
+              as.fm_segm.outline(tric,
+                grp.ccw = c(2, 3),
+                grp.cw = c(),
+                grp = k
+              )
           }
         }
       }
-      if (output == "fm") {
-        inlaout[[ID]] <-
-          as.fm_segm.outline(tric,
-                             grp.ccw=c(2,3),
-                             grp.cw=c(),
-                             grp=k)
-      }
-      }
-    }
-  }
-
-  if (calc.complement) {
-    ## Find contour set
-    if (!requireNamespace("sf", quietly=TRUE)) {
-      stop("Package 'sf' required for set complement calculations.")
     }
 
-    ID <- "-1"
-    outline <- fmesher::fm_segm(mesh, boundary = TRUE)
-    sp.domain <- as.sp.outline(outline,
-                               grp.ccw=unique(outline$grp),
-                               grp.cw=integer(0),
-                               ID=ID,
-                               closed=TRUE)
-    sp.domain <- sp::SpatialPolygons(list(sp.domain))
+    if (calc.complement) {
+      ## Find contour set
+      if (!requireNamespace("sf", quietly = TRUE)) {
+        stop("Package 'sf' required for set complement calculations.")
+      }
 
-    if (length(spout) == 0) {
-      ## Complement is the entire domain
-      spout[[ID]] <- sp.domain@polygons[[1]]
+      ID <- "-1"
+      outline <- fmesher::fm_segm(mesh, boundary = TRUE)
+      sp.domain <- as.sp.outline(outline,
+        grp.ccw = unique(outline$grp),
+        grp.cw = integer(0),
+        ID = ID,
+        closed = TRUE
+      )
+      sp.domain <- sp::SpatialPolygons(list(sp.domain))
+
+      if (length(spout) == 0) {
+        ## Complement is the entire domain
+        spout[[ID]] <- sp.domain@polygons[[1]]
+      } else {
+        spout.joined <- sp::SpatialPolygons(spout)
+        spout.union <- sf::st_union(sf::st_as_sfc(spout.joined))
+        sp.diff <- sf::st_difference(sf::st_as_sfc(sp.domain), spout.union)
+        sp.diff <- sf::as_Spatial(sp.diff)
+        if (!is.null(sp.diff)) {
+          spout[[ID]] <- sp.diff@polygons[[1]]
+        }
+      }
+      if (!is.null(spout[[ID]])) {
+        spout[[ID]]@ID <- ID
+
+        if (output == "fm") {
+          inlaout[[ID]] <- fmesher::fm_as_segm(spout[[ID]])
+        }
+      }
+    }
+
+    if ((output == "sp") && (length(spout) > 0)) {
+      out <- sp::SpatialPolygons(spout)
+    } else if ((output == "fm") && (length(inlaout) > 0)) {
+      out <- do.call(fm_segm, do.call(c, inlaout))
     } else {
-      spout.joined <- sp::SpatialPolygons(spout)
-      spout.union <- sf::st_union(sf::st_as_sfc(spout.joined))
-      sp.diff <- sf::st_difference(sf::st_as_sfc(sp.domain), spout.union)
-      sp.diff <- sf::as_Spatial(sp.diff)
-      if (!is.null(sp.diff)) {
-        spout[[ID]] <- sp.diff@polygons[[1]]
-      }
+      out <- NULL
     }
-    if (!is.null(spout[[ID]])) {
-      spout[[ID]]@ID <- ID
-      
-      if (output == "fm") {
-        inlaout[[ID]] <- fmesher::fm_as_segm(spout[[ID]])
-      }
-    }
-  }
-  
-  if ((output == "sp") && (length(spout) > 0)) {
-    out <- sp::SpatialPolygons(spout)
-  } else if ((output == "fm") && (length(inlaout) > 0)) {
-    out <- do.call(fm_segm, do.call(c, inlaout))
-  } else {
-    out <- NULL
-  }
 
-  out
-}
+    out
+  }
 
 
 
@@ -1620,51 +1754,64 @@ gaussquad <- function(mesh, method = c("direct", "make.A")) {
     ## Old method, kept for sanity checking.
     I.loc <-
       rbind(
-        (mesh$loc[mesh$graph$tv[,1],,drop=FALSE] +
-           mesh$loc[mesh$graph$tv[,2],,drop=FALSE] +
-           mesh$loc[mesh$graph$tv[,3],,drop=FALSE])/3,
-        (mesh$loc[mesh$graph$tv[,1],,drop=FALSE]*3 +
-           mesh$loc[mesh$graph$tv[,2],,drop=FALSE] +
-           mesh$loc[mesh$graph$tv[,3],,drop=FALSE])/5,
-        (mesh$loc[mesh$graph$tv[,1],,drop=FALSE] +
-           mesh$loc[mesh$graph$tv[,2],,drop=FALSE]*3 +
-           mesh$loc[mesh$graph$tv[,3],,drop=FALSE])/5,
-        (mesh$loc[mesh$graph$tv[,1],,drop=FALSE] +
-           mesh$loc[mesh$graph$tv[,2],,drop=FALSE] +
-           mesh$loc[mesh$graph$tv[,3],,drop=FALSE]*3)/5)
+        (mesh$loc[mesh$graph$tv[, 1], , drop = FALSE] +
+          mesh$loc[mesh$graph$tv[, 2], , drop = FALSE] +
+          mesh$loc[mesh$graph$tv[, 3], , drop = FALSE]) / 3,
+        (mesh$loc[mesh$graph$tv[, 1], , drop = FALSE] * 3 +
+          mesh$loc[mesh$graph$tv[, 2], , drop = FALSE] +
+          mesh$loc[mesh$graph$tv[, 3], , drop = FALSE]) / 5,
+        (mesh$loc[mesh$graph$tv[, 1], , drop = FALSE] +
+          mesh$loc[mesh$graph$tv[, 2], , drop = FALSE] * 3 +
+          mesh$loc[mesh$graph$tv[, 3], , drop = FALSE]) / 5,
+        (mesh$loc[mesh$graph$tv[, 1], , drop = FALSE] +
+          mesh$loc[mesh$graph$tv[, 2], , drop = FALSE] +
+          mesh$loc[mesh$graph$tv[, 3], , drop = FALSE] * 3) / 5
+      )
     if (mesh$manifold == "S2") {
       I.loc <- I.loc / sqrt(rowSums(I.loc^2))
     }
     A <- fmesher::fm_basis(mesh, I.loc)
   } else {
-    A <- sparseMatrix(i = (rep(seq_len(nT), times = 3 * 4) +
-                             rep(c(0, 1, 2, 3) * nT, each = nT * 3)),
-                      j = rep(c(mesh$graph$tv[,1],
-                                mesh$graph$tv[,2],
-                                mesh$graph$tv[,3]),
-                              times = 4),
-                      x = rep(c(c(1, 1, 1)/3,
-                                c(3, 1, 1)/5,
-                                c(1, 3, 1)/5,
-                                c(1, 1, 3)/5),
-                              each = nT),
-                      dims = c(nT * 4, mesh$n))
+    A <- sparseMatrix(
+      i = (rep(seq_len(nT), times = 3 * 4) +
+        rep(c(0, 1, 2, 3) * nT, each = nT * 3)),
+      j = rep(
+        c(
+          mesh$graph$tv[, 1],
+          mesh$graph$tv[, 2],
+          mesh$graph$tv[, 3]
+        ),
+        times = 4
+      ),
+      x = rep(
+        c(
+          c(1, 1, 1) / 3,
+          c(3, 1, 1) / 5,
+          c(1, 3, 1) / 5,
+          c(1, 1, 3) / 5
+        ),
+        each = nT
+      ),
+      dims = c(nT * 4, mesh$n)
+    )
   }
-  
+
   I.w <- (rep(I.w, times = 4) *
-            rep(c(-27,25,25,25)/48, each = nT))
-  
+    rep(c(-27, 25, 25, 25) / 48, each = nT))
+
   list(A = A, w = I.w)
 }
 
 
 calc.continuous.P0 <- function(F, G, F.geometry, method) {
   tri <-
-    which((G[F.geometry$graph$tv[,1]] >=0)
-          & (G[F.geometry$graph$tv[,1]] == G[F.geometry$graph$tv[,2]])
-          & (G[F.geometry$graph$tv[,1]] == G[F.geometry$graph$tv[,3]])
-          & (rowSums(matrix(is.finite(F[F.geometry$graph$tv]),
-                            nrow(F.geometry$graph$tv), 3)) == 3))
+    which((G[F.geometry$graph$tv[, 1]] >= 0) &
+      (G[F.geometry$graph$tv[, 1]] == G[F.geometry$graph$tv[, 2]]) &
+      (G[F.geometry$graph$tv[, 1]] == G[F.geometry$graph$tv[, 3]]) &
+      (rowSums(matrix(
+        is.finite(F[F.geometry$graph$tv]),
+        nrow(F.geometry$graph$tv), 3
+      )) == 3))
   submesh <- submesh.mesh.tri(tri, F.geometry)
   active.nodes.idx <- which(!is.na(submesh$idx$loc))
   subF <- rep(NA, length(active.nodes.idx))
@@ -1682,9 +1829,11 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
   } else {
     ## "step"
     I.w <- fmesher::fm_fem(submesh, order = 0)$ta
-    tmp <- matrix(subF[submesh$graph$tv],
-                  nrow(submesh$graph$tv),
-                  ncol(submesh$graph$tv))
+    tmp <- matrix(
+      subF[submesh$graph$tv],
+      nrow(submesh$graph$tv),
+      ncol(submesh$graph$tv)
+    )
     tmp <- apply(tmp, 1, min)
     P0 <- sum(I.w * tmp) / tot.area
   }
@@ -1734,76 +1883,88 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #' @export
 #' @author Finn Lindgren \email{finn.lindgren@gmail.com}
 #' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, vol 26, no 3, pp 513-524.
-#' 
+#'
 #' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #'
 #' @examples
 #' \dontrun{
 #' if (require.nowarnings("INLA")) {
-#' #Generate mesh and SPDE model
-#' n.lattice = 10 #Increase for more interesting, but slower, examples
-#' x=seq(from=0,to=10,length.out=n.lattice)
-#' lattice=fm_lattice_2d(x=x,y=x)
-#' mesh=fmesher::fm_rcdt_2d_inla(lattice=lattice, extend=FALSE, refine=FALSE)
-#' spde <- inla.spde2.matern(mesh, alpha=2)
+#'   # Generate mesh and SPDE model
+#'   n.lattice <- 10 # Increase for more interesting, but slower, examples
+#'   x <- seq(from = 0, to = 10, length.out = n.lattice)
+#'   lattice <- fm_lattice_2d(x = x, y = x)
+#'   mesh <- fmesher::fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+#'   spde <- inla.spde2.matern(mesh, alpha = 2)
 #'
-#' #Generate an artificial sample
-#' sigma2.e = 0.01
-#' n.obs=100
-#' obs.loc = cbind(runif(n.obs)*diff(range(x))+min(x),
-#' runif(n.obs)*diff(range(x))+min(x))
-#' Q = inla.spde2.precision(spde, theta=c(log(sqrt(0.5)), log(sqrt(1))))
-#' x = inla.qsample(Q=Q)
-#' A = inla.spde.make.A(mesh=mesh,loc=obs.loc)
-#' Y = as.vector(A %*% x + rnorm(n.obs)*sqrt(sigma2.e))
+#'   # Generate an artificial sample
+#'   sigma2.e <- 0.01
+#'   n.obs <- 100
+#'   obs.loc <- cbind(
+#'     runif(n.obs) * diff(range(x)) + min(x),
+#'     runif(n.obs) * diff(range(x)) + min(x)
+#'   )
+#'   Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
+#'   x <- inla.qsample(Q = Q)
+#'   A <- inla.spde.make.A(mesh = mesh, loc = obs.loc)
+#'   Y <- as.vector(A %*% x + rnorm(n.obs) * sqrt(sigma2.e))
 #'
-#' ## Calculate posterior
-#' Q.post = (Q + (t(A) %*% A)/sigma2.e)
-#' mu.post = as.vector(solve(Q.post,(t(A) %*% Y)/sigma2.e))
-#' vars.post = excursions.variances(chol(Q.post))
+#'   ## Calculate posterior
+#'   Q.post <- (Q + (t(A) %*% A) / sigma2.e)
+#'   mu.post <- as.vector(solve(Q.post, (t(A) %*% Y) / sigma2.e))
+#'   vars.post <- excursions.variances(chol(Q.post))
 #'
-#' ## Calculate contour map with two levels
-#' map = contourmap(n.levels = 2, mu = mu.post, Q = Q.post,
-#' alpha=0.1, F.limit = 0.1,max.threads=1)
+#'   ## Calculate contour map with two levels
+#'   map <- contourmap(
+#'     n.levels = 2, mu = mu.post, Q = Q.post,
+#'     alpha = 0.1, F.limit = 0.1, max.threads = 1
+#'   )
 #'
-#' ## Calculate the continuous representation
-#' sets <- continuous(map, mesh, alpha=0.1)
+#'   ## Calculate the continuous representation
+#'   sets <- continuous(map, mesh, alpha = 0.1)
 #'
-#' ## Plot the results
-#' reo = mesh$idx$lattice
-#' cols = contourmap.colors(map, col=heat.colors(100, 1),
-#' credible.col = grey(0.5, 1))
-#' names(cols) = as.character(-1:2)
+#'   ## Plot the results
+#'   reo <- mesh$idx$lattice
+#'   cols <- contourmap.colors(map,
+#'     col = heat.colors(100, 1),
+#'     credible.col = grey(0.5, 1)
+#'   )
+#'   names(cols) <- as.character(-1:2)
 #'
-#' par(mfrow = c(2,2))
-#' image(matrix(mu.post[reo],n.lattice,n.lattice),
-#' main="mean",axes=FALSE)
-#' image(matrix(sqrt(vars.post[reo]),n.lattice,n.lattice),
-#' main="sd", axes = FALSE)
-#' image(matrix(map$M[reo],n.lattice,n.lattice),col=cols,axes=FALSE)
-#' idx.M = setdiff(names(sets$M), "-1")
-#' plot(sets$M[idx.M], col=cols[idx.M])
-#' }}
-
+#'   par(mfrow = c(2, 2))
+#'   image(matrix(mu.post[reo], n.lattice, n.lattice),
+#'     main = "mean", axes = FALSE
+#'   )
+#'   image(matrix(sqrt(vars.post[reo]), n.lattice, n.lattice),
+#'     main = "sd", axes = FALSE
+#'   )
+#'   image(matrix(map$M[reo], n.lattice, n.lattice), col = cols, axes = FALSE)
+#'   idx.M <- setdiff(names(sets$M), "-1")
+#'   plot(sets$M[idx.M], col = cols[idx.M])
+#' }
+#' }
+#'
 continuous <- function(ex,
                        geometry,
                        alpha,
-                       method=c("log", "linear", "step"),
-                       output=c("sp", "fm", "inla"),
-                       subdivisions=1,
-                       calc.credible=TRUE)
-{
+                       method = c("log", "linear", "step"),
+                       output = c("sp", "fm", "inla"),
+                       subdivisions = 1,
+                       calc.credible = TRUE) {
   stopifnot(inherits(ex, "excurobj"))
   method <- match.arg(method)
   output <- match.arg(output)
   if (output == "inla") {
-    output = "fm"
+    output <- "fm"
   }
 
-  if (!(ex$meta$calculation %in% c("excursions",
-                                   "contourmap"))) {
+  if (!(ex$meta$calculation %in% c(
+    "excursions",
+    "contourmap"
+  ))) {
     stop(paste("Unsupported calculation '",
-               ex$meta$calculation, "'.", sep=""))
+      ex$meta$calculation, "'.",
+      sep = ""
+    ))
   }
 
   if (missing(alpha)) {
@@ -1811,30 +1972,34 @@ continuous <- function(ex,
   }
   if (alpha > ex$meta$F.limit) {
     warning(paste("Insufficient data: alpha = ", alpha,
-                  " > F.limit = ", ex$meta$F.limit, sep=""))
+      " > F.limit = ", ex$meta$F.limit,
+      sep = ""
+    ))
   }
 
   info <- get.geometry(geometry)
   if (!fmesher::fm_manifold(info, c("M", "R2", "S2"))) {
-    stop(paste("Unsupported manifold type '", fmesher::fm_manifold(info), "'.", sep=""))
+    stop(paste("Unsupported manifold type '", fmesher::fm_manifold(info), "'.", sep = ""))
   }
   if ((output == "sp") && !fmesher::fm_manifold(info, c("R2"))) {
-    stop(paste("Unsupported manifold type '", fmesher::fm_manifold(info), "' for 'sp' output.", sep=""))
+    stop(paste("Unsupported manifold type '", fmesher::fm_manifold(info), "' for 'sp' output.", sep = ""))
   }
   if (calc.credible &&
-      (output == "fm")) {
+    (output == "fm")) {
     stop("Output format 'fm' not supported for 'calc.credible = TRUE'.")
   }
 
   if (length(ex$F) != prod(info$dims)) {
     stop(paste("The number of computed F-values (", length(ex$F), ") must match \n",
-               "the number of elements of the continuous geometry definition (",
-               prod(info$dims), ").", sep=""))
+      "the number of elements of the continuous geometry definition (",
+      prod(info$dims), ").",
+      sep = ""
+    ))
   }
 
   if (ex$meta$type == "=") {
     type <- "!="
-    F.ex <- 1-ex$F
+    F.ex <- 1 - ex$F
   } else {
     type <- ex$meta$type
     F.ex <- ex$F
@@ -1853,7 +2018,7 @@ continuous <- function(ex,
     mesh <- submesh.grid(active.nodes, geometry)
   }
   mesh$graph <-
-    generate.trigraph.properties(mesh$graph, Nv=nrow(mesh$loc))
+    generate.trigraph.properties(mesh$graph, Nv = nrow(mesh$loc))
 
   active.nodes <- !is.na(mesh$idx$loc)
   F.ex[mesh$idx$loc[active.nodes]] <- F.ex[active.nodes]
@@ -1863,23 +2028,24 @@ continuous <- function(ex,
   ## Construct interpolation
   interpolated <-
     F.interpolation(mesh, F.ex, G.ex, ex$meta$type, method,
-                    subdivisions=subdivisions)
+      subdivisions = subdivisions
+    )
 
   if (ex$meta$type == "=") {
-    interpolated$F <- 1-interpolated$F
-##    F.ex <- 1-F.ex   ????????????????????
+    interpolated$F <- 1 - interpolated$F
+    ##    F.ex <- 1-F.ex   ????????????????????
   }
 
   F.geometry <- mesh
   if (method == "log") {
     F.ex <- log(F.ex)
-    level <- log(1-alpha)
+    level <- log(1 - alpha)
     F.ex[!is.finite(F.ex)] <- NA
   } else if (method == "linear") {
-    level <- 1-alpha
+    level <- 1 - alpha
   } else {
     ## 'step'
-    level <- 1-alpha
+    level <- 1 - alpha
   }
 
   ## For ordinary excursions, the input set/group information is not used.
@@ -1890,12 +2056,13 @@ continuous <- function(ex,
   }
 
   M <- probabilitymap(F.geometry,
-                      F=F.ex,
-                      level=level,
-                      G=G.ex,
-                      calc.complement=calc.credible,
-                      method=method,
-                      output=output)
+    F = F.ex,
+    level = level,
+    G = G.ex,
+    calc.complement = calc.credible,
+    method = method,
+    output = output
+  )
 
   if (method == "log") {
     F.ex <- exp(F.ex)
@@ -1903,12 +2070,16 @@ continuous <- function(ex,
 
   F.ex[is.na(F.ex)] <- 0
   interpolated$F[is.na(interpolated$F)] <- 0
-  out <- list(F=interpolated$F, G=interpolated$G,
-              M=M, F.geometry=interpolated$F.geometry)
+  out <- list(
+    F = interpolated$F, G = interpolated$G,
+    M = M, F.geometry = interpolated$F.geometry
+  )
 
   if (!is.null(ex$P0)) {
-    out$P0 <- calc.continuous.P0(interpolated$F, interpolated$G,
-                                 interpolated$F.geometry, method)
+    out$P0 <- calc.continuous.P0(
+      interpolated$F, interpolated$G,
+      interpolated$F.geometry, method
+    )
   }
 
   out

@@ -44,81 +44,78 @@
 #' \item{a.marginal }{The lower bound for pointwise confidence bands.}
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
-#' @details See \code{\link{simconf}} for details. 
+#' @details See \code{\link{simconf}} for details.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
 #' from global temperature}, Statistica Sinica, vol 25, pp 351-367.
-#' 
+#'
 #' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #' @seealso \code{\link{simconf}}, \code{\link{simconf.inla}}, \code{\link{simconf.mc}}
 #' @examples
-#' n = 11
-#' K = 3
+#' n <- 11
+#' K <- 3
 #' mu <- Q <- list()
-#' for(k in 1:K){
-#'   mu[[k]] = k*0.1 + seq(-5, 5, length=n)
-#'   Q[[k]] = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
+#' for (k in 1:K) {
+#'   mu[[k]] <- k * 0.1 + seq(-5, 5, length = n)
+#'   Q[[k]] <- Matrix(toeplitz(c(1, -0.1, rep(0, n - 2))))
 #' }
 #' ## calculate the confidence region
-#' conf = simconf.mixture(0.05, mu, Q, w = rep(1/3,3), max.threads=2)
+#' conf <- simconf.mixture(0.05, mu, Q, w = rep(1 / 3, 3), max.threads = 2)
 #'
 #' ## Plot the region
-#' plot(mu[[1]],type="l")
+#' plot(mu[[1]], type = "l")
 #' lines(mu[[2]])
 #' lines(mu[[3]])
-#' lines(conf$a, col=2)
-#' lines(conf$b, col=2)
-
+#' lines(conf$a, col = 2)
+#' lines(conf$b, col = 2)
 simconf.mixture <- function(alpha,
                             mu,
                             Q,
                             w,
                             ind,
-                            n.iter=10000,
+                            n.iter = 10000,
                             vars,
-                            verbose=0,
-                            max.threads=0,
-                            seed=NULL,
-                            mix.samp = TRUE)
-{
-
-  if(missing(mu) || !is.list(mu)) {
-    stop('Must provide list with mean values')
+                            verbose = 0,
+                            max.threads = 0,
+                            seed = NULL,
+                            mix.samp = TRUE) {
+  if (missing(mu) || !is.list(mu)) {
+    stop("Must provide list with mean values")
   } else {
     K <- length(mu)
     n <- length(mu[[1]])
-    for(k in seq_len(K)){
+    for (k in seq_len(K)) {
       mu[[k]] <- private.as.vector(mu[[k]])
-      if(any(is.na(mu[[k]]))){
-        stop('mu contains NA')
+      if (any(is.na(mu[[k]]))) {
+        stop("mu contains NA")
       }
     }
   }
-  if(missing(Q) || !is.list(Q)) {
-    stop('Must provide list with precision matrices')
+  if (missing(Q) || !is.list(Q)) {
+    stop("Must provide list with precision matrices")
   } else {
-    if(length(Q) != K){
-      stop('Input lists are of different length')
+    if (length(Q) != K) {
+      stop("Input lists are of different length")
     }
-    for(k in seq_len(K)){
+    for (k in seq_len(K)) {
       Q[[k]] <- private.as.dgCMatrix(Q[[k]])
     }
   }
 
-  if(missing(w)){
-    stop('Must provide list with mixture weights')
+  if (missing(w)) {
+    stop("Must provide list with mixture weights")
   } else {
     w <- private.as.vector(w)
-    if(any(is.na(w))){
-      stop('w contains NA')
+    if (any(is.na(w))) {
+      stop("w contains NA")
     }
   }
-  if(!missing(vars)){
+  if (!missing(vars)) {
     compute.vars <- FALSE
-    if(length(w) != K){
-      stop('Input lists are of different length')
+    if (length(w) != K) {
+      stop("Input lists are of different length")
     }
-    for(k in seq_len(K)){
+    for (k in seq_len(K)) {
       vars[[k]] <- private.as.vector(vars[[k]])
     }
   } else {
@@ -126,142 +123,198 @@ simconf.mixture <- function(alpha,
     vars <- list()
   }
 
-  if(!missing(ind))
+  if (!missing(ind)) {
     ind <- private.as.vector(ind)
+  }
 
 
-  if(missing(alpha))
-    stop('Must provide significance level alpha')
+  if (missing(alpha)) {
+    stop("Must provide significance level alpha")
+  }
 
 
-  if(mix.samp){
-    if(missing(ind)){
-      ind = seq_len(n)
+  if (mix.samp) {
+    if (missing(ind)) {
+      ind <- seq_len(n)
     }
     Q.chol <- list()
-    mu.m <- matrix(0,K,n)
-    sd.m <- matrix(0,K,n)
-    for(k in seq_len(K))
+    mu.m <- matrix(0, K, n)
+    sd.m <- matrix(0, K, n)
+    for (k in seq_len(K))
     {
       Q.chol[[k]] <- chol(Q[[k]])
-      mu.m[k,] = mu[[k]]
-      if(compute.vars){
+      mu.m[k, ] <- mu[[k]]
+      if (compute.vars) {
         vars[[k]] <- excursions.variances(L = Q.chol[[k]])
       }
-      sd.m[k,] = sqrt(vars[[k]])
+      sd.m[k, ] <- sqrt(vars[[k]])
     }
 
-    limits = c(-1000,1000)
-    a.marg = sapply(seq_len(n), function(i) Fmix_inv(p = alpha/2,
-                                                     mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+    limits <- c(-1000, 1000)
+    a.marg <- sapply(seq_len(n), function(i) {
+      Fmix_inv(
+        p = alpha / 2,
+        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
+      )
+    })
 
-    b.marg = sapply(seq_len(n), function(i) Fmix_inv(p = 1-alpha/2,
-                                                     mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+    b.marg <- sapply(seq_len(n), function(i) {
+      Fmix_inv(
+        p = 1 - alpha / 2,
+        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
+      )
+    })
 
-    while(min(a.marg) == limits[1] || max(b.marg) == limits[2])
-    {
-      limits = 2*limits
-      a.marg = sapply(seq_len(n), function(i) Fmix_inv(p = alpha/2,
-                                                       mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+    while (min(a.marg) == limits[1] || max(b.marg) == limits[2]) {
+      limits <- 2 * limits
+      a.marg <- sapply(seq_len(n), function(i) {
+        Fmix_inv(
+          p = alpha / 2,
+          mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
+        )
+      })
 
-      b.marg = sapply(seq_len(n), function(i) Fmix_inv(p = 1-alpha/2,
-                                                       mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+      b.marg <- sapply(seq_len(n), function(i) {
+        Fmix_inv(
+          p = 1 - alpha / 2,
+          mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
+        )
+      })
     }
-    samp <- mix.sample(n.iter,mu,Q.chol,w)
-    r.o = optimize(fmix.samp.opt,interval = c(0,alpha),
-                   mu=mu.m[,ind], alpha=alpha,
-                   sd=sd.m[,ind], w=w, limits = limits,samples=samp[,ind])
+    samp <- mix.sample(n.iter, mu, Q.chol, w)
+    r.o <- optimize(fmix.samp.opt,
+      interval = c(0, alpha),
+      mu = mu.m[, ind], alpha = alpha,
+      sd = sd.m[, ind], w = w, limits = limits, samples = samp[, ind]
+    )
 
-    a = sapply(seq_len(n), function(i) Fmix_inv(p = r.o$minimum/2,
-                                                mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+    a <- sapply(seq_len(n), function(i) {
+      Fmix_inv(
+        p = r.o$minimum / 2,
+        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
+      )
+    })
 
-    b = sapply(seq_len(n), function(i) Fmix_inv(p = 1-r.o$minimum/2,
-                                                mu = mu.m[,i], sd = sd.m[,i], w = w, br = limits))
+    b <- sapply(seq_len(n), function(i) {
+      Fmix_inv(
+        p = 1 - r.o$minimum / 2,
+        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
+      )
+    })
   } else {
-
-    if(!missing(ind)){
-      if(!is.logical(ind)){
-        lind <- rep(FALSE,n)
-        lind[ind] = TRUE
+    if (!missing(ind)) {
+      if (!is.logical(ind)) {
+        lind <- rep(FALSE, n)
+        lind[ind] <- TRUE
         ind <- lind
       }
-      cind <- reo <- rep(1,n)
-      cind[!ind] = 0
-      out <- .C("reordering", nin = as.integer(n), Mp = as.integer(Q[[1]]@p),
-                Mi = as.integer(Q[[1]]@i), reo = as.integer(reo),
-                cind = as.integer(cind))
-      reo = out$reo+1
+      cind <- reo <- rep(1, n)
+      cind[!ind] <- 0
+      out <- .C("reordering",
+        nin = as.integer(n), Mp = as.integer(Q[[1]]@p),
+        Mi = as.integer(Q[[1]]@i), reo = as.integer(reo),
+        cind = as.integer(cind)
+      )
+      reo <- out$reo + 1
     } else {
-      reo = seq_len(n)
+      reo <- seq_len(n)
     }
-    ireo = NULL
-    ireo[reo] = 1:n
+    ireo <- NULL
+    ireo[reo] <- 1:n
 
     Q.chol <- list()
-    mu.m <- matrix(0,K,n)
-    sd.m <- matrix(0,K,n)
-    for(k in seq_len(K))
+    mu.m <- matrix(0, K, n)
+    sd.m <- matrix(0, K, n)
+    for (k in seq_len(K))
     {
-      Q.chol[[k]] <- private.Cholesky(Q[[k]][reo,reo], perm=FALSE)$R
-      mu.m[k,] = mu[[k]][reo]
-      if(compute.vars){
+      Q.chol[[k]] <- private.Cholesky(Q[[k]][reo, reo], perm = FALSE)$R
+      mu.m[k, ] <- mu[[k]][reo]
+      if (compute.vars) {
         vars[[k]] <- excursions.variances(L = Q.chol[[k]])
       }
-      sd.m[k,] = sqrt(vars[[k]][reo])
+      sd.m[k, ] <- sqrt(vars[[k]][reo])
     }
 
-    limits = c(-1000,1000)
-    a.marg = sapply(seq_len(n), function(i) Fmix_inv(p = alpha/2,
-                                                     mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
+    limits <- c(-1000, 1000)
+    a.marg <- sapply(seq_len(n), function(i) {
+      Fmix_inv(
+        p = alpha / 2,
+        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
+      )
+    })[ireo]
 
-    b.marg = sapply(seq_len(n), function(i) Fmix_inv(p = 1-alpha/2,
-                                                     mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
+    b.marg <- sapply(seq_len(n), function(i) {
+      Fmix_inv(
+        p = 1 - alpha / 2,
+        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
+      )
+    })[ireo]
 
-    while(min(a.marg) == limits[1] || max(b.marg) == limits[2])
-    {
-      limits = 2*limits
-      a.marg = sapply(seq_len(n), function(i) Fmix_inv(p = alpha/2,
-                                                       mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
+    while (min(a.marg) == limits[1] || max(b.marg) == limits[2]) {
+      limits <- 2 * limits
+      a.marg <- sapply(seq_len(n), function(i) {
+        Fmix_inv(
+          p = alpha / 2,
+          mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
+        )
+      })[ireo]
 
-      b.marg = sapply(seq_len(n), function(i) Fmix_inv(p = 1-alpha/2,
-                                                       mu = mu.m[,i],sd = sd.m[,i],w = w,br = limits))[ireo]
+      b.marg <- sapply(seq_len(n), function(i) {
+        Fmix_inv(
+          p = 1 - alpha / 2,
+          mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
+        )
+      })[ireo]
     }
 
-    r.o = optimize(fmix.opt,interval = c(alpha/n,alpha),
-                   alpha=alpha,
-                   mu=mu.m,
-                   sd=sd.m,
-                   Q.chol=Q.chol,
-                   w=w,
-                   ind = ind[reo],
-                   limits = limits,
-                   max.threads = max.threads,
-                   verbose=verbose)
+    r.o <- optimize(fmix.opt,
+      interval = c(alpha / n, alpha),
+      alpha = alpha,
+      mu = mu.m,
+      sd = sd.m,
+      Q.chol = Q.chol,
+      w = w,
+      ind = ind[reo],
+      limits = limits,
+      max.threads = max.threads,
+      verbose = verbose
+    )
 
-    a = sapply(seq_len(n), function(i) Fmix_inv(p = r.o$minimum/2,
-                                                mu = mu.m[,i],
-                                                sd = sd.m[,i],
-                                                w = w,
-                                                br = limits))[ireo]
+    a <- sapply(seq_len(n), function(i) {
+      Fmix_inv(
+        p = r.o$minimum / 2,
+        mu = mu.m[, i],
+        sd = sd.m[, i],
+        w = w,
+        br = limits
+      )
+    })[ireo]
 
-    b = sapply(seq_len(n), function(i) Fmix_inv(p = 1-r.o$minimum/2,
-                                                mu = mu.m[,i],
-                                                sd = sd.m[,i],
-                                                w = w,
-                                                br = limits))[ireo]
+    b <- sapply(seq_len(n), function(i) {
+      Fmix_inv(
+        p = 1 - r.o$minimum / 2,
+        mu = mu.m[, i],
+        sd = sd.m[, i],
+        w = w,
+        br = limits
+      )
+    })[ireo]
   }
-  output <- list(a = a[ind],
-                 b = b[ind],
-                 a.marginal = a.marg[ind],
-                 b.marginal = b.marg[ind],
-                 mean = mu[ind],
-                 vars = vars[ind])
-  output$meta = list(calculation="simconf",
-                     alpha=alpha,
-                     n.iter=n.iter,
-                     ind=ind,
-                     call = match.call())
+  output <- list(
+    a = a[ind],
+    b = b[ind],
+    a.marginal = a.marg[ind],
+    b.marginal = b.marg[ind],
+    mean = mu[ind],
+    vars = vars[ind]
+  )
+  output$meta <- list(
+    calculation = "simconf",
+    alpha = alpha,
+    n.iter = n.iter,
+    ind = ind,
+    call = match.call()
+  )
   class(output) <- "excurobj"
   return(output)
 }
-

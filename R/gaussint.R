@@ -56,36 +56,35 @@
 #' \item{Pv }{A vector with the estimates of all sub-integrals.}
 #' \item{Ev }{A vector with the estimated errors of the Pv estimates.}
 #' @export
-#' @details The function uses sequential importance sampling to estimate the 
-#' Gaussian integral, and returns all computed sub-integrals. This means that if, for 
+#' @details The function uses sequential importance sampling to estimate the
+#' Gaussian integral, and returns all computed sub-integrals. This means that if, for
 #' example, the function is used to compute \eqn{P(x>0)} for an n-dimensional Gaussian
 #' variable \eqn{x}, then all integrals \eqn{P(x_1>0,...,x_i>0)} for \eqn{i=1,...,n} are
-#' computed. 
-#' 
-#' If one is only interested in whether \eqn{P(x>0)>alpha} or not, then one can 
-#' stop the integration as soon as \eqn{P(x_1>0,...,x_i>0)<alpha}. This can save a lot of 
-#' computation time if \eqn{P(x_1>0,...,x_i>0)<alpha} for \eqn{i} much smaller than 
-#' \eqn{n}. This limit value is specified by the \code{lim} argument. 
-#' 
+#' computed.
+#'
+#' If one is only interested in whether \eqn{P(x>0)>alpha} or not, then one can
+#' stop the integration as soon as \eqn{P(x_1>0,...,x_i>0)<alpha}. This can save a lot of
+#' computation time if \eqn{P(x_1>0,...,x_i>0)<alpha} for \eqn{i} much smaller than
+#' \eqn{n}. This limit value is specified by the \code{lim} argument.
+#'
 #' Which reordering to use depends on what the purpose of the calculation is and what
 #' the integration limits are. However, in general the \code{limits} reordering is typically
 #' most appropriate since this combines sparisty (which improves accuracy and reduces
 #' computational cost) with automatic handling of dimensions with limits \eqn{a=-Inf} and
 #' \eqn{b=Inf}, which do not affect the probability but affect the computation time
-#' if they are not handled separately. 
+#' if they are not handled separately.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
-#' 
+#'
 #' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #' @examples
 #' ## Create mean and a tridiagonal precision matrix
-#' n = 11
-#' mu.x = seq(-5, 5, length=n)
-#' Q.x = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
+#' n <- 11
+#' mu.x <- seq(-5, 5, length = n)
+#' Q.x <- Matrix(toeplitz(c(1, -0.1, rep(0, n - 2))))
 #' ## Calculate the probability that the variable is between mu-3 and mu+3
-#' prob = gaussint(mu=mu.x, Q=Q.x, a= mu.x-3, b=mu.x+3, max.threads=2)
+#' prob <- gaussint(mu = mu.x, Q = Q.x, a = mu.x - 3, b = mu.x + 3, max.threads = 2)
 #' prob$P
-
 gaussint <- function(mu,
                      Q.chol,
                      Q,
@@ -94,158 +93,167 @@ gaussint <- function(mu,
                      lim = 0,
                      n.iter = 10000,
                      ind,
-                     use.reordering = c("natural","sparsity","limits"),
+                     use.reordering = c("natural", "sparsity", "limits"),
                      max.size,
-                     max.threads=0,
-                     seed)
-{
+                     max.threads = 0,
+                     seed) {
+  if (missing(Q) && missing(Q.chol)) {
+    stop("Must specify a precision matrix or its Cholesky factor")
+  }
 
-  if( missing(Q) && missing(Q.chol))
-	  stop('Must specify a precision matrix or its Cholesky factor')
+  if (missing(a)) {
+    stop("Must specify lower integration limit")
+  }
 
-  if(missing(a))
-    stop('Must specify lower integration limit')
+  if (missing(b)) {
+    stop("Must specify upper integration limit")
+  }
 
-  if(missing(b))
-    stop('Must specify upper integration limit')
-
-  if(!missing(mu))
+  if (!missing(mu)) {
     mu <- private.as.vector(mu)
+  }
 
-  if(!missing(ind))
+  if (!missing(ind)) {
     ind <- private.as.vector(ind)
+  }
 
   a <- private.as.vector(a)
   b <- private.as.vector(b)
 
-  if(!missing(Q))
+  if (!missing(Q)) {
     Q <- private.as.dgCMatrix(Q)
+  }
 
-  if(!missing(Q.chol))
+  if (!missing(Q.chol)) {
     Q.chol <- private.as.dtCMatrixU(Q.chol)
+  }
 
 
-  n = length(a)
-  if(length(b) != n)
-    stop('Vectors with integration limits are of different length.')
+  n <- length(a)
+  if (length(b) != n) {
+    stop("Vectors with integration limits are of different length.")
+  }
 
   use.reordering <- match.arg(use.reordering)
 
-  if(!missing(ind) && !is.null(ind)){
-    a[!ind] = -Inf
-    b[!ind] = Inf
+  if (!missing(ind) && !is.null(ind)) {
+    a[!ind] <- -Inf
+    b[!ind] <- Inf
   }
 
-  if(missing(max.size))
-    max.size = n
+  if (missing(max.size)) {
+    max.size <- n
+  }
 
-  reordered = FALSE
-  if(!missing(Q.chol) && !is.null(Q.chol)){
+  reordered <- FALSE
+  if (!missing(Q.chol) && !is.null(Q.chol)) {
     ## Cholesky factor is provided, use that and do not reorder
-      L = Q.chol
-      if(dim(L)[1] != dim(L)[2]){
-        stop("Q.chol is not square")
-      } else if(dim(L)[1] != n) {
-        stop("Dimensions of Q.chol is different from the length of the integration limits.")
-      }
-  } else if(!missing(Q) && !is.null(Q)){
-    if(dim(Q)[1] != dim(Q)[2]){
+    L <- Q.chol
+    if (dim(L)[1] != dim(L)[2]) {
+      stop("Q.chol is not square")
+    } else if (dim(L)[1] != n) {
+      stop("Dimensions of Q.chol is different from the length of the integration limits.")
+    }
+  } else if (!missing(Q) && !is.null(Q)) {
+    if (dim(Q)[1] != dim(Q)[2]) {
       stop("Q is not square")
-      } else if(dim(Q)[1] != n) {
-        stop("Dimensions of Q is different from the length of the integration limits.")
-      }
+    } else if (dim(Q)[1] != n) {
+      stop("Dimensions of Q is different from the length of the integration limits.")
+    }
     ## Cholesky factor is not provided and we are told to reorder
-    if(use.reordering == "limits")
-    {
-      #Reorder by moving nodes with limits -inf ... inf first
-      inf.ind = (a==-Inf) & (b==Inf)
-      if(sum(inf.ind)>0){
-        max.size = min(max.size,n-sum(inf.ind))
-        n = length(a)
-        cind = rep(1,n)
-        cind[inf.ind] = 0
-        reo = rep(0,n)
-        out <- .C("reordering",nin = as.integer(n), Mp = as.integer(Q@p),
-                  Mi = as.integer(Q@i), reo = as.integer(reo),
-                  cind = as.integer(cind))
-        reo = out$reo+1
-        Q = Q[reo,reo]
-        reordered = TRUE
+    if (use.reordering == "limits") {
+      # Reorder by moving nodes with limits -inf ... inf first
+      inf.ind <- (a == -Inf) & (b == Inf)
+      if (sum(inf.ind) > 0) {
+        max.size <- min(max.size, n - sum(inf.ind))
+        n <- length(a)
+        cind <- rep(1, n)
+        cind[inf.ind] <- 0
+        reo <- rep(0, n)
+        out <- .C("reordering",
+          nin = as.integer(n), Mp = as.integer(Q@p),
+          Mi = as.integer(Q@i), reo = as.integer(reo),
+          cind = as.integer(cind)
+        )
+        reo <- out$reo + 1
+        Q <- Q[reo, reo]
+        reordered <- TRUE
       }
 
-      L <- suppressWarnings(private.Cholesky(Q,perm=FALSE)$R)
-
-    } else if(use.reordering == "sparsity"){
+      L <- suppressWarnings(private.Cholesky(Q, perm = FALSE)$R)
+    } else if (use.reordering == "sparsity") {
       ## Reorder for sparsity calculated by Matrix
-      L <- suppressWarnings(private.Cholesky(Q,perm=TRUE))
+      L <- suppressWarnings(private.Cholesky(Q, perm = TRUE))
       reo <- L$reo
       ireo <- L$ireo
-      reordered = TRUE
+      reordered <- TRUE
       L <- L$R
     } else {
       ## Do not reorder
-      L <- suppressWarnings(private.Cholesky(Q,perm=FALSE)$R)
+      L <- suppressWarnings(private.Cholesky(Q, perm = FALSE)$R)
     }
   }
 
   # Note: If lim > 0 and reorder == TRUE, we should calculate marginal
   # probabilities, see if bound is above lim, and then reorder
 
-  if(!missing(mu) && !is.null(mu)){
-    if(length(mu) != n){
+  if (!missing(mu) && !is.null(mu)) {
+    if (length(mu) != n) {
       stop("The length of mu is different from the length of the integration limits.")
     }
-    a = a - mu
-    b = b - mu
+    a <- a - mu
+    b <- b - mu
   }
 
-  a[a==Inf]  = .Machine$double.xmax
-  b[b==Inf]  = .Machine$double.xmax
-  a[a==-Inf] = -.Machine$double.xmax
-  b[b==-Inf] = -.Machine$double.xmax
+  a[a == Inf] <- .Machine$double.xmax
+  b[b == Inf] <- .Machine$double.xmax
+  a[a == -Inf] <- -.Machine$double.xmax
+  b[b == -Inf] <- -.Machine$double.xmax
 
-	if(reordered == TRUE){
-		a = a[reo]
-		b = b[reo]
+  if (reordered == TRUE) {
+    a <- a[reo]
+    b <- b[reo]
   }
 
   if (is(L, "Matrix")) {
-     L <- private.as.dtCMatrixU(L)
+    L <- private.as.dtCMatrixU(L)
   } else {
     stop("Unsuported matrix type.")
   }
 
-  if(!missing(seed) && !is.null(seed)){
-    seed_provided = 1
+  if (!missing(seed) && !is.null(seed)) {
+    seed_provided <- 1
     seed <- as.integer(seed)
-    if(length(seed)==1){
-      seed <- rep(seed,6)
+    if (length(seed) == 1) {
+      seed <- rep(seed, 6)
     }
-    seed.in = seed
+    seed.in <- seed
   } else {
-    seed_provided = 0
-    seed.in = as.integer(rep(0,6))
+    seed_provided <- 0
+    seed.in <- as.integer(rep(0, 6))
   }
 
-  Pv = Ev = rep(0,dim(L)[1])
+  Pv <- Ev <- rep(0, dim(L)[1])
 
-  opts = c(n,n.iter,max.size,max.threads,seed_provided)
+  opts <- c(n, n.iter, max.size, max.threads, seed_provided)
 
-  out <- .C("shapeInt", Mp = as.integer(L@p), Mi = as.integer(L@i),
-              Mv = as.double(L@x), a = as.double(a), b = as.double(b),
-              opts = as.integer(opts), lim = as.double(lim),
-              Pv = as.double(Pv), Ev = as.double(Ev),seed_in=seed.in)
+  out <- .C("shapeInt",
+    Mp = as.integer(L@p), Mi = as.integer(L@i),
+    Mv = as.double(L@x), a = as.double(a), b = as.double(b),
+    opts = as.integer(opts), lim = as.double(lim),
+    Pv = as.double(Pv), Ev = as.double(Ev), seed_in = seed.in
+  )
 
-  P = out$Pv[1]
-  E = out$Ev[1]
-  if(use.reordering == "limits") {
-    out$Pv[1:(dim(L)[1]-max.size)] = out$Pv[dim(L)[1]-max.size+1]
-    out$Ev[1:(dim(L)[1]-max.size)] = out$Ev[dim(L)[1]-max.size+1]
-    P = out$Pv[1]
-    E = out$Ev[1]
-  } else if(use.reordering == "sparsity") {
-    out$Pv = out$Pv[ireo]
-    out$Ev = out$Ev[ireo]
+  P <- out$Pv[1]
+  E <- out$Ev[1]
+  if (use.reordering == "limits") {
+    out$Pv[1:(dim(L)[1] - max.size)] <- out$Pv[dim(L)[1] - max.size + 1]
+    out$Ev[1:(dim(L)[1] - max.size)] <- out$Ev[dim(L)[1] - max.size + 1]
+    P <- out$Pv[1]
+    E <- out$Ev[1]
+  } else if (use.reordering == "sparsity") {
+    out$Pv <- out$Pv[ireo]
+    out$Ev <- out$Ev[ireo]
   }
   return(list(Pv = out$Pv, Ev = out$Ev, P = P, E = E))
 }

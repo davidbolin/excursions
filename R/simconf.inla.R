@@ -54,178 +54,218 @@
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
 #' @details See \code{\link{simconf}} for details.
-#' 
-#' 
+#'
+#'
 #' @note This function requires the \code{INLA} package, which is not a CRAN package.
 #' See \url{https://www.r-inla.org/download-install} for easy installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
 #' from global temperature}, Statistica Sinica, vol 25, pp 351-367.
-#' 
+#'
 #' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #' @seealso \code{\link{simconf}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}
 #' @examples
 #' \dontrun{
 #' if (require.nowarnings("INLA")) {
-#' n <- 10
-#' x <- seq(0, 6, length.out=n)
-#' y <- sin(x) + rnorm(n)
-#' mu <- 1:n
-#' result <- inla(y ~ 1 + f(mu, model='rw2'),
-#'                data=list(y=y, mu=mu), verbose=FALSE,
-#'                control.compute = list(config=TRUE,
-#'                                       return.marginals.predictor = TRUE),
-#'                num.threads = "1:1")
+#'   n <- 10
+#'   x <- seq(0, 6, length.out = n)
+#'   y <- sin(x) + rnorm(n)
+#'   mu <- 1:n
+#'   result <- inla(y ~ 1 + f(mu, model = "rw2"),
+#'     data = list(y = y, mu = mu), verbose = FALSE,
+#'     control.compute = list(
+#'       config = TRUE,
+#'       return.marginals.predictor = TRUE
+#'     ),
+#'     num.threads = "1:1"
+#'   )
 #'
-#' res <- simconf.inla(result, name='mu', alpha = 0.05, max.threads = 1)
+#'   res <- simconf.inla(result, name = "mu", alpha = 0.05, max.threads = 1)
 #'
-#' plot(result$summary.random$mu$mean,ylim=c(-2,2))
-#' lines(res$a)
-#' lines(res$b)
-#' lines(res$a.marginal,col="2")
-#' lines(res$b.marginal,col="2")
-#' }}
-
+#'   plot(result$summary.random$mu$mean, ylim = c(-2, 2))
+#'   lines(res$a)
+#'   lines(res$b)
+#'   lines(res$a.marginal, col = "2")
+#'   lines(res$b.marginal, col = "2")
+#' }
+#' }
+#'
 simconf.inla <- function(result.inla,
                          stack,
-                         name=NULL,
-                         tag=NULL,
-                         ind=NULL,
+                         name = NULL,
+                         tag = NULL,
+                         ind = NULL,
                          alpha,
-                         method="NI",
-                         n.iter=10000,
-                         verbose=0,
+                         method = "NI",
+                         n.iter = 10000,
+                         verbose = 0,
                          link = FALSE,
-                         max.threads=0,
-                         seed=NULL,
-                         inla.sample=TRUE)
-{
-  if (!requireNamespace("INLA", quietly=TRUE))
-    stop('This function requires the INLA package (see www.r-inla.org/download-install)')
-  if(missing(result.inla))
-    stop('Must supply INLA result object')
+                         max.threads = 0,
+                         seed = NULL,
+                         inla.sample = TRUE) {
+  if (!requireNamespace("INLA", quietly = TRUE)) {
+    stop("This function requires the INLA package (see www.r-inla.org/download-install)")
+  }
+  if (missing(result.inla)) {
+    stop("Must supply INLA result object")
+  }
 
-  if(missing(alpha))
-    stop('Must supply error probability alpha')
+  if (missing(alpha)) {
+    stop("Must supply error probability alpha")
+  }
 
-  if(result.inla$.args$control.compute$config==FALSE)
-    stop('INLA result must be calculated using control.compute$config=TRUE')
+  if (result.inla$.args$control.compute$config == FALSE) {
+    stop("INLA result must be calculated using control.compute$config=TRUE")
+  }
 
-  n = length(result.inla$misc$configs$config[[1]]$mean)
+  n <- length(result.inla$misc$configs$config[[1]]$mean)
 
-  if(!missing(ind))
+  if (!missing(ind)) {
     ind <- private.as.vector(ind)
+  }
 
 
-  #Get indices for the component of interest in the configs
-  ind.stack <- inla.output.indices(result.inla, name=name, stack=stack, tag=tag)
-  n.out = length(ind.stack)
-  #Index vector for the nodes in the component of interest
+  # Get indices for the component of interest in the configs
+  ind.stack <- inla.output.indices(result.inla, name = name, stack = stack, tag = tag)
+  n.out <- length(ind.stack)
+  # Index vector for the nodes in the component of interest
   ind.int <- seq_len(n.out)
 
-  #ind is assumed to contain indices within the component of interest
-  if(!missing(ind) && !is.null(ind)){
+  # ind is assumed to contain indices within the component of interest
+  if (!missing(ind) && !is.null(ind)) {
     ind.int <- ind.int[ind]
     ind.stack <- ind.stack[ind]
   }
-  ind = ind.stack
+  ind <- ind.stack
 
-  links = NULL
-  if(link){
-    links = result.inla$misc$linkfunctions$names[
-                                            result.inla$misc$linkfunctions$link]
-    links = links[ind]
+  links <- NULL
+  if (link) {
+    links <- result.inla$misc$linkfunctions$names[
+      result.inla$misc$linkfunctions$link
+    ]
+    links <- links[ind]
   }
 
-  n.theta = result.inla$misc$configs$nconfig
+  n.theta <- result.inla$misc$configs$nconfig
 
-  if(method=="EB") {
-    for(i in 1:n.theta){
-      config = private.get.config(result.inla,i)
-      if(config$lp == 0)
+  if (method == "EB") {
+    for (i in 1:n.theta) {
+      config <- private.get.config(result.inla, i)
+      if (config$lp == 0) {
         break
+      }
     }
-    res <- simconf(alpha = alpha, mu = config$mu, Q = config$Q,
-                   vars = config$vars, n.iter=n.iter, ind=ind,
-                   verbose=verbose, max.threads=max.threads, seed=seed)
-    res$meta$call = match.call()
-    return(private.simconf.link(res,links,link))
-
-
-  } else if(method=="NI") {
+    res <- simconf(
+      alpha = alpha, mu = config$mu, Q = config$Q,
+      vars = config$vars, n.iter = n.iter, ind = ind,
+      verbose = verbose, max.threads = max.threads, seed = seed
+    )
+    res$meta$call <- match.call()
+    return(private.simconf.link(res, links, link))
+  } else if (method == "NI") {
     mu <- Q <- vars <- list()
-    w <- rep(0,n.theta)
-    for(i in 1:n.theta){
-      config = private.get.config(result.inla,i)
-      mu[[i]] = config$mu
-      Q[[i]] = config$Q
-      vars[[i]] = config$vars
-      w[i] = config$lp
+    w <- rep(0, n.theta)
+    for (i in 1:n.theta) {
+      config <- private.get.config(result.inla, i)
+      mu[[i]] <- config$mu
+      Q[[i]] <- config$Q
+      vars[[i]] <- config$vars
+      w[i] <- config$lp
     }
-    w = exp(w)/sum(exp(w))
-    if(inla.sample){
-      s = suppressWarnings(INLA::inla.posterior.sample(n.iter,result.inla))
-      samp <- matrix(0,n.iter,length(ind))
+    w <- exp(w) / sum(exp(w))
+    if (inla.sample) {
+      s <- suppressWarnings(INLA::inla.posterior.sample(n.iter, result.inla))
+      samp <- matrix(0, n.iter, length(ind))
 
-      for(i in seq_len(n.iter)){
-        samp[i,] <- s[[i]]$latent[ind]
+      for (i in seq_len(n.iter)) {
+        samp[i, ] <- s[[i]]$latent[ind]
       }
 
-      mu.m <- matrix(0,n.theta,length(ind))
-      sd.m <- matrix(0,n.theta,length(ind))
-      for(k in seq_len(n.theta)){
-        mu.m[k,] = mu[[k]][ind]
-        sd.m[k,] = sqrt(vars[[k]][ind])
+      mu.m <- matrix(0, n.theta, length(ind))
+      sd.m <- matrix(0, n.theta, length(ind))
+      for (k in seq_len(n.theta)) {
+        mu.m[k, ] <- mu[[k]][ind]
+        sd.m[k, ] <- sqrt(vars[[k]][ind])
       }
-      limits = c(-1000,1000)
-      a.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = alpha/2,
-                                                   mu = mu.m[,i], sd = sd.m[,i],
-                                                   w = w, br = limits))
+      limits <- c(-1000, 1000)
+      a.marg <- sapply(seq_len(length(ind)), function(i) {
+        Fmix_inv(
+          p = alpha / 2,
+          mu = mu.m[, i], sd = sd.m[, i],
+          w = w, br = limits
+        )
+      })
 
-      b.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = 1-alpha/2,
-                                                   mu = mu.m[,i], sd = sd.m[,i],
-                                                   w = w, br = limits))
-      while(min(a.marg) == limits[1] || max(b.marg) == limits[2])
-      {
-        limits = 2*limits
-        a.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = alpha/2,
-                                                   mu = mu.m[,i], sd = sd.m[,i],
-                                                   w = w, br = limits))
+      b.marg <- sapply(seq_len(length(ind)), function(i) {
+        Fmix_inv(
+          p = 1 - alpha / 2,
+          mu = mu.m[, i], sd = sd.m[, i],
+          w = w, br = limits
+        )
+      })
+      while (min(a.marg) == limits[1] || max(b.marg) == limits[2]) {
+        limits <- 2 * limits
+        a.marg <- sapply(seq_len(length(ind)), function(i) {
+          Fmix_inv(
+            p = alpha / 2,
+            mu = mu.m[, i], sd = sd.m[, i],
+            w = w, br = limits
+          )
+        })
 
-        b.marg = sapply(seq_len(length(ind)), function(i) Fmix_inv(p= -alpha/2,
-                                                   mu = mu.m[,i], sd = sd.m[,i],
-                                                   w = w, br = limits))
+        b.marg <- sapply(seq_len(length(ind)), function(i) {
+          Fmix_inv(
+            p = -alpha / 2,
+            mu = mu.m[, i], sd = sd.m[, i],
+            w = w, br = limits
+          )
+        })
       }
 
-      r.o = optimize(fmix.samp.opt,interval = c(0,alpha), mu=mu.m, alpha=alpha,
-                     sd=sd.m, w=w, limits = limits,samples=samp)
+      r.o <- optimize(fmix.samp.opt,
+        interval = c(0, alpha), mu = mu.m, alpha = alpha,
+        sd = sd.m, w = w, limits = limits, samples = samp
+      )
 
-      a = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = r.o$minimum/2,
-                                              mu = mu.m[,i], sd = sd.m[,i],
-                                              w = w, br = limits))
+      a <- sapply(seq_len(length(ind)), function(i) {
+        Fmix_inv(
+          p = r.o$minimum / 2,
+          mu = mu.m[, i], sd = sd.m[, i],
+          w = w, br = limits
+        )
+      })
 
-      b = sapply(seq_len(length(ind)), function(i) Fmix_inv(p = 1-r.o$minimum/2,
-                                              mu = mu.m[,i], sd = sd.m[,i],
-                                              w = w, br = limits))
+      b <- sapply(seq_len(length(ind)), function(i) {
+        Fmix_inv(
+          p = 1 - r.o$minimum / 2,
+          mu = mu.m[, i], sd = sd.m[, i],
+          w = w, br = limits
+        )
+      })
 
-      res = list(a = a, b = b, a.marginal = a.marg, b.marginal = b.marg,
-                 mean = mu, vars = vars)
+      res <- list(
+        a = a, b = b, a.marginal = a.marg, b.marginal = b.marg,
+        mean = mu, vars = vars
+      )
 
-      res$meta = list(calculation="simconf",
-                      alpha=alpha,
-                      n.iter=n.iter,
-                      ind=ind,
-                      call = match.call())
+      res$meta <- list(
+        calculation = "simconf",
+        alpha = alpha,
+        n.iter = n.iter,
+        ind = ind,
+        call = match.call()
+      )
       class(res) <- "excurobj"
 
-      return(private.simconf.link(res,links,link))
-
+      return(private.simconf.link(res, links, link))
     } else {
-      res = simconf.mixture(alpha = alpha, mu = mu, Q = Q, vars = vars,
-                            w = w, n.iter=n.iter, ind=ind, verbose=verbose,
-                            max.threads=max.threads, seed=seed)
-      res$meta$call = match.call()
-    return(private.simconf.link(res,links,link))
+      res <- simconf.mixture(
+        alpha = alpha, mu = mu, Q = Q, vars = vars,
+        w = w, n.iter = n.iter, ind = ind, verbose = verbose,
+        max.threads = max.threads, seed = seed
+      )
+      res$meta$call <- match.call()
+      return(private.simconf.link(res, links, link))
     }
   } else {
     stop("Method must be EB or NI")

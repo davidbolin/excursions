@@ -57,37 +57,37 @@ only Empirical Bayes (EB) and Quantile corrections (QC) are supported.}
      \item{'F': }{TRUE/FALSE indicating whether the contour map function
      should be computed (default TRUE)}
      \item{'measures': }{A list with the quality measures to compute ("P0",
-     "P1", "P2") or corresponding bounds based only on the marginal 
+     "P1", "P2") or corresponding bounds based only on the marginal
      probabilities ("P0-bound", "P1-bound", "P2-bound")}
      }}
 
 \item{alpha}{Maximal error probability in contour map function (default=1)}
 
-\item{F.limit}{The limit value for the computation of the F function. F is 
+\item{F.limit}{The limit value for the computation of the F function. F is
 set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.}
 
-\item{n.iter}{Number or iterations in the MC sampler that is used for 
+\item{n.iter}{Number or iterations in the MC sampler that is used for
 calculating the quantities in \code{compute}. The default value is 10000.}
 
 \item{verbose}{Set to TRUE for verbose mode (optional)}
 
-\item{max.threads}{Decides the number of threads the program can use. Set to 
+\item{max.threads}{Decides the number of threads the program can use. Set to
 0 for using the maximum number of threads allowed by the system (default).}
 
-\item{compressed}{If INLA is run in compressed mode and a part of the linear 
-predictor is to be used, then only add the relevant part. Otherwise the 
+\item{compressed}{If INLA is run in compressed mode and a part of the linear
+predictor is to be used, then only add the relevant part. Otherwise the
 entire linear predictor is added internally (default TRUE).}
 
 \item{seed}{Random seed (optional).}
 
-\item{ind}{If only a part of a component should be used in the calculations, 
+\item{ind}{If only a part of a component should be used in the calculations,
 this argument specifies the indices for that part (optional).}
 
-\item{...}{Additional arguments to the contour map function. See the 
+\item{...}{Additional arguments to the contour map function. See the
 documentation for \code{contourmap} for details.}
 }
 \value{
-\code{contourmap.inla} returns an object of class "excurobj" with the 
+\code{contourmap.inla} returns an object of class "excurobj" with the
 same elements as returned by \code{contourmap}.
 }
 \description{
@@ -95,86 +95,99 @@ An interface to the \code{contourmap} function for latent Gaussian models
 calculated using the INLA method.
 }
 \details{
-The INLA approximation of the quantity of interest is in general a weighted 
-sum of Gaussian distributions with different parameters. If 
-\code{method = 'EB'} is used, then the contour map is computed for the mean 
-of the component in the weighted sum that has parameters with the highest 
-likelihood. If on the other hand \code{method='QC'}, then the contour map is 
-computed for the posterior mean reported by INLA. If the EB method also is 
-used in INLA, then this reported posterior mean is equal to the mean of the 
+The INLA approximation of the quantity of interest is in general a weighted
+sum of Gaussian distributions with different parameters. If
+\code{method = 'EB'} is used, then the contour map is computed for the mean
+of the component in the weighted sum that has parameters with the highest
+likelihood. If on the other hand \code{method='QC'}, then the contour map is
+computed for the posterior mean reported by INLA. If the EB method also is
+used in INLA, then this reported posterior mean is equal to the mean of the
 component with the highest likelihood. Therefore, \code{method='EB'} is
-appropriate if the EB method also is used in INLA, but \code{method='QC'} 
+appropriate if the EB method also is used in INLA, but \code{method='QC'}
 should be used in general.
 
 The \code{n.levels} contours in the contour map are are placed according
-to the argument \code{type}. A number of quality measures can be computed 
-based based on the specified contour map and the distribution of the 
-component of interest. What should be computed is specified using the 
-\code{compute} argument. For details on these quanties, see the reference 
+to the argument \code{type}. A number of quality measures can be computed
+based based on the specified contour map and the distribution of the
+component of interest. What should be computed is specified using the
+\code{compute} argument. For details on these quanties, see the reference
 below.
 }
 \note{
-This function requires the \code{INLA} package, which is not a CRAN 
-package.  See \url{https://www.r-inla.org/download-install} for easy 
+This function requires the \code{INLA} package, which is not a CRAN
+package.  See \url{https://www.r-inla.org/download-install} for easy
 installation instructions.
 }
 \examples{
 \dontrun{
 if (require.nowarnings("INLA")) {
-#Generate mesh and SPDE model
-n.lattice <- 10 # increase for more interesting, but slower, examples
-x <- seq(from = 0, to = 10, length.out = n.lattice)
-lattice <- inla.mesh.lattice(x = x, y = x)
-mesh <- inla.mesh.create(lattice = lattice, extend = FALSE, refine = FALSE)
-spde <- inla.spde2.matern(mesh, alpha = 2)
-#Generate an artificial sample
-sigma2.e <- 0.01
-n.obs <- 100
-obs.loc <- cbind(runif(n.obs) * diff(range(x)) + min(x),
-                 runif(n.obs) * diff(range(x)) + min(x))
-Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
-x <- inla.qsample(Q = Q)
-A <- inla.spde.make.A(mesh = mesh, loc = obs.loc)
-Y <- as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
+  # Generate mesh and SPDE model
+  n.lattice <- 10 # increase for more interesting, but slower, examples
+  x <- seq(from = 0, to = 10, length.out = n.lattice)
+  lattice <- fmesher::fm_lattice_2d(x = x, y = x)
+  mesh <- fmesher::fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+  spde <- inla.spde2.matern(mesh, alpha = 2)
 
-## Estimate the parameters using INLA
-mesh.index = inla.spde.make.index(name = "field", n.spde = spde$n.spde)
-ef <- list(c(mesh.index, list(Intercept = 1)))
+  # Generate an artificial sample
+  sigma2.e <- 0.01
+  n.obs <- 100
+  obs.loc <- cbind(
+    runif(n.obs) * diff(range(x)) + min(x),
+    runif(n.obs) * diff(range(x)) + min(x)
+  )
+  Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
+  x <- inla.qsample(Q = Q)
+  A <- fmesher::fm_basis(mesh = mesh, loc = obs.loc)
+  Y <- as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
 
-s.obs <- inla.stack(data = list(y = Y), A = list(A), effects = ef, tag = "obs")
-s.pre <- inla.stack(data = list(y = NA), A = list(1), effects = ef,tag = "pred")
-stack <- inla.stack(s.obs,s.pre)
-formula = y ~ -1 + Intercept + f(field, model = spde)
-result <- inla(formula = formula, family = "normal", data = inla.stack.data(stack),
-             control.predictor = list(A = inla.stack.A(stack),
-                                      compute = TRUE),
-             control.compute = list(config = TRUE,
-                                    return.marginals.predictor = TRUE),
-             num.threads = 1)
+  ## Estimate the parameters using INLA
+  mesh.index <- inla.spde.make.index(name = "field", n.spde = spde$n.spde)
+  ef <- list(c(mesh.index, list(Intercept = 1)))
 
-## Calculate contour map with two levels
-map = contourmap.inla(result, stack = stack, tag = 'pred',
-                     n.levels = 2, alpha=0.1, F.limit = 0.1,
-                     max.threads = 1)
+  s.obs <- inla.stack(data = list(y = Y), A = list(A), effects = ef, tag = "obs")
+  s.pre <- inla.stack(data = list(y = NA), A = list(1), effects = ef, tag = "pred")
+  stack <- inla.stack(s.obs, s.pre)
+  formula <- y ~ -1 + Intercept + f(field, model = spde)
+  result <- inla(
+    formula = formula, family = "normal", data = inla.stack.data(stack),
+    control.predictor = list(
+      A = inla.stack.A(stack),
+      compute = TRUE
+    ),
+    control.compute = list(
+      config = TRUE,
+      return.marginals.predictor = TRUE
+    ),
+    num.threads = 1
+  )
 
-## Plot the results
-cols = contourmap.colors(map, col=heat.colors(100, 1),
-                        credible.col = grey(0.5, 1))
-image(matrix(map$M[mesh$idx$lattice], n.lattice, n.lattice), col = cols)
+  ## Calculate contour map with two levels
+  map <- contourmap.inla(result,
+    stack = stack, tag = "pred",
+    n.levels = 2, alpha = 0.1, F.limit = 0.1,
+    max.threads = 1
+  )
+
+  ## Plot the results
+  cols <- contourmap.colors(map,
+    col = heat.colors(100, 1),
+    credible.col = grey(0.5, 1)
+  )
+  image(matrix(map$M[mesh$idx$lattice], n.lattice, n.lattice), col = cols)
 }
 }
 }
 \references{
-Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the 
-uncertainty of contour maps}, Journal of Computational and Graphical 
+Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the
+uncertainty of contour maps}, Journal of Computational and Graphical
 Statistics, 26:3, 513-524.
 
-Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion 
-Sets and Related Quantities Using excursions}, Journal of Statistical 
+Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion
+Sets and Related Quantities Using excursions}, Journal of Statistical
 Software, vol 86, no 1, pp 1-20.
 }
 \seealso{
-\code{\link{contourmap}}, \code{\link{contourmap.mc}}, 
+\code{\link{contourmap}}, \code{\link{contourmap.mc}},
 \code{\link{contourmap.colors}}
 }
 \author{

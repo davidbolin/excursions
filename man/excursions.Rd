@@ -80,24 +80,24 @@ excursions(
 \item{meta }{A list containing various information about the calculation.}
 }
 \description{
-\code{excursions} is one of the main functions in the package with the same name. 
+\code{excursions} is one of the main functions in the package with the same name.
 The function is used for calculating excursion sets, contour credible regions,
-and contour avoiding sets for latent Gaussian models. Details on the function and the 
+and contour avoiding sets for latent Gaussian models. Details on the function and the
 package are given in the sections below.
 }
 \details{
-The estimation of the region is done using sequential importance sampling with 
-\code{n.iter} samples. The procedure requires computing the marginal variances of 
-the field, which should be supplied if available. If not, they are computed using 
-the Cholesky factor of the precision matrix. The cost of this step can therefore be 
+The estimation of the region is done using sequential importance sampling with
+\code{n.iter} samples. The procedure requires computing the marginal variances of
+the field, which should be supplied if available. If not, they are computed using
+the Cholesky factor of the precision matrix. The cost of this step can therefore be
 reduced by supplying the Cholesky factor if it is available.
 
-The latent structure in the latent Gaussian model can be handled in several different 
+The latent structure in the latent Gaussian model can be handled in several different
 ways. The default strategy is the EB method, which is
 exact for problems with Gaussian posterior distributions. For problems with
-non-Gaussian posteriors, the QC method can be used for improved results. In order to use 
-the QC method, the true marginal excursion probabilities must be supplied using the 
-argument \code{rho}. 
+non-Gaussian posteriors, the QC method can be used for improved results. In order to use
+the QC method, the true marginal excursion probabilities must be supplied using the
+argument \code{rho}.
 Other more
 complicated methods for handling non-Gaussian posteriors must be implemented manually
 unless \code{INLA} is used to fit the model. If the model is fitted using \code{INLA},
@@ -114,49 +114,49 @@ random processes and fields.
 
 \strong{Excursion sets, contour credibility regions, and contour avoiding regions}
 
-The main functions for computing excursion sets, contour credibility regions, and 
-contour avoiding regions are 
+The main functions for computing excursion sets, contour credibility regions, and
+contour avoiding regions are
 \itemize{
 \item{\code{\link{excursions}} }{The main function for Gaussian models.}
 \item{\code{\link{excursions.inla}} }{Interface for latent Gaussian models estimated using INLA.}
 \item{\code{\link{excursions.mc}} }{Function for analyzing models that have been
 estimated using Monte Carlo methods.}
 }
-The output from the functions above provides a discrete domain estimate of the regions. 
-Based on this estimate, the function \code{\link{continuous}} computes a continuous 
+The output from the functions above provides a discrete domain estimate of the regions.
+Based on this estimate, the function \code{\link{continuous}} computes a continuous
 domain estimate.
 
- The main reference for these functions is Bolin, D. and Lindgren, F. (2015) 
- \emph{Excursion and contour uncertainty regions for latent Gaussian models}, 
- JRSS-series B, vol 77, no 1, pp 85-106. 
- 
+ The main reference for these functions is Bolin, D. and Lindgren, F. (2015)
+ \emph{Excursion and contour uncertainty regions for latent Gaussian models},
+ JRSS-series B, vol 77, no 1, pp 85-106.
+
 \strong{Contour map quality measures}
 
-The package provides several functions for computing contour maps and their quality 
-measures. These quality measures can be used to decide on an appropriate number of 
+The package provides several functions for computing contour maps and their quality
+measures. These quality measures can be used to decide on an appropriate number of
 contours to use for the contour map.
 
 The main functions for computing contour maps and the corresponding quality measures
-are 
+are
 \itemize{
 \item{\code{\link{contourmap}} }{The main function for Gaussian models.}
-\item{\code{\link{contourmap.inla}} }{Interface for latent Gaussian models estimated 
+\item{\code{\link{contourmap.inla}} }{Interface for latent Gaussian models estimated
 using INLA.}
 \item{\code{\link{contourmap.mc}} }{Function for analyzing models that have been
 estimated using Monte Carlo methods.}
 }
 Other noteworthy functions relating to contourmaps are \code{\link{tricontour}} and
 \code{\link{tricontourmap}}, which compute contour curves for functinos defined on
-triangulations, as well as \code{\link{contourmap.colors}} which can be used to 
-compute appropriate colors for displaying contour maps. 
+triangulations, as well as \code{\link{contourmap.colors}} which can be used to
+compute appropriate colors for displaying contour maps.
 
-The main reference for these functions is Bolin, D. and Lindgren, F. (2017) 
-\emph{Quantifying the uncertainty of contour maps}, Journal of Computational and 
+The main reference for these functions is Bolin, D. and Lindgren, F. (2017)
+\emph{Quantifying the uncertainty of contour maps}, Journal of Computational and
 Graphical Statistics, 26:3, 513-524.
 
 \strong{Simultaneous confidence bands}
 
-The main functions for computing simultaneous confidence bands are 
+The main functions for computing simultaneous confidence bands are
 \itemize{\item{\code{\link{simconf}} }{Function for analyzing Gaussian models.}
 \item{\code{\link{simconf.inla}} }{Function for analyzing latent Gaussian models
 estimated using INLA.}
@@ -165,27 +165,33 @@ Carlo methods.}
 \item{\code{\link{simconf.mixture}} }{Function for analyzing Gaussian mixture models.}
 }
 
-The main reference for these functions is Bolin et al. (2015) 
+The main reference for these functions is Bolin et al. (2015)
 \emph{Statistical prediction of global sea level
 from global temperature}, Statistica Sinica, Vol 25, pp 351-367.
 }
 
 \examples{
 ## Create a tridiagonal precision matrix
-n = 21
-Q.x = sparseMatrix(i=c(1:n, 2:n), j=c(1:n, 1:(n-1)), x=c(rep(1, n), rep(-0.1, n-1)),
-                   dims=c(n, n), symmetric=TRUE)
+n <- 21
+Q.x <- sparseMatrix(
+  i = c(1:n, 2:n), j = c(1:n, 1:(n - 1)), x = c(rep(1, n), rep(-0.1, n - 1)),
+  dims = c(n, n), symmetric = TRUE
+)
 ## Set the mean value function
-mu.x = seq(-5, 5, length=n)
+mu.x <- seq(-5, 5, length = n)
 
 ## calculate the level 0 positive excursion function
-res.x = excursions(alpha=1, u=0, mu=mu.x, Q=Q.x, 
-                   type='>', verbose=1, max.threads=2)
-                   
+res.x <- excursions(
+  alpha = 1, u = 0, mu = mu.x, Q = Q.x,
+  type = ">", verbose = 1, max.threads = 2
+)
+
 ## Plot the excursion function and the marginal excursion probabilities
-plot(res.x$F, type="l", 
-     main='Excursion function (black) and marginal probabilites (red)')
-lines(res.x$rho, col=2)
+plot(res.x$F,
+  type = "l",
+  main = "Excursion function (black) and marginal probabilites (red)"
+)
+lines(res.x$rho, col = 2)
 }
 \references{
 Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
