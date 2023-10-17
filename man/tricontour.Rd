@@ -80,7 +80,7 @@ tricontourmap(
   loc,
   type = c("+", "-"),
   tol = 1e-07,
-  output = c("sp", "inla.mesh.segment"),
+  output = c("sp", "fm", "inla.mesh.segment"),
   ...
 )
 }
@@ -110,8 +110,7 @@ where \eqn{u_1 \leq z < u_2}, for \code{-} the regions fulfil \eqn{u_1
 \item{tol}{tolerance for determining if the value at a vertex lies on a level.}
 
 \item{output}{The format of the generated output.  Implemented options
-are \code{"sp"} (default) and \code{"inla.mesh.segment"} (requires the
-                                                          INLA package).}
+are \code{"sp"} (default) and \code{"fm"} (and deprecated \code{"inla.mesh.segment"}).}
 }
 \value{
 For \code{tricontour}, a list some of the same fields that

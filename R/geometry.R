@@ -522,9 +522,6 @@ outline.on.mesh <- function(z, mesh, complement=FALSE)
 
 submesh.grid <- function(z, grid=NULL)
 {
-  if (!requireNamespace("INLA", quietly=TRUE)) {
-    stop("The 'INLA' package is needed.")
-  }
   outline <- outline.on.grid(z, grid)
   fmesher::fm_rcdt_2d_inla(loc=grid$loc,
                            boundary=as.fm_segm.outline(outline),
@@ -1138,27 +1135,25 @@ tricontourmap.matrix <-
 
 #' @rdname tricontour
 #' @param output The format of the generated output.  Implemented options
-#'   are \code{"sp"} (default) and \code{"inla.mesh.segment"} (requires the
-#'                                                             INLA package).
+#'   are \code{"sp"} (default) and \code{"fm"} (and deprecated \code{"inla.mesh.segment"}).
 #' @importFrom fmesher fm_segm                                                           
 #' @export
 tricontourmap.list <-
   function(x, z, nlevels = 10,
            levels = pretty(range(z, na.rm = TRUE), nlevels),
            loc, type=c("+", "-"), tol=1e-7,
-           output=c("sp", "inla.mesh.segment"), ...)
+           output=c("sp", "fm", "inla.mesh.segment"), ...)
 {
   type <- match.arg(type)
   output <- match.arg(output)
+  if (output == "inla.mesh.segment") {
+    output <- "fm"
+  }
   nlevels <- length(levels)
 
   if (output == "sp") {
     if (!requireNamespace("sp", quietly=TRUE)) {
       stop("The 'sp' package is needed.")
-    }
-  } else {
-    if (!requireNamespace("INLA", quietly=TRUE)) {
-      stop("The 'INLA' package is needed.")
     }
   }
 
@@ -1912,12 +1907,8 @@ continuous <- function(ex,
               M=M, F.geometry=interpolated$F.geometry)
 
   if (!is.null(ex$P0)) {
-    if (!requireNamespace("INLA", quietly=TRUE)) {
-      warning("The 'INLA' package is required for P0 calculations.")
-    } else {
-      out$P0 <- calc.continuous.P0(interpolated$F, interpolated$G,
-                                   interpolated$F.geometry, method)
-    }
+    out$P0 <- calc.continuous.P0(interpolated$F, interpolated$G,
+                                 interpolated$F.geometry, method)
   }
 
   out
