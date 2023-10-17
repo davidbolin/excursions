@@ -272,14 +272,14 @@ excursions.inla <- function(result.inla,
   }
 
   if (random.effect) {
-    rho.ind <- sapply(1:length(ind), function(j) {
+    rho.ind <- sapply(seq_along(ind), function(j) {
       inla.get.marginal(ind.int[j],
         u = u, result = result.inla,
         effect.name = name, u.link = u.link, type = type
       )
     })
   } else {
-    rho.ind <- sapply(1:length(ind), function(j) {
+    rho.ind <- sapply(seq_along(ind), function(j) {
       inla.get.marginal(ind.original[j],
         u = u, result = result.inla, u.link = u.link, type = type
       )
@@ -371,14 +371,14 @@ excursions.inla <- function(result.inla,
       # latent field once, for fixed hyperparameters, single threads is probably ok.
 
       if (random.effect) {
-        p1.i <- sapply(1:length(ind), function(j) {
+        p1.i <- sapply(seq_along(ind), function(j) {
           inla.get.marginal(ind.int[j],
             u = u, result = r.i, effect.name = name,
             u.link = u.link, type = type
           )
         })
       } else {
-        p1.i <- sapply(1:length(ind), function(j) {
+        p1.i <- sapply(seq_along(ind), function(j) {
           inla.get.marginal(ind[j],
             u = u, result = result.inla,
             u.link = u.link, type = type

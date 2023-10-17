@@ -217,7 +217,7 @@ contourmap <- function(mu,
       stop("precision matrix must be supplied if measure should be calculated")
     }
 
-    for (i in 1:length(measure)) {
+    for (i in seq_along(measure)) {
       if (measure[i] == "P1") {
         if (n.levels > 1) {
           if (verbose) cat("Calculating P1-measure\n")

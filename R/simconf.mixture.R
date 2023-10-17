@@ -140,8 +140,7 @@ simconf.mixture <- function(alpha,
     Q.chol <- list()
     mu.m <- matrix(0, K, n)
     sd.m <- matrix(0, K, n)
-    for (k in seq_len(K))
-    {
+    for (k in seq_len(K)) {
       Q.chol[[k]] <- chol(Q[[k]])
       mu.m[k, ] <- mu[[k]]
       if (compute.vars) {
@@ -225,8 +224,7 @@ simconf.mixture <- function(alpha,
     Q.chol <- list()
     mu.m <- matrix(0, K, n)
     sd.m <- matrix(0, K, n)
-    for (k in seq_len(K))
-    {
+    for (k in seq_len(K)) {
       Q.chol[[k]] <- private.Cholesky(Q[[k]][reo, reo], perm = FALSE)$R
       mu.m[k, ] <- mu[[k]][reo]
       if (compute.vars) {

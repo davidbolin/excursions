@@ -294,13 +294,13 @@ contourmap.inla <- function(result.inla,
   F.computed <- FALSE
   if (!is.null(measure)) {
     rho <- matrix(0, length(config$mu), 2)
-    for (i in 1:length(measure)) {
+    for (i in seq_along(measure)) {
       # compute limits
       limits <- excursions.limits(lp = cm, mu = config$mu, measure = measure[i])
       # if QC, update limits
       if (method == "QC") {
         if (random.effect) {
-          rho.ind <- sapply(1:length(ind), function(j) {
+          rho.ind <- sapply(seq_along(ind), function(j) {
             inla.get.marginal.int(ind.int[j],
               a = limits$a[ind[j]],
               b = limits$b[ind[j]],
@@ -309,7 +309,7 @@ contourmap.inla <- function(result.inla,
             )
           })
         } else {
-          rho.ind <- sapply(1:length(ind), function(j) {
+          rho.ind <- sapply(seq_along(ind), function(j) {
             inla.get.marginal.int(ind.original[j],
               a = limits$a[ind[j]],
               b = limits$b[ind[j]],

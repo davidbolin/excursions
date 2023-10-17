@@ -51,7 +51,7 @@ test_that("stack extraction", {
   )
   ind3 <- tmp$index
   result <- tmp$result
-  expect_equal(ind3, 1:length(c(6, 7, 8, 9, 10, 11, 12)), tolerance = 1e-7)
+  expect_equal(ind3, seq_along(c(6, 7, 8, 9, 10, 11, 12)), tolerance = 1e-7)
   for (i in 1:result$misc$configs$nconfig) {
     config3 <- excursions:::private.get.config(result, i)
     if (config3$lp == 0) {

@@ -702,7 +702,7 @@ print.summary.excurobj <- function(x, ...) {
     if (is.null(x$measures)) {
       cat("none\n")
     } else {
-      for (i in 1:length(x$measures)) {
+      for (i in seq_along(x$measures)) {
         cat(names(x$measures)[i], " = ", x$measures[[i]], "\n")
       }
     }

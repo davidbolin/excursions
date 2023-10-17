@@ -134,7 +134,7 @@ contourmap.mc <- function(samples,
 
   F.calculated <- FALSE
   if (!is.null(measure)) {
-    for (i in 1:length(measure)) {
+    for (i in seq_along(measure)) {
       if (measure[i] == "P1") {
         if (verbose) cat("Calculating P1-measure\n")
         lp$P1 <- Pmeasure.mc(lp = lp, mu = mu, X = samples, ind = ind, type = 1)

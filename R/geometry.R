@@ -33,7 +33,7 @@ contour.segment.pixels <- function(c.x, c.y,
   } else if (d.y < 0) {
     ## Flip ordering of segment
     idx <- contour.segment.pixels(c.x[2:1], c.y[2:1], edge.x, edge.y, TRUE)
-    idx <- list(x = idx$x[length(idx$x):1], y = idx$y[length(idx$y):1])
+    idx <- list(x = rev(idx$x), y = rev(idx$y))
   } else {
     idx <- list(x = numeric(0), y = numeric(0))
     ## |d.x| >= d.y >= 0
@@ -323,9 +323,9 @@ connect.segments <- function(segment.set,
 
   if (!ccw) {
     for (k in seq_along(loops)) {
-      loops[[k]] <- loops[[k]][length(loops[[k]]):1]
-      loops.seg[[k]] <- loops.seg[[k]][length(loops.seg[[k]]):1]
-      grp[[k]] <- grp[[k]][length(grp[[k]]):1]
+      loops[[k]] <- rev(loops[[k]])
+      loops.seg[[k]] <- rev(loops.seg[[k]])
+      grp[[k]] <- rev(grp[[k]])
     }
   }
 
@@ -1123,8 +1123,8 @@ tricontour.list <- function(x, z, nlevels = 10,
       the.loc.idx <- e.newv[edge, the.levels]
       the.levels <- c(min(the.levels) - 1L, the.levels) * 2L + 1L
       if (z[ev[1]] > z[ev[2]]) {
-        the.loc.idx <- the.loc.idx[length(the.loc.idx):1]
-        the.levels <- the.levels[length(the.levels):1]
+        the.loc.idx <- rev(the.loc.idx)
+        the.levels <- rev(the.levels)
       }
 
       idx <- rbind(idx, cbind(

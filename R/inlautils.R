@@ -92,7 +92,7 @@ inla.output.indices <- function(result, name = NULL, stack = NULL, tag = NULL,
       index.original <- (ct$start[nameindex] - 1L + seq_len(ct$length[nameindex]))
       if (compressed) {
         result <- inla.add.linearpredictor(result, index.original)
-        index <- 1:length(index.original)
+        index <- seq_along(index.original)
       } else {
         result <- inla.add.linearpredictor(result)
         index <- index.original
@@ -108,7 +108,7 @@ inla.output.indices <- function(result, name = NULL, stack = NULL, tag = NULL,
       # only add the part to be predicted
       if (compressed) {
         result <- inla.add.linearpredictor(result, index.original)
-        index <- 1:length(index.original)
+        index <- seq_along(index.original)
       } else {
         result <- inla.add.linearpredictor(result)
         index <- index.original

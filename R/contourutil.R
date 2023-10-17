@@ -281,7 +281,7 @@ excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2, use.mar
     stop("only measure 0, 1, or 2 allowed")
   }
 
-  if (missing(ind)) ind <- 1:length(mu)
+  if (missing(ind)) ind <- seq_along(mu)
 
   r <- range(mu[ind])
 
@@ -295,7 +295,7 @@ excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2, use.mar
   Q.chol <- chol(Q)
   u.add <- seq(from = -l, to = l, length.out = 19)
   P.add <- NULL
-  for (jj in 1:length(u.add)) {
+  for (jj in seq_along(u.add)) {
     P.add[jj] <- -restricted.lim.func(
       u.add = u.add[jj],
       u0 = u,
@@ -358,7 +358,7 @@ restricted.lim.func <- function(u.add, u0, mu, vars, Q.chol, Q, measure,
 excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
                                 use.marginals, ind = ind) {
   lp <- excursions.levelplot(mu, levels = u, ind = ind)
-  if (min(u) <= min(mu[ind]) | max(u) >= max(mu[ind])) {
+  if ((min(u) <= min(mu[ind])) || (max(u) >= max(mu[ind]))) {
     # levels should be in (min(mu),max(mu))
     val <- 0
   } else if (max(sort(u, index.return = TRUE)$ix - seq_len(length(u))) > 0) {
