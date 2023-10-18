@@ -69,6 +69,7 @@ if (require.nowarnings("INLA")) {
   x <- seq(from = 0, to = 10, length.out = n.lattice)
   lattice <- fm_lattice_2d(x = x, y = x)
   mesh <- fmesher::fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+  spde <- inla.spde2.matern(mesh, alpha = 2)
 
   # Generate an artificial sample
   sigma2.e <- 0.01
@@ -77,9 +78,9 @@ if (require.nowarnings("INLA")) {
     runif(n.obs) * diff(range(x)) + min(x),
     runif(n.obs) * diff(range(x)) + min(x)
   )
-  Q <- fmesher::fm_matern_precision(mesh, alpha = 2, rho = (sqrt(8)), sigma = (1/sqrt(2*pi)))
-  x <- fmesher::fm_sample(n=1, Q = Q) 
-  A <- fmesher::fm_basis(mesh, loc = obs.loc)
+  Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
+  x <- inla.qsample(Q = Q)
+  A <- inla.spde.make.A(mesh = mesh, loc = obs.loc)
   Y <- as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
 
   ## Calculate posterior
