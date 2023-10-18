@@ -47,14 +47,13 @@ test_that("Continous on contourmap, R2 mesh", {
   expect_s3_class(res3$M, "fm_segm")
   expect_s3_class(res4$M, "fm_segm")
 
-  if (testthat::skip_if_not_installed("fmesher", "0.1.2.9003")) {
-    # 0.1.2 had a bug for empty segments.
-    res5 <- continuous(res1, mesh,
-      method = "step", output = "inla",
-      calc.credible = FALSE
-    )
-    expect_s3_class(res5$M, "fm_segm")
-  }
+  testthat::skip_if_not_installed("fmesher", "0.1.2.9003")
+  # 0.1.2 had a bug for empty segments.
+  res5 <- continuous(res1, mesh,
+                     method = "step", output = "inla",
+                     calc.credible = FALSE
+  )
+  expect_s3_class(res5$M, "fm_segm")
 })
 
 test_that("Continous on contourmap, M mesh", {
@@ -100,13 +99,11 @@ test_that("Continous on contourmap, M mesh", {
 
   expect_s3_class(res3$M, "fm_segm")
 
-  if (testthat::skip_if_not_installed("fmesher", "0.1.2.9003")) {
-    res4 <- continuous(res1, mesh,
-      method = "step",
-      output = "inla",
-      calc.credible = FALSE
-    )
-
-    expect_s3_class(res4$M, "fm_segm")
-  }
+  testthat::skip_if_not_installed("fmesher", "0.1.2.9003")
+  res4 <- continuous(res1, mesh,
+                     method = "step",
+                     output = "inla",
+                     calc.credible = FALSE
+  )
+  expect_s3_class(res4$M, "fm_segm")
 })
