@@ -779,7 +779,7 @@ as.Lines.raw <- function(cl, ID = " ") {
 #'
 #' @examples
 #' \dontrun{
-#' if (require("INLA") && require("fmesher")) {
+#' if (require("fmesher")) {
 #'   ## Generate mesh and SPDE model
 #'   n.lattice <- 20 # increase for more interesting, but slower, examples
 #'   x <- seq(from = 0, to = 10, length.out = n.lattice)
