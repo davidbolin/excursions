@@ -785,14 +785,14 @@ as.Lines.raw <- function(cl, ID = " ") {
 #'   mesh <- fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
 #'
 #'   ## Generate an artificial sample
-#'   sigma2.e <- 0.01
+#'   sigma2.e <- 0.1
 #'   n.obs <- 1000
 #'   obs.loc <- cbind(
 #'     runif(n.obs) * diff(range(x)) + min(x),
 #'     runif(n.obs) * diff(range(x)) + min(x)
 #'   )
-#'   Q <- fm_matern_precision(mesh, alpha = 2, rho = (sqrt(8)), sigma = (1/sqrt(2*pi)))
-#'   x <- fm_sample(n=1, Q = Q)
+#'   Q <- fm_matern_precision(mesh, alpha = 2, rho = 3, sigma = 1)
+#'   x <- fm_sample(n = 1, Q = Q)
 #'   A <- fm_basis(mesh, loc = obs.loc)
 #'   Y <- as.vector(A %*% x + rnorm(n.obs) * sqrt(sigma2.e))
 #'
@@ -822,14 +822,14 @@ as.Lines.raw <- function(cl, ID = " ") {
 #'   reo <- mesh$idx$lattice
 #'   idx.setsc <- setdiff(names(setsc$map), "-1")
 #'   cols2 <- contourmap.colors(map,
-#'     col = heat.colors(100, 0.5),
+#'     col = heat.colors(100, 0.5, rev = TRUE),
 #'     credible.col = grey(0.5, 0)
 #'   )
 #'   names(cols2) <- as.character(-1:2)
 #'
 #'   par(mfrow = c(1, 2))
 #'   image(matrix(mu.post[reo], n.lattice, n.lattice),
-#'     main = "mean", axes = FALSE
+#'     main = "mean", axes = FALSE, asp = 1
 #'   )
 #'   plot(setsc$map[idx.setsc], col = cols2[idx.setsc])
 #'   par(mfrow = c(1, 1))
@@ -1481,12 +1481,11 @@ subdivide.mesh <- function(mesh) {
 
 
 
-##########################################################################
-## New geometry implementation
+## New geometry implementation ####
 
-## Copy 'G' and interpolate 'F' within coherent single level regions.
+# Copy 'G' and interpolate 'F' within coherent single level regions.
 F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
-  ## Construct interpolation mesh
+  # Construct interpolation mesh
   F.geometry.A <- list()
   for (subdivision in seq_len(subdivisions)) {
     F.geometry <- subdivide.mesh(F.geometry)
@@ -1893,14 +1892,14 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #'   mesh <- fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
 #'
 #'   # Generate an artificial sample
-#'   sigma2.e <- 0.01
+#'   sigma2.e <- 0.1
 #'   n.obs <- 100
 #'   obs.loc <- cbind(
 #'     runif(n.obs) * diff(range(x)) + min(x),
 #'     runif(n.obs) * diff(range(x)) + min(x)
 #'   )
-#'   Q <- fm_matern_precision(mesh, alpha = 2, rho = (sqrt(8)), sigma = (1/sqrt(2*pi)))
-#'   x <- fm_sample(n=1, Q = Q)
+#'   Q <- fm_matern_precision(mesh, alpha = 2, rho = 3, sigma = 1)
+#'   x <- fm_sample(n = 1, Q = Q)
 #'   A <- fm_basis(mesh, loc = obs.loc)
 #'   Y <- as.vector(A %*% x + rnorm(n.obs) * sqrt(sigma2.e))
 #'
@@ -1921,19 +1920,21 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #'   ## Plot the results
 #'   reo <- mesh$idx$lattice
 #'   cols <- contourmap.colors(map,
-#'     col = heat.colors(100, 1),
+#'     col = heat.colors(100, 1, rev = TRUE),
 #'     credible.col = grey(0.5, 1)
 #'   )
 #'   names(cols) <- as.character(-1:2)
 #'
 #'   par(mfrow = c(2, 2))
 #'   image(matrix(mu.post[reo], n.lattice, n.lattice),
-#'     main = "mean", axes = FALSE
+#'     main = "mean", axes = FALSE, asp = 1
 #'   )
 #'   image(matrix(sqrt(vars.post[reo]), n.lattice, n.lattice),
-#'     main = "sd", axes = FALSE
+#'     main = "sd", axes = FALSE, asp = 1
 #'   )
-#'   image(matrix(map$M[reo], n.lattice, n.lattice), col = cols, axes = FALSE)
+#'   image(matrix(map$M[reo], n.lattice, n.lattice),
+#'     col = cols, axes = FALSE, asp = 1
+#'   )
 #'   idx.M <- setdiff(names(sets$M), "-1")
 #'   plot(sets$M[idx.M], col = cols[idx.M])
 #' }
