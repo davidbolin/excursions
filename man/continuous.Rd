@@ -63,24 +63,23 @@ Calculates continuous domain excursion and credible contour sets
 }
 \examples{
 \dontrun{
-if (require.nowarnings("INLA")) {
+if (require("fmesher")) {
   # Generate mesh and SPDE model
   n.lattice <- 10 # Increase for more interesting, but slower, examples
   x <- seq(from = 0, to = 10, length.out = n.lattice)
   lattice <- fm_lattice_2d(x = x, y = x)
-  mesh <- fmesher::fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
-  spde <- inla.spde2.matern(mesh, alpha = 2)
+  mesh <- fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
 
   # Generate an artificial sample
-  sigma2.e <- 0.01
+  sigma2.e <- 0.1
   n.obs <- 100
   obs.loc <- cbind(
     runif(n.obs) * diff(range(x)) + min(x),
     runif(n.obs) * diff(range(x)) + min(x)
   )
-  Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
-  x <- inla.qsample(Q = Q)
-  A <- inla.spde.make.A(mesh = mesh, loc = obs.loc)
+  Q <- fm_matern_precision(mesh, alpha = 2, rho = 3, sigma = 1)
+  x <- fm_sample(n = 1, Q = Q)
+  A <- fm_basis(mesh, loc = obs.loc)
   Y <- as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
 
   ## Calculate posterior
@@ -100,19 +99,21 @@ if (require.nowarnings("INLA")) {
   ## Plot the results
   reo <- mesh$idx$lattice
   cols <- contourmap.colors(map,
-    col = heat.colors(100, 1),
+    col = heat.colors(100, 1, rev = TRUE),
     credible.col = grey(0.5, 1)
   )
   names(cols) <- as.character(-1:2)
 
   par(mfrow = c(2, 2))
   image(matrix(mu.post[reo], n.lattice, n.lattice),
-    main = "mean", axes = FALSE
+    main = "mean", axes = FALSE, asp = 1
   )
   image(matrix(sqrt(vars.post[reo]), n.lattice, n.lattice),
-    main = "sd", axes = FALSE
+    main = "sd", axes = FALSE, asp = 1
   )
-  image(matrix(map$M[reo], n.lattice, n.lattice), col = cols, axes = FALSE)
+  image(matrix(map$M[reo], n.lattice, n.lattice),
+    col = cols, axes = FALSE, asp = 1
+  )
   idx.M <- setdiff(names(sets$M), "-1")
   plot(sets$M[idx.M], col = cols[idx.M])
 }
