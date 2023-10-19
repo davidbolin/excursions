@@ -18,13 +18,9 @@ An \code{inla.mesh} object.
 \description{
 Extracts a part of a grid.
 }
-\note{
-This function requires the \code{INLA} package, which is not a CRAN
-package.  See \url{https://www.r-inla.org/download-install} for easy installation instructions.
-}
 \examples{
 \dontrun{
-if (require.nowarnings("INLA") && require("fmesher")) {
+if (require("fmesher")) {
   nxy <- 40
   x <- seq(from = 0, to = 4, length.out = nxy)
   lattice <- fm_lattice_2d(x = x, y = x)

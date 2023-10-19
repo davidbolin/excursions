@@ -556,12 +556,10 @@ outline.on.mesh <- function(z, mesh, complement = FALSE) {
 #'
 #' @return An \code{inla.mesh} object.
 #' @export
-#' @note This function requires the \code{INLA} package, which is not a CRAN
-#' package.  See \url{https://www.r-inla.org/download-install} for easy installation instructions.
 #' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @examples
 #' \dontrun{
-#' if (require.nowarnings("INLA") && require("fmesher")) {
+#' if (require("fmesher")) {
 #'   nxy <- 40
 #'   x <- seq(from = 0, to = 4, length.out = nxy)
 #'   lattice <- fm_lattice_2d(x = x, y = x)
@@ -1887,13 +1885,12 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #'
 #' @examples
 #' \dontrun{
-#' if (require.nowarnings("INLA")) {
+#' if (require("fmesher")) {
 #'   # Generate mesh and SPDE model
 #'   n.lattice <- 10 # Increase for more interesting, but slower, examples
 #'   x <- seq(from = 0, to = 10, length.out = n.lattice)
 #'   lattice <- fm_lattice_2d(x = x, y = x)
-#'   mesh <- fmesher::fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
-#'   spde <- inla.spde2.matern(mesh, alpha = 2)
+#'   mesh <- fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
 #'
 #'   # Generate an artificial sample
 #'   sigma2.e <- 0.01
@@ -1902,9 +1899,9 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #'     runif(n.obs) * diff(range(x)) + min(x),
 #'     runif(n.obs) * diff(range(x)) + min(x)
 #'   )
-#'   Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
-#'   x <- inla.qsample(Q = Q)
-#'   A <- inla.spde.make.A(mesh = mesh, loc = obs.loc)
+#'   Q <- fm_matern_precision(mesh, alpha = 2, rho = (sqrt(8)), sigma = (1/sqrt(2*pi)))
+#'   x <- fm_sample(n=1, Q = Q)
+#'   A <- fm_basis(mesh, loc = obs.loc)
 #'   Y <- as.vector(A %*% x + rnorm(n.obs) * sqrt(sigma2.e))
 #'
 #'   ## Calculate posterior
