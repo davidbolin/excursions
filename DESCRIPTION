@@ -1,7 +1,7 @@
 Package: excursions
 Type: Package
 Title: Excursion Sets and Contour Credibility Regions for Random Fields
-Version: 2.5.5.9002
+Version: 2.5.6
 Authors@R: c(
     person("David", "Bolin", email = "davidbolin@gmail.com", role = c("cre", "aut")),
     person("Finn", "Lindgren", email = "finn.lindgren@gmail.com", role = "aut",
