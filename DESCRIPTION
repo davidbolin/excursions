@@ -3,7 +3,8 @@ Type: Package
 Title: Excursion Sets and Contour Credibility Regions for Random Fields
 Version: 2.5.6
 Authors@R: c(
-    person("David", "Bolin", email = "davidbolin@gmail.com", role = c("cre", "aut")),
+    person("David", "Bolin", email = "davidbolin@gmail.com", role = c("cre", "aut"),
+            comment = c(ORCID = "0000-0003-2361-5465")),
     person("Finn", "Lindgren", email = "finn.lindgren@gmail.com", role = "aut",
            comment = c(ORCID = "0000-0002-5833-2011")),
     person("Suen", "Man Ho", email = "M.H.Suen@sms.ed.ac.uk", role = "ctb"))

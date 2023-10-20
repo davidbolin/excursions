@@ -36,7 +36,7 @@ contourmap(
 \item{levels}{Levels to use in contour map.}
 
 \item{type}{Type of contour map. One of:
-\itemize{
+\describe{
      \item{'standard' }{Equidistant levels between smallest and largest value of the posterior mean (default).}
      \item{'pretty' }{Equally spaced 'round' values which cover the range of the values in the posterior mean.}
      \item{'equalarea' }{Levels such that different spatial regions are approximately equal in size.}
@@ -46,7 +46,7 @@ contourmap(
 }}
 
 \item{compute}{A list with quality indices to compute
-\itemize{
+\describe{
      \item{'F': }{TRUE/FALSE indicating whether the contour map function should be computed (default TRUE).}
      \item{'measures': }{A list with the quality measures to compute ("P0", "P1", "P2") or corresponding bounds based only on the marginal probabilities ("P0-bound", "P1-bound", "P2-bound").}
      }}
@@ -66,7 +66,7 @@ contourmap(
 \item{seed}{Random seed (optional).}
 }
 \value{
-\code{contourmap} returns an object of class "excurobj". This is a list that can contains the following arguments:
+\code{contourmap} returns an object of class "excurobj" with the following elements
     \item{u }{Contour levels used in the contour map.}
     \item{n.levels }{The number of contours used.}
     \item{u.e }{The values associated with the level sets G_k.}

@@ -24,7 +24,7 @@
 #' @param ind Indices of the nodes that should be analyzed (optional).
 #' @param levels Levels to use in contour map.
 #' @param type Type of contour map. One of:
-#' \itemize{
+#' \describe{
 #'      \item{'standard' }{Equidistant levels between smallest and largest value of the posterior mean (default).}
 #'      \item{'pretty' }{Equally spaced 'round' values which cover the range of the values in the posterior mean.}
 #'      \item{'equalarea' }{Levels such that different spatial regions are approximately equal in size.}
@@ -33,14 +33,14 @@
 #'      \item{'P2-optimal' }{Levels chosen to maximize the P2 measure.}
 #' }
 #' @param compute A list with quality indices to compute
-#' \itemize{
+#' \describe{
 #'      \item{'F': }{TRUE/FALSE indicating whether the contour map function should be computed (default TRUE).}
 #'      \item{'measures': }{A list with the quality measures to compute ("P0", "P1", "P2") or corresponding bounds based only on the marginal probabilities ("P0-bound", "P1-bound", "P2-bound").}
 #'      }
 #' @param alpha Maximal error probability in contour map function (default=0.1).
 #' @param verbose Set to TRUE for verbose mode (optional).
 #'
-#' @return \code{contourmap} returns an object of class "excurobj". This is a list that can contains the following arguments:
+#' @return \code{contourmap} returns an object of class "excurobj" with the following elements
 #'     \item{u }{Contour levels used in the contour map.}
 #'     \item{n.levels }{The number of contours used.}
 #'     \item{u.e }{The values associated with the level sets G_k.}
@@ -198,7 +198,7 @@ contourmap.mc <- function(samples,
 #'
 #' \code{simconf.mc} is used for calculating simultaneous confidence regions based
 #' on Monte Carlo samples. The function returns upper and lower bounds \eqn{a} and
-#' \eqn{b} such that \eqn{P(a<x<b) = 1-alpha}.
+#' \eqn{b} such that \eqn{P(a<x<b) = 1-\alpha}.
 #'
 #' @param samples Matrix with model Monte Carlo samples. Each column contains a sample of the model.
 #' @param alpha Error probability for the region.
@@ -303,7 +303,7 @@ simconf.mc <- function(samples,
 #' @param alpha Error probability for the excursion set.
 #' @param u Excursion or contour level.
 #' @param type Type of region:
-#'  \itemize{
+#'  \describe{
 #'      \item{'>' }{positive excursions}
 #'      \item{'<' }{negative excursions}
 #'      \item{'!=' }{contour avoiding function}
@@ -315,8 +315,8 @@ simconf.mc <- function(samples,
 #' @param max.size Maximum number of nodes to include in the set of interest (optional).
 #' @param verbose Set to TRUE for verbose mode (optional).
 #'
-#' @return \code{excursions} returns an object of class "excurobj". This is a list that
-#' contains the following arguments:
+#' @return \code{excursions.mc} returns an object of class "excurobj" with the 
+#' following elements
 #' \item{E }{Excursion set, contour credible region, or contour avoiding set.}
 #' \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
 #' \item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes.

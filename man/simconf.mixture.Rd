@@ -21,9 +21,9 @@ simconf.mixture(
 \arguments{
 \item{alpha}{Error probability for the region.}
 
-\item{mu}{A list with the \code{k} expectation vectors \eqn{latex}{\mu_k}.}
+\item{mu}{A list with the \code{k} expectation vectors \eqn{\mu_k}.}
 
-\item{Q}{A list with the \code{k} precision matrices \eqn{latex}{Q_k}.}
+\item{Q}{A list with the \code{k} precision matrices \eqn{Q_k}.}
 
 \item{w}{A vector with the weights for each class in the mixture.}
 
@@ -45,7 +45,7 @@ for using the maximum number of threads allowed by the system (default).}
 otherwise sequential integration is used.}
 }
 \value{
-#' @return An object of class "excurobj" with elements
+An object of class "excurobj" with elements
 \item{a }{The lower bound.}
 \item{b }{The upper bound.}
 \item{a.marginal }{The lower bound for pointwise confidence bands.}
@@ -54,9 +54,9 @@ otherwise sequential integration is used.}
 \description{
 \code{simconf.mixture} is used for calculating simultaneous confidence regions
 for Gaussian mixture models. The distribution for the process \eqn{x} is assumed to be
-\deqn{latex}{\pi(x) = \sum_{k=1}^K w_k N(\mu_k, Q_k^{-1}).}
+\deqn{\pi(x) = \sum_{k=1}^K w_k N(\mu_k, Q_k^{-1}).}
 The function returns upper and lower bounds \eqn{a} and \eqn{b} such that
-\eqn{P(a<x<b) = 1-alpha}.
+\eqn{P(a<x<b) = 1-\alpha}.
 }
 \details{
 See \code{\link{simconf}} for details.

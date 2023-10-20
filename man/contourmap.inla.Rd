@@ -43,7 +43,7 @@ only Empirical Bayes (EB) and Quantile corrections (QC) are supported.}
 \item{n.levels}{Number of levels in contour map.}
 
 \item{type}{Type of contour map. One of:
-\itemize{
+\describe{
     \item{'standard' }{Equidistant levels between smallest and largest value
     of the posterior mean (default).}
     \item{'pretty' }{Equally spaced 'round' values which cover the range of
@@ -53,7 +53,7 @@ only Empirical Bayes (EB) and Quantile corrections (QC) are supported.}
     }}
 
 \item{compute}{A list with quality indices to compute
-\itemize{
+\describe{
      \item{'F': }{TRUE/FALSE indicating whether the contour map function
      should be computed (default TRUE)}
      \item{'measures': }{A list with the quality measures to compute ("P0",

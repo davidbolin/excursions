@@ -32,7 +32,7 @@
 #' argument specifies the indices for that part.
 #' @param alpha Error probability for the region.
 #' @param method Method for handling the latent Gaussian structure:
-#' \itemize{
+#' \describe{
 #' \item{'EB' }{Empirical Bayes (Gaussian approximation of posterior).}
 #' \item{'NI' }{Numerical integration (Calculation based on the Gaussian mixture
 #' approximation of the posterior, as calculated by INLA).}}

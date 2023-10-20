@@ -25,7 +25,7 @@ sample of the model.}
 \item{u}{Excursion or contour level.}
 
 \item{type}{Type of region:
-\itemize{
+\describe{
     \item{'>' }{positive excursions}
     \item{'<' }{negative excursions}
     \item{'!=' }{contour avoiding function}
@@ -43,8 +43,8 @@ provide \eqn{P(X>u)}.}
 \item{verbose}{Set to TRUE for verbose mode (optional).}
 }
 \value{
-\code{excursions} returns an object of class "excurobj". This is a list that
-contains the following arguments:
+\code{excursions.mc} returns an object of class "excurobj" with the 
+following elements
 \item{E }{Excursion set, contour credible region, or contour avoiding set.}
 \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
 \item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes.

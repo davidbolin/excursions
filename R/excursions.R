@@ -15,95 +15,10 @@
 ##   You should have received a copy of the GNU General Public License
 ##   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
-
-# How to document packages:
-# https://cran.r-project.org/web/packages/roxygen2/vignettes/rd.html
-# In particular "this also works if there's already a function called pkgname()"
-# However, that still leads to a name clash between excursions-package and
-# excursions.  The @section and @rdname approach puts the documentation in
-# the same file, with a separate heading for the package documentation.
-
-#' @section Package:
-#'
-#' \code{excursions} contains functions that compute probabilistic excursion sets,
-#' contour credibility regions, contour avoiding regions, contour map quality measures,
-#' and simultaneous confidence bands for latent Gaussian
-#' random processes and fields.
-#'
-#' \strong{Excursion sets, contour credibility regions, and contour avoiding regions}
-#'
-#' The main functions for computing excursion sets, contour credibility regions, and
-#' contour avoiding regions are
-#' \itemize{
-#' \item{\code{\link{excursions}} }{The main function for Gaussian models.}
-#' \item{\code{\link{excursions.inla}} }{Interface for latent Gaussian models estimated using INLA.}
-#' \item{\code{\link{excursions.mc}} }{Function for analyzing models that have been
-#' estimated using Monte Carlo methods.}
-#' }
-#' The output from the functions above provides a discrete domain estimate of the regions.
-#' Based on this estimate, the function \code{\link{continuous}} computes a continuous
-#' domain estimate.
-#'
-#'  The main reference for these functions is Bolin, D. and Lindgren, F. (2015)
-#'  \emph{Excursion and contour uncertainty regions for latent Gaussian models},
-#'  JRSS-series B, vol 77, no 1, pp 85-106.
-#'
-#' \strong{Contour map quality measures}
-#'
-#' The package provides several functions for computing contour maps and their quality
-#' measures. These quality measures can be used to decide on an appropriate number of
-#' contours to use for the contour map.
-#'
-#' The main functions for computing contour maps and the corresponding quality measures
-#' are
-#' \itemize{
-#' \item{\code{\link{contourmap}} }{The main function for Gaussian models.}
-#' \item{\code{\link{contourmap.inla}} }{Interface for latent Gaussian models estimated
-#' using INLA.}
-#' \item{\code{\link{contourmap.mc}} }{Function for analyzing models that have been
-#' estimated using Monte Carlo methods.}
-#' }
-#' Other noteworthy functions relating to contourmaps are \code{\link{tricontour}} and
-#' \code{\link{tricontourmap}}, which compute contour curves for functinos defined on
-#' triangulations, as well as \code{\link{contourmap.colors}} which can be used to
-#' compute appropriate colors for displaying contour maps.
-#'
-#' The main reference for these functions is Bolin, D. and Lindgren, F. (2017)
-#' \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and
-#' Graphical Statistics, 26:3, 513-524.
-#'
-#' \strong{Simultaneous confidence bands}
-#'
-#' The main functions for computing simultaneous confidence bands are
-#' \itemize{\item{\code{\link{simconf}} }{Function for analyzing Gaussian models.}
-#' \item{\code{\link{simconf.inla}} }{Function for analyzing latent Gaussian models
-#' estimated using INLA.}
-#' \item{\code{\link{simconf.mc}} }{Function for analyzing models estimated using Monte
-#' Carlo methods.}
-#' \item{\code{\link{simconf.mixture}} }{Function for analyzing Gaussian mixture models.}
-#' }
-#'
-#' The main reference for these functions is Bolin et al. (2015)
-#' \emph{Statistical prediction of global sea level
-#' from global temperature}, Statistica Sinica, Vol 25, pp 351-367.
-#'
-#' @importFrom graphics lines
-#' @importFrom methods as is
-#' @importFrom stats optimize pnorm qnorm quantile rnorm uniroot
-#' @import Matrix
-#' @import sp
-#' @useDynLib excursions, .registration = TRUE
-#'
-#' @name excursions-package
-#' @rdname excursions
-#'
-NULL
-
-
 #' Excursion Sets and Contour Credibility Regions for Random Fields
 #'
 #' \code{excursions} is one of the main functions in the package with the same name.
+#' For an introduction to the package, see \code{\link{excursions-package}}. 
 #' The function is used for calculating excursion sets, contour credible regions,
 #' and contour avoiding sets for latent Gaussian models. Details on the function and the
 #' package are given in the sections below.
@@ -113,11 +28,11 @@ NULL
 #' @param mu Expectation vector.
 #' @param Q Precision matrix.
 #' @param type Type of region:
-#'  \itemize{
-#'     \item{'>' }{positive excursion region}
-#'     \item{'<' }{negative excursion region}
-#'     \item{'!=' }{contour avoiding region}
-#'     \item{'=' }{contour credibility region}}
+#'  \describe{
+#'     \item{'>'}{positive excursion region}
+#'     \item{'<'}{negative excursion region}
+#'     \item{'!='}{contour avoiding region}
+#'     \item{'='}{contour credibility region}}
 #' @param n.iter Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 10000.
 #' @param Q.chol The Cholesky factor of the precision matrix (optional).
 #' @param F.limit The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.
@@ -125,24 +40,24 @@ NULL
 #' @param rho Marginal excursion probabilities (optional). For contour regions, provide \eqn{P(X>u)}.
 #' @param reo Reordering (optional).
 #' @param method Method for handeling the latent Gaussian structure:
-#'  \itemize{
-#'       \item{'EB' }{Empirical Bayes (default)}
-#'       \item{'QC' }{Quantile correction, rho must be provided if QC is used.}}
+#'  \describe{
+#'       \item{'EB'}{Empirical Bayes (default)}
+#'       \item{'QC'}{Quantile correction, rho must be provided if QC is used.}}
 #' @param ind Indices of the nodes that should be analysed (optional).
 #' @param max.size Maximum number of nodes to include in the set of interest (optional).
 #' @param verbose Set to TRUE for verbose mode (optional).
 #' @param max.threads Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).
 #' @param seed Random seed (optional).
 #'
-#' @return \code{excursions} returns an object of class "excurobj". This is a list that contains the following arguments:
-#' \item{E }{Excursion set, contour credible region, or contour avoiding set}
-#' \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
-#' \item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes. \eqn{M=0} for nodes where the process is significantly below \code{u} and \eqn{M=1} for all nodes where the field is significantly above \code{u}. Which values that should be present depends on what type of set that is calculated.}
-#' \item{F }{The excursion function corresponding to the set \code{E} calculated or values up to \code{F.limit}}
-#' \item{rho }{Marginal excursion probabilities}
-#' \item{mean }{The mean \code{mu}.}
-#' \item{vars }{Marginal variances.}
-#' \item{meta }{A list containing various information about the calculation.}
+#' @return \code{excursions} returns an object of class "excurobj" with the following elements
+#' \item{E}{Excursion set, contour credible region, or contour avoiding set}
+#' \item{G}{Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
+#' \item{M}{Contour avoiding set. \eqn{M=-1} for all non-significant nodes. \eqn{M=0} for nodes where the process is significantly below \code{u} and \eqn{M=1} for all nodes where the field is significantly above \code{u}. Which values that should be present depends on what type of set that is calculated.}
+#' \item{F}{The excursion function corresponding to the set \code{E} calculated or values up to \code{F.limit}}
+#' \item{rho}{Marginal excursion probabilities}
+#' \item{mean}{The mean \code{mu}.}
+#' \item{vars}{Marginal variances.}
+#' \item{meta}{A list containing various information about the calculation.}
 #' @export
 #' @details
 #' The estimation of the region is done using sequential importance sampling with
@@ -166,7 +81,7 @@ NULL
 #' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
 #'
 #' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
-#' @seealso \code{\link{excursions.inla}}, \code{\link{excursions.mc}}
+#' @seealso \code{\link{excursions-package}}, \code{\link{excursions.inla}}, \code{\link{excursions.mc}}
 #'
 #' @examples
 #' ## Create a tridiagonal precision matrix
