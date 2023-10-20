@@ -1,5 +1,8 @@
 # excursions (Development version)
 
+* Remove rgdal suggest
+* Update some examples to use fmesher instead of INLA
+
 # excursions 2.5.5
 
 * Add R compiler configuration extraction to configure.ac
