@@ -118,7 +118,7 @@ simconf <- function(alpha,
   }
 
   if (missing(vars)) {
-    vars <- excursions.variances(L)
+    vars <- excursions.variances(L, max.threads = max.threads)
   }
   sd <- sqrt(vars)
 
@@ -138,7 +138,8 @@ simconf <- function(alpha,
     }
   }
 
-  r.o <- optimize(f.opt, interval = c(0, 1), alpha = alpha, sd = sd, L = L, seed = seed, max.threads = max.threads, ind = ind)
+  r.o <- optimize(f.opt, interval = c(0, 1), alpha = alpha, sd = sd, L = L, 
+                  seed = seed, max.threads = max.threads, ind = ind)
 
   a <- mu - qnorm(r.o$minimum) * sd
   b <- mu + qnorm(r.o$minimum) * sd

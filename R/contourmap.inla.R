@@ -343,6 +343,7 @@ contourmap.inla <- function(result.inla,
         tmp <- gaussint(
           mu = config$mu, Q = config$Q, a = limits$a,
           b = limits$b, ind = indices, use.reordering = "limits",
+          max.threads = max.threads,
           n.iter = n.iter, seed = seed
         )
         cm$P2 <- tmp$P

@@ -144,7 +144,7 @@ simconf.mixture <- function(alpha,
       Q.chol[[k]] <- chol(Q[[k]])
       mu.m[k, ] <- mu[[k]]
       if (compute.vars) {
-        vars[[k]] <- excursions.variances(L = Q.chol[[k]])
+        vars[[k]] <- excursions.variances(L = Q.chol[[k]], max.threads = max.threads)
       }
       sd.m[k, ] <- sqrt(vars[[k]])
     }
@@ -228,7 +228,7 @@ simconf.mixture <- function(alpha,
       Q.chol[[k]] <- private.Cholesky(Q[[k]][reo, reo], perm = FALSE)$R
       mu.m[k, ] <- mu[[k]][reo]
       if (compute.vars) {
-        vars[[k]] <- excursions.variances(L = Q.chol[[k]])
+        vars[[k]] <- excursions.variances(L = Q.chol[[k]], max.threads = max.threads)
       }
       sd.m[k, ] <- sqrt(vars[[k]][reo])
     }
