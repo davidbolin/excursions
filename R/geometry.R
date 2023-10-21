@@ -758,7 +758,7 @@ as.Lines.raw <- function(cl, ID = " ") {
 #'   \code{levels} is not supplied.
 #' @param levels Numeric vector of levels at which to calculate contour lines.
 #' @param ... Additional arguments passed to the other methods.
-#' @return For \code{tricontour}, a list some of the same fields that
+#' @return For \code{tricontour}, a list with some of the fields that
 #'   \code{inla.mesh.segment} objects have:
 #'   \item{loc}{A coordinate matrix}
 #'   \item{idx}{Contour segment indices, as a 2-column matrix, each row
@@ -1867,7 +1867,7 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #' @param calc.credible Logical, if TRUE (default), calculate credible contour region
 #' objects in addition to avoidance sets.
 #'
-#' @return A list:
+#' @return A list with elements
 #' \item{M}{\code{SpatialPolygons} or \code{inla.mesh.segment} object. The subsets
 #' are tagged, so that credible regions are tagged \code{"-1"}, and regions between
 #' levels are tagged \code{as.character(0:nlevels)}.}

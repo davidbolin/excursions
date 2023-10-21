@@ -40,12 +40,13 @@ argument otherwise.}
 this argument specifies the indices for that part.}
 
 \item{method}{Method for handeling the latent Gaussian structure:
-\itemize{
+\describe{
 \item{'EB' }{Empirical Bayes}
 \item{'QC' }{Quantile correction}
 \item{'NI' }{Numerical integration}
 \item{'NIQC' }{Numerical integration with quantile correction}
-\item{'iNIQC' }{Improved integration with quantile correction}}}
+\item{'iNIQC' }{Improved integration with quantile correction}
+}}
 
 \item{alpha}{Error probability for the excursion set of interest. The default
 value is 1.}
@@ -61,11 +62,12 @@ smaller computation time.}
 data and is then transformed to the scale of the linear predictor (default FALSE).}
 
 \item{type}{Type of region:
-\itemize{
+\describe{
     \item{'>' }{positive excursions}
     \item{'<' }{negative excursions}
     \item{'!=' }{contour avoiding function}
-    \item{'=' }{contour credibility function}}}
+    \item{'=' }{contour credibility function}
+}}
 
 \item{n.iter}{Number or iterations in the MC sampler that is used for
 approximating probabilities. The default value is 10000.}
@@ -82,8 +84,8 @@ entire linear predictor is added internally (default TRUE).}
 \item{seed}{Random seed (optional).}
 }
 \value{
-\code{excursions.inla} returns an object of class "excurobj". This is
-a list that contains the following arguments:
+\code{excursions.inla} returns an object of class "excurobj" with the 
+following elements
 \item{E }{Excursion set, contour credible region, or contour avoiding set}
 \item{F }{The excursion function corresponding to the set \code{E} calculated
 for values up to \code{F.limit}}

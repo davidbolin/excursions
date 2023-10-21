@@ -1,4 +1,4 @@
-# excursions (Development version)
+# excursions 2.5.6
 
 * Remove rgdal suggest
 * Update some examples to use fmesher instead of INLA

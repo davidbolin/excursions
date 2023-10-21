@@ -19,13 +19,13 @@
 #'
 #' \code{simconf.mixture} is used for calculating simultaneous confidence regions
 #' for Gaussian mixture models. The distribution for the process \eqn{x} is assumed to be
-#' \deqn{latex}{\pi(x) = \sum_{k=1}^K w_k N(\mu_k, Q_k^{-1}).}
+#' \deqn{\pi(x) = \sum_{k=1}^K w_k N(\mu_k, Q_k^{-1}).}
 #' The function returns upper and lower bounds \eqn{a} and \eqn{b} such that
-#' \eqn{P(a<x<b) = 1-alpha}.
+#' \eqn{P(a<x<b) = 1-\alpha}.
 #'
 #' @param alpha Error probability for the region.
-#' @param mu A list with the \code{k} expectation vectors \eqn{latex}{\mu_k}.
-#' @param Q A list with the \code{k} precision matrices \eqn{latex}{Q_k}.
+#' @param mu A list with the \code{k} expectation vectors \eqn{\mu_k}.
+#' @param Q A list with the \code{k} precision matrices \eqn{Q_k}.
 #' @param w A vector with the weights for each class in the mixture.
 #' @param ind Indices of the nodes that should be analyzed (optional).
 #' @param n.iter Number or iterations in the MC sampler that is used for
@@ -38,7 +38,7 @@
 #' @param mix.samp If TRUE, the MC integration is done by directly sampling the mixture,
 #' otherwise sequential integration is used.
 #'
-#' @return #' @return An object of class "excurobj" with elements
+#' @return An object of class "excurobj" with elements
 #' \item{a }{The lower bound.}
 #' \item{b }{The upper bound.}
 #' \item{a.marginal }{The lower bound for pointwise confidence bands.}

@@ -19,7 +19,7 @@
 #'
 #' \code{simconf} is used for calculating simultaneous confidence regions for
 #' Gaussian models \eqn{x}. The function returns upper and lower bounds \eqn{a}
-#' and \eqn{b} such that \eqn{P(a<x<b) = 1-alpha}.
+#' and \eqn{b} such that \eqn{P(a<x<b) = 1-\alpha}.
 #'
 #' @param alpha Error probability for the region.
 #' @param mu Expectation vector for the Gaussian distribution.
@@ -41,13 +41,15 @@
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
 #' @details The pointwise confidence bands are based on the marginal quantiles,
-#' meaning that \code{a.marignal = mu +} \eqn{q_{alpha}} and \code{b.marginal = mu +}
-#' \eqn{q_{1-alpha}}, where \code{mu} is the mean and \eqn{q_{alpha}} is a
-#' vector with the alpha-quantiles of \code{x-mu}.
+#' meaning that \code{a.marignal} is a vector where the ith element equals 
+#' \eqn{\mu_i + q_{\alpha,i}}  and \code{b.marginal} is a vector where the ith element
+#' equals  \eqn{\mu_i + q_{1-\alpha,i}}, where \eqn{\mu_i} is the expected value 
+#' of the \eqn{x_i} and \eqn{q_{\alpha,i}} is the \eqn{\alpha}-quantile of \eqn{x_i-\mu_i}.
 #'
-#' The simultaneous confidence bands are defined as
-#' \code{a = mu +} \eqn{c*q_{alpha}} and \code{b = mu +} \eqn{c*q_{1-alpha}}, where
-#' \eqn{c} is a constant computed such that \eqn{P(a < x < b) = 1-alpha}.
+#' The simultaneous confidence band is defined by the lower limit vector \code{a} and 
+#' the upper limit vector \code{b}, where \eqn{a_i = \mu_i +c q_{\alpha}} and 
+#' \eqn{b_i = \mu_i + c q_{1-\alpha}}, where \eqn{c} is a constant computed such 
+#' that \eqn{P(a < x < b) = 1-\alpha}.
 #'
 #' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level

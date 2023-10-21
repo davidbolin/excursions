@@ -40,12 +40,13 @@ probabilities. The default value is 10000.}
 \item{ind}{Indices of the nodes that should be analyzed (optional).}
 
 \item{use.reordering}{Determines what reordering to use:
-\itemize{
+\describe{
   \item{"natural" }{No reordering is performed.}
   \item{"sparsity" }{Reorder for sparsity in the cholesky factor (MMD reordering
   is used).}
   \item{"limits" }{Reorder by moving all nodes with a=-Inf and b=Inf first and
-  then reordering for sparsity (CAMD reordering is used).}}}
+  then reordering for sparsity (CAMD reordering is used).}
+  }}
 
 \item{max.size}{The largest number of sub-integrals to compute. Default is the total
 dimension of the distribution.}
@@ -76,19 +77,19 @@ all subintegrals are also returned.
 The function uses sequential importance sampling to estimate the
 Gaussian integral, and returns all computed sub-integrals. This means that if, for
 example, the function is used to compute \eqn{P(x>0)} for an n-dimensional Gaussian
-variable \eqn{x}, then all integrals \eqn{P(x_1>0,...,x_i>0)} for \eqn{i=1,...,n} are
+variable \eqn{x}, then all integrals \eqn{P(x_1>0,\ldots,x_i>0)} for \eqn{i=1,\ldots,n} are
 computed.
 
-If one is only interested in whether \eqn{P(x>0)>alpha} or not, then one can
-stop the integration as soon as \eqn{P(x_1>0,...,x_i>0)<alpha}. This can save a lot of
-computation time if \eqn{P(x_1>0,...,x_i>0)<alpha} for \eqn{i} much smaller than
+If one is only interested in whether \eqn{P(x>0)>\alpha} or not, then one can
+stop the integration as soon as \eqn{P(x_1>0,\ldots,x_i>0)<\alpha}. This can save a lot of
+computation time if \eqn{P(x_1>0,\ldots,x_i>0)< \alpha} for \eqn{i} much smaller than
 \eqn{n}. This limit value is specified by the \code{lim} argument.
 
 Which reordering to use depends on what the purpose of the calculation is and what
 the integration limits are. However, in general the \code{limits} reordering is typically
 most appropriate since this combines sparisty (which improves accuracy and reduces
-computational cost) with automatic handling of dimensions with limits \eqn{a=-Inf} and
-\eqn{b=Inf}, which do not affect the probability but affect the computation time
+computational cost) with automatic handling of dimensions with limits \code{a=-Inf} and
+\code{b=Inf}, which do not affect the probability but affect the computation time
 if they are not handled separately.
 }
 \examples{

@@ -32,12 +32,13 @@
 #' @param ind If only a part of a component should be used in the calculations,
 #' this argument specifies the indices for that part.
 #' @param method Method for handeling the latent Gaussian structure:
-#' \itemize{
+#' \describe{
 #' \item{'EB' }{Empirical Bayes}
 #' \item{'QC' }{Quantile correction}
 #' \item{'NI' }{Numerical integration}
 #' \item{'NIQC' }{Numerical integration with quantile correction}
-#' \item{'iNIQC' }{Improved integration with quantile correction}}
+#' \item{'iNIQC' }{Improved integration with quantile correction}
+#' }
 #' @param alpha Error probability for the excursion set of interest. The default
 #' value is 1.
 #' @param F.limit Error probability for when to stop the calculation of the
@@ -48,11 +49,12 @@
 #' @param u.link If u.link is TRUE, \code{u} is assumed to be in the scale of the
 #' data and is then transformed to the scale of the linear predictor (default FALSE).
 #' @param type Type of region:
-#'  \itemize{
+#'  \describe{
 #'      \item{'>' }{positive excursions}
 #'      \item{'<' }{negative excursions}
 #'      \item{'!=' }{contour avoiding function}
-#'      \item{'=' }{contour credibility function}}
+#'      \item{'=' }{contour credibility function}
+#'  }
 #' @param n.iter Number or iterations in the MC sampler that is used for
 #' approximating probabilities. The default value is 10000.
 #' @param verbose Set to TRUE for verbose mode (optional).
@@ -63,8 +65,8 @@
 #' entire linear predictor is added internally (default TRUE).
 #' @param seed Random seed (optional).
 #'
-#' @return \code{excursions.inla} returns an object of class "excurobj". This is
-#' a list that contains the following arguments:
+#' @return \code{excursions.inla} returns an object of class "excurobj" with the 
+#' following elements
 #' \item{E }{Excursion set, contour credible region, or contour avoiding set}
 #' \item{F }{The excursion function corresponding to the set \code{E} calculated
 #' for values up to \code{F.limit}}

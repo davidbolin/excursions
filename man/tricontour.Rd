@@ -113,7 +113,7 @@ where \eqn{u_1 \leq z < u_2}, for \code{-} the regions fulfil \eqn{u_1
 are \code{"sp"} (default) and \code{"fm"} (and deprecated \code{"inla.mesh.segment"}).}
 }
 \value{
-For \code{tricontour}, a list some of the same fields that
+For \code{tricontour}, a list with some of the fields that
   \code{inla.mesh.segment} objects have:
   \item{loc}{A coordinate matrix}
   \item{idx}{Contour segment indices, as a 2-column matrix, each row

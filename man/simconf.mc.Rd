@@ -25,7 +25,7 @@ An object of class "excurobj" with elements
 \description{
 \code{simconf.mc} is used for calculating simultaneous confidence regions based
 on Monte Carlo samples. The function returns upper and lower bounds \eqn{a} and
-\eqn{b} such that \eqn{P(a<x<b) = 1-alpha}.
+\eqn{b} such that \eqn{P(a<x<b) = 1-\alpha}.
 }
 \details{
 See \code{\link{simconf}} for details.
