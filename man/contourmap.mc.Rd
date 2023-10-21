@@ -25,7 +25,7 @@ contourmap.mc(
 \item{levels}{Levels to use in contour map.}
 
 \item{type}{Type of contour map. One of:
-\itemize{
+\describe{
      \item{'standard' }{Equidistant levels between smallest and largest value of the posterior mean (default).}
      \item{'pretty' }{Equally spaced 'round' values which cover the range of the values in the posterior mean.}
      \item{'equalarea' }{Levels such that different spatial regions are approximately equal in size.}
@@ -35,7 +35,7 @@ contourmap.mc(
 }}
 
 \item{compute}{A list with quality indices to compute
-\itemize{
+\describe{
      \item{'F': }{TRUE/FALSE indicating whether the contour map function should be computed (default TRUE).}
      \item{'measures': }{A list with the quality measures to compute ("P0", "P1", "P2") or corresponding bounds based only on the marginal probabilities ("P0-bound", "P1-bound", "P2-bound").}
      }}
@@ -45,7 +45,7 @@ contourmap.mc(
 \item{verbose}{Set to TRUE for verbose mode (optional).}
 }
 \value{
-\code{contourmap} returns an object of class "excurobj". This is a list that can contains the following arguments:
+\code{contourmap} returns an object of class "excurobj" with the following elements
     \item{u }{Contour levels used in the contour map.}
     \item{n.levels }{The number of contours used.}
     \item{u.e }{The values associated with the level sets G_k.}
@@ -61,22 +61,22 @@ contourmap.mc(
 \code{contourmap.mc} is used for calculating contour maps and quality measures for contour maps based on Monte Carlo samples of a model.
 }
 \details{
-The contour map is computed for the empirical mean of the samples. 
+The contour map is computed for the empirical mean of the samples.
 See \code{\link{contourmap}} and \code{\link{contourmap.inla}} for further details.
 }
 \examples{
-n = 100
-Q = Matrix(toeplitz(c(1, -0.5, rep(0, n-2))))
-mu = seq(-5, 5, length=n)
+n <- 100
+Q <- Matrix(toeplitz(c(1, -0.5, rep(0, n - 2))))
+mu <- seq(-5, 5, length = n)
 ## Sample the model 100 times (increase for better estimate)
-X = mu + solve(chol(Q),matrix(rnorm(n=n*100),nrow=n,ncol=100))
+X <- mu + solve(chol(Q), matrix(rnorm(n = n * 100), nrow = n, ncol = 100))
 
-lp <- contourmap.mc(X,n.levels = 2, compute=list(F=FALSE, measures = c("P1","P2")))
+lp <- contourmap.mc(X, n.levels = 2, compute = list(F = FALSE, measures = c("P1", "P2")))
 
-#plot contourmap
+# plot contourmap
 plot(lp$map)
-#display quality measures
-c(lp$P1,lp$P2)
+# display quality measures
+c(lp$P1, lp$P2)
 }
 \references{
 Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.

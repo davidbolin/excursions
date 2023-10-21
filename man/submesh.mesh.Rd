@@ -10,34 +10,32 @@ submesh.mesh(z, mesh)
 \item{z}{A matrix with values indicating which nodes that should be
 present in the submesh.}
 
-\item{mesh}{An \code{inla.mesh} object.}
+\item{mesh}{An \code{fm_mesh_2d} object.}
 }
 \value{
-An \code{inla.mesh} object.
+An \code{fm_mesh_2d} object.
 }
 \description{
 Extracts a part of a mesh
 }
-\note{
-This function requires the \code{INLA} package, which is not a CRAN package.
-See \url{https://www.r-inla.org/download-install} for easy installation instructions.
-}
 \examples{
 \dontrun{
-if (require(INLA)) {
-nxy = 30
-x=seq(from=0,to=4,length.out=nxy)
-lattice=inla.mesh.lattice(x=x,y=x)
-mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
+if (require(fmesher)) {
+  nxy <- 30
+  x <- seq(from = 0, to = 4, length.out = nxy)
+  lattice <- fm_lattice_2d(x = x, y = x)
+  mesh <- fm_mesh_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
 
-#extract a part of the mesh inside a circle
-xy.in <- rowSums((mesh$loc[,1:2]-2)^2)<1
-submesh <- excursions:::submesh.mesh(matrix(xy.in,nxy,nxy),mesh)
-plot(mesh$loc[,1:2])
-lines(2+cos(seq(0,2*pi,length.out=100)), 2+sin(seq(0,2*pi,length.out=100)))
-plot(submesh,add=TRUE)
-points(mesh$loc[xy.in,1:2],col="2")
-}}
+  # extract a part of the mesh inside a circle
+  xy.in <- rowSums((mesh$loc[, 1:2] - 2)^2) < 1
+  submesh <- excursions:::submesh.mesh(matrix(xy.in, nxy, nxy), mesh)
+  plot(mesh$loc[, 1:2])
+  lines(2 + cos(seq(0, 2 * pi, length.out = 100)), 2 + sin(seq(0, 2 * pi, length.out = 100)))
+  plot(submesh, add = TRUE)
+  points(mesh$loc[xy.in, 1:2], col = "2")
+}
+}
+
 }
 \author{
 Finn Lindgren \email{finn.lindgren@gmail.com}

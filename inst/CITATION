@@ -4,7 +4,7 @@ bibentry(bibtype = "Article",
   title        = "Calculating Probabilistic Excursion Sets and Related Quantities Using {excursions}",
   author       = c(person(given = "David",
                           family = "Bolin",
-                          email = "david.bolin@chalmers.se"),
+                          email = "david.bolin@kaust.edu.sa"),
                    person(given = "Finn",
                           family = "Lindgren",
                           email = "finn.lindgren@ed.ac.uk")),
@@ -22,12 +22,14 @@ bibentry(bibtype = "Article",
              "86(5), 1--20.")
 )
 
-
-citEntry(
-    entry        = "Article",
+bibentry(bibtype = "Article",
     title        = "Excursion and contour uncertainty regions for latent {Gaussian} models",
-    author       =
-      personList(as.person("David Bolin"), as.person("Finn Lindgren")),
+    author       = c(person(given = "David",
+                          family = "Bolin",
+                          email = "david.bolin@kaust.edu.sa"),
+                   person(given = "Finn",
+                          family = "Lindgren",
+                          email = "finn.lindgren@ed.ac.uk")),
     journal      = "Journal of the Royal Statistical Society, Series B (Statistical Methodology)",
     year         = "2015",
     volume       = "77",
@@ -42,10 +44,13 @@ citEntry(
 )
 
 
-citEntry(
-    entry        = "Article",
-    author       =
-      personList(as.person("David Bolin"), as.person("Finn Lindgren")),
+bibentry(bibtype = "Article",
+    author       = c(person(given = "David",
+                          family = "Bolin",
+                          email = "david.bolin@kaust.edu.sa"),
+                   person(given = "Finn",
+                          family = "Lindgren",
+                          email = "finn.lindgren@ed.ac.uk")),
     title        = "Quantifying the uncertainty of contour maps",
     journal      = "Journal of Computational and Graphical Statistics",
     year         = "2017",
@@ -55,5 +60,5 @@ citEntry(
     textVersion  =
     paste0("David Bolin and Finn Lindgren (2017), ",
           "Quantifying the uncertainty of contour maps, ",
-        "Journal of Computational and Graphical Statistics, 26:3, 513-524 .")
+        "Journal of Computational and Graphical Statistics, 26:3, 513-524.")
 )

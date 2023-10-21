@@ -21,9 +21,9 @@ simconf.mixture(
 \arguments{
 \item{alpha}{Error probability for the region.}
 
-\item{mu}{A list with the \code{k} expectation vectors \eqn{latex}{\mu_k}.}
+\item{mu}{A list with the \code{k} expectation vectors \eqn{\mu_k}.}
 
-\item{Q}{A list with the \code{k} precision matrices \eqn{latex}{Q_k}.}
+\item{Q}{A list with the \code{k} precision matrices \eqn{Q_k}.}
 
 \item{w}{A vector with the weights for each class in the mixture.}
 
@@ -45,7 +45,7 @@ for using the maximum number of threads allowed by the system (default).}
 otherwise sequential integration is used.}
 }
 \value{
-#' @return An object of class "excurobj" with elements
+An object of class "excurobj" with elements
 \item{a }{The lower bound.}
 \item{b }{The upper bound.}
 \item{a.marginal }{The lower bound for pointwise confidence bands.}
@@ -54,30 +54,30 @@ otherwise sequential integration is used.}
 \description{
 \code{simconf.mixture} is used for calculating simultaneous confidence regions
 for Gaussian mixture models. The distribution for the process \eqn{x} is assumed to be
-\deqn{latex}{\pi(x) = \sum_{k=1}^K w_k N(\mu_k, Q_k^{-1}).}
+\deqn{\pi(x) = \sum_{k=1}^K w_k N(\mu_k, Q_k^{-1}).}
 The function returns upper and lower bounds \eqn{a} and \eqn{b} such that
-\eqn{P(a<x<b) = 1-alpha}.
+\eqn{P(a<x<b) = 1-\alpha}.
 }
 \details{
 See \code{\link{simconf}} for details.
 }
 \examples{
-n = 11
-K = 3
+n <- 11
+K <- 3
 mu <- Q <- list()
-for(k in 1:K){
-  mu[[k]] = k*0.1 + seq(-5, 5, length=n)
-  Q[[k]] = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
+for (k in 1:K) {
+  mu[[k]] <- k * 0.1 + seq(-5, 5, length = n)
+  Q[[k]] <- Matrix(toeplitz(c(1, -0.1, rep(0, n - 2))))
 }
 ## calculate the confidence region
-conf = simconf.mixture(0.05, mu, Q, w = rep(1/3,3), max.threads=2)
+conf <- simconf.mixture(0.05, mu, Q, w = rep(1 / 3, 3), max.threads = 2)
 
 ## Plot the region
-plot(mu[[1]],type="l")
+plot(mu[[1]], type = "l")
 lines(mu[[2]])
 lines(mu[[3]])
-lines(conf$a, col=2)
-lines(conf$b, col=2)
+lines(conf$a, col = 2)
+lines(conf$b, col = 2)
 }
 \references{
 Bolin et al. (2015) \emph{Statistical prediction of global sea level

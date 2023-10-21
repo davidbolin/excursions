@@ -25,7 +25,7 @@ sample of the model.}
 \item{u}{Excursion or contour level.}
 
 \item{type}{Type of region:
-\itemize{
+\describe{
     \item{'>' }{positive excursions}
     \item{'<' }{negative excursions}
     \item{'!=' }{contour avoiding function}
@@ -43,8 +43,8 @@ provide \eqn{P(X>u)}.}
 \item{verbose}{Set to TRUE for verbose mode (optional).}
 }
 \value{
-\code{excursions} returns an object of class "excurobj". This is a list that
-contains the following arguments:
+\code{excursions.mc} returns an object of class "excurobj" with the 
+following elements
 \item{E }{Excursion set, contour credible region, or contour avoiding set.}
 \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
 \item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes.
@@ -64,17 +64,19 @@ regions, and contour avoiding sets based on Monte Carlo samples of models.
 }
 \examples{
 ## Create mean and a tridiagonal precision matrix
-n = 101
-mu.x = seq(-5, 5, length=n)
-Q.x = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
+n <- 101
+mu.x <- seq(-5, 5, length = n)
+Q.x <- Matrix(toeplitz(c(1, -0.1, rep(0, n - 2))))
 ## Sample the model 100 times (increase for better estimate)
-X = mu.x + solve(chol(Q.x),matrix(rnorm(n=n*1000),nrow=n,ncol=1000))
+X <- mu.x + solve(chol(Q.x), matrix(rnorm(n = n * 1000), nrow = n, ncol = 1000))
 ## calculate the positive excursion function
-res.x = excursions.mc(X,alpha=0.05,type='>',u=0)
+res.x <- excursions.mc(X, alpha = 0.05, type = ">", u = 0)
 ## Plot the excursion function and the marginal excursion probabilities
-plot(res.x$F, type="l",
-     main='Excursion function (black) and marginal probabilites (red)')
-lines(res.x$rho, col=2)
+plot(res.x$F,
+  type = "l",
+  main = "Excursion function (black) and marginal probabilites (red)"
+)
+lines(res.x$rho, col = 2)
 }
 \references{
 Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour

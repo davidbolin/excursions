@@ -36,7 +36,7 @@ contourmap(
 \item{levels}{Levels to use in contour map.}
 
 \item{type}{Type of contour map. One of:
-\itemize{
+\describe{
      \item{'standard' }{Equidistant levels between smallest and largest value of the posterior mean (default).}
      \item{'pretty' }{Equally spaced 'round' values which cover the range of the values in the posterior mean.}
      \item{'equalarea' }{Levels such that different spatial regions are approximately equal in size.}
@@ -46,7 +46,7 @@ contourmap(
 }}
 
 \item{compute}{A list with quality indices to compute
-\itemize{
+\describe{
      \item{'F': }{TRUE/FALSE indicating whether the contour map function should be computed (default TRUE).}
      \item{'measures': }{A list with the quality measures to compute ("P0", "P1", "P2") or corresponding bounds based only on the marginal probabilities ("P0-bound", "P1-bound", "P2-bound").}
      }}
@@ -66,7 +66,7 @@ contourmap(
 \item{seed}{Random seed (optional).}
 }
 \value{
-\code{contourmap} returns an object of class "excurobj". This is a list that can contains the following arguments:
+\code{contourmap} returns an object of class "excurobj" with the following elements
     \item{u }{Contour levels used in the contour map.}
     \item{n.levels }{The number of contours used.}
     \item{u.e }{The values associated with the level sets G_k.}
@@ -82,26 +82,28 @@ contourmap(
 \code{contourmap} is used for calculating contour maps and quality measures for contour maps for Gaussian models.
 }
 \details{
-The Gaussian model is specified using the mean \code{mu} and the precision matrix 
+The Gaussian model is specified using the mean \code{mu} and the precision matrix
 \code{Q}. The contour map is then computed for the mean, using either the contour
 levels specified in \code{levels}, or \code{n.levels} contours that are placed according
 to the argument \code{type}.
 
-A number of quality measures can be computed based based on the specified contour map 
-and the Gaussian distribution. What should be computed is specified using the 
+A number of quality measures can be computed based based on the specified contour map
+and the Gaussian distribution. What should be computed is specified using the
 \code{compute} argument. For details on these quanties, see the reference below.
 }
 \examples{
-n = 10
-Q = Matrix(toeplitz(c(1, -0.5, rep(0, n-2))))
-mu = seq(-5, 5, length=n)
-lp <- contourmap(mu,Q,n.levels = 2,
-                 compute=list(F=FALSE, measures = c("P1","P2")),
-                 max.threads=1)
-#Plot the contourmap
+n <- 10
+Q <- Matrix(toeplitz(c(1, -0.5, rep(0, n - 2))))
+mu <- seq(-5, 5, length = n)
+lp <- contourmap(mu, Q,
+  n.levels = 2,
+  compute = list(F = FALSE, measures = c("P1", "P2")),
+  max.threads = 1
+)
+# Plot the contourmap
 plot(lp$map)
-#Display the quality measures
-cat(c(lp$P1,lp$P2))
+# Display the quality measures
+cat(c(lp$P1, lp$P2))
 }
 \references{
 Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, vol 26, no 3, pp 513-524.

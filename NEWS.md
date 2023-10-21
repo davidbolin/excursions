@@ -1,3 +1,13 @@
+# excursions 2.5.6
+
+* Remove rgdal suggest
+* Update some examples to use fmesher instead of INLA
+
+# excursions 2.5.5
+
+* Add R compiler configuration extraction to configure.ac
+* Add support for results computed with the new default `compact` mode in INLA
+
 # excursions 2.5.4
 
 * Remove local gsl code, and rely on SystemRequirements instead

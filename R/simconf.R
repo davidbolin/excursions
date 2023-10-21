@@ -19,7 +19,7 @@
 #'
 #' \code{simconf} is used for calculating simultaneous confidence regions for
 #' Gaussian models \eqn{x}. The function returns upper and lower bounds \eqn{a}
-#' and \eqn{b} such that \eqn{P(a<x<b) = 1-alpha}.
+#' and \eqn{b} such that \eqn{P(a<x<b) = 1-\alpha}.
 #'
 #' @param alpha Error probability for the region.
 #' @param mu Expectation vector for the Gaussian distribution.
@@ -41,119 +41,133 @@
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
 #' @details The pointwise confidence bands are based on the marginal quantiles,
-#' meaning that \code{a.marignal = mu +} \eqn{q_{alpha}} and \code{b.marginal = mu +} 
-#' \eqn{q_{1-alpha}}, where \code{mu} is the mean and \eqn{q_{alpha}} is a 
-#' vector with the alpha-quantiles of \code{x-mu}.
-#' 
-#' The simultaneous confidence bands are defined as
-#' \code{a = mu +} \eqn{c*q_{alpha}} and \code{b = mu +} \eqn{c*q_{1-alpha}}, where 
-#' \eqn{c} is a constant computed such that \eqn{P(a < x < b) = 1-alpha}.
-#' 
+#' meaning that \code{a.marignal} is a vector where the ith element equals 
+#' \eqn{\mu_i + q_{\alpha,i}}  and \code{b.marginal} is a vector where the ith element
+#' equals  \eqn{\mu_i + q_{1-\alpha,i}}, where \eqn{\mu_i} is the expected value 
+#' of the \eqn{x_i} and \eqn{q_{\alpha,i}} is the \eqn{\alpha}-quantile of \eqn{x_i-\mu_i}.
+#'
+#' The simultaneous confidence band is defined by the lower limit vector \code{a} and 
+#' the upper limit vector \code{b}, where \eqn{a_i = \mu_i +c q_{\alpha}} and 
+#' \eqn{b_i = \mu_i + c q_{1-\alpha}}, where \eqn{c} is a constant computed such 
+#' that \eqn{P(a < x < b) = 1-\alpha}.
+#'
 #' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
 #' from global temperature}, Statistica Sinica, vol 25, pp 351-367.
-#' 
+#'
 #' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #' @seealso \code{\link{simconf.inla}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}
 #' @examples
 #' ## Create mean and a tridiagonal precision matrix
-#' n = 11
-#' mu.x = seq(-5, 5, length=n)
-#' Q.x = Matrix(toeplitz(c(1, -0.1, rep(0, n-2))))
+#' n <- 11
+#' mu.x <- seq(-5, 5, length = n)
+#' Q.x <- Matrix(toeplitz(c(1, -0.1, rep(0, n - 2))))
 #' ## calculate the confidence region
-#' conf = simconf(0.05, mu.x, Q.x, max.threads=2)
+#' conf <- simconf(0.05, mu.x, Q.x, max.threads = 2)
 #' ## Plot the region
-#' plot(mu.x, type="l", ylim=c(-10, 10),
-#'      main='Mean (black) and confidence region (red)')
-#' lines(conf$a, col=2)
-#' lines(conf$b, col=2)
-
+#' plot(mu.x,
+#'   type = "l", ylim = c(-10, 10),
+#'   main = "Mean (black) and confidence region (red)"
+#' )
+#' lines(conf$a, col = 2)
+#' lines(conf$b, col = 2)
 simconf <- function(alpha,
                     mu,
                     Q,
-                    n.iter=10000,
+                    n.iter = 10000,
                     Q.chol,
                     vars,
-                    ind=NULL,
-                    verbose=0,
-                    max.threads=0,
-                    seed=NULL)
-{
-
-  if(missing(mu)){
-	  stop('Must specify mean value')
+                    ind = NULL,
+                    verbose = 0,
+                    max.threads = 0,
+                    seed = NULL) {
+  if (missing(mu)) {
+    stop("Must specify mean value")
   } else {
     mu <- private.as.vector(mu)
   }
-  if(missing(Q) && missing(Q.chol))
-	  stop('Must specify a precision matrix or its Cholesky factor')
+  if (missing(Q) && missing(Q.chol)) {
+    stop("Must specify a precision matrix or its Cholesky factor")
+  }
 
-  if(!missing(ind) && !missing(Q.chol))
-	  stop('Cannot provide both cholesky factor and indices.')
+  if (!missing(ind) && !missing(Q.chol)) {
+    stop("Cannot provide both cholesky factor and indices.")
+  }
 
-  if(!missing(Q))
+  if (!missing(Q)) {
     Q <- private.as.dgCMatrix(Q)
+  }
 
-  if(!missing(Q.chol))
+  if (!missing(Q.chol)) {
     Q.chol <- private.as.dtCMatrixU(Q.chol)
+  }
 
-  if(!missing(vars))
+  if (!missing(vars)) {
     vars <- private.as.vector(vars)
+  }
 
-  if(!missing(ind))
+  if (!missing(ind)) {
     ind <- private.as.vector(ind)
+  }
 
 
   if (!missing(Q.chol) && !is.null(Q.chol)) {
     L <- private.as.dtCMatrixU(Q.chol)
   } else {
-    L <- suppressWarnings(private.Cholesky(Q, perm=FALSE)$R)
+    L <- suppressWarnings(private.Cholesky(Q, perm = FALSE)$R)
   }
 
-  if(missing(vars)){
-    vars  <- excursions.variances(L)
-	}
-	sd <- sqrt(vars)
+  if (missing(vars)) {
+    vars <- excursions.variances(L)
+  }
+  sd <- sqrt(vars)
 
 
-  #setup function for optmization
-  f.opt <- function(x,alpha,sd,L,ind,seed,max.threads){
-	  q = qnorm(x)*sd;
-	  prob = gaussint(a=-q, b=q, Q.chol=L, ind=ind, lim=1-alpha,
-	 					  max.threads=max.threads,seed=seed)
+  # setup function for optmization
+  f.opt <- function(x, alpha, sd, L, ind, seed, max.threads) {
+    q <- qnorm(x) * sd
+    prob <- gaussint(
+      a = -q, b = q, Q.chol = L, ind = ind, lim = 1 - alpha,
+      max.threads = max.threads, seed = seed
+    )
 
-	  if(prob$P == 0){
-		  return(1)
-	  } else {
-		  return(prob$P)
-	  }
+    if (prob$P == 0) {
+      return(1)
+    } else {
+      return(prob$P)
+    }
   }
 
-  r.o = optimize(f.opt,interval = c(0,1),alpha=alpha,sd=sd,L=L,seed=seed,max.threads = max.threads,ind=ind)
+  r.o <- optimize(f.opt, interval = c(0, 1), alpha = alpha, sd = sd, L = L, seed = seed, max.threads = max.threads, ind = ind)
 
-  a = mu-qnorm(r.o$minimum)*sd
-  b = mu+qnorm(r.o$minimum)*sd
+  a <- mu - qnorm(r.o$minimum) * sd
+  b <- mu + qnorm(r.o$minimum) * sd
 
-  a.marg = mu-qnorm(alpha/2)*sd
-  b.marg = mu+qnorm(alpha/2)*sd
+  a.marg <- mu - qnorm(alpha / 2) * sd
+  b.marg <- mu + qnorm(alpha / 2) * sd
 
 
-  if(is.null(ind)) {
-    output <- list(a=a,b=b,a.marginal = a.marg,b.marginal=b.marg,
-                   mean = mu, vars = vars)
+  if (is.null(ind)) {
+    output <- list(
+      a = a, b = b, a.marginal = a.marg, b.marginal = b.marg,
+      mean = mu, vars = vars
+    )
   } else {
-    output <- list(a=a[ind],b=b[ind],
-                   a.marginal = a.marg[ind],
-                   b.marginal=b.marg[ind],
-                   mean = mu[ind], vars = vars[ind])
+    output <- list(
+      a = a[ind], b = b[ind],
+      a.marginal = a.marg[ind],
+      b.marginal = b.marg[ind],
+      mean = mu[ind], vars = vars[ind]
+    )
   }
 
-  output$meta = list(calculation="simconf",
-                     alpha=alpha,
-                     n.iter=n.iter,
-                     ind=ind,
-                     call = match.call())
+  output$meta <- list(
+    calculation = "simconf",
+    alpha = alpha,
+    n.iter = n.iter,
+    ind = ind,
+    call = match.call()
+  )
   class(output) <- "excurobj"
   return(output)
 }
-

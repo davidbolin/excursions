@@ -9,7 +9,7 @@ continuous(
   geometry,
   alpha,
   method = c("log", "linear", "step"),
-  output = c("sp", "inla"),
+  output = c("sp", "fm", "inla"),
   subdivisions = 1,
   calc.credible = TRUE
 )
@@ -19,7 +19,8 @@ continuous(
 or \code{\link{contourmap}}.}
 
 \item{geometry}{Specification of the lattice or triangulation geometry of the input.
-One of \code{list(x, y)}, \code{list(loc, dims)}, \code{inla.mesh.lattice}, or
+One of \code{list(x, y)}, \code{list(loc, dims)}, \code{fm_lattice_2d},
+\code{inla.mesh.lattice}, \code{fm_mesh_2d}, or
 \code{inla.mesh}, where \code{x} and \code{y} are vectors, \code{loc} is
 a two-column matrix of coordinates, and \code{dims} is the lattice size vector.
 The first three versions are all treated topologically as lattices, and the
@@ -35,7 +36,7 @@ are interpolated linearly in the transformed scale. For \code{step}, a conservat
 step function is used.}
 
 \item{output}{Specifies what type of object should be generated. \code{sp} gives a
-\code{SpatialPolygons} object, and \code{inla} gives a \code{inla.mesh.segment} object.}
+\code{SpatialPolygons} object, and \code{fm} or \code{inla} gives a \code{fm_segm} object.}
 
 \item{subdivisions}{The number of mesh triangle subdivisions to perform for the
 interpolation of the excursions or contour function. 0 is no subdivision.
@@ -47,7 +48,7 @@ appearance of the interpolation. Default=1.}
 objects in addition to avoidance sets.}
 }
 \value{
-A list:
+A list with elements
 \item{M}{\code{SpatialPolygons} or \code{inla.mesh.segment} object. The subsets
 are tagged, so that credible regions are tagged \code{"-1"}, and regions between
 levels are tagged \code{as.character(0:nlevels)}.}
@@ -62,51 +63,62 @@ Calculates continuous domain excursion and credible contour sets
 }
 \examples{
 \dontrun{
-if (require.nowarnings("INLA")) {
-#Generate mesh and SPDE model
-n.lattice = 10 #Increase for more interesting, but slower, examples
-x=seq(from=0,to=10,length.out=n.lattice)
-lattice=inla.mesh.lattice(x=x,y=x)
-mesh=inla.mesh.create(lattice=lattice, extend=FALSE, refine=FALSE)
-spde <- inla.spde2.matern(mesh, alpha=2)
+if (require("fmesher")) {
+  # Generate mesh and SPDE model
+  n.lattice <- 10 # Increase for more interesting, but slower, examples
+  x <- seq(from = 0, to = 10, length.out = n.lattice)
+  lattice <- fm_lattice_2d(x = x, y = x)
+  mesh <- fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
 
-#Generate an artificial sample
-sigma2.e = 0.01
-n.obs=100
-obs.loc = cbind(runif(n.obs)*diff(range(x))+min(x),
-runif(n.obs)*diff(range(x))+min(x))
-Q = inla.spde2.precision(spde, theta=c(log(sqrt(0.5)), log(sqrt(1))))
-x = inla.qsample(Q=Q)
-A = inla.spde.make.A(mesh=mesh,loc=obs.loc)
-Y = as.vector(A \%*\% x + rnorm(n.obs)*sqrt(sigma2.e))
+  # Generate an artificial sample
+  sigma2.e <- 0.1
+  n.obs <- 100
+  obs.loc <- cbind(
+    runif(n.obs) * diff(range(x)) + min(x),
+    runif(n.obs) * diff(range(x)) + min(x)
+  )
+  Q <- fm_matern_precision(mesh, alpha = 2, rho = 3, sigma = 1)
+  x <- fm_sample(n = 1, Q = Q)
+  A <- fm_basis(mesh, loc = obs.loc)
+  Y <- as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
 
-## Calculate posterior
-Q.post = (Q + (t(A) \%*\% A)/sigma2.e)
-mu.post = as.vector(solve(Q.post,(t(A) \%*\% Y)/sigma2.e))
-vars.post = excursions.variances(chol(Q.post))
+  ## Calculate posterior
+  Q.post <- (Q + (t(A) \%*\% A) / sigma2.e)
+  mu.post <- as.vector(solve(Q.post, (t(A) \%*\% Y) / sigma2.e))
+  vars.post <- excursions.variances(chol(Q.post))
 
-## Calculate contour map with two levels
-map = contourmap(n.levels = 2, mu = mu.post, Q = Q.post,
-alpha=0.1, F.limit = 0.1,max.threads=1)
+  ## Calculate contour map with two levels
+  map <- contourmap(
+    n.levels = 2, mu = mu.post, Q = Q.post,
+    alpha = 0.1, F.limit = 0.1, max.threads = 1
+  )
 
-## Calculate the continuous representation
-sets <- continuous(map, mesh, alpha=0.1)
+  ## Calculate the continuous representation
+  sets <- continuous(map, mesh, alpha = 0.1)
 
-## Plot the results
-reo = mesh$idx$lattice
-cols = contourmap.colors(map, col=heat.colors(100, 1),
-credible.col = grey(0.5, 1))
-names(cols) = as.character(-1:2)
+  ## Plot the results
+  reo <- mesh$idx$lattice
+  cols <- contourmap.colors(map,
+    col = heat.colors(100, 1, rev = TRUE),
+    credible.col = grey(0.5, 1)
+  )
+  names(cols) <- as.character(-1:2)
 
-par(mfrow = c(2,2))
-image(matrix(mu.post[reo],n.lattice,n.lattice),
-main="mean",axes=FALSE)
-image(matrix(sqrt(vars.post[reo]),n.lattice,n.lattice),
-main="sd", axes = FALSE)
-image(matrix(map$M[reo],n.lattice,n.lattice),col=cols,axes=FALSE)
-idx.M = setdiff(names(sets$M), "-1")
-plot(sets$M[idx.M], col=cols[idx.M])
-}}
+  par(mfrow = c(2, 2))
+  image(matrix(mu.post[reo], n.lattice, n.lattice),
+    main = "mean", axes = FALSE, asp = 1
+  )
+  image(matrix(sqrt(vars.post[reo]), n.lattice, n.lattice),
+    main = "sd", axes = FALSE, asp = 1
+  )
+  image(matrix(map$M[reo], n.lattice, n.lattice),
+    col = cols, axes = FALSE, asp = 1
+  )
+  idx.M <- setdiff(names(sets$M), "-1")
+  plot(sets$M[idx.M], col = cols[idx.M])
+}
+}
+
 }
 \references{
 Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, vol 26, no 3, pp 513-524.
