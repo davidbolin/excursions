@@ -1,3 +1,5 @@
+# excursions (Development version)
+
 # excursions 2.5.6
 
 * Remove rgdal suggest
