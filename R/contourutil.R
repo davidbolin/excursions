@@ -102,9 +102,9 @@ contourfunction <- function(lp, mu, Q, vars, ind, alpha, n.iter = 10000,
   if (missing(vars)) {
     if (verbose) cat("calculate variances\n")
     if (is.chol) {
-      vars <- excursions.variances(L = Q)
+      vars <- excursions.variances(L = Q, max.threads = max.threads)
     } else {
-      vars <- excursions.variances(Q = Q)
+      vars <- excursions.variances(Q = Q, max.threads = max.threads)
     }
   }
 
@@ -276,7 +276,8 @@ excursions.levelplot <- function(mu, n.levels, ind, levels,
 
 ## Create a P-optimal levelplot.
 ## The function will take A LOT of time to run if use.marginals=FALSE.
-excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2, use.marginals = TRUE, ind) {
+excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2, 
+                                     use.marginals = TRUE, ind, max.threads = 0) {
   if ((measure != 1) && (measure != 2) && (measure != 0)) {
     stop("only measure 0, 1, or 2 allowed")
   }
@@ -305,7 +306,8 @@ excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2, use.mar
       Q = Q,
       measure = measure,
       use.marginals = use.marginals,
-      ind = ind
+      ind = ind,
+      max.threads = max.threads
     )
   }
   plot(u.add, P.add)
@@ -338,7 +340,7 @@ excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2, use.mar
 }
 ## Internal function for optimization of restricted P-optimal contour map
 restricted.lim.func <- function(u.add, u0, mu, vars, Q.chol, Q, measure,
-                                use.marginals, ind = ind) {
+                                use.marginals, ind = ind, max.threads = 0) {
   lp <- excursions.levelplot(mu = mu, levels = (u.add + u0), ind = ind)
   if (use.marginals) {
     val <- -Pmeasure.bound(lp = lp, mu = mu, vars = vars, type = measure, ind = ind)
@@ -346,7 +348,7 @@ restricted.lim.func <- function(u.add, u0, mu, vars, Q.chol, Q, measure,
   } else {
     val <- -Pmeasure(lp,
       mu = mu, Q = Q, Q.chol = Q.chol, type = measure,
-      ind = ind, vars = vars
+      ind = ind, vars = vars, max.threads = max.threads
     )
     cat(u.add, ": ", -val, "\n")
   }
@@ -356,7 +358,7 @@ restricted.lim.func <- function(u.add, u0, mu, vars, Q.chol, Q, measure,
 
 ## Internal function for optimization of P-optimal contour map
 excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
-                                use.marginals, ind = ind) {
+                                use.marginals, ind = ind, max.threads = 0) {
   lp <- excursions.levelplot(mu, levels = u, ind = ind)
   if ((min(u) <= min(mu[ind])) || (max(u) >= max(mu[ind]))) {
     # levels should be in (min(mu),max(mu))
@@ -381,7 +383,7 @@ excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
       } else {
         val <- -Pmeasure(lp,
           mu = mu, Q = Q, Q.chol = Q.chol, type = measure,
-          ind = ind, vars = vars
+          ind = ind, vars = vars, max.threads = max.threads
         )
         cat(u, ": ", -val, "\n")
       }
@@ -400,9 +402,12 @@ Pmeasure.bound <- function(lp, mu, vars, type, ind = NULL) {
 }
 
 ## Function that calculates the P measure for a given contour map.
-Pmeasure <- function(lp, mu, Q, Q.chol, ind = NULL, type, vars = vars, seed = NULL, n.iter = NULL) {
+Pmeasure <- function(lp, mu, Q, Q.chol, ind = NULL, type, 
+                     vars = vars, seed = NULL, n.iter = NULL,
+                     max.threads = 0) {
   if (type == 0) {
-    res <- contourfunction(lp = lp, mu = mu, Q = Q, vars = vars, ind = ind)
+    res <- contourfunction(lp = lp, mu = mu, Q = Q, vars = vars, ind = ind,
+                            max.threads = max.threads)
     p <- mean(res$F[ind])
   } else {
     if (type == 1 && length(lp$u) == 1) {
@@ -412,7 +417,8 @@ Pmeasure <- function(lp, mu, Q, Q.chol, ind = NULL, type, vars = vars, seed = NU
     res <- gaussint(
       mu = mu, Q = Q, Q.chol = Q.chol, a = limits$a,
       b = limits$b, ind = ind, use.reordering = "limits",
-      n.iter = n.iter, seed = seed
+      n.iter = n.iter, seed = seed,
+      max.threads = max.threads
     )
     p <- res$P[1]
   }

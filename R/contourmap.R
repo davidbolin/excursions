@@ -185,7 +185,7 @@ contourmap <- function(mu,
     if (missing(vars) && missing(Q)) {
       stop("Variances must be supplied when creating optimal contour map")
     } else if (missing(vars)) {
-      vars <- excursions.variances(Q = Q)
+      vars <- excursions.variances(Q = Q, max.threads = max.threads)
     }
     if (use.marginals == TRUE) {
       if (missing(Q)) {
@@ -221,7 +221,8 @@ contourmap <- function(mu,
       if (measure[i] == "P1") {
         if (n.levels > 1) {
           if (verbose) cat("Calculating P1-measure\n")
-          tmp <- Pmeasure(lp = lp, mu = mu, Q = Q, ind = ind, type = 1, seed = seed, n.iter = n.iter)
+          tmp <- Pmeasure(lp = lp, mu = mu, Q = Q, ind = ind, type = 1, 
+                          seed = seed, n.iter = n.iter, max.threads = max.threads)
           lp$P1 <- tmp$P
           lp$P1.error <- tmp$E
         } else {
@@ -230,7 +231,8 @@ contourmap <- function(mu,
         }
       } else if (measure[i] == "P2") {
         if (verbose) cat("Calculating P2-measure\n")
-        tmp <- Pmeasure(lp = lp, mu = mu, Q = Q, ind = ind, type = 2, seed = seed, n.iter = n.iter)
+        tmp <- Pmeasure(lp = lp, mu = mu, Q = Q, ind = ind, type = 2, 
+                        seed = seed, n.iter = n.iter, max.threads = max.threads)
         lp$P2 <- tmp$P
         lp$P2.error <- tmp$E
       } else if (measure[i] == "P0") {
@@ -245,17 +247,17 @@ contourmap <- function(mu,
         F.calculated <- TRUE
       } else if (measure[i] == "P0-bound") {
         if (missing(vars)) {
-          vars <- excursions.variances(Q = Q)
+          vars <- excursions.variances(Q = Q, max.threads = max.threads)
         }
         lp$P0.bound <- Pmeasure.bound(lp = lp, mu = mu, vars, type = 0, ind = ind)
       } else if (measure[i] == "P1-bound") {
         if (missing(vars)) {
-          vars <- excursions.variances(Q = Q)
+          vars <- excursions.variances(Q = Q, max.threads = max.threads)
         }
         lp$P1.bound <- Pmeasure.bound(lp = lp, mu = mu, vars, type = 1, ind = ind)
       } else if (measure[i] == "P2-bound") {
         if (missing(vars)) {
-          vars <- excursions.variances(Q = Q)
+          vars <- excursions.variances(Q = Q, max.threads = max.threads)
         }
         lp$P2.bound <- Pmeasure.bound(lp = lp, mu = mu, vars, type = 2, ind = ind)
       }

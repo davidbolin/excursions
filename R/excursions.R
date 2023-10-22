@@ -176,9 +176,9 @@ excursions <- function(alpha,
 
   if (missing(vars)) {
     if (is.chol) {
-      vars <- excursions.variances(L = Q)
+      vars <- excursions.variances(L = Q, max.threads = max.threads)
     } else {
-      vars <- excursions.variances(Q = Q)
+      vars <- excursions.variances(Q = Q, max.threads = max.threads)
     }
   } else {
     vars <- private.as.vector(vars)

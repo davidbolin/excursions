@@ -287,7 +287,9 @@ contourmap.inla <- function(result.inla,
     Q = config$Q,
     ind = ind,
     compute = list(F = FALSE, measures = NULL),
-    n.levels = n.levels, ...
+    n.levels = n.levels, 
+    max.threads = max.threads,
+    ...
   )
 
   # compute measures
@@ -330,7 +332,8 @@ contourmap.inla <- function(result.inla,
           tmp <- gaussint(
             mu = config$mu, Q = config$Q, a = limits$a,
             b = limits$b, ind = indices, use.reordering = "limits",
-            n.iter = n.iter, seed = seed
+            n.iter = n.iter, seed = seed,
+            max.threads = max.threads
           )
           cm$P1 <- tmp$P[1]
           cm$P1.error <- tmp$E[1]

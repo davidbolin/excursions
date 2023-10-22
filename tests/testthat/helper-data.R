@@ -26,13 +26,14 @@ testdata.inla <- function(inla.mode = "classic") {
       dims = c(n, n), symmetric = TRUE
     )
 
-    X <- mu + INLA::inla.qsample(1, Q, seed = 12345L)[, 1]
+    X <- mu + INLA::inla.qsample(1, Q, seed = 12345L, num.threads = "1.1")[, 1]
 
     obs.loc <- c(3, 4, 6, 8, 2, 9, 5, 11, 7, 1)
     A <- sparseMatrix(i = 1:n.obs, j = obs.loc, x = rep(1, n.obs), dims = c(n.obs, n))
     Y <- as.vector(A %*% X +
       INLA::inla.qsample(1, Diagonal(n.obs, 1.0),
-        seed = 98765L
+        seed = 98765L,
+        num.threads = "1.1"
       )[, 1])
 
     ef <- list(c(list(ar = x), list(cov = mu)))
