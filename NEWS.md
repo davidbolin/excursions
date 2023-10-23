@@ -1,4 +1,7 @@
-# excursions (Development version)
+# excursions 2.5.7
+
+* Update to make sure that max.threads properly limits the number of threads
+* Minor update to the documentation
 
 # excursions 2.5.6
 
