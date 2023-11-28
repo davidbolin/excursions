@@ -211,13 +211,13 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
         }
 
         if (x[i][j] == numeric_limits<double>::infinity()){
-          Rprintf("simulated infinite value, changing to zero\n",i);
-          Rprintf("c= %f, d= %f, ,d-c= %f\n",c,d,d-c);
+          Rprintf("simulated infinite value, changing to zero\n");
+          Rprintf("i=%d, c= %f, d= %f, ,d-c= %f\n",i,c,d,d-c);
           x[i][j] = 0;
         }
 
         if (x[i][j]!=x[i][j]) {
-          Rprintf("%d x is nan: rtmp= %f, c= %f, d= %f, ai=%f",rtmp,c,d,ai);
+          Rprintf("%d : x is nan: rtmp= %f, c= %f, d= %f, ai=%f",i,rtmp,c,d,ai);
           Rprintf(", bi= %f, s[j] = %f, Li = %f",bi,s[j],Li[i]);
         }
       }
