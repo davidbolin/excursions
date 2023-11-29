@@ -1,4 +1,4 @@
-# Development version
+# excursions 2.5.8
 
 * Minor updates to C code to avoid warning with gcc13 and clang17 compilers
 
