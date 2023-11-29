@@ -28,7 +28,7 @@ extern "C"{
 
 #define max(a,b) (((a)>(b))?(a):(b))
 #define min(a,b) (((a)<(b))?(a):(b))
-
+#define used_with_openmp(X) (void)X
 using namespace std;
 
 extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in){
@@ -37,6 +37,7 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
   int K = opts[1];
   int max_size = opts[2];
   int n_threads = opts[3];
+  used_with_openmp(n_threads);
   int seed_provided = opts[4];
 
   double lim = lim_in[0];
@@ -260,7 +261,9 @@ extern "C" void testRand( int * opts, double * x, int * seed_in){
   int n = opts[0];
   int n_threads = opts[1];
   int seed_provided = opts[2];
-
+  
+  used_with_openmp(n_threads);
+  
   #ifdef _OPENMP
     const int max_nP = omp_get_num_procs();
     int nPtmp;

@@ -6,6 +6,7 @@
 #include <map>
 #include <algorithm>
 
+#define used_with_openmp(X) (void)X
 
 #ifdef _OPENMP
 	#include<omp.h>
@@ -35,7 +36,7 @@ extern "C" void Qinv(int * Rir, int * Rjc, double * Rpr, double * variances, int
   #else
     const int nP = 1;
   #endif
-
+  used_with_openmp(nP);
   /*
   Copy cholesky factor to more convenient format and extract diagonal elements
   */
