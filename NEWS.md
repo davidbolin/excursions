@@ -1,3 +1,7 @@
+# Development version
+
+* Minor updates to C code to avoid warning with gcc13 and clang17 compilers
+
 # excursions 2.5.7
 
 * Update to make sure that max.threads properly limits the number of threads
