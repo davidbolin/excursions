@@ -124,25 +124,28 @@ simconf <- function(alpha,
 
 
   # setup function for optmization
-  f.opt <- function(x, alpha, sd, L, ind, seed, max.threads) {
-    q <- qnorm(x) * sd
+  f.opt <- function(x, alpha, sd, L, ind, seed, max.threads, verbose) {
+    q <- qnorm(x/100) * sd
     prob <- gaussint(
-      a = -q, b = q, Q.chol = L, ind = ind, lim = 1 - alpha,
+      a = -q, b = q, Q.chol = L, ind = ind, lim = 1 - 1.1*alpha,
       max.threads = max.threads, seed = seed
     )
+    if(verbose){
+        cat(x, prob$P, "\n")
+    }
 
     if (prob$P == 0) {
       return(1)
     } else {
-      return(prob$P)
+      return(abs(prob$P-(1-alpha)))
     }
   }
 
-  r.o <- optimize(f.opt, interval = c(0, 1), alpha = alpha, sd = sd, L = L, 
-                  seed = seed, max.threads = max.threads, ind = ind)
+  r.o <- optimize(f.opt, interval = 100*c(1-alpha, 1), alpha = alpha, sd = sd, L = L, 
+                  seed = seed, max.threads = max.threads, ind = ind, verbose = verbose)
 
-  a <- mu - qnorm(r.o$minimum) * sd
-  b <- mu + qnorm(r.o$minimum) * sd
+  a <- mu - qnorm(r.o$minimum/100) * sd
+  b <- mu + qnorm(r.o$minimum/100) * sd
 
   a.marg <- mu - qnorm(alpha / 2) * sd
   b.marg <- mu + qnorm(alpha / 2) * sd
