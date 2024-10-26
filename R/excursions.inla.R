@@ -64,6 +64,8 @@
 #' predictor is to be used, then only add the relevant part. Otherwise the
 #' entire linear predictor is added internally (default TRUE).
 #' @param seed Random seed (optional).
+#' @param prune.ind If `TRUE` and `ind` is supplied, then the result object is pruned to
+#' contain only the active nodes specified by `ind`.
 #'
 #' @return \code{excursions.inla} returns an object of class "excurobj" with the 
 #' following elements
@@ -186,7 +188,8 @@ excursions.inla <- function(result.inla,
                             verbose = 0,
                             max.threads = 0,
                             compressed = TRUE,
-                            seed = NULL) {
+                            seed = NULL,
+                            prune.ind = FALSE) {
   if (!requireNamespace("INLA", quietly = TRUE)) {
     stop("This function requires the INLA package (see www.r-inla.org/download-install)")
   }
@@ -446,28 +449,52 @@ excursions.inla <- function(result.inla,
   }
 
   M.out[ind.int] <- M
-
-  output <- list(
-    E = E.out,
-    F = F.out,
-    G = G.out,
-    M = M.out,
-    mean = mu.out,
-    vars = vars.out,
-    rho = rho.out,
-    meta = list(
-      calculation = "excursions",
-      type = type,
-      level = u,
-      level.link = u.link,
-      alpha = alpha,
-      F.limit = F.limit,
-      n.iter = n.iter,
-      method = method,
-      ind = ind.int,
-      call = match.call()
-    )
-  )
+  if(prune.ind) {
+      output <- list(
+          E = E.out[ind.int],
+          F = F.out[ind.int],
+          G = G.out[ind.int],
+          M = M.out[ind.int],
+          mean = mu.out[ind.int],
+          vars = vars.out[ind.int],
+          rho = rho.out[ind.int],
+          meta = list(
+              calculation = "excursions",
+              type = type,
+              level = u,
+              level.link = u.link,
+              alpha = alpha,
+              F.limit = F.limit,
+              n.iter = n.iter,
+              method = method,
+              ind = NULL,
+              call = match.call()
+          )
+      )
+  } else {
+      output <- list(
+          E = E.out,
+          F = F.out,
+          G = G.out,
+          M = M.out,
+          mean = mu.out,
+          vars = vars.out,
+          rho = rho.out,
+          meta = list(
+              calculation = "excursions",
+              type = type,
+              level = u,
+              level.link = u.link,
+              alpha = alpha,
+              F.limit = F.limit,
+              n.iter = n.iter,
+              method = method,
+              ind = ind.int,
+              call = match.call()
+          )
+      )    
+  }
+  
   class(output) <- "excurobj"
   output
 }

@@ -48,6 +48,8 @@
 #' @param verbose Set to TRUE for verbose mode (optional).
 #' @param max.threads Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).
 #' @param seed Random seed (optional).
+#' @param prune.ind If `TRUE` and `ind` is supplied, then the result object is pruned to
+#' contain only the active nodes specified by `ind`.
 #'
 #' @return \code{excursions} returns an object of class "excurobj" with the following elements
 #' \item{E}{Excursion set, contour credible region, or contour avoiding set}
@@ -121,7 +123,8 @@ excursions <- function(alpha,
                        max.size,
                        verbose = 0,
                        max.threads = 0,
-                       seed) {
+                       seed,
+                       prune.ind = FALSE) {
   if (method == "QC") {
     qc <- TRUE
   } else if (method == "EB") {
@@ -298,29 +301,56 @@ excursions <- function(alpha,
     ind <- which(ind)
   }
 
-  output <- list(
-    F = F,
-    G = G,
-    M = M,
-    E = E,
-    mean = mu,
-    vars = vars,
-    rho = marg$rho,
-    meta = (list(
-      calculation = "excursions",
-      type = type,
-      level = u,
-      F.limit = F.limit,
-      alpha = alpha,
-      n.iter = n.iter,
-      method = method,
-      ind = ind,
-      reo = reo,
-      ireo = ireo,
-      Fe = Fe,
-      call = match.call()
-    ))
-  )
+  if(prune.ind) { 
+      output <- list(
+          F = F[ind],
+          G = G[ind],
+          M = M[ind],
+          E = E[ind],
+          mean = mu[ind],
+          vars = vars[ind],
+          rho = marg$rho[ind],
+          meta = (list(
+              calculation = "excursions",
+              type = type,
+              level = u,
+              F.limit = F.limit,
+              alpha = alpha,
+              n.iter = n.iter,
+              method = method,
+              ind = NULL,
+              reo = reo,
+              ireo = ireo,
+              Fe = Fe,
+              call = match.call()
+          ))
+      )
+  } else {
+      output <- list(
+          F = F,
+          G = G,
+          M = M,
+          E = E,
+          mean = mu,
+          vars = vars,
+          rho = marg$rho,
+          meta = (list(
+              calculation = "excursions",
+              type = type,
+              level = u,
+              F.limit = F.limit,
+              alpha = alpha,
+              n.iter = n.iter,
+              method = method,
+              ind = ind,
+              reo = reo,
+              ireo = ireo,
+              Fe = Fe,
+              call = match.call()
+          ))
+      )        
+  }
+  
   class(output) <- "excurobj"
   output
 }

@@ -13,7 +13,8 @@ excursions.mc(
   reo,
   ind,
   max.size,
-  verbose = FALSE
+  verbose = FALSE,
+  prune.ind = FALSE
 )
 }
 \arguments{
@@ -41,6 +42,9 @@ provide \eqn{P(X>u)}.}
 \item{max.size}{Maximum number of nodes to include in the set of interest (optional).}
 
 \item{verbose}{Set to TRUE for verbose mode (optional).}
+
+\item{prune.ind}{If `TRUE` and `ind` is supplied, then the result object is pruned to
+contain only the active nodes specified by `ind`.}
 }
 \value{
 \code{excursions.mc} returns an object of class "excurobj" with the 

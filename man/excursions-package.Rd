@@ -3,7 +3,6 @@
 \docType{package}
 \name{excursions-package}
 \alias{excursions-package}
-\alias{_PACKAGE}
 \title{Excursions: Excursion Sets and Contour Credibility Regions for Random Fields}
 \description{
 \code{excursions} contains functions that compute probabilistic excursion sets,

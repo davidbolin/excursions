@@ -22,7 +22,7 @@ License: GPL (>=3)
 URL: https://github.com/davidbolin/excursions
 Copyright: The R package and code, and the main programs, were written by and are Copyright by David Bolin and Finn Lindgren, and are redistributable under the GNU Public License, version 3 or later.  The package also includes code from the libraries CAMD from the SuiteSparse collection of Tim Davis, and the RngStreams library by Pierre L'Ecuyer.  For details see the COPYRIGHTS file.
 NeedsCompilation: yes
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Encoding: UTF-8
 Config/testthat/parallel: true
 Config/testthat/edition: 3

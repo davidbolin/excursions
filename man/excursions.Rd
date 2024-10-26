@@ -21,7 +21,8 @@ excursions(
   max.size,
   verbose = 0,
   max.threads = 0,
-  seed
+  seed,
+  prune.ind = FALSE
 )
 }
 \arguments{
@@ -66,6 +67,9 @@ excursions(
 \item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
 
 \item{seed}{Random seed (optional).}
+
+\item{prune.ind}{If `TRUE` and `ind` is supplied, then the result object is pruned to
+contain only the active nodes specified by `ind`.}
 }
 \value{
 \code{excursions} returns an object of class "excurobj" with the following elements

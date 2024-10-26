@@ -20,7 +20,8 @@ excursions.inla(
   verbose = 0,
   max.threads = 0,
   compressed = TRUE,
-  seed = NULL
+  seed = NULL,
+  prune.ind = FALSE
 )
 }
 \arguments{
@@ -82,6 +83,9 @@ predictor is to be used, then only add the relevant part. Otherwise the
 entire linear predictor is added internally (default TRUE).}
 
 \item{seed}{Random seed (optional).}
+
+\item{prune.ind}{If `TRUE` and `ind` is supplied, then the result object is pruned to
+contain only the active nodes specified by `ind`.}
 }
 \value{
 \code{excursions.inla} returns an object of class "excurobj" with the 
