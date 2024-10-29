@@ -23,12 +23,6 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 library(excursions)
-library(rSPDE)
-library(RColorBrewer)
-library(INLA)
-library(inlabru)
-library(excursions)
-set.seed(123)
 ```
 
 ```{r inla_link, include = FALSE}
@@ -38,7 +32,7 @@ inla_link <- function() {
 ```
 
 
-Hierarchical models are of great importance in many areas of statistics. In the simplest form, a hierarchical model has a likelihood distribution $\pi(\mv{Y}|\mv{X}, \mv{\theta})$ for observed data $\mv{Y}$, which is specified conditionally on a latent process of interest, $\mv{X}$,  which has a distribution $\pi(\mv{X}|\mv{\theta})$. For Bayesian hierarchical models, one also specifies prior distributions for the model parameters $\mv{\theta}$. The most important special case of these models are the LGMs, which are obtained by assuming that $\mv{X}|\mv{\theta}$ has a Gaussian distribution. Numerous applications can be studied using models of this form, and these are therefore the main focus of the methods in `excursions`.
+Hierarchical models are of great importance in many areas of statistics. In the simplest form, a hierarchical model has a likelihood distribution $\pi(\mv{Y}|\mv{X}, \mv{\theta})$ for observed data $\mv{Y}$, which is specified conditionally on a latent process of interest, $\mv{X}$,  which has a distribution $\pi(\mv{X}|\mv{\theta})$. For Bayesian hierarchical models, one also specifies prior distributions for the model parameters $\mv{\theta}$. The most important special case of these models are the LGMs, which are obtained by assuming that $\mv{X}|\mv{\theta}$ has a Gaussian distribution [@rue09]. Numerous applications can be studied using models of this form, and these are therefore the main focus of the methods in `excursions`.
 
 A statistical analysis using an LGM often concludes with reporting the posterior mean $E(\mv{X}|\mv{Y})$ as a point estimate of the latent field, possibly together with posterior variances as a measure of uncertainty. In many applications, however, reporting posterior means and variances are not enough. As stated in the introduction, one may be interested in computing regions where the latent field exceeds some given threshold, contour curves with their associated uncertainty, or simultaneous confidence bands. In some applications, only a contour map of the posterior mean is reported, where the number of levels in the contour map should represent the uncertainty in the estimate. These are quantities that can be computed with `excursions` and we now define these in more detail before outlining how they can be computed. For details we refer to [@bolin12] and [@bolin15contours].
 

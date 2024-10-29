@@ -18,7 +18,6 @@ library(rSPDE)
 library(RColorBrewer)
 library(INLA)
 library(inlabru)
-library(excursions)
 set.seed(123)
 ```
 
@@ -91,6 +90,4 @@ image(proj$x, proj$y, inla.mesh.project(proj, field = sets$F),
       col = cmap.F, axes = FALSE, xlab = "", ylab = "", asp = 1, 
       main = "excursion function")
 ```
-
-## References
 

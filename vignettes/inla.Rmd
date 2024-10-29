@@ -110,7 +110,7 @@ A <- inla.spde.make.A(prmesh, loc = coords)
 spde <- inla.spde2.matern(prmesh, alpha = 2)
 mesh.index <- inla.spde.make.index(name = "field", n.spde = spde$n.spde)
 ```
-The measurement stations are spatially irregular, but we are interested in making predictions to a regular lattice within the state. In order to do continuous domain interpretations, we define the lattice locations as a lattice object using the `submesh` function of the `excursions` package. The function `inout` from the package `splancs` [@spancs_manual] is used to find the locations on the lattice that are within the region of interest.
+The measurement stations are spatially irregular, but we are interested in making predictions to a regular lattice within the state. In order to do continuous domain interpretations, we define the lattice locations as a lattice object using the `submesh` function of the `excursions` package. The function `inout` from the package `splancs` is used to find the locations on the lattice that are within the region of interest.
 ```{r}
 nxy <- c(50, 50)
 projgrid <- inla.mesh.projector(prmesh, xlim = range(PRborder[, 1]),

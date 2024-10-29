@@ -115,7 +115,7 @@ A common scenario is that the input used in `contourmap` or `excursions` represe
 ```{r}
 sets.exc <- continuous(ex = res.exc, geometry = mesh, alpha = 0.1)
 ```
-Here `ex` is the result of the call to `contourmap` or `excursions` and `alpha` is the error probability of interest for the excursion set or credible region computation. The argument `geometry` specifies the geometric configuration of the values in input `ex`, either as a general triangulation geometry or as a lattice. A lattice can be specified as an object of the form `list(x, y)` where `x` and `y` are vectors, or as `list(loc, dims)` where `loc` is a two-column matrix of coordinates, and \code{dims} is the lattice size vector. If `INLA` is used, the lattice can also be specified as an `inla.mesh.lattice` object. In all cases, the input is treated topologically as a lattice with lattice boxes that are assumed convex. A triangulation geometry is specified as an `inla.mesh` object. Finally, an argument `output` can be used to specify what type of object should be generated. The options are currently `sp` which gives a `SpatialPolygons` [@bivand2013applied] object, and `inla` which gives an `inla.mesh.segment` object.
+Here `ex` is the result of the call to `contourmap` or `excursions` and `alpha` is the error probability of interest for the excursion set or credible region computation. The argument `geometry` specifies the geometric configuration of the values in input `ex`, either as a general triangulation geometry or as a lattice. A lattice can be specified as an object of the form `list(x, y)` where `x` and `y` are vectors, or as `list(loc, dims)` where `loc` is a two-column matrix of coordinates, and \code{dims} is the lattice size vector. If `INLA` is used, the lattice can also be specified as an `inla.mesh.lattice` object. In all cases, the input is treated topologically as a lattice with lattice boxes that are assumed convex. A triangulation geometry is specified as an `inla.mesh` object. Finally, an argument `output` can be used to specify what type of object should be generated. The options are currently `sp` which gives a `SpatialPolygons` object, and `inla` which gives an `inla.mesh.segment` object.
 
 ## Simultaneous confidence bands 
 The function `simconf` can be used for calculating simultaneous confidence bands for a Gaussian process $X(s)$. A basic call to the function looks like
@@ -148,7 +148,7 @@ cols <- contourmap.colors(res.con, col = cmap)
 plot(set.sc$map, col = cols)
 ```
 
-Here `contourmap.colors` is used to find appropriate colors for each set in the contour map, based on the color map `cmap` that was defined using the `RColorBrewer` [@RColorBrewer] package. The estimated excursion set can be visualized as
+Here `contourmap.colors` is used to find appropriate colors for each set in the contour map, based on the color map `cmap` that was defined using the `RColorBrewer` package. The estimated excursion set can be visualized as
 ```{r, fig.width=5, fig.height=4, fig.align = "center"}
 plot(sets.exc$M["1"], col = "red", xlim = range(mesh$loc[,1]),
      ylim = range(mesh$loc[,2]))
@@ -166,7 +166,7 @@ con <- tricontourmap(mesh, z = mu.post, levels = 0)
 plot(con$map, add = TRUE)
 ```
 
-The final two lines computes the level zero contour curve and plots it in the same figure as the interpolated excursion function. The colorbars in the figures are plotted using the fields [@nychka2015fields] package.
+The final two lines computes the level zero contour curve and plots it in the same figure as the interpolated excursion function. 
 
 
 ## References
