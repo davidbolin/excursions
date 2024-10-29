@@ -38,6 +38,11 @@ jobs:
           pkgs <- installed.packages()[, "Package"]
           sessioninfo::session_info(pkgs, include_base = TRUE)
         shell: Rscript {0}
+      - name: Installing inlabru
+        run: |
+          install.packages(c("remotes", "rmarkdown"),dependencies=TRUE)
+          remotes::install_github("inlabru-org/inlabru", ref = "devel")
+        shell: Rscript {0} 
       - name: Install package
         run: R CMD INSTALL .
 
