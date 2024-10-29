@@ -43,6 +43,9 @@
 #' the model estimated with INLA (default FALSE).
 #' @param max.threads Decides the number of threads the program can use. Set to 0 for
 #' using the maximum number of threads allowed by the system (default).
+#' @param compressed If INLA is run in compressed mode and a part of the linear
+#' predictor is to be used, then only add the relevant part. Otherwise the
+#' entire linear predictor is added internally (default TRUE).
 #' @param seed Random seed (optional).
 #' @param inla.sample Set to TRUE if inla.posterior.sample should be used for the MC
 #' integration.
@@ -98,9 +101,10 @@ simconf.inla <- function(result.inla,
                          alpha,
                          method = "NI",
                          n.iter = 10000,
-                         verbose = 0,
+                         verbose = FALSE,
                          link = FALSE,
                          max.threads = 0,
+                         compressed = TRUE,
                          seed = NULL,
                          inla.sample = TRUE) {
   if (!requireNamespace("INLA", quietly = TRUE)) {
@@ -126,18 +130,30 @@ simconf.inla <- function(result.inla,
 
 
   # Get indices for the component of interest in the configs
-  ind.stack <- inla.output.indices(result.inla, name = name, stack = stack, tag = tag)
+  tmp <- inla.output.indices(result.inla,
+                             name = name, stack = stack,
+                             tag = tag, compressed = compressed
+  )
+  ind.stack <- tmp$index
+  result.inla.orig <- result.inla
+  if (tmp$result.updated) {
+      result.inla <- tmp$result
+      ind.stack.original <- tmp$index.original
+  } else {
+      ind.stack.original <- ind.stack
+  }
+  n <- length(result.inla$misc$configs$config[[1]]$mean)
   n.out <- length(ind.stack)
-  # Index vector for the nodes in the component of interest
   ind.int <- seq_len(n.out)
-
   # ind is assumed to contain indices within the component of interest
   if (!missing(ind) && !is.null(ind)) {
-    ind.int <- ind.int[ind]
-    ind.stack <- ind.stack[ind]
+      ind.int <- ind.int[ind]
+      ind.stack <- ind.stack[ind]
+      ind.stack.original <- ind.stack.original[ind]
   }
   ind <- ind.stack
-
+  ind.original <- ind.stack.original
+  
   links <- NULL
   if (link) {
     links <- result.inla$misc$linkfunctions$names[
@@ -174,7 +190,9 @@ simconf.inla <- function(result.inla,
     }
     w <- exp(w) / sum(exp(w))
     if (inla.sample) {
-      s <- suppressWarnings(INLA::inla.posterior.sample(n.iter, result.inla))
+      s <- suppressWarnings(INLA::inla.posterior.sample(n.iter, result.inla.orig,
+                                                        use.improved.mean = FALSE,
+                                                        skew.corr = FALSE))
       samp <- matrix(0, n.iter, length(ind))
 
       for (i in seq_len(n.iter)) {
@@ -224,7 +242,8 @@ simconf.inla <- function(result.inla,
 
       r.o <- optimize(fmix.samp.opt,
         interval = c(0, alpha), mu = mu.m, alpha = alpha,
-        sd = sd.m, w = w, limits = limits, samples = samp
+        sd = sd.m, w = w, limits = limits, samples = samp,
+        verbose = verbose
       )
 
       a <- sapply(seq_len(length(ind)), function(i) {

@@ -407,7 +407,14 @@ fmix.opt <- function(x,
 }
 
 
-fmix.samp.opt <- function(x, alpha, mu, sd, w, limits, samples) {
+fmix.samp.opt <- function(x, 
+                          alpha, 
+                          mu, 
+                          sd, 
+                          w, 
+                          limits, 
+                          samples,
+                          verbose = FALSE) {
   n <- dim(mu)[2]
   q.a <- sapply(seq_len(n), function(i) {
     Fmix_inv(x / 2,
@@ -430,7 +437,10 @@ fmix.samp.opt <- function(x, alpha, mu, sd, w, limits, samples) {
 
   prob <- mean(cover)
   val <- (prob - (1 - alpha))^2
-  cat("in optimization: ", x, " ", prob, " ", val, "\n")
+  if(verbose) {
+      cat("in optimization: ", x, " ", prob, " ", val, "\n")    
+  }
+  
   return(val)
 }
 
