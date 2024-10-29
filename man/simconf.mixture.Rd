@@ -12,7 +12,7 @@ simconf.mixture(
   ind,
   n.iter = 10000,
   vars,
-  verbose = 0,
+  verbose = FALSE,
   max.threads = 0,
   seed = NULL,
   mix.samp = TRUE
