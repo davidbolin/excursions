@@ -22,23 +22,13 @@ The `INLA` interface is introduced in the [R-INLA][ref4] vignette and the `inlab
 # Installation instructions #
 The latest CRAN release of the package can be installed directly from CRAN with `install.packages("excursions")`.
 The latest stable version (which is sometimes slightly more recent than the CRAN version), can be installed by using the command
-```{r, eval=FALSE}
+```r
 remotes::install_github("davidbolin/excursions", ref = "stable")
 ```
 in R. The development version can be installed using the command
-```{r, eval=FALSE}
+```r
 remotes::install_github("davidbolin/excursions", ref = "devel")
 ```
-
-If you want to install the package using the `{r}emotes::install_github`-method on Windows, you first need to install `Rtools` and add the paths to `Rtools` and `gcc` to the Windows `PATH` environment variable. This can be done for the current R session only using the commands
-```{r, eval=FALSE}
-rtools = "C:\Rtools\bin"
-gcc = "C:\Rtools\gcc-4.6.3\bin"
-Sys.setenv(PATH = paste(c(gcc, rtools, Sys.getenv("PATH")), collapse = ";"))
-```
-where the variables `{r}tools` and `gcc` need to be changed if `Rtools` is not installed directly on `C:`,
-and `gcc`'s version might need to be changed depending on the version of `Rtools`.
-
 
 [ref1]: https://davidbolin.github.io/rSPDE//articles/excursions.html "An introduction to the excursions package"
 [ref2]: https://davidbolin.github.io/rSPDE/reference/index.html "`excursions` documentation."
