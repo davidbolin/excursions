@@ -17,7 +17,6 @@ knitr::opts_chunk$set(
 library(excursions)
 library(RColorBrewer)
 library(INLA)
-library(excursions)
 library(splancs)
 set.seed(123)
 ```
@@ -63,7 +62,7 @@ A <- inla.spde.make.A(mesh, loc = Tokyo$time)
 time.index <- inla.spde.make.index("time", n.spde = spde$n.spde)
 stack <- inla.stack(data = list(y = Tokyo$y, link = 1, Ntrials = Tokyo$n),
                     A = list(A), effects = list(time.index), tag = "est")
-data = inla.stack.data(stack)
+data <- inla.stack.data(stack)
 ```
 Next, the model is estimated using the `inla` function. Since we want to analyze the output using `excursions`, the additional option `control.compute = list(config = TRUE)` must be specified in the `inla` function. This makes the function save some extra output needed by `excursions`.
 ```{r}
@@ -116,8 +115,8 @@ nxy <- c(50, 50)
 projgrid <- inla.mesh.projector(prmesh, xlim = range(PRborder[, 1]),
                                  ylim = range(PRborder[, 2]), dims = nxy)
 xy.in <- inout(projgrid$lattice$loc, cbind(PRborder[, 1], PRborder[, 2]))
-submesh = submesh.grid(matrix(xy.in, nxy[1], nxy[2]),
-                       list(loc = projgrid$lattice$loc, dims = nxy))
+submesh <- submesh.grid(matrix(xy.in, nxy[1], nxy[2]),
+                        list(loc = projgrid$lattice$loc, dims = nxy))
 ```
 We now define the `stack` objects and estimate the model using `inla`. Again note that we have to set the `control.compute` argument of the results is to be used by `excursions`.
 ```{r}
@@ -144,7 +143,7 @@ r <- inla(y ~ -1 + Intercept + f(field, model = spde),
 ```
 We now want to find areas that likely experienced large amounts of precipitation. In the following code, we compute the excursion set for the posterior mean for the level $7$ mm of precipitation. To indicate that this level is in the scale of the data, and not in the scale of the linear predictor, we use the `u.link=TRUE` argument in the `excursions` call.
 ```{r}
-exc = excursions.inla(r, stk, tag = "prd", u = 7, u.link = TRUE,
+exc <- excursions.inla(r, stk, tag = "prd", u = 7, u.link = TRUE,
                       type = ">", F.limit = 0.6, method = 'QC')
 sets <- continuous(exc, submesh, alpha = 0.1)
 ```
@@ -185,7 +184,6 @@ print(data.frame(P2 = c(lps[[1]]$P2, lps[[2]]$P2, lps[[3]]$P2, lps[[4]]$P2),
 
 ```
 We see that using only one or two contours give very high credibility, whereas using four contours give a credibility that is close to zero. The contour map with three contours has a credibility around $0.2$ and seems to be a good compromise for this application.
-
 
 ## References
 
