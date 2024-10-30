@@ -1,4 +1,4 @@
-# Description #
+# Description <a href="https://davidbolin.github.io/excursions/"><img src="./man/figures/logo.png" align="right" height="138" /></a>
 
 [![CRAN_Status_Badge](https://www.r-pkg.org/badges/version-last-release/excursions)](https://cran.r-project.org/package=excursions)
 [![CRAN_Downloads](https://cranlogs.r-pkg.org/badges/grand-total/excursions)](https://cranlogs.r-pkg.org/badges/grand-total/excursions)
