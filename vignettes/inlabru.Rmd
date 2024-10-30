@@ -64,7 +64,8 @@ cmp <- y ~ Intercept(1) + field(coordinates, model = rspde_model)
 result_bru <- bru(~ Intercept(1) + field(coordinates, model = rspde_model), 
                   like(y~., family = "normal", data = data),
                   like(y~., family = "normal", data = data.prd, tag = "prd"),
-                  options=list(control.compute=list(return.marginals.predictor=TRUE)))
+                  options=list(control.compute=list(return.marginals.predictor=TRUE),
+                               num.threads = "1:1"))
 ```
 
 We can now compute excursion sets using the `excursions.inla` function. As no stack object is constructed when using `inlabru`, we use the argument `name = "APredictor"` to tell the function that we are interested in the linear predictor. We then use the `bru_index` function to obtain the indices for the relevant part of the predictor. In this case, we want the indices which correspond to the likelihood component which we gave the tag `"pred"` above, so the call looks as follows.
@@ -73,7 +74,8 @@ res.qc_bru <- excursions.inla(result_bru, name = "APredictor",
                               ind = bru_index(result_bru, "prd"),
                               alpha = 0.99, u = 0,
                               method = "QC", type = ">", max.threads = 2, 
-                              prune.ind = TRUE)
+                              prune.ind = TRUE,
+                              max.threads = 2)
 
 ```
 
@@ -100,25 +102,29 @@ t.EB <- system.time(
                               ind = bru_index(result_bru, "prd"),
                               alpha = 0.99, u = 0,
                               method = "EB", type = ">", max.threads = 2, 
-                              prune.ind = TRUE))
+                              prune.ind = TRUE,
+                              max.threads =2 ))
 t.QC <- system.time(
     res.QC <- excursions.inla(result_bru, name = "APredictor", 
                               ind = bru_index(result_bru, "prd"),
                               alpha = 0.99, u = 0,
                               method = "QC", type = ">", max.threads = 2, 
-                              prune.ind = TRUE))
+                              prune.ind = TRUE,
+                              max.threads =2 ))
 t.NI <- system.time(
     res.NI <- excursions.inla(result_bru, name = "APredictor", 
                               ind = bru_index(result_bru, "prd"),
                               alpha = 0.99, u = 0,
                               method = "NI", type = ">", max.threads = 2, 
-                              prune.ind = TRUE))
+                              prune.ind = TRUE,
+                              max.threads =2))
 t.NIQC <- system.time(
     res.NIQC <- excursions.inla(result_bru, name = "APredictor", 
                                 ind = bru_index(result_bru, "prd"),
                                 alpha = 0.99, u = 0,
                                 method = "NIQC", type = ">", max.threads = 2, 
-                                prune.ind = TRUE))
+                                prune.ind = TRUE,
+                                max.threads =2))
 ```
 
 The computation time for the different methods are 
