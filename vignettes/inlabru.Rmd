@@ -73,7 +73,7 @@ We can now compute excursion sets using the `excursions.inla` function. As no st
 res.qc_bru <- excursions.inla(result_bru, name = "APredictor", 
                               ind = bru_index(result_bru, "prd"),
                               alpha = 0.99, u = 0,
-                              method = "QC", type = ">", max.threads = 2, 
+                              method = "QC", type = ">", 
                               prune.ind = TRUE,
                               max.threads = 2)
 
@@ -101,28 +101,28 @@ t.EB <- system.time(
     res.EB <- excursions.inla(result_bru, name = "APredictor", 
                               ind = bru_index(result_bru, "prd"),
                               alpha = 0.99, u = 0,
-                              method = "EB", type = ">", max.threads = 2, 
+                              method = "EB", type = ">", 
                               prune.ind = TRUE,
                               max.threads =2 ))
 t.QC <- system.time(
     res.QC <- excursions.inla(result_bru, name = "APredictor", 
                               ind = bru_index(result_bru, "prd"),
                               alpha = 0.99, u = 0,
-                              method = "QC", type = ">", max.threads = 2, 
+                              method = "QC", type = ">", 
                               prune.ind = TRUE,
                               max.threads =2 ))
 t.NI <- system.time(
     res.NI <- excursions.inla(result_bru, name = "APredictor", 
                               ind = bru_index(result_bru, "prd"),
                               alpha = 0.99, u = 0,
-                              method = "NI", type = ">", max.threads = 2, 
+                              method = "NI", type = ">", 
                               prune.ind = TRUE,
                               max.threads =2))
 t.NIQC <- system.time(
     res.NIQC <- excursions.inla(result_bru, name = "APredictor", 
                                 ind = bru_index(result_bru, "prd"),
                                 alpha = 0.99, u = 0,
-                                method = "NIQC", type = ">", max.threads = 2, 
+                                method = "NIQC", type = ">", 
                                 prune.ind = TRUE,
                                 max.threads =2))
 ```
