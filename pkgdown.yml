@@ -6,7 +6,7 @@ articles:
   inla: inla.html
   inlabru: inlabru.html
   theory: theory.html
-last_built: 2024-10-31T13:01Z
+last_built: 2024-10-31T13:11Z
 urls:
-  reference: https://davidbolin.github.io/MetricGraph/reference
-  article: https://davidbolin.github.io/MetricGraph/articles
+  reference: https://davidbolin.github.io/excursions/reference
+  article: https://davidbolin.github.io/excursions/articles
