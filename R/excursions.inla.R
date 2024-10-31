@@ -356,7 +356,17 @@ excursions.inla <- function(result.inla,
 
       conf.i <- private.get.config(result.inla, i)
       lw[i] <- conf.i$lp
-      r.i <- INLA::inla(result.inla$.args$formula,
+      # INLA sets the formula environment to NULL, but
+      # keeps the .parent.frame intact (2024-10-31).
+      # If it's NULL for whatever reason, set it to something
+      # potentially useful:
+      if (!is.null(result.inla$.args[[".parent.frame"]])) {
+        par.fr <- result.inla$.args[[".parent.frame"]]
+      } else {
+        par.fr <- parent.frame()
+      }
+      r.i <- INLA::inla(
+        result.inla$.args$formula,
         family = result.inla$.args$family,
         data = result.inla$.args$data,
         control.compute = list(
@@ -367,9 +377,11 @@ excursions.inla <- function(result.inla,
         control.mode = list(
           theta =
             as.vector(result.inla$misc$configs$config[[i]]$theta),
-          fixed = TRUE
+          fixed = TRUE,
+          restart = FALSE
         ),
-        num.threads = "1:1"
+        num.threads = "1:1",
+        .parent.frame = par.fr
       )
       # TODO: May refine the num.threads argument above to make it configurable, but
       # since the inla() call is only constructing the model and optimising over the
