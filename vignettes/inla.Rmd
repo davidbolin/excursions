@@ -17,6 +17,7 @@ knitr::opts_chunk$set(
 library(excursions)
 library(RColorBrewer)
 library(INLA)
+library(fmesher)
 library(splancs)
 set.seed(123)
 ```
@@ -50,8 +51,8 @@ We start by a temporal example to illustrate how a simultaneous confidence band 
 The model and the following `INLA` implementation of the model is described further in [@lindgren2015software].
 ```{r}
 data("Tokyo")
-mesh <- inla.mesh.1d(seq(1, 367, length = 25), interval = c(1, 367),
-                     degree = 2, boundary = "cyclic")
+mesh <- fm_mesh_1d(seq(1, 367, length = 25), interval = c(1, 367),
+                   degree = 2, boundary = "cyclic")
 kappa <- 1e-3
 tau <- 1 / (4 * kappa^3)^0.5
 spde <- inla.spde2.matern(mesh, constr = FALSE, 
@@ -105,8 +106,8 @@ Y <- rowMeans(PRprec[, 3 + (1 : 31)])
 ind <- !is.na(Y)
 Y <- Y[ind]
 coords <- as.matrix(PRprec[ind, 1 : 2])
-b <- inla.nonconvex.hull(coords, -0.03, -0.05, resolution = c(100, 100))
-prmesh <- inla.mesh.2d(boundary = b, max.edge = c(.45, 1), cutoff = 0.2)
+b <- fm_nonconvex_hull_inla(coords, -0.03, -0.05, resolution = c(100, 100))
+prmesh <- fm_mesh_2d(boundary = b, max.edge = c(.45, 1), cutoff = 0.2)
 A <- inla.spde.make.A(prmesh, loc = coords)
 spde <- inla.spde2.matern(prmesh, alpha = 2)
 mesh.index <- inla.spde.make.index(name = "field", n.spde = spde$n.spde)
@@ -114,8 +115,12 @@ mesh.index <- inla.spde.make.index(name = "field", n.spde = spde$n.spde)
 The measurement stations are spatially irregular, but we are interested in making predictions to a regular lattice within the state. In order to do continuous domain interpretations, we define the lattice locations as a lattice object using the `submesh` function of the `excursions` package. The function `inout` from the package `splancs` is used to find the locations on the lattice that are within the region of interest.
 ```{r}
 nxy <- c(50, 50)
-projgrid <- inla.mesh.projector(prmesh, xlim = range(PRborder[, 1]),
-                                 ylim = range(PRborder[, 2]), dims = nxy)
+projgrid <- fm_evaluator(
+  prmesh,
+  xlim = range(PRborder[, 1]),
+  ylim = range(PRborder[, 2]),
+  dims = nxy
+)
 xy.in <- inout(projgrid$lattice$loc, cbind(PRborder[, 1], PRborder[, 2]))
 submesh <- submesh.grid(matrix(xy.in, nxy[1], nxy[2]),
                         list(loc = projgrid$lattice$loc, dims = nxy))
@@ -158,8 +163,8 @@ con <- tricontourmap(submesh, z = exc$mean, levels = log(7))
 We plot the resulting continuous domain excursion function together with the contour curve using the following commands. 
 ```{r}
 cmap.F <- colorRampPalette(brewer.pal(9, "Greens"))(100)
-proj <- inla.mesh.projector(sets$F.geometry, dims = c(300,200))
-image(proj$x, proj$y, inla.mesh.project(proj, field = sets$F),
+proj <- fm_evaluator(sets$F.geometry, dims = c(300,200))
+image(proj$x, proj$y, fm_evaluate(proj, field = sets$F),
       col = cmap.F, axes = FALSE, xlab = "", ylab = "", asp = 1)
 plot(con$map, add = TRUE)
 ```

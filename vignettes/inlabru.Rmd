@@ -87,8 +87,8 @@ sets <- continuous(res.qc_bru, mesh, alpha = 0.1)
 Finally, we can plot the results
 ```{r}
 cmap.F <- colorRampPalette(brewer.pal(9, "Greens"))(100)
-proj <- inla.mesh.projector(sets$F.geometry, dims = c(300,200))
-image(proj$x, proj$y, inla.mesh.project(proj, field = sets$F),
+proj <- fm_evaluator(sets$F.geometry, dims = c(300,200))
+image(proj$x, proj$y, fm_evaluate(proj, field = sets$F),
       col = cmap.F, axes = FALSE, xlab = "", ylab = "", asp = 1, 
       main = "excursion function")
 ```
@@ -134,40 +134,40 @@ print(data.frame(time = c(t.EB[3], t.QC[3], t.NI[3], t.NIQC[3]),
 ```
 We can see that the `EB` and `QC` methods have similar computation times and that `NI` and `NIQC` take longer. Let us now plot the corresponding sets, we start with the `EB` result:
 ```{r}
-image(proj$x, proj$y, inla.mesh.project(proj, 
-                                        field = continuous(res.EB, 
-                                                           mesh, 
-                                                           alpha = 0.1)$F),
+image(proj$x, proj$y, fm_evaluate(proj, 
+                                  field = continuous(res.EB, 
+                                                     mesh, 
+                                                     alpha = 0.1)$F),
       col = cmap.F, axes = FALSE, xlab = "", ylab = "", asp = 1, 
       main = "EB")
 ```
 
 Then the `QC` result:
 ```{r}
-image(proj$x, proj$y, inla.mesh.project(proj, 
-                                        field = continuous(res.QC, 
-                                                           mesh, 
-                                                           alpha = 0.1)$F),
+image(proj$x, proj$y, fm_evaluate(proj, 
+                                  field = continuous(res.QC, 
+                                                     mesh, 
+                                                     alpha = 0.1)$F),
       col = cmap.F, axes = FALSE, xlab = "", ylab = "", asp = 1, 
       main = "QC")
 ```
 
 Then the `NI` result:
 ```{r}
-image(proj$x, proj$y, inla.mesh.project(proj, 
-                                        field = continuous(res.NI, 
-                                                           mesh, 
-                                                           alpha = 0.1)$F),
+image(proj$x, proj$y, fm_evaluate(proj, 
+                                  field = continuous(res.NI, 
+                                                     mesh, 
+                                                     alpha = 0.1)$F),
       col = cmap.F, axes = FALSE, xlab = "", ylab = "", asp = 1, 
       main = "NI")
 ```
 
 and finally the `NIQC` result: 
 ```{r}
-image(proj$x, proj$y, inla.mesh.project(proj, 
-                                        field = continuous(res.NIQC, 
-                                                           mesh, 
-                                                           alpha = 0.1)$F),
+image(proj$x, proj$y, fm_evaluate(proj, 
+                                  field = continuous(res.NIQC, 
+                                                     mesh, 
+                                                     alpha = 0.1)$F),
       col = cmap.F, axes = FALSE, xlab = "", ylab = "", asp = 1, 
       main = "NIQC")
 ```

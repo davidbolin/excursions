@@ -49,7 +49,7 @@ objects in addition to avoidance sets.}
 }
 \value{
 A list with elements
-\item{M}{\code{SpatialPolygons} or \code{inla.mesh.segment} object. The subsets
+\item{M}{\code{SpatialPolygons} or \code{fm_segm} object. The subsets
 are tagged, so that credible regions are tagged \code{"-1"}, and regions between
 levels are tagged \code{as.character(0:nlevels)}.}
 \item{F}{Interpolated F function.}

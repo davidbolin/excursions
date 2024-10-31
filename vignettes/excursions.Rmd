@@ -24,6 +24,7 @@ library(excursions)
 library(fields)
 library(RColorBrewer)
 library(INLA)
+library(fmesher)
 library(excursions)
 seed <- 1
 exc.seed <- 123
@@ -42,8 +43,8 @@ The functions in `excursions` can be divided into four main categories depending
 As an example that will be used to illustrate the methods in later sections, we generate data $Y_i \sim N(X(\mv{s}_i),\sigma^2)$ at some locations $\mv{s}_1, \ldots, \mv{s}_{100}$ where $X(\mv{s})$ is a Gaussian random field specified using a stationary SPDE model [@lindgren10].
 ```{r}
 x <- seq(from = 0, to = 10, length.out = 20)
-mesh <- inla.mesh.create(lattice = inla.mesh.lattice(x = x, y = x),
-                         extend = FALSE, refine = FALSE)
+mesh <- fm_rcdt_2d_inla(lattice = fm_lattice_2d(x = x, y = x),
+                        extend = FALSE, refine = FALSE)
 spde <- inla.spde2.matern(mesh, alpha = 2)
 obs.loc <- 10 * cbind(runif(100), runif(100))
 Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), 0))
@@ -59,18 +60,18 @@ mu.post <- as.vector(solve(Q.post, (t(A) %*% Y) / sigma2.e))
 ```
 The following figures show the posterior mean and the posterior standard deviations. 
 ```{r, fig.width=7, fig.height=4, fig.align = "center"}
-proj <- inla.mesh.projector(mesh, dims = c(100, 100))
+proj <- fm_evaluator(mesh, dims = c(100, 100))
 cmap <- colorRampPalette(brewer.pal(9, "YlGnBu"))(100)
 
 sd.post <- diag(inla.qinv(Q.post))
 cmap.sd <- colorRampPalette(brewer.pal(9, "Reds"))(100)
 
 par(mfrow=c(1,2))
-image.plot(proj$x, proj$y, inla.mesh.project(proj, field = mu.post), 
+image.plot(proj$x, proj$y, fm_evaluate(proj, field = mu.post), 
            col = cmap, axes = FALSE,
   xlab = "", ylab = "", asp = 1)
 points(obs.loc[, 1], obs.loc[, 2])
-image.plot(proj$x, proj$y, inla.mesh.project(proj, field = sd.post), 
+image.plot(proj$x, proj$y, fm_evaluate(proj, field = sd.post), 
            col = cmap.sd, axes = FALSE,
   xlab = "", ylab = "", asp = 1)
 points(obs.loc[, 1], obs.loc[, 2])
@@ -116,7 +117,7 @@ A common scenario is that the input used in `contourmap` or `excursions` represe
 ```{r}
 sets.exc <- continuous(ex = res.exc, geometry = mesh, alpha = 0.1)
 ```
-Here `ex` is the result of the call to `contourmap` or `excursions` and `alpha` is the error probability of interest for the excursion set or credible region computation. The argument `geometry` specifies the geometric configuration of the values in input `ex`, either as a general triangulation geometry or as a lattice. A lattice can be specified as an object of the form `list(x, y)` where `x` and `y` are vectors, or as `list(loc, dims)` where `loc` is a two-column matrix of coordinates, and \code{dims} is the lattice size vector. If `INLA` is used, the lattice can also be specified as an `inla.mesh.lattice` object. In all cases, the input is treated topologically as a lattice with lattice boxes that are assumed convex. A triangulation geometry is specified as an `inla.mesh` object. Finally, an argument `output` can be used to specify what type of object should be generated. The options are currently `sp` which gives a `SpatialPolygons` object, and `inla` which gives an `inla.mesh.segment` object.
+Here `ex` is the result of the call to `contourmap` or `excursions` and `alpha` is the error probability of interest for the excursion set or credible region computation. The argument `geometry` specifies the geometric configuration of the values in input `ex`, either as a general triangulation geometry or as a lattice. A lattice can be specified as an object of the form `list(x, y)` where `x` and `y` are vectors, or as `list(loc, dims)` where `loc` is a two-column matrix of coordinates, and \code{dims} is the lattice size vector. If `INLA` is used, the lattice can also be specified as an `fm_lattice_2d` object. In all cases, the input is treated topologically as a lattice with lattice boxes that are assumed convex. A triangulation geometry is specified as an `fm_mesh_2d` object. Finally, an argument `output` can be used to specify what type of object should be generated. The options are currently `sp` which gives a `SpatialPolygons` object, and `inla` which gives an `fm_segm` object.
 
 ## Simultaneous confidence bands 
 The function `simconf` can be used for calculating simultaneous confidence bands for a Gaussian process $X(s)$. A basic call to the function looks like
@@ -160,11 +161,11 @@ plot(mesh, vertex.color = rgb(0.5, 0.5, 0.5),
      add = TRUE)
 ```
 
-The second `plot` command adds the mesh to the plot so that we can see how the set is interpolated by the `continuous` function. Finally, the interpolated excursion function $F_u^+(\mv{s})$, can be plotted easily using the `inla.mesh.projector` function from the `INLA` package.
+The second `plot` command adds the mesh to the plot so that we can see how the set is interpolated by the `continuous` function. Finally, the interpolated excursion function $F_u^+(\mv{s})$, can be plotted easily using the `fm_evaluator` function from the `INLA` package.
 ```{r, fig.width=5, fig.height=4, fig.align = "center"}
 cmap.F <- colorRampPalette(brewer.pal(9, "Greens"))(100)
-proj <- inla.mesh.projector(sets.exc$F.geometry, dims = c(200, 200))
-image(proj$x, proj$y, inla.mesh.project(proj, field = sets.exc$F),
+proj <- fm_evaluator(sets.exc$F.geometry, dims = c(200, 200))
+image(proj$x, proj$y, fm_evaluate(proj, field = sets.exc$F),
       col = cmap.F, axes = FALSE, xlab = "", ylab = "", asp = 1)
 con <- tricontourmap(mesh, z = mu.post, levels = 0)
 plot(con$map, add = TRUE)
