@@ -9,3 +9,6 @@
 ^\.github$
 ^misc$
 ^\.lintr$
+^pkgdown$
+^index\.md$
+^\.vscode$

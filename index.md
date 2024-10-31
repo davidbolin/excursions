@@ -14,7 +14,7 @@ model by providing the parameters of the Gaussian process. For more general
 models, the input can either be given as Monte Carlo simulations of the process
 or as the result from an analysis using the [R-INLA][ref4] or [inlabru][ref5] packages. 
 
-See the [Getting started][ref1] vignette for an introduction to the main functinos of the package. A complete list of functions is contained in the [`excursions` documentation][ref2] and a brief introduction to the theory is provided in the [Methodology][ref3] vignette. 
+See the [Getting started][ref1] vignette for an introduction to the main functions of the package. A complete list of functions is contained in the [`excursions` documentation][ref2] and a brief introduction to the theory is provided in the [Methodology][ref3] vignette. 
 
 The `INLA` interface is introduced in the [R-INLA][ref4] vignette and the `inlabru` interface is introduced in the [inlabru][ref5] vignette. 
 

@@ -52,7 +52,7 @@
 #'     \item{n.levels }{The number of contours used.}
 #'     \item{u.e }{The values associated with the level sets G_k.}
 #'     \item{G }{A vector which shows which of the level sets G_k each node belongs to.}
-#'     \item{map }{Representation of the contour map with map[i]=u.e[k] if i is in G_k.}
+#'     \item{map }{Representation of the contour map with `map[i]=u.e[k]` if i is in `G_k`.}
 #'     \item{F }{The contour map function (if computed).}
 #'     \item{M }{Contour avoiding sets (if `F` is computed). \eqn{M=-1} for all non-significant nodes and  \eqn{M=k} for nodes that belong to \eqn{M_k}.}
 #'     \item{P0/P1/P2 }{Calculated quality measures (if computed).}
