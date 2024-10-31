@@ -41,12 +41,12 @@ probabilities. The default value is 10000.}
 
 \item{use.reordering}{Determines what reordering to use:
 \describe{
-  \item{"natural" }{No reordering is performed.}
-  \item{"sparsity" }{Reorder for sparsity in the cholesky factor (MMD reordering
-  is used).}
-  \item{"limits" }{Reorder by moving all nodes with a=-Inf and b=Inf first and
-  then reordering for sparsity (CAMD reordering is used).}
-  }}
+\item{"natural" }{No reordering is performed.}
+\item{"sparsity" }{Reorder for sparsity in the cholesky factor (MMD reordering
+is used).}
+\item{"limits" }{Reorder by moving all nodes with a=-Inf and b=Inf first and
+then reordering for sparsity (CAMD reordering is used).}
+}}
 
 \item{max.size}{The largest number of sub-integrals to compute. Default is the total
 dimension of the distribution.}

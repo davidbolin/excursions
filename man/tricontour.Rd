@@ -105,7 +105,7 @@ triangle-vertex index matrix only.}
 \item{type}{\code{"+"} or \code{"-"}, indicating positive or negative
 association. For \code{+}, the generated contours enclose regions
 where \eqn{u_1 \leq z < u_2}, for \code{-} the regions fulfil \eqn{u_1
-  < z \leq u_2}.}
+   < z \leq u_2}.}
 
 \item{tol}{tolerance for determining if the value at a vertex lies on a level.}
 
@@ -115,19 +115,19 @@ are \code{"sp"} (default) and \code{"fm"} (and deprecated
 }
 \value{
 For \code{tricontour}, a list with some of the fields that
-  \code{fm_segm} objects have:
-  \item{loc}{A coordinate matrix}
-  \item{idx}{Contour segment indices, as a 2-column matrix, each row
-    indexing a single segment}
-  \item{grp}{A vector of group labels.  Each segment has a label, in
-    \code{1,...,nlevels*2+1}, where even labels indicate interior
-    on-level contour segments, and odd labels indicate boundary segments
-    between levels.}
-  For \code{tricontourmap}, a list:
-  \item{contour}{A list of \code{sp} or \code{fm_segm} objects
-    defining countour curves (level sets)}
-  \item{map}{A list of \code{sp} or \code{fm_segm} objects
-    enclosing regions between level sets}
+\code{fm_segm} objects have:
+\item{loc}{A coordinate matrix}
+\item{idx}{Contour segment indices, as a 2-column matrix, each row
+indexing a single segment}
+\item{grp}{A vector of group labels.  Each segment has a label, in
+\verb{1,...,nlevels*2+1}, where even labels indicate interior
+on-level contour segments, and odd labels indicate boundary segments
+between levels.}
+For \code{tricontourmap}, a list:
+\item{contour}{A list of \code{sp} or \code{fm_segm} objects
+defining countour curves (level sets)}
+\item{map}{A list of \code{sp} or \code{fm_segm} objects
+enclosing regions between level sets}
 }
 \description{
 Calculates contour curves and/or regions between them,

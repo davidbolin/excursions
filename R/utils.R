@@ -33,8 +33,8 @@ private.Cholesky <- function(A, ...) {
 
 #' Calculate variances from a sparse precision matrix
 #'
-#' \code{excursions.variances} calculates the diagonal of the inverse of a sparse
-#' symmetric positive definite matrix \code{Q}.
+#' `excursions.variances` calculates the diagonal of the inverse of a sparse
+#' symmetric positive definite matrix `Q`.
 #'
 #' @param L Cholesky factor of precision matrix.
 #' @param Q Precision matrix.
@@ -44,11 +44,11 @@ private.Cholesky <- function(A, ...) {
 #' @return A vector with the variances.
 #' @export
 #' @details The method for calculating the
-#' diagonal requires the Cholesky factor, \code{L}, of \code{Q}, which should be supplied if
-#' available. If \code{Q} is provided, the cholesky factor is
-#' calculated and the variances are then returned in the same ordering as \code{Q}.
-#' If \code{L} is provided, the variances are returned in the same ordering as \code{L},
-#' even if \code{L@invpivot} exists.
+#' diagonal requires the Cholesky factor, `L`, of `Q`, which should be supplied if
+#' available. If `Q` is provided, the cholesky factor is
+#' calculated and the variances are then returned in the same ordering as `Q`.
+#' If `L` is provided, the variances are returned in the same ordering as `L`,
+#' even if `L@invpivot` exists.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #'
 #' @examples
@@ -504,19 +504,19 @@ excursions.rand <- function(n, seed, n.threads = 1) {
 #'
 #' @param package The name of a package, given as a character string.
 #' @param lib.loc a character vector describing the location of R library trees
-#' to search through, or \code{NULL}.  The default value of \code{NULL}
-#' corresponds to all libraries currently known to \code{.libPaths()}.
+#' to search through, or `NULL`.  The default value of `NULL`
+#' corresponds to all libraries currently known to `.libPaths()`.
 #' Non-existent library trees are silently ignored.
-#' @param character.only a logical indicating whether \code{package} can be
+#' @param character.only a logical indicating whether `package` can be
 #' assumed to be a character string.
 #'
-#' @return \code{require.nowarnings} returns (invisibly) \code{TRUE} if it succeeds, otherwise \code{FALSE}
-#' @details \code{require(package)} acts the same as
-#' \code{require(package, quietly = TRUE)} but with warnings turned off.
+#' @return `require.nowarnings` returns (invisibly) `TRUE` if it succeeds, otherwise `FALSE`
+#' @details `require(package)` acts the same as
+#' `require(package, quietly = TRUE)` but with warnings turned off.
 #' In particular, no warning or error is given if the package is unavailable.
-#' Most cases should use \code{requireNamespace(package, quietly = TRUE)} instead,
+#' Most cases should use `requireNamespace(package, quietly = TRUE)` instead,
 #' which doesn't produce warnings.
-#' @seealso \code{\link{require}}
+#' @seealso [require()]
 #' @export
 #' @examples
 #' ## This should produce no output:
@@ -596,7 +596,7 @@ mcint <- function(X,
 #' Summary method for class "excurobj"
 #'
 #' @param object an object of class "excurobj", usually, a result of a call
-#'   to \code{\link{excursions}}.
+#'   to [excursions()].
 #' @param ... further arguments passed to or from other methods.
 #' @export
 #' @method summary excurobj
@@ -674,7 +674,7 @@ summary.excurobj <- function(object, ...) {
 
 
 #' @param x an object of class "summary.excurobj", usually, a result of a call
-#'   to \code{\link{summary.excurobj}}.
+#'   to [summary.excurobj()].
 #' @export
 #' @method print summary.excurobj
 #' @rdname summary.excurobj

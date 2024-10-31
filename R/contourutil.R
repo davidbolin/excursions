@@ -492,9 +492,9 @@ excursions.limits <- function(lp, mu, measure) {
 
 #' Define a color map for displaying contour maps.
 #'
-#' \code{contourmap.colors} calculates suitable colours for displaying contour maps.
+#' `contourmap.colors` calculates suitable colours for displaying contour maps.
 #'
-#' @param lp A contourmap calculated by \code{contourmap}, \code{contourmap.inla}, or \code{contourmap.mc}
+#' @param lp A contourmap calculated by `contourmap`, `contourmap.inla`, or `contourmap.mc`
 #' @param zlim The range that should be used (optional). The default is the range of the mean value function used when creating the contourmap.
 #' @param col The colormap that the colours should be taken from.
 #' @param credible.col The color that should be used for displaying the credible regions for the contour curves (optional).

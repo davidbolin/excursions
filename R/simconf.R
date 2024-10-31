@@ -17,7 +17,7 @@
 
 #' Simultaneous confidence regions for Gaussian models
 #'
-#' \code{simconf} is used for calculating simultaneous confidence regions for
+#' `simconf` is used for calculating simultaneous confidence regions for
 #' Gaussian models \eqn{x}. The function returns upper and lower bounds \eqn{a}
 #' and \eqn{b} such that \eqn{P(a<x<b) = 1-\alpha}.
 #'
@@ -41,22 +41,22 @@
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
 #' @details The pointwise confidence bands are based on the marginal quantiles,
-#' meaning that \code{a.marignal} is a vector where the ith element equals 
-#' \eqn{\mu_i + q_{\alpha,i}}  and \code{b.marginal} is a vector where the ith element
+#' meaning that `a.marignal` is a vector where the ith element equals 
+#' \eqn{\mu_i + q_{\alpha,i}}  and `b.marginal` is a vector where the ith element
 #' equals  \eqn{\mu_i + q_{1-\alpha,i}}, where \eqn{\mu_i} is the expected value 
 #' of the \eqn{x_i} and \eqn{q_{\alpha,i}} is the \eqn{\alpha}-quantile of \eqn{x_i-\mu_i}.
 #'
-#' The simultaneous confidence band is defined by the lower limit vector \code{a} and 
-#' the upper limit vector \code{b}, where \eqn{a_i = \mu_i +c q_{\alpha}} and 
+#' The simultaneous confidence band is defined by the lower limit vector `a` and 
+#' the upper limit vector `b`, where \eqn{a_i = \mu_i +c q_{\alpha}} and 
 #' \eqn{b_i = \mu_i + c q_{1-\alpha}}, where \eqn{c} is a constant computed such 
 #' that \eqn{P(a < x < b) = 1-\alpha}.
 #'
 #' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren \email{finn.lindgren@@gmail.com}
-#' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
-#' from global temperature}, Statistica Sinica, vol 25, pp 351-367.
+#' @references Bolin et al. (2015) *Statistical prediction of global sea level
+#' from global temperature*, Statistica Sinica, vol 25, pp 351-367.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
-#' @seealso \code{\link{simconf.inla}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion Sets and Related Quantities Using excursions*, Journal of Statistical Software, vol 86, no 1, pp 1-20.
+#' @seealso [simconf.inla()], [simconf.mc()], [simconf.mixture()]
 #' @examples
 #' ## Create mean and a tridiagonal precision matrix
 #' n <- 11

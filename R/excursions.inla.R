@@ -42,11 +42,11 @@
 #' @param alpha Error probability for the excursion set of interest. The default
 #' value is 1.
 #' @param F.limit Error probability for when to stop the calculation of the
-#' excursion function. The default value is \code{alpha}, and the value cannot
-#' be smaller than \code{alpha}. A smaller value of \code{F.limit} results in a
+#' excursion function. The default value is `alpha`, and the value cannot
+#' be smaller than `alpha`. A smaller value of `F.limit` results in a
 #' smaller computation time.
 #' @param u Excursion or contour level.
-#' @param u.link If u.link is TRUE, \code{u} is assumed to be in the scale of the
+#' @param u.link If u.link is TRUE, `u` is assumed to be in the scale of the
 #' data and is then transformed to the scale of the linear predictor (default FALSE).
 #' @param type Type of region:
 #'  \describe{
@@ -67,15 +67,15 @@
 #' @param prune.ind If `TRUE` and `ind` is supplied, then the result object is pruned to
 #' contain only the active nodes specified by `ind`.
 #'
-#' @return \code{excursions.inla} returns an object of class "excurobj" with the 
+#' @return `excursions.inla` returns an object of class "excurobj" with the 
 #' following elements
 #' \item{E }{Excursion set, contour credible region, or contour avoiding set}
-#' \item{F }{The excursion function corresponding to the set \code{E} calculated
-#' for values up to \code{F.limit}}
+#' \item{F }{The excursion function corresponding to the set `E` calculated
+#' for values up to `F.limit`}
 #' \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
 #' \item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes.
-#' \eqn{M=0} for nodes where the process is significantly below \code{u} and
-#' \eqn{M=1} for all nodes where the field is significantly above \code{u}.
+#' \eqn{M=0} for nodes where the process is significantly below `u` and
+#' \eqn{M=1} for all nodes where the field is significantly above `u`.
 #' Which values that should be present depends on what type of set that is
 #' calculated.}
 #' \item{rho }{Marginal excursion probabilities}
@@ -84,36 +84,36 @@
 #' \item{meta }{A list containing various information about the calculation.}
 #' @export
 #' @details The different methods for handling the latent Gaussian structure are
-#' listed in order of accuracy and computational cost. The \code{EB} method is
+#' listed in order of accuracy and computational cost. The `EB` method is
 #' the simplest and is based on a Gaussian approximation of the posterior of the
-#' quantity of interest. The \code{QC} method uses the same Gaussian approximation
+#' quantity of interest. The `QC` method uses the same Gaussian approximation
 #' but improves the accuracy by modifying the limits in the integrals that are
 #' computed in order to find the region. The other three methods are intended for
 #' Bayesian models where the posterior distribution for the quantity of  interest
-#' is obtained by integrating over the parameters in the model. The \code{NI}
+#' is obtained by integrating over the parameters in the model. The `NI`
 #' method approximates this integration in the same way as is done in INLA, and
-#' the \code{NIQC} and \code{iNIQC} methods combine this apprximation with the
+#' the `NIQC` and `iNIQC` methods combine this apprximation with the
 #' QC method for improved accuracy.
 #'
 #' If the main purpose of the analysis is to construct excursion or contour sets
-#' for low values of \code{alpha}, we recommend using \code{QC} for problems with
-#' Gaussian likelihoods and \code{NIQC} for problems with non-Gaussian likelihoods.
+#' for low values of `alpha`, we recommend using `QC` for problems with
+#' Gaussian likelihoods and `NIQC` for problems with non-Gaussian likelihoods.
 #' The reason for this is that the more accurate methods also have higher
 #' computational costs.
 #'
-#' @note This function requires the \code{INLA} package, which is not a CRAN
-#' package.  See \url{https://www.r-inla.org/download-install} for easy
+#' @note This function requires the `INLA` package, which is not a CRAN
+#' package.  See <https://www.r-inla.org/download-install> for easy
 #' installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren
 #' \email{finn.lindgren@@gmail.com}
-#' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour
-#' uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1,
+#' @references Bolin, D. and Lindgren, F. (2015) *Excursion and contour
+#' uncertainty regions for latent Gaussian models*, JRSS-series B, vol 77, no 1,
 #' pp 85-106.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion
-#' Sets and Related Quantities Using excursions}, Journal of Statistical Software,
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion
+#' Sets and Related Quantities Using excursions*, Journal of Statistical Software,
 #' vol 86, no 1, pp 1-20.
-#' @seealso \code{\link{excursions}}, \code{\link{excursions.mc}}
+#' @seealso [excursions()], [excursions.mc()]
 #'
 #' @examples
 #' ## In this example, we calculate the excursion function

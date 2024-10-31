@@ -14,12 +14,12 @@
 }
 \arguments{
 \item{object}{an object of class "excurobj", usually, a result of a call
-to \code{\link{excursions}}.}
+to \code{\link[=excursions]{excursions()}}.}
 
 \item{...}{further arguments passed to or from other methods.}
 
 \item{x}{an object of class "summary.excurobj", usually, a result of a call
-to \code{\link{summary.excurobj}}.}
+to \code{\link[=summary.excurobj]{summary.excurobj()}}.}
 }
 \description{
 Summary method for class "excurobj"

@@ -44,22 +44,22 @@ only Empirical Bayes (EB) and Quantile corrections (QC) are supported.}
 
 \item{type}{Type of contour map. One of:
 \describe{
-    \item{'standard' }{Equidistant levels between smallest and largest value
-    of the posterior mean (default).}
-    \item{'pretty' }{Equally spaced 'round' values which cover the range of
-    the values in the posterior mean.}
-    \item{'equalarea' }{Levels such that different spatial regions are
-    approximately equal in size.}
-    }}
+\item{'standard' }{Equidistant levels between smallest and largest value
+of the posterior mean (default).}
+\item{'pretty' }{Equally spaced 'round' values which cover the range of
+the values in the posterior mean.}
+\item{'equalarea' }{Levels such that different spatial regions are
+approximately equal in size.}
+}}
 
 \item{compute}{A list with quality indices to compute
 \describe{
-     \item{'F': }{TRUE/FALSE indicating whether the contour map function
-     should be computed (default TRUE)}
-     \item{'measures': }{A list with the quality measures to compute ("P0",
-     "P1", "P2") or corresponding bounds based only on the marginal
-     probabilities ("P0-bound", "P1-bound", "P2-bound")}
-     }}
+\item{'F': }{TRUE/FALSE indicating whether the contour map function
+should be computed (default TRUE)}
+\item{'measures': }{A list with the quality measures to compute ("P0",
+"P1", "P2") or corresponding bounds based only on the marginal
+probabilities ("P0-bound", "P1-bound", "P2-bound")}
+}}
 
 \item{alpha}{Maximal error probability in contour map function (default=1)}
 
@@ -187,8 +187,8 @@ Sets and Related Quantities Using excursions}, Journal of Statistical
 Software, vol 86, no 1, pp 1-20.
 }
 \seealso{
-\code{\link{contourmap}}, \code{\link{contourmap.mc}},
-\code{\link{contourmap.colors}}
+\code{\link[=contourmap]{contourmap()}}, \code{\link[=contourmap.mc]{contourmap.mc()}},
+\code{\link[=contourmap.colors]{contourmap.colors()}}
 }
 \author{
 David Bolin \email{davidbolin@gmail.com}

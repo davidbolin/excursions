@@ -7,20 +7,20 @@
 exc_safe_inla(multicore = NULL, quietly = FALSE)
 }
 \arguments{
-\item{multicore}{logical; if `TRUE`, multiple cores are allowed, and the
-INLA `num.threads` option is not checked or altered.
-If `FALSE`, forces `num.threads="1:1"`. Default: NULL, checks
+\item{multicore}{logical; if \code{TRUE}, multiple cores are allowed, and the
+INLA \code{num.threads} option is not checked or altered.
+If \code{FALSE}, forces \code{num.threads="1:1"}. Default: NULL, checks
 if running in testthat or non-interactively, in which case sets
-`multicore=FALSE`, otherwise `TRUE`.}
+\code{multicore=FALSE}, otherwise \code{TRUE}.}
 
-\item{quietly}{logical; if `TRUE`, prints diagnostic messages. Default: FALSE.}
+\item{quietly}{logical; if \code{TRUE}, prints diagnostic messages. Default: FALSE.}
 }
 \value{
-logical; `TRUE` if INLA was loaded safely, otherwise FALSE
+logical; \code{TRUE} if INLA was loaded safely, otherwise FALSE
 }
 \description{
-Loads the INLA package with `requireNamespace("INLA", quietly = TRUE)`, and
-optionally checks and sets the multicore `num.threads` INLA option.
+Loads the INLA package with \code{requireNamespace("INLA", quietly = TRUE)}, and
+optionally checks and sets the multicore \code{num.threads} INLA option.
 }
 \examples{
 \dontrun{

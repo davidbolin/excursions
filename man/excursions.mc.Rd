@@ -27,10 +27,10 @@ sample of the model.}
 
 \item{type}{Type of region:
 \describe{
-    \item{'>' }{positive excursions}
-    \item{'<' }{negative excursions}
-    \item{'!=' }{contour avoiding function}
-    \item{'=' }{contour credibility function}}}
+\item{'>' }{positive excursions}
+\item{'<' }{negative excursions}
+\item{'!=' }{contour avoiding function}
+\item{'=' }{contour credibility function}}}
 
 \item{rho}{Marginal excursion probabilities (optional). For contour regions,
 provide \eqn{P(X>u)}.}
@@ -43,11 +43,11 @@ provide \eqn{P(X>u)}.}
 
 \item{verbose}{Set to TRUE for verbose mode (optional).}
 
-\item{prune.ind}{If `TRUE` and `ind` is supplied, then the result object is pruned to
-contain only the active nodes specified by `ind`.}
+\item{prune.ind}{If \code{TRUE} and \code{ind} is supplied, then the result object is pruned to
+contain only the active nodes specified by \code{ind}.}
 }
 \value{
-\code{excursions.mc} returns an object of class "excurobj" with the 
+\code{excursions.mc} returns an object of class "excurobj" with the
 following elements
 \item{E }{Excursion set, contour credible region, or contour avoiding set.}
 \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
@@ -90,7 +90,7 @@ pp 85-106.
 Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 }
 \seealso{
-\code{\link{excursions}}, \code{\link{excursions.inla}}
+\code{\link[=excursions]{excursions()}}, \code{\link[=excursions.inla]{excursions.inla()}}
 }
 \author{
 David Bolin \email{davidbolin@gmail.com} and Finn Lindgren

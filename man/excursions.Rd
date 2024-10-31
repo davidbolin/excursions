@@ -36,10 +36,10 @@ excursions(
 
 \item{type}{Type of region:
 \describe{
-   \item{'>'}{positive excursion region}
-   \item{'<'}{negative excursion region}
-   \item{'!='}{contour avoiding region}
-   \item{'='}{contour credibility region}}}
+\item{'>'}{positive excursion region}
+\item{'<'}{negative excursion region}
+\item{'!='}{contour avoiding region}
+\item{'='}{contour credibility region}}}
 
 \item{n.iter}{Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 10000.}
 
@@ -55,8 +55,8 @@ excursions(
 
 \item{method}{Method for handeling the latent Gaussian structure:
 \describe{
-     \item{'EB'}{Empirical Bayes (default)}
-     \item{'QC'}{Quantile correction, rho must be provided if QC is used.}}}
+\item{'EB'}{Empirical Bayes (default)}
+\item{'QC'}{Quantile correction, rho must be provided if QC is used.}}}
 
 \item{ind}{Indices of the nodes that should be analysed (optional).}
 
@@ -68,8 +68,8 @@ excursions(
 
 \item{seed}{Random seed (optional).}
 
-\item{prune.ind}{If `TRUE` and `ind` is supplied, then the result object is pruned to
-contain only the active nodes specified by `ind`.}
+\item{prune.ind}{If \code{TRUE} and \code{ind} is supplied, then the result object is pruned to
+contain only the active nodes specified by \code{ind}.}
 }
 \value{
 \code{excursions} returns an object of class "excurobj" with the following elements
@@ -84,7 +84,7 @@ contain only the active nodes specified by `ind`.}
 }
 \description{
 \code{excursions} is one of the main functions in the package with the same name.
-For an introduction to the package, see \code{\link{excursions-package}}. 
+For an introduction to the package, see \code{\link[=excursions-package]{excursions-package()}}.
 The function is used for calculating excursion sets, contour credible regions,
 and contour avoiding sets for latent Gaussian models. Details on the function and the
 package are given in the sections below.
@@ -137,7 +137,7 @@ Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty region
 Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 }
 \seealso{
-\code{\link{excursions-package}}, \code{\link{excursions.inla}}, \code{\link{excursions.mc}}
+\code{\link[=excursions-package]{excursions-package()}}, \code{\link[=excursions.inla]{excursions.inla()}}, \code{\link[=excursions.mc]{excursions.mc()}}
 }
 \author{
 David Bolin \email{davidbolin@gmail.com} and Finn Lindgren \email{finn.lindgren@gmail.com}

@@ -17,7 +17,7 @@
 
 #' Sequential estimation of Gaussian integrals
 #'
-#' \code{gaussint} is used for calculating \eqn{n}-dimensional Gaussian integrals
+#' `gaussint` is used for calculating \eqn{n}-dimensional Gaussian integrals
 #' \deqn{\int_a^b \frac{|Q|^{1/2}}{(2\pi)^{n/2}}
 #' \exp(-\frac1{2}(x-\mu)^{T}Q(x-\mu)) dx}{|Q|^(1/2)*(2\pi)^(-n/2) \int_a^b exp(-0.5*(x-\mu)^T Q (x-\mu)) dx}
 #' A limit value \eqn{lim} can be used to stop the integration if the sequential
@@ -66,18 +66,18 @@
 #' If one is only interested in whether \eqn{P(x>0)>\alpha} or not, then one can
 #' stop the integration as soon as \eqn{P(x_1>0,\ldots,x_i>0)<\alpha}. This can save a lot of
 #' computation time if \eqn{P(x_1>0,\ldots,x_i>0)< \alpha} for \eqn{i} much smaller than
-#' \eqn{n}. This limit value is specified by the \code{lim} argument.
+#' \eqn{n}. This limit value is specified by the `lim` argument.
 #'
 #' Which reordering to use depends on what the purpose of the calculation is and what
-#' the integration limits are. However, in general the \code{limits} reordering is typically
+#' the integration limits are. However, in general the `limits` reordering is typically
 #' most appropriate since this combines sparisty (which improves accuracy and reduces
-#' computational cost) with automatic handling of dimensions with limits \code{a=-Inf} and
-#' \code{b=Inf}, which do not affect the probability but affect the computation time
+#' computational cost) with automatic handling of dimensions with limits `a=-Inf` and
+#' `b=Inf`, which do not affect the probability but affect the computation time
 #' if they are not handled separately.
 #' @author David Bolin \email{davidbolin@@gmail.com}
-#' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
+#' @references Bolin, D. and Lindgren, F. (2015) *Excursion and contour uncertainty regions for latent Gaussian models*, JRSS-series B, vol 77, no 1, pp 85-106.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion Sets and Related Quantities Using excursions*, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #' @examples
 #' ## Create mean and a tridiagonal precision matrix
 #' n <- 11

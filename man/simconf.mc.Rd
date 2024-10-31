@@ -28,7 +28,7 @@ on Monte Carlo samples. The function returns upper and lower bounds \eqn{a} and
 \eqn{b} such that \eqn{P(a<x<b) = 1-\alpha}.
 }
 \details{
-See \code{\link{simconf}} for details.
+See \code{\link[=simconf]{simconf()}} for details.
 }
 \examples{
 ## Create mean and a tridiagonal precision matrix
@@ -48,7 +48,7 @@ lines(conf$a, col = 2)
 lines(conf$b, col = 2)
 }
 \seealso{
-\code{\link{simconf}}, \code{\link{simconf.inla}}
+\code{\link[=simconf]{simconf()}}, \code{\link[=simconf.inla]{simconf.inla()}}
 }
 \author{
 David Bolin \email{davidbolin@gmail.com}

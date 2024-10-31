@@ -17,7 +17,7 @@
 
 #' Contour maps and contour map quality measures for latent Gaussian models
 #'
-#' \code{contourmap} is used for calculating contour maps and quality measures for contour maps for Gaussian models.
+#' `contourmap` is used for calculating contour maps and quality measures for contour maps for Gaussian models.
 #'
 #' @param mu Expectation vector.
 #' @param Q Precision matrix.
@@ -41,39 +41,39 @@
 #'      }
 #' @param use.marginals Only marginal distributions are used when finding P-optimal maps (default TRUE).
 #' @param alpha Maximal error probability in contour map function (default=1).
-#' @param F.limit The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.
-#' @param n.iter Number or iterations in the MC sampler that is used for calculating the quantities in \code{compute}. The default value is 10000.
+#' @param F.limit The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = `alpha`.
+#' @param n.iter Number or iterations in the MC sampler that is used for calculating the quantities in `compute`. The default value is 10000.
 #' @param verbose Set to TRUE for verbose mode (optional).
 #' @param max.threads Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).
 #' @param seed Random seed (optional).
 #'
-#' @return \code{contourmap} returns an object of class "excurobj" with the following elements
+#' @return `contourmap` returns an object of class "excurobj" with the following elements
 #'     \item{u }{Contour levels used in the contour map.}
 #'     \item{n.levels }{The number of contours used.}
 #'     \item{u.e }{The values associated with the level sets G_k.}
 #'     \item{G }{A vector which shows which of the level sets G_k each node belongs to.}
 #'     \item{map }{Representation of the contour map with map[i]=u.e[k] if i is in G_k.}
 #'     \item{F }{The contour map function (if computed).}
-#'     \item{M }{Contour avoiding sets (if \code{F} is computed). \eqn{M=-1} for all non-significant nodes and  \eqn{M=k} for nodes that belong to \eqn{M_k}.}
+#'     \item{M }{Contour avoiding sets (if `F` is computed). \eqn{M=-1} for all non-significant nodes and  \eqn{M=k} for nodes that belong to \eqn{M_k}.}
 #'     \item{P0/P1/P2 }{Calculated quality measures (if computed).}
 #'     \item{P0bound/P1bound/P2bound }{Calculated upper bounds quality measures (if computed).}
 #'     \item{meta }{A list containing various information about the calculation.}
 #' @export
 #' @details
-#' The Gaussian model is specified using the mean \code{mu} and the precision matrix
-#' \code{Q}. The contour map is then computed for the mean, using either the contour
-#' levels specified in \code{levels}, or \code{n.levels} contours that are placed according
-#' to the argument \code{type}.
+#' The Gaussian model is specified using the mean `mu` and the precision matrix
+#' `Q`. The contour map is then computed for the mean, using either the contour
+#' levels specified in `levels`, or `n.levels` contours that are placed according
+#' to the argument `type`.
 #'
 #' A number of quality measures can be computed based based on the specified contour map
 #' and the Gaussian distribution. What should be computed is specified using the
-#' \code{compute} argument. For details on these quanties, see the reference below.
+#' `compute` argument. For details on these quanties, see the reference below.
 #'
 #' @author David Bolin \email{davidbolin@@gmail.com}
-#' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, vol 26, no 3, pp 513-524.
+#' @references Bolin, D. and Lindgren, F. (2017) *Quantifying the uncertainty of contour maps*, Journal of Computational and Graphical Statistics, vol 26, no 3, pp 513-524.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
-#' @seealso \code{\link{contourmap.inla}}, \code{\link{contourmap.mc}}, \code{\link{contourmap.colors}}
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion Sets and Related Quantities Using excursions*, Journal of Statistical Software, vol 86, no 1, pp 1-20.
+#' @seealso [contourmap.inla()], [contourmap.mc()], [contourmap.colors()]
 #' @examples
 #' n <- 10
 #' Q <- Matrix(toeplitz(c(1, -0.5, rep(0, n - 2))))

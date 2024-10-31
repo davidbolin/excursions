@@ -17,7 +17,7 @@
 
 #' Contour maps and contour map quality measures for latent Gaussian models
 #'
-#' An interface to the \code{contourmap} function for latent Gaussian models
+#' An interface to the `contourmap` function for latent Gaussian models
 #' calculated using the INLA method.
 #'
 #' @param result.inla Result object from INLA call.
@@ -50,9 +50,9 @@
 #'      }
 #' @param alpha Maximal error probability in contour map function (default=1)
 #' @param F.limit The limit value for the computation of the F function. F is
-#' set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.
+#' set to NA for all nodes where F<1-F.limit. Default is F.limit = `alpha`.
 #' @param n.iter Number or iterations in the MC sampler that is used for
-#' calculating the quantities in \code{compute}. The default value is 10000.
+#' calculating the quantities in `compute`. The default value is 10000.
 #' @param verbose Set to TRUE for verbose mode (optional)
 #' @param max.threads Decides the number of threads the program can use. Set to
 #' 0 for using the maximum number of threads allowed by the system (default).
@@ -63,42 +63,42 @@
 #' @param ind If only a part of a component should be used in the calculations,
 #' this argument specifies the indices for that part (optional).
 #' @param ... Additional arguments to the contour map function. See the
-#' documentation for \code{contourmap} for details.
+#' documentation for `contourmap` for details.
 #'
-#' @return \code{contourmap.inla} returns an object of class "excurobj" with the
-#' same elements as returned by \code{contourmap}.
-#' @note This function requires the \code{INLA} package, which is not a CRAN
-#' package.  See \url{https://www.r-inla.org/download-install} for easy
+#' @return `contourmap.inla` returns an object of class "excurobj" with the
+#' same elements as returned by `contourmap`.
+#' @note This function requires the `INLA` package, which is not a CRAN
+#' package.  See <https://www.r-inla.org/download-install> for easy
 #' installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @details
 #' The INLA approximation of the quantity of interest is in general a weighted
 #' sum of Gaussian distributions with different parameters. If
-#' \code{method = 'EB'} is used, then the contour map is computed for the mean
+#' `method = 'EB'` is used, then the contour map is computed for the mean
 #' of the component in the weighted sum that has parameters with the highest
-#' likelihood. If on the other hand \code{method='QC'}, then the contour map is
+#' likelihood. If on the other hand `method='QC'`, then the contour map is
 #' computed for the posterior mean reported by INLA. If the EB method also is
 #' used in INLA, then this reported posterior mean is equal to the mean of the
-#' component with the highest likelihood. Therefore, \code{method='EB'} is
-#' appropriate if the EB method also is used in INLA, but \code{method='QC'}
+#' component with the highest likelihood. Therefore, `method='EB'` is
+#' appropriate if the EB method also is used in INLA, but `method='QC'`
 #' should be used in general.
 #'
-#' The \code{n.levels} contours in the contour map are are placed according
-#' to the argument \code{type}. A number of quality measures can be computed
+#' The `n.levels` contours in the contour map are are placed according
+#' to the argument `type`. A number of quality measures can be computed
 #' based based on the specified contour map and the distribution of the
 #' component of interest. What should be computed is specified using the
-#' \code{compute} argument. For details on these quanties, see the reference
+#' `compute` argument. For details on these quanties, see the reference
 #' below.
-#' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the
-#' uncertainty of contour maps}, Journal of Computational and Graphical
+#' @references Bolin, D. and Lindgren, F. (2017) *Quantifying the
+#' uncertainty of contour maps*, Journal of Computational and Graphical
 #' Statistics, 26:3, 513-524.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion
-#' Sets and Related Quantities Using excursions}, Journal of Statistical
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion
+#' Sets and Related Quantities Using excursions*, Journal of Statistical
 #' Software, vol 86, no 1, pp 1-20.
 #' @export
-#' @seealso \code{\link{contourmap}}, \code{\link{contourmap.mc}},
-#' \code{\link{contourmap.colors}}
+#' @seealso [contourmap()], [contourmap.mc()],
+#' [contourmap.colors()]
 #' @examples
 #' \dontrun{
 #' if (require.nowarnings("INLA")) {

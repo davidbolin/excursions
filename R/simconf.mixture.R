@@ -17,15 +17,15 @@
 
 #' Simultaneous confidence regions for Gaussian mixture models
 #'
-#' \code{simconf.mixture} is used for calculating simultaneous confidence regions
+#' `simconf.mixture` is used for calculating simultaneous confidence regions
 #' for Gaussian mixture models. The distribution for the process \eqn{x} is assumed to be
 #' \deqn{\pi(x) = \sum_{k=1}^K w_k N(\mu_k, Q_k^{-1}).}
 #' The function returns upper and lower bounds \eqn{a} and \eqn{b} such that
 #' \eqn{P(a<x<b) = 1-\alpha}.
 #'
 #' @param alpha Error probability for the region.
-#' @param mu A list with the \code{k} expectation vectors \eqn{\mu_k}.
-#' @param Q A list with the \code{k} precision matrices \eqn{Q_k}.
+#' @param mu A list with the `k` expectation vectors \eqn{\mu_k}.
+#' @param Q A list with the `k` precision matrices \eqn{Q_k}.
 #' @param w A vector with the weights for each class in the mixture.
 #' @param ind Indices of the nodes that should be analyzed (optional).
 #' @param n.iter Number or iterations in the MC sampler that is used for
@@ -44,13 +44,13 @@
 #' \item{a.marginal }{The lower bound for pointwise confidence bands.}
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
-#' @details See \code{\link{simconf}} for details.
+#' @details See [simconf()] for details.
 #' @author David Bolin \email{davidbolin@@gmail.com}
-#' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
-#' from global temperature}, Statistica Sinica, vol 25, pp 351-367.
+#' @references Bolin et al. (2015) *Statistical prediction of global sea level
+#' from global temperature*, Statistica Sinica, vol 25, pp 351-367.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
-#' @seealso \code{\link{simconf}}, \code{\link{simconf.inla}}, \code{\link{simconf.mc}}
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion Sets and Related Quantities Using excursions*, Journal of Statistical Software, vol 86, no 1, pp 1-20.
+#' @seealso [simconf()], [simconf.inla()], [simconf.mc()]
 #' @examples
 #' n <- 11
 #' K <- 3

@@ -17,8 +17,8 @@
 
 #' Simultaneous confidence regions for latent Gaussian models
 #'
-#' \code{simconf.inla} is used for calculating simultaneous confidence regions
-#' for latent Gaussian models estimated using \code{INLA}.
+#' `simconf.inla` is used for calculating simultaneous confidence regions
+#' for latent Gaussian models estimated using `INLA`.
 #'
 #' @param result.inla Result object from INLA call.
 #' @param stack The stack object used in the INLA call.
@@ -56,17 +56,17 @@
 #' \item{a.marginal }{The lower bound for pointwise confidence bands.}
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
-#' @details See \code{\link{simconf}} for details.
+#' @details See [simconf()] for details.
 #'
 #'
-#' @note This function requires the \code{INLA} package, which is not a CRAN package.
-#' See \url{https://www.r-inla.org/download-install} for easy installation instructions.
+#' @note This function requires the `INLA` package, which is not a CRAN package.
+#' See <https://www.r-inla.org/download-install> for easy installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com}
-#' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
-#' from global temperature}, Statistica Sinica, vol 25, pp 351-367.
+#' @references Bolin et al. (2015) *Statistical prediction of global sea level
+#' from global temperature*, Statistica Sinica, vol 25, pp 351-367.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
-#' @seealso \code{\link{simconf}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion Sets and Related Quantities Using excursions*, Journal of Statistical Software, vol 86, no 1, pp 1-20.
+#' @seealso [simconf()], [simconf.mc()], [simconf.mixture()]
 #' @examples
 #' \dontrun{
 #' if (require.nowarnings("INLA")) {

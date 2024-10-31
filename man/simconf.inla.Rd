@@ -77,7 +77,7 @@ An object of class "excurobj" with elements
 for latent Gaussian models estimated using \code{INLA}.
 }
 \details{
-See \code{\link{simconf}} for details.
+See \code{\link[=simconf]{simconf()}} for details.
 }
 \note{
 This function requires the \code{INLA} package, which is not a CRAN package.
@@ -117,7 +117,7 @@ from global temperature}, Statistica Sinica, vol 25, pp 351-367.
 Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 }
 \seealso{
-\code{\link{simconf}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}
+\code{\link[=simconf]{simconf()}}, \code{\link[=simconf.mc]{simconf.mc()}}, \code{\link[=simconf.mixture]{simconf.mixture()}}
 }
 \author{
 David Bolin \email{davidbolin@gmail.com}
