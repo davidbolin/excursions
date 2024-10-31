@@ -82,19 +82,19 @@
 <dd><p>Type of contour map. One of:</p><dl><dt>'standard' </dt>
 <dd><p>Equidistant levels between smallest and largest value of the posterior mean (default).</p></dd>
 
-     <dt>'pretty' </dt>
+<dt>'pretty' </dt>
 <dd><p>Equally spaced 'round' values which cover the range of the values in the posterior mean.</p></dd>
 
-     <dt>'equalarea' </dt>
+<dt>'equalarea' </dt>
 <dd><p>Levels such that different spatial regions are approximately equal in size.</p></dd>
 
-     <dt>'P0-optimal' </dt>
+<dt>'P0-optimal' </dt>
 <dd><p>Levels chosen to maximize the P0 measure.</p></dd>
 
-     <dt>'P1-optimal' </dt>
+<dt>'P1-optimal' </dt>
 <dd><p>Levels chosen to maximize the P1 measure.</p></dd>
 
-     <dt>'P2-optimal' </dt>
+<dt>'P2-optimal' </dt>
 <dd><p>Levels chosen to maximize the P2 measure.</p></dd>
 
 
@@ -105,7 +105,7 @@
 <dd><p>A list with quality indices to compute</p><dl><dt>'F': </dt>
 <dd><p>TRUE/FALSE indicating whether the contour map function should be computed (default TRUE).</p></dd>
 
-     <dt>'measures': </dt>
+<dt>'measures': </dt>
 <dd><p>A list with the quality measures to compute ("P0", "P1", "P2") or corresponding bounds based only on the marginal probabilities ("P0-bound", "P1-bound", "P2-bound").</p></dd>
 
 
@@ -126,38 +126,38 @@
 <dl><dt>u </dt>
 <dd><p>Contour levels used in the contour map.</p></dd>
 
-    <dt>n.levels </dt>
+<dt>n.levels </dt>
 <dd><p>The number of contours used.</p></dd>
 
-    <dt>u.e </dt>
+<dt>u.e </dt>
 <dd><p>The values associated with the level sets G_k.</p></dd>
 
-    <dt>G </dt>
+<dt>G </dt>
 <dd><p>A vector which shows which of the level sets G_k each node belongs to.</p></dd>
 
-    <dt>map </dt>
-<dd><p>Representation of the contour map with map[i]=u.e[k] if i is in G_k.</p></dd>
+<dt>map </dt>
+<dd><p>Representation of the contour map with mapi=u.ek if i is in G_k.</p></dd>
 
-    <dt>F </dt>
+<dt>F </dt>
 <dd><p>The contour map function (if computed).</p></dd>
 
-    <dt>M </dt>
+<dt>M </dt>
 <dd><p>Contour avoiding sets (if <code>F</code> is computed). \(M=-1\) for all non-significant nodes and  \(M=k\) for nodes that belong to \(M_k\).</p></dd>
 
-    <dt>P0/P1/P2 </dt>
+<dt>P0/P1/P2 </dt>
 <dd><p>Calculated quality measures (if computed).</p></dd>
 
-    <dt>P0bound/P1bound/P2bound </dt>
+<dt>P0bound/P1bound/P2bound </dt>
 <dd><p>Calculated upper bounds quality measures (if computed).</p></dd>
 
-    <dt>meta </dt>
+<dt>meta </dt>
 <dd><p>A list containing various information about the calculation.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The contour map is computed for the empirical mean of the samples.
-See <code><a href="contourmap.html">contourmap</a></code> and <code><a href="contourmap.inla.html">contourmap.inla</a></code> for further details.</p>
+See <code><a href="contourmap.html">contourmap()</a></code> and <code><a href="contourmap.inla.html">contourmap.inla()</a></code> for further details.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>
@@ -166,7 +166,7 @@ See <code><a href="contourmap.html">contourmap</a></code> and <code><a href="con
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
-    <div class="dont-index"><p><code><a href="contourmap.html">contourmap</a></code>, <code><a href="contourmap.inla.html">contourmap.inla</a></code>, <code><a href="contourmap.colors.html">contourmap.colors</a></code></p></div>
+    <div class="dont-index"><p><code><a href="contourmap.html">contourmap()</a></code>, <code><a href="contourmap.inla.html">contourmap.inla()</a></code>, <code><a href="contourmap.colors.html">contourmap.colors()</a></code></p></div>
     </div>
     <div class="section level2">
     <h2 id="author">Author<a class="anchor" aria-label="anchor" href="#author"></a></h2>
