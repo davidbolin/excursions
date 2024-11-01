@@ -32,17 +32,21 @@ jobs:
           dependencies: '"all"'
           extra-packages: |
              pkgdown
+             remotes
+             rmarkdown
+
+      - name: Installing inlabru devel version (temporary for version 2.11.1.9017)
+        run: |
+          remotes::install_github("inlabru-org/inlabru", ref = "devel")
+        shell: Rscript {0} 
+
       - name: Session info
         run: |
           options(width = 100)
           pkgs <- installed.packages()[, "Package"]
           sessioninfo::session_info(pkgs, include_base = TRUE)
         shell: Rscript {0}
-      - name: Installing inlabru
-        run: |
-          install.packages(c("remotes", "rmarkdown"),dependencies=TRUE)
-          remotes::install_github("inlabru-org/inlabru", ref = "devel")
-        shell: Rscript {0} 
+
       - name: Install package
         run: R CMD INSTALL .
 
