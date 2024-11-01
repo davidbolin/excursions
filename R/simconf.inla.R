@@ -83,7 +83,9 @@
 #'     num.threads = "1:1"
 #'   )
 #'
-#'   res <- simconf.inla(result, name = "mu", alpha = 0.05, max.threads = 1)
+#'   res <- simconf.inla(
+#'     result, name = "mu", alpha = 0.05,
+#'     max.threads = 1, num.threads = "1:1")
 #'
 #'   plot(result$summary.random$mu$mean, ylim = c(-2, 2))
 #'   lines(res$a)
@@ -190,9 +192,17 @@ simconf.inla <- function(result.inla,
     }
     w <- exp(w) / sum(exp(w))
     if (inla.sample) {
+      num.threads <- INLA::inla.getOption("num.threads")
+      if (max.threads > 0) {
+        if (is.character(num.threads)) {
+          num.threads <- as.numeric(strsplit(num.threads, ":")[[1]])
+        }
+        num.threads <- min(max.threads, num.threads[1])
+      }
       s <- suppressWarnings(INLA::inla.posterior.sample(n.iter, result.inla.orig,
                                                         use.improved.mean = FALSE,
-                                                        skew.corr = FALSE))
+                                                        skew.corr = FALSE,
+                                                        num.threads = num.threads))
       samp <- matrix(0, n.iter, length(ind))
 
       for (i in seq_len(n.iter)) {

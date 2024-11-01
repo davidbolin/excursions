@@ -18,7 +18,9 @@ bibliography: ref.bib
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  dev = "png",
+  dev.args = list(type = "cairo-png")
 )
 library(excursions)
 library(fields)

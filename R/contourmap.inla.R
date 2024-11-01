@@ -117,7 +117,7 @@
 #'     runif(n.obs) * diff(range(x)) + min(x)
 #'   )
 #'   Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
-#'   x <- inla.qsample(Q = Q)
+#'   x <- inla.qsample(Q = Q, num.threads = 1)
 #'   A <- fmesher::fm_basis(mesh = mesh, loc = obs.loc)
 #'   Y <- as.vector(A %*% x + rnorm(n.obs) * sqrt(sigma2.e))
 #'

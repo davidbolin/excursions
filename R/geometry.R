@@ -777,7 +777,8 @@ as.Lines.raw <- function(cl, ID = " ") {
 #'
 #' @examples
 #' \dontrun{
-#' if (require("fmesher")) {
+#' if (require("fmesher") &&
+#'   require("sp")) {
 #'   ## Generate mesh and SPDE model
 #'   n.lattice <- 20 # increase for more interesting, but slower, examples
 #'   x <- seq(from = 0, to = 10, length.out = n.lattice)
@@ -1886,7 +1887,8 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #'
 #' @examples
 #' \dontrun{
-#' if (require("fmesher")) {
+#' if (require("fmesher") &&
+#'   require("sp")) {
 #'   # Generate mesh and SPDE model
 #'   n.lattice <- 10 # Increase for more interesting, but slower, examples
 #'   x <- seq(from = 0, to = 10, length.out = n.lattice)
@@ -1942,6 +1944,7 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #' }
 #' }
 #'
+#' @importFrom lifecycle deprecated
 continuous <- function(ex,
                        geometry,
                        alpha,
@@ -1953,6 +1956,11 @@ continuous <- function(ex,
   method <- match.arg(method)
   output <- match.arg(output)
   if (output == "inla") {
+    lifecycle::deprecate_warn(
+      "2.5.8.9001",
+      'continuous(output = "inla")',
+      'continuous(output = "mf")',
+      "The 'inla' output format is deprecated and may be removed in the future. Use 'fm' instead.")
     output <- "fm"
   }
 

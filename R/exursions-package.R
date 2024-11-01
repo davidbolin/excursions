@@ -72,7 +72,6 @@
 #' @importFrom methods as is
 #' @importFrom stats optimize pnorm qnorm quantile rnorm uniroot
 #' @import Matrix
-#' @import sp
 #' @useDynLib excursions, .registration = TRUE
 #' @aliases excursions-package
 "_PACKAGE"

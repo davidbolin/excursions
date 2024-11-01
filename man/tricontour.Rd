@@ -135,7 +135,8 @@ for functions defined on a triangulation
 }
 \examples{
 \dontrun{
-if (require("fmesher")) {
+if (require("fmesher") &&
+  require("sp")) {
   ## Generate mesh and SPDE model
   n.lattice <- 20 # increase for more interesting, but slower, examples
   x <- seq(from = 0, to = 10, length.out = n.lattice)

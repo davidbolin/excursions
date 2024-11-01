@@ -12,7 +12,9 @@ bibliography: ref.bib
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  dev = "png",
+  dev.args = list(type = "cairo-png")
 )
 library(excursions)
 library(RColorBrewer)
@@ -85,7 +87,7 @@ res <- simconf.inla(result, stack, tag = "est", alpha = 0.05, link = TRUE,
 Note the argument `link=TRUE` which tells the function that the results should be returned in the scale of the data, and not in the scale of the linear predictor. Next, we plot the results, showing the marginal confidence bands with dashed lines and the simultaneous confidence band with dotted lines. 
 ```{r}
 index <- inla.stack.index(stack, "est")$data
-plot(Tokyo$time, Tokyo$y / Tokyo$n, xlab = "Day", ylab = "Probability")
+plot(Tokyo$time, Tokyo$y / Tokyo$n, xlab = "Day", ylab = "Probability", pch = 20)
 lines(result$summary.fitted.values$mean[index])
 matplot(cbind(res$a.marginal, res$b.marginal), type = "l", lty = 2,
         col = 1, add = TRUE)

@@ -63,7 +63,8 @@ Calculates continuous domain excursion and credible contour sets
 }
 \examples{
 \dontrun{
-if (require("fmesher")) {
+if (require("fmesher") &&
+  require("sp")) {
   # Generate mesh and SPDE model
   n.lattice <- 10 # Increase for more interesting, but slower, examples
   x <- seq(from = 0, to = 10, length.out = n.lattice)
