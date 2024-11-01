@@ -6,7 +6,7 @@ vignette: >
   %\VignetteIndexEntry{Using excursions with INLA}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-bibliography: ref.bib
+bibliography: ../ref.bib
 ---
 
 ```{r setup, include = FALSE}

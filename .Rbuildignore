@@ -12,3 +12,4 @@
 ^pkgdown$
 ^index\.md$
 ^\.vscode$
+^vignettes/articles$

@@ -29,6 +29,9 @@ navbar:
         href: articles/inlabru.html
       - text: Methodology and definitions
         href: articles/theory.html
+      - text: ---
+      - text: Full vignette/examples list
+        href: articles/articles.html
     
     twitter:
       icon: fa-twitter
