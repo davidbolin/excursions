@@ -21,6 +21,8 @@ navbar:
     articles:
       text: Vignettes
       menu:
+      - text: Calculating probabilistic excursion sets and related quantities using excursions
+        href: articles/excursions.html
       - text: INLA interface
         href: articles/inla.html
       - text: inlabru interface
