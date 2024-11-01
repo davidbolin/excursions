@@ -37,7 +37,7 @@ jobs:
 
       - name: Installing inlabru devel version (temporary for version 2.11.1.9017)
         run: |
-          remotes::install_github("inlabru-org/inlabru", ref = "devel")
+          remotes::install_version("inlabru", version = "2.11.1.9017")
         shell: Rscript {0} 
 
       - name: Session info
