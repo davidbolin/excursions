@@ -26,7 +26,7 @@ library(excursions)
 library(fields)
 library(RColorBrewer)
 library(sp)
-library(INLA)
+# library(INLA) # Only needed if one want to use inla.qinv()
 library(fmesher)
 library(excursions)
 seed <- 1
@@ -48,14 +48,13 @@ As an example that will be used to illustrate the methods in later sections, we 
 x <- seq(from = 0, to = 10, length.out = 20)
 mesh <- fm_rcdt_2d_inla(lattice = fm_lattice_2d(x = x, y = x),
                         extend = FALSE, refine = FALSE)
-spde <- inla.spde2.matern(mesh, alpha = 2)
+Q <- fm_matern_precision(mesh, alpha = 2, rho = 3, sigma = 1)
+x <- fm_sample(n = 1, Q = Q)
 obs.loc <- 10 * cbind(runif(100), runif(100))
-Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), 0))
-x <- inla.qsample(Q = Q, seed = seed, num.threads = "1:1")
 ```
 Based on the observations, we calculate the posterior distribution of the latent field, which is Gaussian with mean `mu.post` and precision matrix `Q.post`, these are computed as follows. We refer to [@lindgren2015software] for details about the `INLA` related details in the code.
 ```{r}
-A <- inla.spde.make.A(mesh = mesh, loc = obs.loc)
+A <- fm_basis(mesh, loc = obs.loc)
 sigma2.e = 0.01
 Y <- as.vector(A %*% x + rnorm(100) * sqrt(sigma2.e))
 Q.post <- (Q + (t(A) %*% A) / sigma2.e)
@@ -66,18 +65,18 @@ The following figures show the posterior mean and the posterior standard deviati
 proj <- fm_evaluator(mesh, dims = c(100, 100))
 cmap <- colorRampPalette(brewer.pal(9, "YlGnBu"))(100)
 
-sd.post <- diag(inla.qinv(Q.post))
+sd.post <- diag(solve(Q.post)) # More efficient: diag(INLA::inla.qinv(Q.post))
 cmap.sd <- colorRampPalette(brewer.pal(9, "Reds"))(100)
 
 par(mfrow=c(1,2))
 image.plot(proj$x, proj$y, fm_evaluate(proj, field = mu.post), 
            col = cmap, axes = FALSE,
   xlab = "", ylab = "", asp = 1)
-points(obs.loc[, 1], obs.loc[, 2])
+points(obs.loc[, 1], obs.loc[, 2], pch = 20)
 image.plot(proj$x, proj$y, fm_evaluate(proj, field = sd.post), 
            col = cmap.sd, axes = FALSE,
   xlab = "", ylab = "", asp = 1)
-points(obs.loc[, 1], obs.loc[, 2])
+points(obs.loc[, 1], obs.loc[, 2], pch = 20)
 ```
 
 
