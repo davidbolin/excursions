@@ -23,6 +23,7 @@ knitr::opts_chunk$set(
 library(excursions)
 library(fields)
 library(RColorBrewer)
+library(sp)
 library(INLA)
 library(fmesher)
 library(excursions)
@@ -48,7 +49,7 @@ mesh <- fm_rcdt_2d_inla(lattice = fm_lattice_2d(x = x, y = x),
 spde <- inla.spde2.matern(mesh, alpha = 2)
 obs.loc <- 10 * cbind(runif(100), runif(100))
 Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), 0))
-x <- inla.qsample(Q = Q, seed = seed)
+x <- inla.qsample(Q = Q, seed = seed, num.threads = "1:1")
 ```
 Based on the observations, we calculate the posterior distribution of the latent field, which is Gaussian with mean `mu.post` and precision matrix `Q.post`, these are computed as follows. We refer to [@lindgren2015software] for details about the `INLA` related details in the code.
 ```{r}
