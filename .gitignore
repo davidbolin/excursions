@@ -11,3 +11,4 @@ autom4te.cache
 src/Makevars
 src/CAMD/Source/*.o
 src/SuiteSparse_config/*.o
+docs/
