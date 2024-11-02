@@ -78,6 +78,7 @@ from global temperature}, Statistica Sinica, Vol 25, pp 351-367.
 Useful links:
 \itemize{
   \item \url{https://github.com/davidbolin/excursions}
+  \item \url{https://davidbolin.github.io/excursions/}
   \item Report bugs at \url{https://github.com/davidbolin/excursions/issues}
 }
 

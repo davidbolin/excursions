@@ -86,7 +86,7 @@ if (require("fmesher") &&
   ## Calculate posterior
   Q.post <- (Q + (t(A) \%*\% A) / sigma2.e)
   mu.post <- as.vector(solve(Q.post, (t(A) \%*\% Y) / sigma2.e))
-  vars.post <- excursions.variances(chol(Q.post))
+  vars.post <- excursions.variances(chol(Q.post), max.threads = 1)
 
   ## Calculate contour map with two levels
   map <- contourmap(
