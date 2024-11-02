@@ -27,7 +27,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">excursions</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.5.8.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.5.8.9001</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,9 +41,12 @@
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-vignettes" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Vignettes</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-vignettes">
-<li><a class="dropdown-item" href="../articles/inla.html">INLA interface</a></li>
+<li><a class="dropdown-item" href="../articles/excursions.html">Calculating probabilistic excursion sets and related quantities using excursions</a></li>
+    <li><a class="dropdown-item" href="../articles/inla.html">INLA interface</a></li>
     <li><a class="dropdown-item" href="../articles/inlabru.html">inlabru interface</a></li>
     <li><a class="dropdown-item" href="../articles/theory.html">Methodology and definitions</a></li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="../articles/articles.html">Full vignette/examples list</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
@@ -71,7 +74,7 @@
 Finn Lindgren</h4>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/davidbolin/excursions/blob/devel/vignettes/inla.Rmd" class="external-link"><code>vignettes/inla.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/davidbolin/excursions/blob/devel/vignettes/articles/inla.Rmd" class="external-link"><code>vignettes/articles/inla.Rmd</code></a></small>
       <div class="d-none name"><code>inla.Rmd</code></div>
     </div>
 
@@ -181,7 +184,7 @@ the marginal confidence bands with dashed lines and the simultaneous
 confidence band with dotted lines.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">index</span> <span class="op">&lt;-</span> <span class="fu">inla.stack.index</span><span class="op">(</span><span class="va">stack</span>, <span class="st">"est"</span><span class="op">)</span><span class="op">$</span><span class="va">data</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">Tokyo</span><span class="op">$</span><span class="va">time</span>, <span class="va">Tokyo</span><span class="op">$</span><span class="va">y</span> <span class="op">/</span> <span class="va">Tokyo</span><span class="op">$</span><span class="va">n</span>, xlab <span class="op">=</span> <span class="st">"Day"</span>, ylab <span class="op">=</span> <span class="st">"Probability"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">Tokyo</span><span class="op">$</span><span class="va">time</span>, <span class="va">Tokyo</span><span class="op">$</span><span class="va">y</span> <span class="op">/</span> <span class="va">Tokyo</span><span class="op">$</span><span class="va">n</span>, xlab <span class="op">=</span> <span class="st">"Day"</span>, ylab <span class="op">=</span> <span class="st">"Probability"</span>, pch <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">summary.fitted.values</span><span class="op">$</span><span class="va">mean</span><span class="op">[</span><span class="va">index</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">a.marginal</span>, <span class="va">res</span><span class="op">$</span><span class="va">b.marginal</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"l"</span>, lty <span class="op">=</span> <span class="fl">2</span>,</span>
 <span>        col <span class="op">=</span> <span class="fl">1</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
