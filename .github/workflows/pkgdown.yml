@@ -29,6 +29,7 @@ jobs:
 
       - name: Installing Rcpp for temporary R 4.4.2 workaround
         run: |
+          install.packages("remotes")
           remotes::install_version("Rcpp", version = "> 1.0.13")
         shell: Rscript {0} 
 
