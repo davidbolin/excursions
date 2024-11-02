@@ -27,17 +27,12 @@ jobs:
           sudo ln -s /usr/bin/gcc /usr/local/bin/gcc
           sudo ln -s /usr/bin/g++ /usr/local/bin/g++     
 
-      - name: Installing Rcpp for temporary R 4.4.2 workaround
-        run: |
-          install.packages("remotes")
-          remotes::install_version("Rcpp", version = "> 1.0.13")
-        shell: Rscript {0} 
-
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           cache-version: 2
           dependencies: '"all"'
           extra-packages: |
+             Rcpp
              pkgdown
              remotes
              rmarkdown
