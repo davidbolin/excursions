@@ -47,7 +47,8 @@ jobs:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
-          extra-repositories: "https://inla.r-inla-download.org/R/testing https://inlabru-org.r-universe.dev"
+          extra-repositories: "https://inla.r-inla-download.org/R/testing"
+            #          extra-repositories: "https://inla.r-inla-download.org/R/testing https://inlabru-org.r-universe.dev"
 
       - name: Install system dependencies on MacOS (X11, gdal, gsl)
         if: runner.os == 'macOS'
@@ -65,11 +66,6 @@ jobs:
              rcmdcheck
              remotes
              rmarkdown
-
-      - name: Installing inlabru devel version (temporary for version 2.11.1.9017)
-        run: |
-          remotes::install_version("inlabru", version = "2.11.1.9017")
-        shell: Rscript {0} 
 
       - name: Session info
         run: |
