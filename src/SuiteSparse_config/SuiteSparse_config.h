@@ -46,8 +46,8 @@ extern "C" {
 #include <stdlib.h>
 
 // For use with R package 'Matrix'
-//#include <R_ext/Print.h>
-//#define printf Rprintf
+#include <R_ext/Print.h>
+#define printf Rprintf
 
 /* ========================================================================== */
 /* === SuiteSparse_long ===================================================== */

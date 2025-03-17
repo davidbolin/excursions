@@ -41,7 +41,7 @@ GLOBAL void CAMD_debug_init ( char *s )
     }
     if (CAMD_debug >= 0)
     {
-	printf ("%s: CAMD_debug_init, D= "ID"\n", s, CAMD_debug) ;
+	PRINTF ("%s: CAMD_debug_init, D= "ID"\n", s, CAMD_debug) ;
     }
 }
 
