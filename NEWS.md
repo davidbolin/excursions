@@ -1,5 +1,8 @@
 # Development version
 
+* Add -DNPRINT to CAMD build, and remove fflush(stdout) use, to avoid fprint
+  and stdout usage
+
 # excursions 2.5.8
 
 * Minor updates to C code to avoid warning with gcc13 and clang17 compilers
