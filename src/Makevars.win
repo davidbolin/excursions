@@ -23,7 +23,7 @@ CAMD.a:
 	(cd CAMD && \
 	    $(MAKE) -f "$(MkInclude)" -f Makefile \
 	    MAKE="$(MAKE) -f \"$(MkInclude)\" -f Makefile" \
-	    CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
+	    CFLAGS="$(CFLAGS) -DNPRINT" CXXFLAGS="$(CXXFLAGS)" \
 	    library)
 
 SuiteSparse_config.a:
