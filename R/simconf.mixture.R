@@ -209,9 +209,10 @@ simconf.mixture <- function(alpha,
       }
       cind <- reo <- rep(1, n)
       cind[!ind] <- 0
+      Q_ipx <- private.sparse.get_ipx(Q[[1]])
       out <- .C("reordering",
-        nin = as.integer(n), Mp = as.integer(Q[[1]]@p),
-        Mi = as.integer(Q[[1]]@i), reo = as.integer(reo),
+        nin = as.integer(n), Mp = as.integer(Q_ipx$p),
+        Mi = as.integer(Q_ipx$i), reo = as.integer(reo),
         cind = as.integer(cind)
       )
       reo <- out$reo + 1

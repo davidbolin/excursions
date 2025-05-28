@@ -2,6 +2,7 @@
 
 * Add -DNPRINT to CAMD build, and remove fflush(stdout) use, to avoid fprint
   and stdout usage
+* Fix issue with identity matrices, ensuring they are not treated as all-zero
 
 # excursions 2.5.8
 

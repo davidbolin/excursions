@@ -171,9 +171,10 @@ gaussint <- function(mu,
         cind <- rep(1, n)
         cind[inf.ind] <- 0
         reo <- rep(0, n)
+        Q_ipx <- private.sparse.get_ipx(Q)
         out <- .C("reordering",
-          nin = as.integer(n), Mp = as.integer(Q@p),
-          Mi = as.integer(Q@i), reo = as.integer(reo),
+          nin = as.integer(n), Mp = as.integer(Q_ipx$p),
+          Mi = as.integer(Q_ipx$i), reo = as.integer(reo),
           cind = as.integer(cind)
         )
         reo <- out$reo + 1
@@ -238,9 +239,10 @@ gaussint <- function(mu,
 
   opts <- c(n, n.iter, max.size, max.threads, seed_provided)
 
+  L_ipx <- private.sparse.get_ipx(L)
   out <- .C("shapeInt",
-    Mp = as.integer(L@p), Mi = as.integer(L@i),
-    Mv = as.double(L@x), a = as.double(a), b = as.double(b),
+    Mp = as.integer(L_ipx$p), Mi = as.integer(L_ipx$i),
+    Mv = as.double(L_ipx$x), a = as.double(a), b = as.double(b),
     opts = as.integer(opts), lim = as.double(lim),
     Pv = as.double(Pv), Ev = as.double(Ev), seed_in = seed.in
   )

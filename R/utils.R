@@ -68,11 +68,12 @@ excursions.variances <- function(L, Q, max.threads = 0) {
     ireo <- L$ireo
     L <- L$R
   }
+  L_ipx <- private.sparse.get_ipx(L)
 
   out <- .C("Qinv",
-    Rir = as.integer(L@i),
-    Rjc = as.integer(L@p),
-    Rpr = as.double(L@x),
+    Rir = as.integer(L_ipx$i),
+    Rjc = as.integer(L_ipx$p),
+    Rpr = as.double(L_ipx$x),
     variances = double(dim(L)[1]),
     n = as.integer(dim(L)[1]),
     n_threads = as.integer(max.threads)
@@ -160,9 +161,10 @@ excursions.permutation <- function(rho, ind, use.camd = TRUE, alpha, Q) {
       }
       Q <- private.as.dgCMatrix(Q)
       ## call CAMD
+      Q_ipx <- private.sparse.get_ipx(Q)
       out <- .C("reordering",
-        nin = as.integer(n), Mp = as.integer(Q@p),
-        Mi = as.integer(Q@i), reo = as.integer(reo),
+        nin = as.integer(n), Mp = as.integer(Q_ipx$p),
+        Mi = as.integer(Q_ipx$i), reo = as.integer(reo),
         cind = as.integer(cind)
       )
       reo <- out$reo + 1
@@ -258,6 +260,24 @@ private.sparse.gettriplet <- function(M) {
   M <- private.as.dgTMatrix(M)
   ## Extract triplets:
   list(i = M@i + 1L, j = M@j + 1L, x = M@x)
+}
+
+private.sparse.get_ipx <- function(M) {
+  if (!inherits(M, "CsparseMatrix")) {
+    stop("M must be a CsparseMatrix object")
+  }
+  M <- private.as.dgCMatrix(M)
+  ## Extract i,p,x in 0-based format:
+  ## If M is a unit diagonal matrix, may have length(i)==0
+  if (inherits(M, "triangularMatrix") &&
+      (M@diag == "U") &&
+      (length(M@i) == 0)) {
+    list(i = seq_len(nrow(M)) - 1L,
+         p = seq_len(nrow(M) + 1) - 1L,
+         x = rep(1.0, nrow(M)))
+  } else {
+    list(i = M@i, p = M@p, x = M@x)
+  }
 }
 
 private.as.dgTMatrix <- function(M, make_unique = TRUE) {
