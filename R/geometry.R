@@ -1403,11 +1403,19 @@ get.geometry <- function(geometry) {
 ## Output:
 ##   list(loc, graph=list(tv), A, idx=list(loc))
 subdivide.mesh <- function(mesh) {
-  if ((utils::packageVersion("fmesher") >= "0.4.0") &&
-      !(fmesher::fm_manifold(mesh, "M"))) {
+  if ((utils::packageVersion("fmesher") >= "0.5.0.9002") ||
+      ((utils::packageVersion("fmesher") >= "0.4.0") &&
+      !(fmesher::fm_manifold(mesh, "M")))) {
     new_mesh <- fmesher::fm_subdivide(mesh, 1L)
-    ## Add mapping matrix
-    new_mesh$A <- fmesher::fm_basis(mesh, new_mesh$loc)
+
+      ## Add mapping matrix
+    if (utils::packageVersion("fmesher") >= "0.5.0.9002") {
+      # Works for all manifolds:
+      new_mesh$A <- fmesher::fm_basis(mesh, new_mesh$bary)
+    } else {
+      # Does not work for M-manifolds (at least up to 0.5.0.9002)
+      new_mesh$A <- fmesher::fm_basis(mesh, new_mesh$loc)
+    }
     
     if (utils::packageVersion("fmesher") < "0.5.0.9001") {
       # Workaround for fmesher < 0.5.0.9001:
@@ -1417,6 +1425,10 @@ subdivide.mesh <- function(mesh) {
 
     return(new_mesh)
   }
+  
+  # Legacy code below.
+  # Only needed for fmesher < 0.5.0.9002
+  # For fmesher >= 0.4.0, only needed for M-manifolds
   
   graph <- generate_trigraph_properties(mesh$graph, nrow(mesh$loc))
 
