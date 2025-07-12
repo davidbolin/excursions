@@ -1393,7 +1393,7 @@ get.geometry <- function(geometry) {
     }
   }
   geometrytype <- match.arg(geometrytype, c("mesh", "lattice"))
-  manifoldtype <- match.arg(manifoldtype, c("M", "R1", "R2", "S2"))
+  manifoldtype <- match.arg(manifoldtype, c("M", "M1", "M2", "R1", "R2", "S2"))
   list(loc = loc, dims = dims, geometry = geometrytype, manifold = manifoldtype)
 }
 
@@ -1402,8 +1402,22 @@ get.geometry <- function(geometry) {
 ##   list(loc, graph=list(tv, ...)) or an fm_mesh_2d
 ## Output:
 ##   list(loc, graph=list(tv), A, idx=list(loc))
-## TODO: switch to using fm_subdivide()
 subdivide.mesh <- function(mesh) {
+  if ((utils::packageVersion("fmesher") >= "0.4.0") &&
+      !(fmesher::fm_manifold(mesh, "M"))) {
+    new_mesh <- fmesher::fm_subdivide(mesh, 1L)
+    ## Add mapping matrix
+    new_mesh$A <- fmesher::fm_basis(mesh, new_mesh$loc)
+    
+    if (utils::packageVersion("fmesher") < "0.5.0.9001") {
+      # Workaround for fmesher < 0.5.0.9001:
+      # Map original points:
+      new_mesh$idx$loc <- seq_len(nrow(mesh$loc))
+    }
+
+    return(new_mesh)
+  }
+  
   graph <- generate_trigraph_properties(mesh$graph, nrow(mesh$loc))
 
   v1 <- seq_len(graph$Nv)
@@ -1959,7 +1973,7 @@ continuous <- function(ex,
     lifecycle::deprecate_warn(
       "2.5.8.9001",
       'continuous(output = "inla")',
-      'continuous(output = "mf")',
+      'continuous(output = "fm")',
       "The 'inla' output format is deprecated and may be removed in the future. Use 'fm' instead.")
     output <- "fm"
   }
@@ -1985,7 +1999,7 @@ continuous <- function(ex,
   }
 
   info <- get.geometry(geometry)
-  if (!fmesher::fm_manifold(info, c("M", "R2", "S2"))) {
+  if (!fmesher::fm_manifold(info, c("M", "M2", "R2", "S2"))) {
     stop(paste("Unsupported manifold type '", fmesher::fm_manifold(info), "'.", sep = ""))
   }
   if ((output == "sp") && !fmesher::fm_manifold(info, c("R2"))) {

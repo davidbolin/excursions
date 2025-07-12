@@ -83,7 +83,7 @@ test_that("Continous on contourmap, M mesh", {
 
   # Alter z-coordinates and mark as general manifold
   mesh$loc[, 3] <- seq_len(mesh$n)
-  mesh$manifold <- "M"
+  mesh$manifold <- "M2"
 
   res2 <- continuous(res1, mesh,
     method = "linear",
