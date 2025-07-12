@@ -108,7 +108,7 @@ Y <- rowMeans(PRprec[, 3 + (1 : 31)])
 ind <- !is.na(Y)
 Y <- Y[ind]
 coords <- as.matrix(PRprec[ind, 1 : 2])
-b <- fm_nonconvex_hull_inla(coords, -0.03, -0.05, resolution = c(100, 100))
+b <- fm_nonconvex_hull(coords, -0.03, -0.05, resolution = c(100, 100))
 prmesh <- fm_mesh_2d(boundary = b, max.edge = c(.45, 1), cutoff = 0.2)
 A <- inla.spde.make.A(prmesh, loc = coords)
 spde <- inla.spde2.matern(prmesh, alpha = 2)
