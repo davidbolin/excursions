@@ -216,16 +216,7 @@ data using a different non-Gaussian SPDE model.</p>
 <span><span class="va">ind</span> <span class="op">&lt;-</span> <span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">Y</span><span class="op">)</span></span>
 <span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="va">Y</span><span class="op">[</span><span class="va">ind</span><span class="op">]</span></span>
 <span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">PRprec</span><span class="op">[</span><span class="va">ind</span>, <span class="fl">1</span> <span class="op">:</span> <span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_nonconvex_hull_inla.html" class="external-link">fm_nonconvex_hull_inla</a></span><span class="op">(</span><span class="va">coords</span>, <span class="op">-</span><span class="fl">0.03</span>, <span class="op">-</span><span class="fl">0.05</span>, resolution <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: `fm_nonconvex_hull_inla()` was deprecated in fmesher 0.4.0.9002.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use the `format` argument of `fm_nonconvex_hull()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> The `fm_nonconvex_hull()` method with `method = "fm"` and `format = "fm"` has</span></span>
-<span><span class="co">#&gt;   replaced `fm_nonconvex_hull_inla()`. Most use cases can use</span></span>
-<span><span class="co">#&gt;   `fm_nonconvex_hull(...)` for `sf` output, which since version `0.4.0.9002`</span></span>
-<span><span class="co">#&gt;   uses the "fm" method by default.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
+<span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_nonconvex_hull.html" class="external-link">fm_nonconvex_hull</a></span><span class="op">(</span><span class="va">coords</span>, <span class="op">-</span><span class="fl">0.03</span>, <span class="op">-</span><span class="fl">0.05</span>, resolution <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">prmesh</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_mesh_2d.html" class="external-link">fm_mesh_2d</a></span><span class="op">(</span>boundary <span class="op">=</span> <span class="va">b</span>, max.edge <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.45</span>, <span class="fl">1</span><span class="op">)</span>, cutoff <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span>
 <span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu">inla.spde.make.A</span><span class="op">(</span><span class="va">prmesh</span>, loc <span class="op">=</span> <span class="va">coords</span><span class="op">)</span></span>
 <span><span class="va">spde</span> <span class="op">&lt;-</span> <span class="fu">inla.spde2.matern</span><span class="op">(</span><span class="va">prmesh</span>, alpha <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
@@ -330,10 +321,10 @@ three levels.</p>
 <span>                 row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"n.level = 1"</span>,<span class="st">"n.level = 2"</span>,</span>
 <span>                               <span class="st">"n.level = 3"</span>,<span class="st">"n.level = 4"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                       P2</span></span>
-<span><span class="co">#&gt; n.level = 1 0.9999999943</span></span>
-<span><span class="co">#&gt; n.level = 2 0.6921369289</span></span>
-<span><span class="co">#&gt; n.level = 3 0.0572013797</span></span>
-<span><span class="co">#&gt; n.level = 4 0.0003228233</span></span></code></pre></div>
+<span><span class="co">#&gt; n.level = 1 0.9999999965</span></span>
+<span><span class="co">#&gt; n.level = 2 0.6536138326</span></span>
+<span><span class="co">#&gt; n.level = 3 0.0337021714</span></span>
+<span><span class="co">#&gt; n.level = 4 0.0001892985</span></span></code></pre></div>
 <p>We see that using only one or two contours give very high
 credibility, whereas using four contours give a credibility that is
 close to zero. The contour map with three contours has a credibility
