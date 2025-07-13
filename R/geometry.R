@@ -605,12 +605,12 @@ submesh.grid <- function(z, grid = NULL) {
 #'   nxy <- 30
 #'   x <- seq(from = 0, to = 4, length.out = nxy)
 #'   lattice <- fm_lattice_2d(x = x, y = x)
-#'   mesh <- fm_mesh_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+#'   mesh <- fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
 #'
 #'   # extract a part of the mesh inside a circle
 #'   xy.in <- rowSums((mesh$loc[, 1:2] - 2)^2) < 1
-#'   submesh <- excursions:::submesh.mesh(matrix(xy.in, nxy, nxy), mesh)
-#'   plot(mesh$loc[, 1:2])
+#'   submesh <- submesh.mesh(matrix(xy.in, nxy, nxy), mesh)
+#'   plot(mesh$loc[, 1:2], pch = 20)
 #'   lines(2 + cos(seq(0, 2 * pi, length.out = 100)), 2 + sin(seq(0, 2 * pi, length.out = 100)))
 #'   plot(submesh, add = TRUE)
 #'   points(mesh$loc[xy.in, 1:2], col = "2")
@@ -621,6 +621,10 @@ submesh.mesh <- function(z, mesh) {
   submesh.mesh.tri(outlinetri.on.mesh(z, mesh), mesh)
 }
 submesh.mesh.tri <- function(tri, mesh) {
+  if (utils::packageVersion("fmesher") >= "0.5.0.9003") {
+    return(fmesher::fm_subset(mesh, tri))
+  }
+  
   tv <- mesh$graph$tv[tri, , drop = FALSE]
   v <- sort(unique(as.vector(tv)))
   idx <- rep(as.integer(NA), nrow(mesh$loc))
@@ -630,7 +634,6 @@ submesh.mesh.tri <- function(tri, mesh) {
 
   mesh <- fmesher::fm_rcdt_2d_inla(loc = loc, tv = tv, refine = FALSE)
 
-  idx <- rep(as.integer(NA), length(idx))
   idx[v] <- mesh$idx$loc
   mesh$idx$loc <- idx
 
