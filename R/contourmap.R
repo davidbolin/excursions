@@ -17,7 +17,8 @@
 
 #' Contour maps and contour map quality measures for latent Gaussian models
 #'
-#' `contourmap` is used for calculating contour maps and quality measures for contour maps for Gaussian models.
+#' `contourmap` is used for calculating contour maps and quality measures for
+#' contour maps for Gaussian models.
 #'
 #' @param mu Expectation vector.
 #' @param Q Precision matrix.
@@ -27,24 +28,34 @@
 #' @param levels Levels to use in contour map.
 #' @param type Type of contour map. One of:
 #' \describe{
-#'      \item{'standard' }{Equidistant levels between smallest and largest value of the posterior mean (default).}
-#'      \item{'pretty' }{Equally spaced 'round' values which cover the range of the values in the posterior mean.}
-#'      \item{'equalarea' }{Levels such that different spatial regions are approximately equal in size.}
+#'      \item{'standard' }{Equidistant levels between smallest and largest value
+#'        of the posterior mean (default).}
+#'      \item{'pretty' }{Equally spaced 'round' values which cover the range of
+#'        the values in the posterior mean.}
+#'      \item{'equalarea' }{Levels such that different spatial regions are
+#'        approximately equal in size.}
 #'      \item{'P0-optimal' }{Levels chosen to maximize the P0 measure.}
 #'      \item{'P1-optimal' }{Levels chosen to maximize the P1 measure.}
 #'      \item{'P2-optimal' }{Levels chosen to maximize the P2 measure.}
 #' }
 #' @param compute A list with quality indices to compute
 #' \describe{
-#'      \item{'F': }{TRUE/FALSE indicating whether the contour map function should be computed (default TRUE).}
-#'      \item{'measures': }{A list with the quality measures to compute ("P0", "P1", "P2") or corresponding bounds based only on the marginal probabilities ("P0-bound", "P1-bound", "P2-bound").}
+#'      \item{'F': }{TRUE/FALSE indicating whether the contour map function
+#'        should be computed (default TRUE).}
+#'      \item{'measures': }{A list with the quality measures to compute
+#'        ("P0", "P1", "P2") or corresponding bounds based only on the marginal
+#'        probabilities ("P0-bound", "P1-bound", "P2-bound").}
 #'      }
-#' @param use.marginals Only marginal distributions are used when finding P-optimal maps (default TRUE).
+#' @param use.marginals Only marginal distributions are used when finding
+#'   P-optimal maps (default TRUE).
 #' @param alpha Maximal error probability in contour map function (default=1).
-#' @param F.limit The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = `alpha`.
-#' @param n.iter Number or iterations in the MC sampler that is used for calculating the quantities in `compute`. The default value is 10000.
+#' @param F.limit The limit value for the computation of the F function. F is
+#'   set to NA for all nodes where `F < 1-F.limit`. Default is `F.limit = alpha`.
+#' @param n.iter Number or iterations in the MC sampler that is used for
+#'   calculating the quantities in `compute`. The default value is 10000.
 #' @param verbose Set to TRUE for verbose mode (optional).
-#' @param max.threads Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).
+#' @param max.threads Decides the number of threads the program can use. Set to
+#'   0 for using the maximum number of threads allowed by the system (default).
 #' @param seed Random seed (optional).
 #'
 #' @return `contourmap` returns an object of class "excurobj" with the following elements

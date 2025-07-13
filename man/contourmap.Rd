@@ -37,9 +37,12 @@ contourmap(
 
 \item{type}{Type of contour map. One of:
 \describe{
-\item{'standard' }{Equidistant levels between smallest and largest value of the posterior mean (default).}
-\item{'pretty' }{Equally spaced 'round' values which cover the range of the values in the posterior mean.}
-\item{'equalarea' }{Levels such that different spatial regions are approximately equal in size.}
+\item{'standard' }{Equidistant levels between smallest and largest value
+of the posterior mean (default).}
+\item{'pretty' }{Equally spaced 'round' values which cover the range of
+the values in the posterior mean.}
+\item{'equalarea' }{Levels such that different spatial regions are
+approximately equal in size.}
 \item{'P0-optimal' }{Levels chosen to maximize the P0 measure.}
 \item{'P1-optimal' }{Levels chosen to maximize the P1 measure.}
 \item{'P2-optimal' }{Levels chosen to maximize the P2 measure.}
@@ -47,21 +50,28 @@ contourmap(
 
 \item{compute}{A list with quality indices to compute
 \describe{
-\item{'F': }{TRUE/FALSE indicating whether the contour map function should be computed (default TRUE).}
-\item{'measures': }{A list with the quality measures to compute ("P0", "P1", "P2") or corresponding bounds based only on the marginal probabilities ("P0-bound", "P1-bound", "P2-bound").}
+\item{'F': }{TRUE/FALSE indicating whether the contour map function
+should be computed (default TRUE).}
+\item{'measures': }{A list with the quality measures to compute
+("P0", "P1", "P2") or corresponding bounds based only on the marginal
+probabilities ("P0-bound", "P1-bound", "P2-bound").}
 }}
 
-\item{use.marginals}{Only marginal distributions are used when finding P-optimal maps (default TRUE).}
+\item{use.marginals}{Only marginal distributions are used when finding
+P-optimal maps (default TRUE).}
 
 \item{alpha}{Maximal error probability in contour map function (default=1).}
 
-\item{F.limit}{The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.}
+\item{F.limit}{The limit value for the computation of the F function. F is
+set to NA for all nodes where \code{F < 1-F.limit}. Default is \code{F.limit = alpha}.}
 
-\item{n.iter}{Number or iterations in the MC sampler that is used for calculating the quantities in \code{compute}. The default value is 10000.}
+\item{n.iter}{Number or iterations in the MC sampler that is used for
+calculating the quantities in \code{compute}. The default value is 10000.}
 
 \item{verbose}{Set to TRUE for verbose mode (optional).}
 
-\item{max.threads}{Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).}
+\item{max.threads}{Decides the number of threads the program can use. Set to
+0 for using the maximum number of threads allowed by the system (default).}
 
 \item{seed}{Random seed (optional).}
 }
@@ -79,7 +89,8 @@ contourmap(
 \item{meta }{A list containing various information about the calculation.}
 }
 \description{
-\code{contourmap} is used for calculating contour maps and quality measures for contour maps for Gaussian models.
+\code{contourmap} is used for calculating contour maps and quality measures for
+contour maps for Gaussian models.
 }
 \details{
 The Gaussian model is specified using the mean \code{mu} and the precision matrix

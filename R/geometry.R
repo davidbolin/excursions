@@ -40,22 +40,16 @@ contour_segment_pixels <- function(c.x, c.y,
     dir.x <- sign(d.x) ## Can be 0 only if dir.y is 0
     dir.y <- sign(d.y) ## Must now be >= 0
     if (dir.y == 0) {
-      start.y <- min(which((c.y[1] >= edge.y[-ny]) &
-        (c.y[1] <= edge.y[-1])))
+      start.y <- min(which((c.y[1] >= edge.y[-ny]) & (c.y[1] <= edge.y[-1])))
       if (dir.x == 0) {
-        start.x <- min(which((c.x[1] >= edge.x[-nx]) &
-          (c.x[1] <= edge.x[-1])))
+        start.x <- min(which((c.x[1] >= edge.x[-nx]) & (c.x[1] <= edge.x[-1])))
         end.x <- start.x
       } else if (dir.x > 0) {
-        start.x <- min(which((c.x[1] >= edge.x[-nx]) &
-          (c.x[1] < edge.x[-1])))
-        end.x <- min(which((c.x[2] > edge.x[-nx]) &
-          (c.x[2] <= edge.x[-1])))
+        start.x <- min(which((c.x[1] >= edge.x[-nx]) & (c.x[1] < edge.x[-1])))
+        end.x <- min(which((c.x[2] > edge.x[-nx]) & (c.x[2] <= edge.x[-1])))
       } else { ## dir.x < 0
-        start.x <- min(which((c.x[1] > edge.x[-nx]) &
-          (c.x[1] <= edge.x[-1])))
-        end.x <- min(which((c.x[2] >= edge.x[-nx]) &
-          (c.x[2] < edge.x[-1])))
+        start.x <- min(which((c.x[1] > edge.x[-nx]) & (c.x[1] <= edge.x[-1])))
+        end.x <- min(which((c.x[2] >= edge.x[-nx]) & (c.x[2] < edge.x[-1])))
       }
       idx$x <- start.x:end.x
       idx$y <- rep(start.y, length(idx$x))
@@ -350,7 +344,7 @@ outline.on.grid <- function(z, grid) {
   }
 
   ij2k <- function(i, j) {
-    return((j - 1) * ni + i)
+    (j - 1) * ni + i
   }
 
   seg <- matrix(integer(), 0, 2)
@@ -1516,7 +1510,7 @@ subdivide.mesh <- function(mesh) {
 ## New geometry implementation ####
 
 # Copy 'G' and interpolate 'F' within coherent single level regions.
-F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
+F.interpolation <- function(F.geometry, F_, G, type, method, subdivisions = 1) {
   # Construct interpolation mesh
   F.geometry.A <- list()
   for (subdivision in seq_len(subdivisions)) {
@@ -1526,8 +1520,8 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
 
   if (method == "log") {
     F.zero <- -Inf
-    F <- log(F)
-    F[is.infinite(F) & F < 0] <- F.zero
+    F_ <- log(F_)
+    F_[is.infinite(F_) & F_ < 0] <- F.zero
   } else if (method == "linear") {
     F.zero <- 0
   } else {
@@ -1543,7 +1537,7 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
   }
   ## Copy 'G' and interpolate 'F' within coherent single level regions.
   G.interp <- G
-  F.interp <- F
+  F.interp <- F_
   for (subdivision in seq_len(subdivisions)) {
     G.input <- G.interp
     F.input <- F.interp
@@ -1569,26 +1563,27 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
   }
 
   if (method == "log") {
-    F <- exp(F.interp)
+    F_ <- exp(F.interp)
   } else if (method == "linear") {
-    F <- F.interp
+    F_ <- F.interp
   } else {
     ## 'step'
-    F <- F.interp
+    F_ <- F.interp
   }
-  F[G.interp == -1] <- 0
+  F_[G.interp == -1] <- 0
   G <- G.interp
 
   F.geometry <-
     fmesher::fm_rcdt_2d_inla(
       loc = F.geometry$loc,
-      tv = F.geometry$graph$tv
+      tv = F.geometry$graph$tv,
+      delaunay = FALSE
     )
   ## Handle possible node reordering in fm_rcdt_2d_inla()
-  F[F.geometry$idx$loc] <- F
+  F_[F.geometry$idx$loc] <- F_
   G[F.geometry$idx$loc] <- G
 
-  list(F = F, G = G, F.geometry = F.geometry)
+  list(F = F_, G = G, F.geometry = F.geometry)
 }
 
 
@@ -1603,7 +1598,7 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
 ## To get only an "over/under set", use a constant non-negative integer G
 ##   and let calc.complement=FALSE
 probabilitymap <-
-  function(mesh, F, level, G,
+  function(mesh, F_, level, G,
            calc.complement = TRUE,
            tol = 1e-7,
            output = c("sp", "fm", "inla.mesh.segment"),
@@ -1635,7 +1630,7 @@ probabilitymap <-
           nrow(mesh$graph$tv), 3
         )) == 3) &
           (rowSums(matrix(
-            is.finite(F[mesh$graph$tv]),
+            is.finite(F_[mesh$graph$tv]),
             nrow(mesh$graph$tv), 3
           )) == 3))
 
@@ -1643,7 +1638,7 @@ probabilitymap <-
         submesh <- submesh.mesh.tri(active.triangles, mesh)
         active.nodes.idx <- which(!is.na(submesh$idx$loc))
         subF <- rep(NA, length(active.nodes.idx))
-        subF[submesh$idx$loc[active.nodes.idx]] <- F[active.nodes.idx]
+        subF[submesh$idx$loc[active.nodes.idx]] <- F_[active.nodes.idx]
 
         if (nrow(submesh$loc) > 0) {
           ##      submesh$n <- nrow(submesh$loc)
@@ -1831,19 +1826,19 @@ gaussquad <- function(mesh, method = c("direct", "make.A")) {
 }
 
 
-calc.continuous.P0 <- function(F, G, F.geometry, method) {
+calc.continuous.P0 <- function(F_, G, F.geometry, method) {
   tri <-
     which((G[F.geometry$graph$tv[, 1]] >= 0) &
       (G[F.geometry$graph$tv[, 1]] == G[F.geometry$graph$tv[, 2]]) &
       (G[F.geometry$graph$tv[, 1]] == G[F.geometry$graph$tv[, 3]]) &
       (rowSums(matrix(
-        is.finite(F[F.geometry$graph$tv]),
+        is.finite(F_[F.geometry$graph$tv]),
         nrow(F.geometry$graph$tv), 3
       )) == 3))
   submesh <- submesh.mesh.tri(tri, F.geometry)
   active.nodes.idx <- which(!is.na(submesh$idx$loc))
   subF <- rep(NA, length(active.nodes.idx))
-  subF[submesh$idx$loc[active.nodes.idx]] <- F[active.nodes.idx]
+  subF[submesh$idx$loc[active.nodes.idx]] <- F_[active.nodes.idx]
 
   tot.area <- sum(fmesher::fm_fem(F.geometry, order = 0)$ta)
 
@@ -2093,7 +2088,7 @@ continuous <- function(ex,
   }
 
   M <- probabilitymap(F.geometry,
-    F = F.ex,
+    F_ = F.ex,
     level = level,
     G = G.ex,
     calc.complement = calc.credible,

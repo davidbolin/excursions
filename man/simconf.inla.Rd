@@ -100,8 +100,10 @@ if (require.nowarnings("INLA")) {
   )
 
   res <- simconf.inla(
-    result, name = "mu", alpha = 0.05,
-    max.threads = 1, num.threads = "1:1")
+    result,
+    name = "mu", alpha = 0.05,
+    max.threads = 1, num.threads = "1:1"
+  )
 
   plot(result$summary.random$mu$mean, ylim = c(-2, 2))
   lines(res$a)

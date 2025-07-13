@@ -135,9 +135,9 @@ simconf <- function(alpha,
     }
 
     if (prob$P == 0) {
-      return(1)
+      1
     } else {
-      return(abs(prob$P - (1 - alpha)))
+      abs(prob$P - (1 - alpha))
     }
   }
 

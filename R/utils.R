@@ -203,7 +203,8 @@ excursions.setlimits <- function(marg, vars, type, QC, u, mu) {
     a <- rep(-Inf, length(mu))
     b <- uv
   }
-  return(list(a = a, b = b))
+
+  list(a = a, b = b)
 }
 
 
@@ -252,7 +253,8 @@ private.as.vector <- function(v) {
     }
     return(as.vector(v))
   }
-  return(c(v))
+
+  c(v)
 }
 
 private.sparse.gettriplet <- function(M) {
@@ -296,29 +298,29 @@ private.as.dgTMatrix <- function(M, make_unique = TRUE) {
 private.as.dgCMatrix <- function(M) {
   if (is.null(M) || is(M, "dgCMatrix")) {
     return(M)
-  } else {
-    if (!inherits(M, "Matrix")) {
-      M <- as(M, "Matrix")
-    }
-    ## Convert into dgCMatrix format of Matrix.
-    ## Convert via virtual class CsparseMatrix;
-    ## this allows more general conversions than direct conversion.
-    return(as(as(as(M, "dMatrix"), "generalMatrix"), "CsparseMatrix"))
   }
+
+  if (!inherits(M, "Matrix")) {
+    M <- as(M, "Matrix")
+  }
+  ## Convert into dgCMatrix format of Matrix.
+  ## Convert via virtual class CsparseMatrix;
+  ## this allows more general conversions than direct conversion.
+  as(as(as(M, "dMatrix"), "generalMatrix"), "CsparseMatrix")
 }
 
 private.as.dtCMatrix <- function(M) {
   if (is.null(M) || is(M, "dtCMatrix")) {
     return(M)
-  } else {
-    if (!inherits(M, "Matrix")) {
-      M <- as(M, "Matrix")
-    }
-    ## Convert into dtCMatrix format of Matrix.
-    ## Convert via virtual class CsparseMatrix;
-    ## this allows more general conversions than direct conversion.
-    return(as(as(as(M, "dMatrix"), "triangularMatrix"), "CsparseMatrix"))
   }
+
+  if (!inherits(M, "Matrix")) {
+    M <- as(M, "Matrix")
+  }
+  ## Convert into dtCMatrix format of Matrix.
+  ## Convert via virtual class CsparseMatrix;
+  ## this allows more general conversions than direct conversion.
+  as(as(as(M, "dMatrix"), "triangularMatrix"), "CsparseMatrix")
 }
 
 
@@ -425,7 +427,7 @@ fmix.opt <- function(x,
     cat("in optimization: ", x, " ", prob, " ", val, "\n")
   }
 
-  return(val)
+  val
 }
 
 
@@ -579,7 +581,7 @@ excursions.marginals.mc <- function(X, type, rho, mu, u) {
       }
     }
   }
-  return(rl)
+  rl
 }
 
 mcint <- function(X,
@@ -609,7 +611,7 @@ mcint <- function(X,
   # Estimate of MC error, not implemented yet
   Ev <- rep(0, n)
 
-  return(list(Pv = Pv, Ev = Ev, P = Pv[1], E = Ev[1]))
+  list(Pv = Pv, Ev = Ev, P = Pv[1], E = Ev[1])
 }
 
 
@@ -691,7 +693,7 @@ summary.excurobj <- function(object, ...) {
       }
     }
   }
-  return(out)
+  out
 }
 
 

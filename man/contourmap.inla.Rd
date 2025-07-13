@@ -125,7 +125,11 @@ if (require.nowarnings("INLA")) {
   n.lattice <- 10 # increase for more interesting, but slower, examples
   x <- seq(from = 0, to = 10, length.out = n.lattice)
   lattice <- fmesher::fm_lattice_2d(x = x, y = x)
-  mesh <- fmesher::fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+  mesh <- fmesher::fm_rcdt_2d_inla(
+    lattice = lattice,
+    extend = FALSE,
+    refine = FALSE
+  )
   spde <- inla.spde2.matern(mesh, alpha = 2)
 
   # Generate an artificial sample
@@ -144,8 +148,18 @@ if (require.nowarnings("INLA")) {
   mesh.index <- inla.spde.make.index(name = "field", n.spde = spde$n.spde)
   ef <- list(c(mesh.index, list(Intercept = 1)))
 
-  s.obs <- inla.stack(data = list(y = Y), A = list(A), effects = ef, tag = "obs")
-  s.pre <- inla.stack(data = list(y = NA), A = list(1), effects = ef, tag = "pred")
+  s.obs <- inla.stack(
+    data = list(y = Y),
+    A = list(A),
+    effects = ef,
+    tag = "obs"
+  )
+  s.pre <- inla.stack(
+    data = list(y = NA),
+    A = list(1),
+    effects = ef,
+    tag = "pred"
+  )
   stack <- inla.stack(s.obs, s.pre)
   formula <- y ~ -1 + Intercept + f(field, model = spde)
   result <- inla(

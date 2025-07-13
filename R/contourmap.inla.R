@@ -106,7 +106,11 @@
 #'   n.lattice <- 10 # increase for more interesting, but slower, examples
 #'   x <- seq(from = 0, to = 10, length.out = n.lattice)
 #'   lattice <- fmesher::fm_lattice_2d(x = x, y = x)
-#'   mesh <- fmesher::fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+#'   mesh <- fmesher::fm_rcdt_2d_inla(
+#'     lattice = lattice,
+#'     extend = FALSE,
+#'     refine = FALSE
+#'   )
 #'   spde <- inla.spde2.matern(mesh, alpha = 2)
 #'
 #'   # Generate an artificial sample
@@ -125,8 +129,18 @@
 #'   mesh.index <- inla.spde.make.index(name = "field", n.spde = spde$n.spde)
 #'   ef <- list(c(mesh.index, list(Intercept = 1)))
 #'
-#'   s.obs <- inla.stack(data = list(y = Y), A = list(A), effects = ef, tag = "obs")
-#'   s.pre <- inla.stack(data = list(y = NA), A = list(1), effects = ef, tag = "pred")
+#'   s.obs <- inla.stack(
+#'     data = list(y = Y),
+#'     A = list(A),
+#'     effects = ef,
+#'     tag = "obs"
+#'   )
+#'   s.pre <- inla.stack(
+#'     data = list(y = NA),
+#'     A = list(1),
+#'     effects = ef,
+#'     tag = "pred"
+#'   )
 #'   stack <- inla.stack(s.obs, s.pre)
 #'   formula <- y ~ -1 + Intercept + f(field, model = spde)
 #'   result <- inla(
@@ -178,7 +192,10 @@ contourmap.inla <- function(result.inla,
                             seed = NULL,
                             ind, ...) {
   if (!requireNamespace("INLA", quietly = TRUE)) {
-    stop("This function requires the INLA package (see www.r-inla.org/download-install)")
+    stop(paste0(
+      "This function requires the INLA package ",
+      "(see www.r-inla.org/download-install)"
+    ))
   }
   if (missing(result.inla)) {
     stop("Must supply INLA result object")
@@ -220,9 +237,10 @@ contourmap.inla <- function(result.inla,
   if (method == "QC") {
     qc <- TRUE
   }
-  # compute indices, here ind will contain the indices that are used to extract the
-  # relevant part from the configs, ind.int is the index vector for extracting marginal
-  # distributions for random effects, and indices is a logical version of ind
+  # compute indices, here ind will contain the indices that are used to extract
+  # the relevant part from the configs, ind.int is the index vector for
+  # extracting marginal distributions for random effects, and indices is a
+  # logical version of ind
   tmp <- inla.output.indices(result.inla,
     name = name, stack = stack,
     tag = tag, compressed = compressed
@@ -268,7 +286,8 @@ contourmap.inla <- function(result.inla,
     stop("INLA result must be calculated using return.marginals.predictor=TRUE if P measures are to be calculated for the linear predictor.")
   }
 
-  # If method=EB, we use the mean of the configuration at the mode for the contourmap
+  # If method=EB, we use the mean of the configuration at the mode for the
+  # contourmap
   # If method=QC, we instead use the total mean.
   if (method == "EB") {
     mu <- config$mu
@@ -320,8 +339,10 @@ contourmap.inla <- function(result.inla,
           })
         }
         rho[ind, ] <- t(rho.ind)
-        limits$a <- config$mu + sqrt(config$vars) * qnorm(pmin(pmax(rho[, 1], 0), 1))
-        limits$b <- config$mu + sqrt(config$vars) * qnorm(pmin(pmax(rho[, 2], 0), 1))
+        limits$a <-
+          config$mu + sqrt(config$vars) * qnorm(pmin(pmax(rho[, 1], 0), 1))
+        limits$b <-
+          config$mu + sqrt(config$vars) * qnorm(pmin(pmax(rho[, 2], 0), 1))
       } else {
         rho <- NULL
       }
@@ -371,8 +392,10 @@ contourmap.inla <- function(result.inla,
       } else { # bounds
         if (method != "QC") {
           rho <- matrix(0, length(config$mu), 2)
-          rho[ind, 1] <- pnorm(limits$a[ind], config$mu[ind], sqrt(config$vars[ind]))
-          rho[ind, 2] <- pnorm(limits$b[ind], config$mu[ind], sqrt(config$vars[ind]))
+          rho[ind, 1] <-
+            pnorm(limits$a[ind], config$mu[ind], sqrt(config$vars[ind]))
+          rho[ind, 2] <-
+            pnorm(limits$b[ind], config$mu[ind], sqrt(config$vars[ind]))
         }
         if (measure[i] == "P0-bound") {
           cm$P0.bound <- mean(rho[ind, 2] - rho[ind, 1])

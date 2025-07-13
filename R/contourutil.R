@@ -42,23 +42,23 @@ contourfunction.mc <- function(lp, mu, X, ind, alpha, verbose = FALSE) {
   ii <- which(res$Pv[1:n] > 0)
   if (length(ii) == 0) i <- n + 1 else i <- min(ii)
 
-  F <- Fe <- E <- rep(0, n)
-  F[reo] <- res$Pv
+  F_ <- Fe <- E <- rep(0, n)
+  F_[reo] <- res$Pv
   Fe[reo] <- res$Ev
 
   ireo <- NULL
   ireo[reo] <- 1:n
 
-  ind.lowF <- F < 1 - F.limit
-  E[F > 1 - alpha] <- 1
-  F[ind.lowF] <- Fe[ind.lowF] <- NA
+  ind.lowF <- F_ < 1 - F.limit
+  E[F_ > 1 - alpha] <- 1
+  F_[ind.lowF] <- Fe[ind.lowF] <- NA
 
   M <- rep(-1, n)
   for (i in 1:(lp$n.levels + 1)) {
     M[(lp$G == (i - 1)) & (E == 1)] <- i - 1
   }
 
-  return(list(F = F, Fe = Fe, E = E, M = M, rho = rho))
+  return(list(F = F_, Fe = Fe, E = E, M = M, rho = rho))
 }
 
 
@@ -152,23 +152,23 @@ contourfunction <- function(lp, mu, Q, vars, ind, alpha, n.iter = 10000,
   ii <- which(res$Pv[1:n] > 0)
   if (length(ii) == 0) i <- n + 1 else i <- min(ii)
 
-  F <- Fe <- E <- rep(0, n)
-  F[reo] <- res$Pv
+  F_ <- Fe <- E <- rep(0, n)
+  F_[reo] <- res$Pv
   Fe[reo] <- res$Ev
 
   ireo <- NULL
   ireo[reo] <- 1:n
 
-  ind.lowF <- F < 1 - F.limit
-  E[F > 1 - alpha] <- 1
-  F[ind.lowF] <- Fe[ind.lowF] <- NA
+  ind.lowF <- F_ < 1 - F.limit
+  E[F_ > 1 - alpha] <- 1
+  F_[ind.lowF] <- Fe[ind.lowF] <- NA
 
   M <- rep(-1, n)
   for (i in 1:(lp$n.levels + 1)) {
     M[(lp$G == (i - 1)) & (E == 1)] <- i - 1
   }
 
-  return(list(F = F, Fe = Fe, E = E, M = M, rho = rho))
+  return(list(F = F_, Fe = Fe, E = E, M = M, rho = rho))
 }
 
 ## Calculate marginal probabilities P(lim$a < X < lim$b) for
@@ -181,7 +181,8 @@ contourmap.marginals <- function(mu, vars, lim, ind) {
   } else {
     marg <- pnorm(lim$b, mu, sqrt(vars)) - pnorm(lim$a, mu, sqrt(vars))
   }
-  return(marg)
+
+  marg
 }
 
 ## Calculate marginal probabilities P(lim$a < X < lim$b) for
@@ -193,7 +194,8 @@ contourmap.marginals.mc <- function(X, lim, ind) {
   } else {
     marg <- rowMeans(lim$a < X & X < lim$b)
   }
-  return(marg)
+
+  marg
 }
 
 ## Create a levelplot with given levels/number of levels
@@ -489,7 +491,8 @@ excursions.limits <- function(lp, mu, measure) {
   } else {
     stop("Measure must be 0, 1, or 2")
   }
-  return(list(a = a, b = b))
+
+  list(a = a, b = b)
 }
 
 #' Define a color map for displaying contour maps.
@@ -533,5 +536,5 @@ contourmap.colors <- function(lp, zlim, col, credible.col) {
     cmap <- c(credible.col, cmap)
   }
 
-  return(cmap)
+  cmap
 }

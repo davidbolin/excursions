@@ -234,7 +234,7 @@ excursions <- function(alpha,
     cat("Calculate permutation\n")
   }
   if (missing(reo)) {
-    use.camd <- !missing(ind) || F.limit < 1
+    use.camd <- !missing(ind) || (F.limit < 1)
     if (qc) {
       reo <- excursions.permutation(marg$rho_ng, indices,
         use.camd = TRUE, F.limit, Q
@@ -263,18 +263,18 @@ excursions <- function(alpha,
   ii <- which(res$Pv[1:n] > 0)
   if (length(ii) == 0) i <- n + 1 else i <- min(ii)
 
-  F <- Fe <- E <- G <- rep(0, n)
-  F[reo] <- res$Pv
+  F_ <- Fe <- E <- G <- rep(0, n)
+  F_[reo] <- res$Pv
   Fe[reo] <- res$Ev
 
   ireo <- NULL
   ireo[reo] <- 1:n
 
-  ind.lowF <- F < 1 - F.limit
-  E[F > 1 - alpha] <- 1
+  ind.lowF <- F_ < 1 - F.limit
+  E[F_ > 1 - alpha] <- 1
 
   if (type == "=") {
-    F <- 1 - F
+    F_ <- 1 - F_
   }
 
   if (type == "<") {
@@ -283,7 +283,7 @@ excursions <- function(alpha,
     G[mu >= u] <- 1
   }
 
-  F[ind.lowF] <- Fe[ind.lowF] <- NA
+  F_[ind.lowF] <- Fe[ind.lowF] <- NA
 
   M <- rep(-1, n)
   if (type == "<") {
@@ -303,7 +303,7 @@ excursions <- function(alpha,
 
   if (prune.ind) {
     output <- list(
-      F = F[ind],
+      F = F_[ind],
       G = G[ind],
       M = M[ind],
       E = E[ind],
@@ -327,7 +327,7 @@ excursions <- function(alpha,
     )
   } else {
     output <- list(
-      F = F,
+      F = F_,
       G = G,
       M = M,
       E = E,

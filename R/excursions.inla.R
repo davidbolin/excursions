@@ -264,8 +264,8 @@ excursions.inla <- function(result.inla,
 
   # Are we interested in a random effect?
   random.effect <- FALSE
-  if (!missing(name) && !is.null(name) && name != "APredictor" &&
-    name != "Predictor") {
+  if (!missing(name) && !is.null(name) && (name != "APredictor") &&
+    (name != "Predictor")) {
     random.effect <- TRUE
     if (is.null(result.inla$marginals.random)) {
       stop("INLA result must be calculated using return.marginals.random=TRUE if excursion sets to be calculated for a random effect of the model")
@@ -311,7 +311,7 @@ excursions.inla <- function(result.inla,
       vars = config$vars, rho = rho, ind = ind, n.iter = n.iter,
       max.threads = max.threads, seed = seed
     )
-    F <- res$F[ind]
+    F_ <- res$F[ind]
   } else if (method == "NI" || method == "NIQC") {
     qc <- "QC"
     if (method == "NI") {
@@ -338,9 +338,9 @@ excursions.inla <- function(result.inla,
 
     w <- exp(lw) / sum(exp(lw))
 
-    F <- w[1] * res[[1]]$F[ind]
+    F_ <- w[1] * res[[1]]$F[ind]
     for (i in 2:n.theta) {
-      F <- F + w[i] * res[[i]]$F[ind]
+      F_ <- F_ + w[i] * res[[i]]$F[ind]
     }
   } else if (method == "iNIQC") {
     pfam.i <- rep(-0.1, n)
@@ -415,9 +415,9 @@ excursions.inla <- function(result.inla,
     }
 
     w <- exp(lw) / sum(exp(lw))
-    F <- w[1] * res[[1]]$F[ind]
+    F_ <- w[1] * res[[1]]$F[ind]
     for (i in 2:n.theta) {
-      F <- F + w[i] * res[[i]]$F[ind]
+      F_ <- F_ + w[i] * res[[i]]$F[ind]
     }
   } else {
     stop("Method must be one of EB, QC, NI, NIQC, iNIQC")
@@ -432,7 +432,7 @@ excursions.inla <- function(result.inla,
 
   F.out <- mu.out <- rho.out <- vars.out <- E.out <- M.out <- G.out <- rep(NA, n.out)
 
-  F.out[ind.int] <- F
+  F.out[ind.int] <- F_
   vars.out[ind.int] <- config$vars[ind]
   mu.out[ind.int] <- config$mu[ind]
   rho.out[ind.int] <- rho.ind
@@ -446,11 +446,11 @@ excursions.inla <- function(result.inla,
   }
   G.out[ind.int] <- G
 
-  E <- rep(0, length(F))
-  E[F > 1 - alpha] <- 1
+  E <- rep(0, length(F_))
+  E[F_ > 1 - alpha] <- 1
   E.out[ind.int] <- E
 
-  M <- rep(-1, length(F))
+  M <- rep(-1, length(F_))
   if (type == "<") {
     M[E == 1] <- 0
   } else if (type == ">") {
