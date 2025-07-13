@@ -41,14 +41,14 @@
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
 #' @details The pointwise confidence bands are based on the marginal quantiles,
-#' meaning that `a.marignal` is a vector where the ith element equals 
+#' meaning that `a.marignal` is a vector where the ith element equals
 #' \eqn{\mu_i + q_{\alpha,i}}  and `b.marginal` is a vector where the ith element
-#' equals  \eqn{\mu_i + q_{1-\alpha,i}}, where \eqn{\mu_i} is the expected value 
+#' equals  \eqn{\mu_i + q_{1-\alpha,i}}, where \eqn{\mu_i} is the expected value
 #' of the \eqn{x_i} and \eqn{q_{\alpha,i}} is the \eqn{\alpha}-quantile of \eqn{x_i-\mu_i}.
 #'
-#' The simultaneous confidence band is defined by the lower limit vector `a` and 
-#' the upper limit vector `b`, where \eqn{a_i = \mu_i +c q_{\alpha}} and 
-#' \eqn{b_i = \mu_i + c q_{1-\alpha}}, where \eqn{c} is a constant computed such 
+#' The simultaneous confidence band is defined by the lower limit vector `a` and
+#' the upper limit vector `b`, where \eqn{a_i = \mu_i +c q_{\alpha}} and
+#' \eqn{b_i = \mu_i + c q_{1-\alpha}}, where \eqn{c} is a constant computed such
 #' that \eqn{P(a < x < b) = 1-\alpha}.
 #'
 #' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren \email{finn.lindgren@@gmail.com}
@@ -125,27 +125,29 @@ simconf <- function(alpha,
 
   # setup function for optmization
   f.opt <- function(x, alpha, sd, L, ind, seed, max.threads, verbose) {
-    q <- qnorm(x/100) * sd
+    q <- qnorm(x / 100) * sd
     prob <- gaussint(
-      a = -q, b = q, Q.chol = L, ind = ind, lim = 1 - 1.1*alpha,
+      a = -q, b = q, Q.chol = L, ind = ind, lim = 1 - 1.1 * alpha,
       max.threads = max.threads, seed = seed
     )
-    if(verbose){
-        cat(x, prob$P, "\n")
+    if (verbose) {
+      cat(x, prob$P, "\n")
     }
 
     if (prob$P == 0) {
       return(1)
     } else {
-      return(abs(prob$P-(1-alpha)))
+      return(abs(prob$P - (1 - alpha)))
     }
   }
 
-  r.o <- optimize(f.opt, interval = 100*c(1-alpha, 1), alpha = alpha, sd = sd, L = L, 
-                  seed = seed, max.threads = max.threads, ind = ind, verbose = verbose)
+  r.o <- optimize(f.opt,
+    interval = 100 * c(1 - alpha, 1), alpha = alpha, sd = sd, L = L,
+    seed = seed, max.threads = max.threads, ind = ind, verbose = verbose
+  )
 
-  a <- mu - qnorm(r.o$minimum/100) * sd
-  b <- mu + qnorm(r.o$minimum/100) * sd
+  a <- mu - qnorm(r.o$minimum / 100) * sd
+  b <- mu + qnorm(r.o$minimum / 100) * sd
 
   a.marg <- mu - qnorm(alpha / 2) * sd
   b.marg <- mu + qnorm(alpha / 2) * sd

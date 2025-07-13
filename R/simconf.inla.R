@@ -84,8 +84,10 @@
 #'   )
 #'
 #'   res <- simconf.inla(
-#'     result, name = "mu", alpha = 0.05,
-#'     max.threads = 1, num.threads = "1:1")
+#'     result,
+#'     name = "mu", alpha = 0.05,
+#'     max.threads = 1, num.threads = "1:1"
+#'   )
 #'
 #'   plot(result$summary.random$mu$mean, ylim = c(-2, 2))
 #'   lines(res$a)
@@ -133,29 +135,29 @@ simconf.inla <- function(result.inla,
 
   # Get indices for the component of interest in the configs
   tmp <- inla.output.indices(result.inla,
-                             name = name, stack = stack,
-                             tag = tag, compressed = compressed
+    name = name, stack = stack,
+    tag = tag, compressed = compressed
   )
   ind.stack <- tmp$index
   result.inla.orig <- result.inla
   if (tmp$result.updated) {
-      result.inla <- tmp$result
-      ind.stack.original <- tmp$index.original
+    result.inla <- tmp$result
+    ind.stack.original <- tmp$index.original
   } else {
-      ind.stack.original <- ind.stack
+    ind.stack.original <- ind.stack
   }
   n <- length(result.inla$misc$configs$config[[1]]$mean)
   n.out <- length(ind.stack)
   ind.int <- seq_len(n.out)
   # ind is assumed to contain indices within the component of interest
   if (!missing(ind) && !is.null(ind)) {
-      ind.int <- ind.int[ind]
-      ind.stack <- ind.stack[ind]
-      ind.stack.original <- ind.stack.original[ind]
+    ind.int <- ind.int[ind]
+    ind.stack <- ind.stack[ind]
+    ind.stack.original <- ind.stack.original[ind]
   }
   ind <- ind.stack
   ind.original <- ind.stack.original
-  
+
   links <- NULL
   if (link) {
     links <- result.inla$misc$linkfunctions$names[
@@ -199,10 +201,12 @@ simconf.inla <- function(result.inla,
         }
         num.threads <- min(max.threads, num.threads[1])
       }
-      s <- suppressWarnings(INLA::inla.posterior.sample(n.iter, result.inla.orig,
-                                                        use.improved.mean = FALSE,
-                                                        skew.corr = FALSE,
-                                                        num.threads = num.threads))
+      s <- suppressWarnings(INLA::inla.posterior.sample(
+        n.iter, result.inla.orig,
+        use.improved.mean = FALSE,
+        skew.corr = FALSE,
+        num.threads = num.threads
+      ))
       samp <- matrix(0, n.iter, length(ind))
 
       for (i in seq_len(n.iter)) {

@@ -221,8 +221,16 @@ contourmap <- function(mu,
       if (measure[i] == "P1") {
         if (n.levels > 1) {
           if (verbose) cat("Calculating P1-measure\n")
-          tmp <- Pmeasure(lp = lp, mu = mu, Q = Q, ind = ind, type = 1, 
-                          seed = seed, n.iter = n.iter, max.threads = max.threads)
+          tmp <- Pmeasure(
+            lp = lp,
+            mu = mu,
+            Q = Q,
+            ind = ind,
+            type = 1,
+            seed = seed,
+            n.iter = n.iter,
+            max.threads = max.threads
+          )
           lp$P1 <- tmp$P
           lp$P1.error <- tmp$E
         } else {
@@ -231,8 +239,16 @@ contourmap <- function(mu,
         }
       } else if (measure[i] == "P2") {
         if (verbose) cat("Calculating P2-measure\n")
-        tmp <- Pmeasure(lp = lp, mu = mu, Q = Q, ind = ind, type = 2, 
-                        seed = seed, n.iter = n.iter, max.threads = max.threads)
+        tmp <- Pmeasure(
+          lp = lp,
+          mu = mu,
+          Q = Q,
+          ind = ind,
+          type = 2,
+          seed = seed,
+          n.iter = n.iter,
+          max.threads = max.threads
+        )
         lp$P2 <- tmp$P
         lp$P2.error <- tmp$E
       } else if (measure[i] == "P0") {

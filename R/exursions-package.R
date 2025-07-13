@@ -3,13 +3,13 @@
 #' `excursions` contains functions that compute probabilistic excursion sets,
 #' contour credibility regions, contour avoiding regions, contour map quality measures,
 #' and simultaneous confidence bands for latent Gaussian
-#' random processes and fields. A detailed manual can be found in the paper 
-#' Bolin, D and Lindgren, F  (2018) 
+#' random processes and fields. A detailed manual can be found in the paper
+#' Bolin, D and Lindgren, F  (2018)
 #' *Calculating Probabilistic Excursion Sets and Related Quantities Using excursions*,
 #' Journal of Statistical Software, 86(5), 1--20.
-#' 
+#'
 #' The main functions in the package fall into three different categories described below.
-#' 
+#'
 #' **Excursion sets, contour credibility regions, and contour avoiding regions**
 #'
 #' The main functions for computing excursion sets, contour credibility regions, and

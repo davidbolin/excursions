@@ -276,7 +276,7 @@ excursions.levelplot <- function(mu, n.levels, ind, levels,
 
 ## Create a P-optimal levelplot.
 ## The function will take A LOT of time to run if use.marginals=FALSE.
-excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2, 
+excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2,
                                      use.marginals = TRUE, ind, max.threads = 0) {
   if ((measure != 1) && (measure != 2) && (measure != 0)) {
     stop("only measure 0, 1, or 2 allowed")
@@ -402,12 +402,14 @@ Pmeasure.bound <- function(lp, mu, vars, type, ind = NULL) {
 }
 
 ## Function that calculates the P measure for a given contour map.
-Pmeasure <- function(lp, mu, Q, Q.chol, ind = NULL, type, 
+Pmeasure <- function(lp, mu, Q, Q.chol, ind = NULL, type,
                      vars = vars, seed = NULL, n.iter = NULL,
                      max.threads = 0) {
   if (type == 0) {
-    res <- contourfunction(lp = lp, mu = mu, Q = Q, vars = vars, ind = ind,
-                            max.threads = max.threads)
+    res <- contourfunction(
+      lp = lp, mu = mu, Q = Q, vars = vars, ind = ind,
+      max.threads = max.threads
+    )
     p <- mean(res$F[ind])
   } else {
     if (type == 1 && length(lp$u) == 1) {

@@ -287,7 +287,7 @@ contourmap.inla <- function(result.inla,
     Q = config$Q,
     ind = ind,
     compute = list(F = FALSE, measures = NULL),
-    n.levels = n.levels, 
+    n.levels = n.levels,
     max.threads = max.threads,
     ...
   )

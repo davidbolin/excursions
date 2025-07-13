@@ -624,7 +624,7 @@ submesh.mesh.tri <- function(tri, mesh) {
   if (utils::packageVersion("fmesher") >= "0.5.0.9003") {
     return(fmesher::fm_subset(mesh, tri))
   }
-  
+
   tv <- mesh$graph$tv[tri, , drop = FALSE]
   v <- sort(unique(as.vector(tv)))
   idx <- rep(as.integer(NA), nrow(mesh$loc))
@@ -1407,11 +1407,11 @@ get.geometry <- function(geometry) {
 ##   list(loc, graph=list(tv), A, idx=list(loc))
 subdivide.mesh <- function(mesh) {
   if ((utils::packageVersion("fmesher") >= "0.5.0.9002") ||
-      ((utils::packageVersion("fmesher") >= "0.4.0") &&
+    ((utils::packageVersion("fmesher") >= "0.4.0") &&
       !(fmesher::fm_manifold(mesh, "M")))) {
     new_mesh <- fmesher::fm_subdivide(mesh, 1L)
 
-      ## Add mapping matrix
+    ## Add mapping matrix
     if (utils::packageVersion("fmesher") >= "0.5.0.9002") {
       # Works for all manifolds:
       new_mesh$A <- fmesher::fm_basis(mesh, new_mesh$bary)
@@ -1419,7 +1419,7 @@ subdivide.mesh <- function(mesh) {
       # Does not work for M-manifolds (at least up to 0.5.0.9002)
       new_mesh$A <- fmesher::fm_basis(mesh, new_mesh$loc)
     }
-    
+
     if (utils::packageVersion("fmesher") < "0.5.0.9001") {
       # Workaround for fmesher < 0.5.0.9001:
       # Map original points:
@@ -1428,11 +1428,11 @@ subdivide.mesh <- function(mesh) {
 
     return(new_mesh)
   }
-  
+
   # Legacy code below.
   # Only needed for fmesher < 0.5.0.9002
   # For fmesher >= 0.4.0, only needed for M-manifolds
-  
+
   graph <- generate_trigraph_properties(mesh$graph, nrow(mesh$loc))
 
   v1 <- seq_len(graph$Nv)
@@ -1989,7 +1989,8 @@ continuous <- function(ex,
       "2.5.8.9001",
       'continuous(output = "inla")',
       'continuous(output = "fm")',
-      "The 'inla' output format is deprecated and may be removed in the future. Use 'fm' instead.")
+      "The 'inla' output format is deprecated and may be removed in the future. Use 'fm' instead."
+    )
     output <- "fm"
   }
 

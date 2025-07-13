@@ -67,7 +67,7 @@
 #' @param prune.ind If `TRUE` and `ind` is supplied, then the result object is pruned to
 #' contain only the active nodes specified by `ind`.
 #'
-#' @return `excursions.inla` returns an object of class "excurobj" with the 
+#' @return `excursions.inla` returns an object of class "excurobj" with the
 #' following elements
 #' \item{E }{Excursion set, contour credible region, or contour avoiding set}
 #' \item{F }{The excursion function corresponding to the set `E` calculated
@@ -461,52 +461,52 @@ excursions.inla <- function(result.inla,
   }
 
   M.out[ind.int] <- M
-  if(prune.ind) {
-      output <- list(
-          E = E.out[ind.int],
-          F = F.out[ind.int],
-          G = G.out[ind.int],
-          M = M.out[ind.int],
-          mean = mu.out[ind.int],
-          vars = vars.out[ind.int],
-          rho = rho.out[ind.int],
-          meta = list(
-              calculation = "excursions",
-              type = type,
-              level = u,
-              level.link = u.link,
-              alpha = alpha,
-              F.limit = F.limit,
-              n.iter = n.iter,
-              method = method,
-              ind = NULL,
-              call = match.call()
-          )
+  if (prune.ind) {
+    output <- list(
+      E = E.out[ind.int],
+      F = F.out[ind.int],
+      G = G.out[ind.int],
+      M = M.out[ind.int],
+      mean = mu.out[ind.int],
+      vars = vars.out[ind.int],
+      rho = rho.out[ind.int],
+      meta = list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        level.link = u.link,
+        alpha = alpha,
+        F.limit = F.limit,
+        n.iter = n.iter,
+        method = method,
+        ind = NULL,
+        call = match.call()
       )
+    )
   } else {
-      output <- list(
-          E = E.out,
-          F = F.out,
-          G = G.out,
-          M = M.out,
-          mean = mu.out,
-          vars = vars.out,
-          rho = rho.out,
-          meta = list(
-              calculation = "excursions",
-              type = type,
-              level = u,
-              level.link = u.link,
-              alpha = alpha,
-              F.limit = F.limit,
-              n.iter = n.iter,
-              method = method,
-              ind = ind.int,
-              call = match.call()
-          )
-      )    
+    output <- list(
+      E = E.out,
+      F = F.out,
+      G = G.out,
+      M = M.out,
+      mean = mu.out,
+      vars = vars.out,
+      rho = rho.out,
+      meta = list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        level.link = u.link,
+        alpha = alpha,
+        F.limit = F.limit,
+        n.iter = n.iter,
+        method = method,
+        ind = ind.int,
+        call = match.call()
+      )
+    )
   }
-  
+
   class(output) <- "excurobj"
   output
 }

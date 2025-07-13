@@ -45,8 +45,10 @@ The functions in `excursions` can be divided into four main categories depending
 As an example that will be used to illustrate the methods in later sections, we generate data $Y_i \sim N(X(\mv{s}_i),\sigma^2)$ at some locations $\mv{s}_1, \ldots, \mv{s}_{100}$ where $X(\mv{s})$ is a Gaussian random field specified using a stationary SPDE model [@lindgren10].
 ```{r}
 x <- seq(from = 0, to = 10, length.out = 20)
-mesh <- fm_rcdt_2d_inla(lattice = fm_lattice_2d(x = x, y = x),
-                        extend = FALSE, refine = FALSE)
+mesh <- fm_rcdt_2d_inla(
+  lattice = fm_lattice_2d(x = x, y = x),
+  extend = FALSE, refine = FALSE
+)
 Q <- fm_matern_precision(mesh, alpha = 2, rho = 3, sigma = 1)
 x <- fm_sample(n = 1, Q = Q)
 obs.loc <- 10 * cbind(runif(100), runif(100))
@@ -54,7 +56,7 @@ obs.loc <- 10 * cbind(runif(100), runif(100))
 Based on the observations, we calculate the posterior distribution of the latent field, which is Gaussian with mean `mu.post` and precision matrix `Q.post`, these are computed as follows. We refer to [@lindgren2015software] for details about the `INLA` related details in the code.
 ```{r}
 A <- fm_basis(mesh, loc = obs.loc)
-sigma2.e = 0.01
+sigma2.e <- 0.01
 Y <- as.vector(A %*% x + rnorm(100) * sqrt(sigma2.e))
 Q.post <- (Q + (t(A) %*% A) / sigma2.e)
 mu.post <- as.vector(solve(Q.post, (t(A) %*% Y) / sigma2.e))
@@ -67,14 +69,16 @@ cmap <- colorRampPalette(brewer.pal(9, "YlGnBu"))(100)
 sd.post <- excursions.variances(Q = Q.post, max.threads = 2)^0.5
 cmap.sd <- colorRampPalette(brewer.pal(9, "Reds"))(100)
 
-par(mfrow=c(1,2))
-image.plot(proj$x, proj$y, fm_evaluate(proj, field = mu.post), 
-           col = cmap, axes = FALSE,
-  xlab = "", ylab = "", asp = 1)
+par(mfrow = c(1, 2))
+image.plot(proj$x, proj$y, fm_evaluate(proj, field = mu.post),
+  col = cmap, axes = FALSE,
+  xlab = "", ylab = "", asp = 1
+)
 points(obs.loc[, 1], obs.loc[, 2], pch = 20)
-image.plot(proj$x, proj$y, fm_evaluate(proj, field = sd.post), 
-           col = cmap.sd, axes = FALSE,
-  xlab = "", ylab = "", asp = 1)
+image.plot(proj$x, proj$y, fm_evaluate(proj, field = sd.post),
+  col = cmap.sd, axes = FALSE,
+  xlab = "", ylab = "", asp = 1
+)
 points(obs.loc[, 1], obs.loc[, 2], pch = 20)
 ```
 
@@ -83,8 +87,10 @@ points(obs.loc[, 1], obs.loc[, 2], pch = 20)
 ## Excursion sets and contour credible regions
 The main function for computing excursion sets and contour credible regions is  `excursions`. A typical call to the function looks like
 ```{r}
-res.exc <-  excursions(mu = mu.post, Q = Q.post, alpha = 0.1, type = '>',
-                       u = 0, F.limit = 1)
+res.exc <- excursions(
+  mu = mu.post, Q = Q.post, alpha = 0.1, type = ">",
+  u = 0, F.limit = 1
+)
 ```
 Here, `mu` and `Q` are the mean vector and precision matrix for the joint distribution of the Gaussian vector `x`. The arguments `alpha`, `u`, and `type` are used to specify what type of excursion set that should be computed: `alpha` is the error probability, `u` is the excursion or contour level, and `type` determines what type of region that is considered: '>' for positive excursion regions, '<' for negative excursion regions, '!=' for contour avoiding regions, and '=' for contour credibility regions. Thus, the call above computes the excursion set $\exset{0,0.1}{+}$ as introduced in [Definitions and computational methodology](theory.html).
 
@@ -103,9 +109,11 @@ where `u` again determines the level of interest and `type` defines the type of 
 ## Analysis of contour maps
 The main function for analysis of contour maps is `contourmap`. A basic call to the function looks like
 ```{r}
-res.con <- contourmap(mu = mu.post, Q = Q.post, 
-                      n.levels = 4, alpha = 0.1, 
-                      compute = list(F = TRUE, measures = c("P0")))
+res.con <- contourmap(
+  mu = mu.post, Q = Q.post,
+  n.levels = 4, alpha = 0.1,
+  compute = list(F = TRUE, measures = c("P0"))
+)
 ```
 Here, `mu` is again the mean value and `Q` is the precision matrix of the model. The parameter `n.levels` sets the number of contours that should be used in the contour map, and these are spaced equidistant in the range of `mu` by default. Other types of contour maps can be obtained using the `type` argument. For manual specification of the levels, the `levels` argument can be used instead. By default, the function computes the specified contour map but no quality measures and it does not compute the contour map function. If quality measures should be computed, this is specified using the `compute` argument. This argument is also used to decide whether the contour map function $F$ should be computed.
 
@@ -145,21 +153,26 @@ where `mu` is the mean value vector, `Q` is the precision matrix, `a` is a vecto
 ## Plotting
 The `excursions` package contains various functions that are useful for visualization. The function `tricontourmap` can be used for visualization of contour maps computed on triangulated meshes. The following code plots the posterior mean using the contour map we previously computed.
 ```{r, fig.width=5, fig.height=4, fig.align = "center"}
-set.sc <- tricontourmap(mesh, 
-                        z = mu.post, 
-                        levels = res.con$u)
+set.sc <- tricontourmap(mesh,
+  z = mu.post,
+  levels = res.con$u
+)
 plot(set.sc$map, col = contourmap.colors(res.con, col = cmap))
 ```
 
 Here `contourmap.colors` is used to find appropriate colors for each set in the contour map, based on the color map `cmap` that was defined using the `RColorBrewer` package. The estimated excursion set can be visualized as
 ```{r, fig.width=5, fig.height=4, fig.align = "center"}
-plot(sets.exc$M["1"], col = "red", 
-     xlim = range(mesh$loc[,1]),
-     ylim = range(mesh$loc[,2]))
-plot(mesh, vertex.color = rgb(0.5, 0.5, 0.5), 
-     draw.segments = FALSE,
-     edge.color = rgb(0.5, 0.5, 0.5), 
-     add = TRUE)
+plot(sets.exc$M["1"],
+  col = "red",
+  xlim = range(mesh$loc[, 1]),
+  ylim = range(mesh$loc[, 2])
+)
+plot(mesh,
+  vertex.color = rgb(0.5, 0.5, 0.5),
+  draw.segments = FALSE,
+  edge.color = rgb(0.5, 0.5, 0.5),
+  add = TRUE
+)
 ```
 
 The second `plot` command adds the mesh to the plot so that we can see how the set is interpolated by the `continuous` function. Finally, the interpolated excursion function $F_u^+(\mv{s})$, can be plotted easily using the `fm_evaluator` function from the `INLA` package.
@@ -167,7 +180,8 @@ The second `plot` command adds the mesh to the plot so that we can see how the s
 cmap.F <- colorRampPalette(brewer.pal(9, "Greens"))(100)
 proj <- fm_evaluator(sets.exc$F.geometry, dims = c(200, 200))
 image(proj$x, proj$y, fm_evaluate(proj, field = sets.exc$F),
-      col = cmap.F, axes = FALSE, xlab = "", ylab = "", asp = 1)
+  col = cmap.F, axes = FALSE, xlab = "", ylab = "", asp = 1
+)
 con <- tricontourmap(mesh, z = mu.post, levels = 0)
 plot(con$map, add = TRUE)
 ```

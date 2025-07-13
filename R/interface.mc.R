@@ -316,8 +316,8 @@ simconf.mc <- function(samples,
 #' @param verbose Set to TRUE for verbose mode (optional).
 #' @param prune.ind If `TRUE` and `ind` is supplied, then the result object is pruned to
 #' contain only the active nodes specified by `ind`.
-#' 
-#' @return `excursions.mc` returns an object of class "excurobj" with the 
+#'
+#' @return `excursions.mc` returns an object of class "excurobj" with the
 #' following elements
 #' \item{E }{Excursion set, contour credible region, or contour avoiding set.}
 #' \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
@@ -479,55 +479,55 @@ excursions.mc <- function(samples,
     ind <- which(ind)
   }
   vars <- rowSums((samples - rowMeans(samples))^2) / (dim(samples)[2] - 1)
-  
-  if(prune.ind) {
-      output <- list(
-          F = F[ind],
-          G = G[ind],
-          M = M[ind],
-          E = E[ind],
-          mean = mu[ind],
-          vars = vars[ind],
-          rho = marg$rho[ind],
-          meta = (list(
-              calculation = "excursions",
-              type = type,
-              level = u,
-              F.limit = F.limit,
-              alpha = alpha,
-              n.iter = dim(samples)[2],
-              method = "MC",
-              ind = NULL,
-              reo = reo,
-              ireo = ireo,
-              Fe = Fe
-          ))
-      )
+
+  if (prune.ind) {
+    output <- list(
+      F = F[ind],
+      G = G[ind],
+      M = M[ind],
+      E = E[ind],
+      mean = mu[ind],
+      vars = vars[ind],
+      rho = marg$rho[ind],
+      meta = (list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        F.limit = F.limit,
+        alpha = alpha,
+        n.iter = dim(samples)[2],
+        method = "MC",
+        ind = NULL,
+        reo = reo,
+        ireo = ireo,
+        Fe = Fe
+      ))
+    )
   } else {
-      output <- list(
-          F = F,
-          G = G,
-          M = M,
-          E = E,
-          mean = mu,
-          vars = vars,
-          rho = marg$rho,
-          meta = (list(
-              calculation = "excursions",
-              type = type,
-              level = u,
-              F.limit = F.limit,
-              alpha = alpha,
-              n.iter = dim(samples)[2],
-              method = "MC",
-              ind = ind,
-              reo = reo,
-              ireo = ireo,
-              Fe = Fe
-          ))
-      )    
+    output <- list(
+      F = F,
+      G = G,
+      M = M,
+      E = E,
+      mean = mu,
+      vars = vars,
+      rho = marg$rho,
+      meta = (list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        F.limit = F.limit,
+        alpha = alpha,
+        n.iter = dim(samples)[2],
+        method = "MC",
+        ind = ind,
+        reo = reo,
+        ireo = ireo,
+        Fe = Fe
+      ))
+    )
   }
-  
+
   class(output) <- "excurobj"
   output
 }

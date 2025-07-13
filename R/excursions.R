@@ -18,7 +18,7 @@
 #' Excursion Sets and Contour Credibility Regions for Random Fields
 #'
 #' `excursions` is one of the main functions in the package with the same name.
-#' For an introduction to the package, see [excursions-package()]. 
+#' For an introduction to the package, see [excursions-package()].
 #' The function is used for calculating excursion sets, contour credible regions,
 #' and contour avoiding sets for latent Gaussian models. Details on the function and the
 #' package are given in the sections below.
@@ -301,56 +301,56 @@ excursions <- function(alpha,
     ind <- which(ind)
   }
 
-  if(prune.ind) { 
-      output <- list(
-          F = F[ind],
-          G = G[ind],
-          M = M[ind],
-          E = E[ind],
-          mean = mu[ind],
-          vars = vars[ind],
-          rho = marg$rho[ind],
-          meta = (list(
-              calculation = "excursions",
-              type = type,
-              level = u,
-              F.limit = F.limit,
-              alpha = alpha,
-              n.iter = n.iter,
-              method = method,
-              ind = NULL,
-              reo = reo,
-              ireo = ireo,
-              Fe = Fe,
-              call = match.call()
-          ))
-      )
+  if (prune.ind) {
+    output <- list(
+      F = F[ind],
+      G = G[ind],
+      M = M[ind],
+      E = E[ind],
+      mean = mu[ind],
+      vars = vars[ind],
+      rho = marg$rho[ind],
+      meta = (list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        F.limit = F.limit,
+        alpha = alpha,
+        n.iter = n.iter,
+        method = method,
+        ind = NULL,
+        reo = reo,
+        ireo = ireo,
+        Fe = Fe,
+        call = match.call()
+      ))
+    )
   } else {
-      output <- list(
-          F = F,
-          G = G,
-          M = M,
-          E = E,
-          mean = mu,
-          vars = vars,
-          rho = marg$rho,
-          meta = (list(
-              calculation = "excursions",
-              type = type,
-              level = u,
-              F.limit = F.limit,
-              alpha = alpha,
-              n.iter = n.iter,
-              method = method,
-              ind = ind,
-              reo = reo,
-              ireo = ireo,
-              Fe = Fe,
-              call = match.call()
-          ))
-      )        
+    output <- list(
+      F = F,
+      G = G,
+      M = M,
+      E = E,
+      mean = mu,
+      vars = vars,
+      rho = marg$rho,
+      meta = (list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        F.limit = F.limit,
+        alpha = alpha,
+        n.iter = n.iter,
+        method = method,
+        ind = ind,
+        reo = reo,
+        ireo = ireo,
+        Fe = Fe,
+        call = match.call()
+      ))
+    )
   }
-  
+
   class(output) <- "excurobj"
   output
 }

@@ -270,11 +270,13 @@ private.sparse.get_ipx <- function(M) {
   ## Extract i,p,x in 0-based format:
   ## If M is a unit diagonal matrix, may have length(i)==0
   if (inherits(M, "triangularMatrix") &&
-      (M@diag == "U") &&
-      (length(M@i) == 0)) {
-    list(i = seq_len(nrow(M)) - 1L,
-         p = seq_len(nrow(M) + 1) - 1L,
-         x = rep(1.0, nrow(M)))
+    (M@diag == "U") &&
+    (length(M@i) == 0)) {
+    list(
+      i = seq_len(nrow(M)) - 1L,
+      p = seq_len(nrow(M) + 1) - 1L,
+      x = rep(1.0, nrow(M))
+    )
   } else {
     list(i = M@i, p = M@p, x = M@x)
   }
@@ -427,12 +429,12 @@ fmix.opt <- function(x,
 }
 
 
-fmix.samp.opt <- function(x, 
-                          alpha, 
-                          mu, 
-                          sd, 
-                          w, 
-                          limits, 
+fmix.samp.opt <- function(x,
+                          alpha,
+                          mu,
+                          sd,
+                          w,
+                          limits,
                           samples,
                           verbose = FALSE) {
   n <- dim(mu)[2]
@@ -457,10 +459,10 @@ fmix.samp.opt <- function(x,
 
   prob <- mean(cover)
   val <- (prob - (1 - alpha))^2
-  if(verbose) {
-      cat("in optimization: ", x, " ", prob, " ", val, "\n")    
+  if (verbose) {
+    cat("in optimization: ", x, " ", prob, " ", val, "\n")
   }
-  
+
   return(val)
 }
 
