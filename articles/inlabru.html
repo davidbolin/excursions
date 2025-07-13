@@ -92,15 +92,17 @@ specification compared with plain <code>INLA</code>. To analyze
 simulated data.</p>
 <p>Let us generate some data</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">n.lattice</span> <span class="op">&lt;-</span> <span class="fl">30</span> </span>
+<code class="sourceCode R"><span><span class="va">n.lattice</span> <span class="op">&lt;-</span> <span class="fl">30</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span>from <span class="op">=</span> <span class="fl">0</span>, to <span class="op">=</span> <span class="fl">10</span>, length.out <span class="op">=</span> <span class="va">n.lattice</span><span class="op">)</span></span>
 <span><span class="va">lattice</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_lattice_2d.html" class="external-link">fm_lattice_2d</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span>, y <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span>
 <span><span class="va">mesh</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_rcdt_2d.html" class="external-link">fm_rcdt_2d_inla</a></span><span class="op">(</span>lattice <span class="op">=</span> <span class="va">lattice</span>, extend <span class="op">=</span> <span class="cn">FALSE</span>, refine <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">sigma2.e</span> <span class="op">&lt;-</span> <span class="fl">0.1</span></span>
 <span><span class="va">n.obs</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
-<span><span class="va">obs.loc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">n.obs</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>,</span>
-<span>                 <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">n.obs</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">obs.loc</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">n.obs</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">n.obs</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">Q</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_gmrf.html" class="external-link">fm_matern_precision</a></span><span class="op">(</span><span class="va">mesh</span>, alpha <span class="op">=</span> <span class="fl">2</span>, rho <span class="op">=</span> <span class="fl">3</span>, sigma <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_gmrf.html" class="external-link">fm_sample</a></span><span class="op">(</span>n <span class="op">=</span> <span class="fl">1</span>, Q <span class="op">=</span> <span class="va">Q</span><span class="op">)</span></span>
 <span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_basis.html" class="external-link">fm_basis</a></span><span class="op">(</span><span class="va">mesh</span>, loc <span class="op">=</span> <span class="va">obs.loc</span><span class="op">)</span></span>
@@ -114,21 +116,26 @@ component a tag (<code>pred</code> below) so that we can access these
 later.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">rspde_model</span> <span class="op">&lt;-</span> <span class="fu">rspde.matern</span><span class="op">(</span>mesh <span class="op">=</span> <span class="va">mesh</span>, nu <span class="op">=</span> <span class="fl">1.5</span><span class="op">)</span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x1 <span class="op">=</span> <span class="va">obs.loc</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, x2 <span class="op">=</span> <span class="va">obs.loc</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>, y <span class="op">=</span> <span class="va">Y</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://edzer.github.io/sp/reference/coordinates.html" class="external-link">coordinates</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>,<span class="st">"x2"</span><span class="op">)</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x1 <span class="op">=</span> <span class="va">obs.loc</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, x2 <span class="op">=</span> <span class="va">obs.loc</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span>, y <span class="op">=</span> <span class="va">Y</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://edzer.github.io/sp/reference/coordinates.html" class="external-link">coordinates</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>, <span class="st">"x2"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">#data for prediction locations</span></span>
-<span><span class="va">data.prd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>x1 <span class="op">=</span> <span class="va">mesh</span><span class="op">$</span><span class="va">loc</span><span class="op">[</span>,<span class="fl">1</span><span class="op">]</span>, </span>
-<span>                       x2 <span class="op">=</span> <span class="va">mesh</span><span class="op">$</span><span class="va">loc</span><span class="op">[</span>,<span class="fl">2</span><span class="op">]</span>, </span>
-<span>                       y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">mesh</span><span class="op">$</span><span class="va">loc</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://edzer.github.io/sp/reference/coordinates.html" class="external-link">coordinates</a></span><span class="op">(</span><span class="va">data.prd</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>,<span class="st">"x2"</span><span class="op">)</span></span>
+<span><span class="co"># data for prediction locations</span></span>
+<span><span class="va">data.prd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  x1 <span class="op">=</span> <span class="va">mesh</span><span class="op">$</span><span class="va">loc</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>,</span>
+<span>  x2 <span class="op">=</span> <span class="va">mesh</span><span class="op">$</span><span class="va">loc</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span>,</span>
+<span>  y <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="cn">NA</span>, <span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">mesh</span><span class="op">$</span><span class="va">loc</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://edzer.github.io/sp/reference/coordinates.html" class="external-link">coordinates</a></span><span class="op">(</span><span class="va">data.prd</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>, <span class="st">"x2"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">cmp</span> <span class="op">&lt;-</span> <span class="va">y</span> <span class="op">~</span> <span class="fu">Intercept</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">+</span> <span class="fu">field</span><span class="op">(</span><span class="va">coordinates</span>, model <span class="op">=</span> <span class="va">rspde_model</span><span class="op">)</span></span>
-<span><span class="va">result_bru</span> <span class="op">&lt;-</span> <span class="fu">bru</span><span class="op">(</span><span class="op">~</span> <span class="fu">Intercept</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">+</span> <span class="fu">field</span><span class="op">(</span><span class="va">coordinates</span>, model <span class="op">=</span> <span class="va">rspde_model</span><span class="op">)</span>, </span>
-<span>                  <span class="fu">like</span><span class="op">(</span><span class="va">y</span><span class="op">~</span><span class="va">.</span>, family <span class="op">=</span> <span class="st">"normal"</span>, data <span class="op">=</span> <span class="va">data</span><span class="op">)</span>,</span>
-<span>                  <span class="fu">like</span><span class="op">(</span><span class="va">y</span><span class="op">~</span><span class="va">.</span>, family <span class="op">=</span> <span class="st">"normal"</span>, data <span class="op">=</span> <span class="va">data.prd</span>, tag <span class="op">=</span> <span class="st">"prd"</span><span class="op">)</span>,</span>
-<span>                  options<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>control.compute<span class="op">=</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>return.marginals.predictor<span class="op">=</span><span class="cn">TRUE</span><span class="op">)</span>,</span>
-<span>                               num.threads <span class="op">=</span> <span class="st">"1:1"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">result_bru</span> <span class="op">&lt;-</span> <span class="fu">bru</span><span class="op">(</span><span class="op">~</span> <span class="fu">Intercept</span><span class="op">(</span><span class="fl">1</span><span class="op">)</span> <span class="op">+</span> <span class="fu">field</span><span class="op">(</span><span class="va">coordinates</span>, model <span class="op">=</span> <span class="va">rspde_model</span><span class="op">)</span>,</span>
+<span>  <span class="fu">like</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">.</span>, family <span class="op">=</span> <span class="st">"normal"</span>, data <span class="op">=</span> <span class="va">data</span><span class="op">)</span>,</span>
+<span>  <span class="fu">like</span><span class="op">(</span><span class="va">y</span> <span class="op">~</span> <span class="va">.</span>, family <span class="op">=</span> <span class="st">"normal"</span>, data <span class="op">=</span> <span class="va">data.prd</span>, tag <span class="op">=</span> <span class="st">"prd"</span><span class="op">)</span>,</span>
+<span>  options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    control.compute <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>return.marginals.predictor <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,</span>
+<span>    num.threads <span class="op">=</span> <span class="st">"1:1"</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: `like()` was deprecated in inlabru 2.12.0.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `bru_obs()` instead.</span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
@@ -152,12 +159,14 @@ part of the predictor. In this case, we want the indices which
 correspond to the likelihood component which we gave the tag
 <code>"pred"</code> above, so the call looks as follows.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">res.qc_bru</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>, name <span class="op">=</span> <span class="st">"APredictor"</span>, </span>
-<span>                              ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
-<span>                              alpha <span class="op">=</span> <span class="fl">0.99</span>, u <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>                              method <span class="op">=</span> <span class="st">"QC"</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>, </span>
-<span>                              prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                              max.threads <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">res.qc_bru</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>,</span>
+<span>  name <span class="op">=</span> <span class="st">"APredictor"</span>,</span>
+<span>  ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
+<span>  alpha <span class="op">=</span> <span class="fl">0.99</span>, u <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"QC"</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>,</span>
+<span>  prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  max.threads <span class="op">=</span> <span class="fl">2</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>Note that we here set <code>prune.ind = TRUE</code> which tells the
 function that we want the result object only evaluated at the indices
 specified by the <code>ind</code> argument. We can now obtain a
@@ -168,10 +177,11 @@ function</p>
 <p>Finally, we can plot the results</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cmap.F</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu">brewer.pal</span><span class="op">(</span><span class="fl">9</span>, <span class="st">"Greens"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span>
-<span><span class="va">proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluator</a></span><span class="op">(</span><span class="va">sets</span><span class="op">$</span><span class="va">F.geometry</span>, dims <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">300</span>,<span class="fl">200</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluator</a></span><span class="op">(</span><span class="va">sets</span><span class="op">$</span><span class="va">F.geometry</span>, dims <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">300</span>, <span class="fl">200</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>, field <span class="op">=</span> <span class="va">sets</span><span class="op">$</span><span class="cn">F</span><span class="op">)</span>,</span>
-<span>      col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>, </span>
-<span>      main <span class="op">=</span> <span class="st">"excursion function"</span><span class="op">)</span></span></code></pre></div>
+<span>  col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">"excursion function"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="inlabru_files/figure-html/unnamed-chunk-5-1.png" width="700"></p>
 </div>
 <div class="section level2">
@@ -182,80 +192,106 @@ now try the other available options and compare their timings and
 results.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">t.EB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span></span>
-<span>    <span class="va">res.EB</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>, name <span class="op">=</span> <span class="st">"APredictor"</span>, </span>
-<span>                              ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
-<span>                              alpha <span class="op">=</span> <span class="fl">0.99</span>, u <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>                              method <span class="op">=</span> <span class="st">"EB"</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>, </span>
-<span>                              prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                              max.threads <span class="op">=</span><span class="fl">2</span> <span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">res.EB</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"APredictor"</span>,</span>
+<span>    ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">0.99</span>, u <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    method <span class="op">=</span> <span class="st">"EB"</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>,</span>
+<span>    prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    max.threads <span class="op">=</span> <span class="fl">2</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">t.QC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span></span>
-<span>    <span class="va">res.QC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>, name <span class="op">=</span> <span class="st">"APredictor"</span>, </span>
-<span>                              ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
-<span>                              alpha <span class="op">=</span> <span class="fl">0.99</span>, u <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>                              method <span class="op">=</span> <span class="st">"QC"</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>, </span>
-<span>                              prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                              max.threads <span class="op">=</span><span class="fl">2</span> <span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">res.QC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"APredictor"</span>,</span>
+<span>    ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">0.99</span>, u <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    method <span class="op">=</span> <span class="st">"QC"</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>,</span>
+<span>    prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    max.threads <span class="op">=</span> <span class="fl">2</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">t.NI</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span></span>
-<span>    <span class="va">res.NI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>, name <span class="op">=</span> <span class="st">"APredictor"</span>, </span>
-<span>                              ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
-<span>                              alpha <span class="op">=</span> <span class="fl">0.99</span>, u <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>                              method <span class="op">=</span> <span class="st">"NI"</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>, </span>
-<span>                              prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                              max.threads <span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">res.NI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"APredictor"</span>,</span>
+<span>    ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">0.99</span>, u <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    method <span class="op">=</span> <span class="st">"NI"</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>,</span>
+<span>    prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    max.threads <span class="op">=</span> <span class="fl">2</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">t.NIQC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span></span>
-<span>    <span class="va">res.NIQC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>, name <span class="op">=</span> <span class="st">"APredictor"</span>, </span>
-<span>                                ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
-<span>                                alpha <span class="op">=</span> <span class="fl">0.99</span>, u <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>                                method <span class="op">=</span> <span class="st">"NIQC"</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>, </span>
-<span>                                prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>                                max.threads <span class="op">=</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span>  <span class="va">res.NIQC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>,</span>
+<span>    name <span class="op">=</span> <span class="st">"APredictor"</span>,</span>
+<span>    ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">0.99</span>, u <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>    method <span class="op">=</span> <span class="st">"NIQC"</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>,</span>
+<span>    prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    max.threads <span class="op">=</span> <span class="fl">2</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>The computation time for the different methods are</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">t.EB</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="va">t.QC</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="va">t.NI</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="va">t.NIQC</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
-<span>                 row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EB"</span>, <span class="st">"QC"</span>, <span class="st">"NI"</span>, <span class="st">"NIQC"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">t.EB</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="va">t.QC</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="va">t.NI</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="va">t.NIQC</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>  row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EB"</span>, <span class="st">"QC"</span>, <span class="st">"NI"</span>, <span class="st">"NIQC"</span><span class="op">)</span></span>
+<span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        time</span></span>
-<span><span class="co">#&gt; EB    3.851</span></span>
-<span><span class="co">#&gt; QC    4.049</span></span>
-<span><span class="co">#&gt; NI   38.591</span></span>
-<span><span class="co">#&gt; NIQC 42.050</span></span></code></pre></div>
+<span><span class="co">#&gt; EB    3.843</span></span>
+<span><span class="co">#&gt; QC    4.000</span></span>
+<span><span class="co">#&gt; NI   37.581</span></span>
+<span><span class="co">#&gt; NIQC 41.952</span></span></code></pre></div>
 <p>We can see that the <code>EB</code> and <code>QC</code> methods have
 similar computation times and that <code>NI</code> and <code>NIQC</code>
 take longer. Let us now plot the corresponding sets, we start with the
 <code>EB</code> result:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>, </span>
-<span>                                  field <span class="op">=</span> <span class="fu"><a href="../reference/continuous.html">continuous</a></span><span class="op">(</span><span class="va">res.EB</span>, </span>
-<span>                                                     <span class="va">mesh</span>, </span>
-<span>                                                     alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">$</span><span class="cn">F</span><span class="op">)</span>,</span>
-<span>      col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>, </span>
-<span>      main <span class="op">=</span> <span class="st">"EB"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>,</span>
+<span>  field <span class="op">=</span> <span class="fu"><a href="../reference/continuous.html">continuous</a></span><span class="op">(</span><span class="va">res.EB</span>,</span>
+<span>    <span class="va">mesh</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">0.1</span></span>
+<span>  <span class="op">)</span><span class="op">$</span><span class="cn">F</span></span>
+<span><span class="op">)</span>,</span>
+<span>col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>main <span class="op">=</span> <span class="st">"EB"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="inlabru_files/figure-html/unnamed-chunk-8-1.png" width="700"></p>
 <p>Then the <code>QC</code> result:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>, </span>
-<span>                                  field <span class="op">=</span> <span class="fu"><a href="../reference/continuous.html">continuous</a></span><span class="op">(</span><span class="va">res.QC</span>, </span>
-<span>                                                     <span class="va">mesh</span>, </span>
-<span>                                                     alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">$</span><span class="cn">F</span><span class="op">)</span>,</span>
-<span>      col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>, </span>
-<span>      main <span class="op">=</span> <span class="st">"QC"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>,</span>
+<span>  field <span class="op">=</span> <span class="fu"><a href="../reference/continuous.html">continuous</a></span><span class="op">(</span><span class="va">res.QC</span>,</span>
+<span>    <span class="va">mesh</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">0.1</span></span>
+<span>  <span class="op">)</span><span class="op">$</span><span class="cn">F</span></span>
+<span><span class="op">)</span>,</span>
+<span>col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>main <span class="op">=</span> <span class="st">"QC"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="inlabru_files/figure-html/unnamed-chunk-9-1.png" width="700"></p>
 <p>Then the <code>NI</code> result:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>, </span>
-<span>                                  field <span class="op">=</span> <span class="fu"><a href="../reference/continuous.html">continuous</a></span><span class="op">(</span><span class="va">res.NI</span>, </span>
-<span>                                                     <span class="va">mesh</span>, </span>
-<span>                                                     alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">$</span><span class="cn">F</span><span class="op">)</span>,</span>
-<span>      col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>, </span>
-<span>      main <span class="op">=</span> <span class="st">"NI"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>,</span>
+<span>  field <span class="op">=</span> <span class="fu"><a href="../reference/continuous.html">continuous</a></span><span class="op">(</span><span class="va">res.NI</span>,</span>
+<span>    <span class="va">mesh</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">0.1</span></span>
+<span>  <span class="op">)</span><span class="op">$</span><span class="cn">F</span></span>
+<span><span class="op">)</span>,</span>
+<span>col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>main <span class="op">=</span> <span class="st">"NI"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="inlabru_files/figure-html/unnamed-chunk-10-1.png" width="700"></p>
 <p>and finally the <code>NIQC</code> result:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>, </span>
-<span>                                  field <span class="op">=</span> <span class="fu"><a href="../reference/continuous.html">continuous</a></span><span class="op">(</span><span class="va">res.NIQC</span>, </span>
-<span>                                                     <span class="va">mesh</span>, </span>
-<span>                                                     alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span><span class="op">$</span><span class="cn">F</span><span class="op">)</span>,</span>
-<span>      col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>, </span>
-<span>      main <span class="op">=</span> <span class="st">"NIQC"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>,</span>
+<span>  field <span class="op">=</span> <span class="fu"><a href="../reference/continuous.html">continuous</a></span><span class="op">(</span><span class="va">res.NIQC</span>,</span>
+<span>    <span class="va">mesh</span>,</span>
+<span>    alpha <span class="op">=</span> <span class="fl">0.1</span></span>
+<span>  <span class="op">)</span><span class="op">$</span><span class="cn">F</span></span>
+<span><span class="op">)</span>,</span>
+<span>col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>main <span class="op">=</span> <span class="st">"NIQC"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p><img src="inlabru_files/figure-html/unnamed-chunk-11-1.png" width="700"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
