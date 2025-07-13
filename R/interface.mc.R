@@ -439,8 +439,9 @@ excursions.mc <- function(samples,
   res <- mcint(X = samples[reo, ], a = limits$a[reo], b = limits$b[reo])
 
   n <- length(mu)
-  ii <- which(res$Pv[1:n] > 0)
-  if (length(ii) == 0) i <- n + 1 else i <- min(ii)
+  ## ii and i are not used
+  # ii <- which(res$Pv[1:n] > 0)
+  # if (length(ii) == 0) i <- n + 1 else i <- min(ii)
 
   F_ <- Fe <- E <- G <- rep(0, n)
   F_[reo] <- res$Pv

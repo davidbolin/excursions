@@ -126,8 +126,6 @@ simconf.inla <- function(result.inla,
     stop("INLA result must be calculated using control.compute$config=TRUE")
   }
 
-  n <- length(result.inla$misc$configs$config[[1]]$mean)
-
   if (!missing(ind)) {
     ind <- private.as.vector(ind)
   }
@@ -146,7 +144,7 @@ simconf.inla <- function(result.inla,
   } else {
     ind.stack.original <- ind.stack
   }
-  n <- length(result.inla$misc$configs$config[[1]]$mean)
+  # n <- length(result.inla$misc$configs$config[[1]]$mean) ## Unused variable
   n.out <- length(ind.stack)
   ind.int <- seq_len(n.out)
   # ind is assumed to contain indices within the component of interest
@@ -156,7 +154,7 @@ simconf.inla <- function(result.inla,
     ind.stack.original <- ind.stack.original[ind]
   }
   ind <- ind.stack
-  ind.original <- ind.stack.original
+  # ind.original <- ind.stack.original # Unused variable
 
   links <- NULL
   if (link) {

@@ -14,18 +14,16 @@ contourfunction.mc <- function(lp, mu, X, ind, alpha, verbose = FALSE) {
 
   lim <- excursions.limits(lp = lp, mu = mu, measure = 0)
 
-  m.size <- length(mu)
-  indices <- NULL
-
-  if (!missing(ind)) {
-    if (is.logical(ind)) {
-      indices <- ind
-      m.size <- sum(ind)
-    } else {
-      indices <- rep(FALSE, length(mu))
-      indices[ind] <- TRUE
-      m.size <- length(ind)
-    }
+  if (missing(ind)) {
+    indices <- NULL
+    # m.size <- length(mu)
+  } else if (is.logical(ind)) {
+    indices <- ind
+    # m.size <- sum(ind)
+  } else {
+    indices <- rep(FALSE, length(mu))
+    indices[ind] <- TRUE
+    # m.size <- length(ind)
   }
   if (verbose) cat("calculate marginals\n")
 
@@ -108,18 +106,16 @@ contourfunction <- function(lp, mu, Q, vars, ind, alpha, n.iter = 10000,
     }
   }
 
-  m.size <- length(mu)
-  indices <- NULL
-
-  if (!missing(ind)) {
-    if (is.logical(ind)) {
-      indices <- ind
-      m.size <- sum(ind)
-    } else {
-      indices <- rep(FALSE, length(mu))
-      indices[ind] <- TRUE
-      m.size <- length(ind)
-    }
+  if (missing(ind)) {
+    indices <- NULL
+    m.size <- length(mu)
+  } else if (is.logical(ind)) {
+    indices <- ind
+    m.size <- sum(ind)
+  } else {
+    indices <- rep(FALSE, length(mu))
+    indices[ind] <- TRUE
+    m.size <- length(ind)
   }
   if (verbose) cat("calculate marginals\n")
   if (missing(rho) || is.null(rho)) {
@@ -426,6 +422,8 @@ Pmeasure <- function(lp, mu, Q, Q.chol, ind = NULL, type,
     )
     p <- res$P[1]
   }
+  # TODO: Check if this should be P = p or P = res$P[1], as the 'p' values above
+  # are unused.
   return(list(P = res$P[1], E = res$E[1]))
 }
 

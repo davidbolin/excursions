@@ -234,6 +234,10 @@ excursions <- function(alpha,
     cat("Calculate permutation\n")
   }
   if (missing(reo)) {
+    ## TODO: Check if there is a reason use.camd is unconditionally
+    ## set to TRUE in the excursions.permutation calls, or if this computed
+    ## value can safely be used instead. If not, it should be removed, and
+    ## the reason documented.
     use.camd <- !missing(ind) || (F.limit < 1)
     if (qc) {
       reo <- excursions.permutation(marg$rho_ng, indices,
@@ -260,8 +264,9 @@ excursions <- function(alpha,
   )
 
   n <- length(mu)
-  ii <- which(res$Pv[1:n] > 0)
-  if (length(ii) == 0) i <- n + 1 else i <- min(ii)
+  ## ii and i are unused
+  # ii <- which(res$Pv[1:n] > 0)
+  # if (length(ii) == 0) i <- n + 1 else i <- min(ii)
 
   F_ <- Fe <- E <- G <- rep(0, n)
   F_[reo] <- res$Pv
