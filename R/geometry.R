@@ -616,7 +616,8 @@ submesh.mesh <- function(z, mesh) {
 }
 submesh.mesh.tri <- function(tri, mesh) {
   if (utils::packageVersion("fmesher") >= "0.5.0.9003") {
-    return(fmesher::fm_subset(mesh, tri))
+    # Can't access fm_subset prior to 0.5.0.9003, hence eval()
+    return(eval(parse(text = "fmesher::fm_subset(mesh, tri)")))
   }
 
   tv <- mesh$graph$tv[tri, , drop = FALSE]
