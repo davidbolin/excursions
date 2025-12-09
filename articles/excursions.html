@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">excursions</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.5.8.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.5.8.9004</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -137,7 +137,7 @@ standard deviations.</p>
 <span>  xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">obs.loc</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span>, <span class="va">obs.loc</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span>, pch <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span></code></pre></div>
-<p><img src="excursions_files/figure-html/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;"></p>
+<p><img src="excursions_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" width="672" style="display: block; margin: auto;"></p>
 <div class="section level2">
 <h2 id="excursion-sets-and-contour-credible-regions">Excursion sets and contour credible regions<a class="anchor" aria-label="anchor" href="#excursion-sets-and-contour-credible-regions"></a>
 </h2>
@@ -359,7 +359,7 @@ map we previously computed.</p>
 <span>  levels <span class="op">=</span> <span class="va">res.con</span><span class="op">$</span><span class="va">u</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">set.sc</span><span class="op">$</span><span class="va">map</span>, col <span class="op">=</span> <span class="fu"><a href="../reference/contourmap.colors.html">contourmap.colors</a></span><span class="op">(</span><span class="va">res.con</span>, col <span class="op">=</span> <span class="va">cmap</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="excursions_files/figure-html/unnamed-chunk-10-1.png" width="480" style="display: block; margin: auto;"></p>
+<p><img src="excursions_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" width="480" style="display: block; margin: auto;"></p>
 <p>Here <code>contourmap.colors</code> is used to find appropriate
 colors for each set in the contour map, based on the color map
 <code>cmap</code> that was defined using the <code>RColorBrewer</code>
@@ -376,7 +376,7 @@ package. The estimated excursion set can be visualized as</p>
 <span>  edge.color <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/rgb.html" class="external-link">rgb</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
 <span>  add <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="excursions_files/figure-html/unnamed-chunk-11-1.png" width="480" style="display: block; margin: auto;"></p>
+<p><img src="excursions_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" width="480" style="display: block; margin: auto;"></p>
 <p>The second <code>plot</code> command adds the mesh to the plot so
 that we can see how the set is interpolated by the
 <code>continuous</code> function. Finally, the interpolated excursion
@@ -392,7 +392,7 @@ the <code>INLA</code> package.</p>
 <span><span class="op">)</span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tricontour.html">tricontourmap</a></span><span class="op">(</span><span class="va">mesh</span>, z <span class="op">=</span> <span class="va">mu.post</span>, levels <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">con</span><span class="op">$</span><span class="va">map</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="excursions_files/figure-html/unnamed-chunk-12-1.png" width="480" style="display: block; margin: auto;"></p>
+<p><img src="excursions_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" width="480" style="display: block; margin: auto;"></p>
 <p>The final two lines computes the level zero contour curve and plots
 it in the same figure as the interpolated excursion function.</p>
 </div>
@@ -438,7 +438,7 @@ Software</em> 63 (19). <a href="https://doi.org/10.18637/jss.v063.i19" class="ex
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>

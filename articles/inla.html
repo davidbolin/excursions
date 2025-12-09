@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">excursions</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.5.8.9003</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">2.5.8.9004</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -201,7 +201,7 @@ confidence band with dotted lines.</p>
 <span>  col <span class="op">=</span> <span class="fl">1</span>, add <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">a</span>, <span class="va">res</span><span class="op">$</span><span class="va">b</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"l"</span>, lty <span class="op">=</span> <span class="fl">3</span>, col <span class="op">=</span> <span class="fl">2</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="inla_files/figure-html/unnamed-chunk-6-1.png" width="700"></p>
+<p><img src="inla_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="a-spatial-example">A spatial example<a class="anchor" aria-label="anchor" href="#a-spatial-example"></a>
@@ -325,7 +325,7 @@ with the contour curve using the following commands.</p>
 <span>  col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">con</span><span class="op">$</span><span class="va">map</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="inla_files/figure-html/unnamed-chunk-12-1.png" width="700"></p>
+<p><img src="inla_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" width="700"></p>
 <p>To visualize the posterior mean using a contour map using the
 following commands</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -336,7 +336,7 @@ following commands</p>
 <span><span class="op">)</span></span>
 <span><span class="va">tmap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tricontour.html">tricontourmap</a></span><span class="op">(</span><span class="va">submesh</span>, z <span class="op">=</span> <span class="va">lp</span><span class="op">$</span><span class="va">meta</span><span class="op">$</span><span class="va">mu</span>, levels <span class="op">=</span> <span class="va">lp</span><span class="op">$</span><span class="va">meta</span><span class="op">$</span><span class="va">levels</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tmap</span><span class="op">$</span><span class="va">map</span>, col <span class="op">=</span> <span class="fu"><a href="../reference/contourmap.colors.html">contourmap.colors</a></span><span class="op">(</span><span class="va">lp</span>, col <span class="op">=</span> <span class="va">cmap</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="inla_files/figure-html/unnamed-chunk-13-1.png" width="700"></p>
+<p><img src="inla_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" width="700"></p>
 <p>Here, the <code>contourmap.inla</code> computes the levels of the
 contour map and <code>tricontourmap</code> computes the contour map on
 the mesh. Finally, <code>contourmap.colors</code> is used to compute
@@ -365,9 +365,9 @@ three levels.</p>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                       P2</span></span>
 <span><span class="co">#&gt; n.level = 1 0.9999999965</span></span>
-<span><span class="co">#&gt; n.level = 2 0.6536138326</span></span>
-<span><span class="co">#&gt; n.level = 3 0.0337021714</span></span>
-<span><span class="co">#&gt; n.level = 4 0.0001892985</span></span></code></pre></div>
+<span><span class="co">#&gt; n.level = 2 0.6536147661</span></span>
+<span><span class="co">#&gt; n.level = 3 0.0337022283</span></span>
+<span><span class="co">#&gt; n.level = 4 0.0001892993</span></span></code></pre></div>
 <p>We see that using only one or two contours give very high
 credibility, whereas using four contours give a credibility that is
 close to zero. The contour map with three contours has a credibility
@@ -408,7 +408,7 @@ Using Non-<span>G</span>aussian <span>M</span>atérn Fields.”</span>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer>
