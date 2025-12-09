@@ -18,7 +18,7 @@
 
 ## Calculate upper triangular Cholesky decomposition, optionally with
 ## permutation. All Matrix::Cholesky options are allowed.
-## Returns list(R=dtCMatrix, reo=interger vector, ireo=interger vector)
+## Returns list(R=dtCMatrix, reo=integer vector, ireo=integer vector)
 private.Cholesky <- function(A, ...) {
   L <- expand(Matrix::Cholesky(private.as.dgCMatrix(A), ...))
   n <- nrow(A)
