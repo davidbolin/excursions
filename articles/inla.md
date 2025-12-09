@@ -312,9 +312,9 @@ print(data.frame(
 ))
 #>                       P2
 #> n.level = 1 0.9999999965
-#> n.level = 2 0.6536147661
-#> n.level = 3 0.0337022283
-#> n.level = 4 0.0001892993
+#> n.level = 2 0.6536077844
+#> n.level = 3 0.0337008594
+#> n.level = 4 0.0001865534
 ```
 
 We see that using only one or two contours give very high credibility,
