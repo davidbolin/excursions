@@ -1,1 +1,1 @@
-configure.ac autocrlf=input
+configure.ac text eol=lf
