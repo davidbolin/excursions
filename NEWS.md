@@ -3,6 +3,7 @@
 * Add -DNPRINT to CAMD build, and remove fflush(stdout) use, to avoid fprint
   and stdout usage
 * Fix issue with identity matrices, ensuring they are not treated as all-zero
+* Remove obsolete and unneded includes of Rdefines.h and R_ext/PrtUtil.h
 
 # excursions 2.5.8
 

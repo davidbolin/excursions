@@ -19,8 +19,6 @@
 
 #include <R.h>
 #include <Rmath.h>
-#include <Rdefines.h>
-#include <R_ext/PrtUtil.h>
 
 extern "C"{
   #include "RngStream.h"
