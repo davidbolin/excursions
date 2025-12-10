@@ -38,5 +38,5 @@ if (require.nowarnings(nonexistent)) {
 }
 }
 \seealso{
-\code{\link{require}}
+\code{\link[=require]{require()}}
 }

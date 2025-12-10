@@ -17,7 +17,7 @@
 
 #' Contour maps and contour map quality measures using Monte Carlo samples
 #'
-#' \code{contourmap.mc} is used for calculating contour maps and quality measures for contour maps based on Monte Carlo samples of a model.
+#' `contourmap.mc` is used for calculating contour maps and quality measures for contour maps based on Monte Carlo samples of a model.
 #'
 #' @param samples Matrix with model Monte Carlo samples. Each column contains a sample of the model.
 #' @param n.levels Number of levels in contour map.
@@ -40,24 +40,24 @@
 #' @param alpha Maximal error probability in contour map function (default=0.1).
 #' @param verbose Set to TRUE for verbose mode (optional).
 #'
-#' @return \code{contourmap} returns an object of class "excurobj" with the following elements
+#' @return `contourmap` returns an object of class "excurobj" with the following elements
 #'     \item{u }{Contour levels used in the contour map.}
 #'     \item{n.levels }{The number of contours used.}
-#'     \item{u.e }{The values associated with the level sets G_k.}
-#'     \item{G }{A vector which shows which of the level sets G_k each node belongs to.}
-#'     \item{map }{Representation of the contour map with map[i]=u.e[k] if i is in G_k.}
+#'     \item{u.e }{The values associated with the level sets `G_k`.}
+#'     \item{G }{A vector which shows which of the level sets `G_k` each node belongs to.}
+#'     \item{map }{Representation of the contour map with `map[i]=u.e[k]` if i is in `G_k`.}
 #'     \item{F }{The contour map function (if computed).}
-#'     \item{M }{Contour avoiding sets (if \code{F} is computed). \eqn{M=-1} for all non-significant nodes and  \eqn{M=k} for nodes that belong to \eqn{M_k}.}
+#'     \item{M }{Contour avoiding sets (if `F` is computed). \eqn{M=-1} for all non-significant nodes and  \eqn{M=k} for nodes that belong to \eqn{M_k}.}
 #'     \item{P0/P1/P2 }{Calculated quality measures (if computed).}
 #'     \item{P0bound/P1bound/P2bound }{Calculated upper bounds quality measures (if computed).}
 #'     \item{meta }{A list containing various information about the calculation.}
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @details The contour map is computed for the empirical mean of the samples.
-#' See \code{\link{contourmap}} and \code{\link{contourmap.inla}} for further details.
-#' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, 26:3, 513-524.
+#' See [contourmap()] and [contourmap.inla()] for further details.
+#' @references Bolin, D. and Lindgren, F. (2017) *Quantifying the uncertainty of contour maps*, Journal of Computational and Graphical Statistics, 26:3, 513-524.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, 86(5), 1--20.
-#' @seealso \code{\link{contourmap}}, \code{\link{contourmap.inla}}, \code{\link{contourmap.colors}}
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion Sets and Related Quantities Using excursions*, Journal of Statistical Software, 86(5), 1--20.
+#' @seealso [contourmap()], [contourmap.inla()], [contourmap.colors()]
 
 #' @export
 #'
@@ -196,7 +196,7 @@ contourmap.mc <- function(samples,
 
 #' Simultaneous confidence regions using Monte Carlo samples
 #'
-#' \code{simconf.mc} is used for calculating simultaneous confidence regions based
+#' `simconf.mc` is used for calculating simultaneous confidence regions based
 #' on Monte Carlo samples. The function returns upper and lower bounds \eqn{a} and
 #' \eqn{b} such that \eqn{P(a<x<b) = 1-\alpha}.
 #'
@@ -211,9 +211,9 @@ contourmap.mc <- function(samples,
 #' \item{a.marginal }{The lower bound for pointwise confidence bands.}
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
-#' @details See \code{\link{simconf}} for details.
+#' @details See [simconf()] for details.
 #' @author David Bolin \email{davidbolin@@gmail.com}
-#' @seealso \code{\link{simconf}}, \code{\link{simconf.inla}}
+#' @seealso [simconf()], [simconf.inla()]
 #'
 #' @examples
 #' ## Create mean and a tridiagonal precision matrix
@@ -295,7 +295,7 @@ simconf.mc <- function(samples,
 
 #' Excursion sets and contour credible regions using Monte Carlo samples
 #'
-#' \code{excursions.mc} is used for calculating excursion sets, contour credible
+#' `excursions.mc` is used for calculating excursion sets, contour credible
 #' regions, and contour avoiding sets based on Monte Carlo samples of models.
 #'
 #' @param samples Matrix with model Monte Carlo samples. Each column contains a
@@ -314,30 +314,32 @@ simconf.mc <- function(samples,
 #' @param ind Indices of the nodes that should be analysed (optional).
 #' @param max.size Maximum number of nodes to include in the set of interest (optional).
 #' @param verbose Set to TRUE for verbose mode (optional).
+#' @param prune.ind If `TRUE` and `ind` is supplied, then the result object is pruned to
+#' contain only the active nodes specified by `ind`.
 #'
-#' @return \code{excursions.mc} returns an object of class "excurobj" with the 
+#' @return `excursions.mc` returns an object of class "excurobj" with the
 #' following elements
 #' \item{E }{Excursion set, contour credible region, or contour avoiding set.}
 #' \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
 #' \item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes.
-#' \eqn{M=0} for nodes where the process is significantly below \code{u} and
-#' \eqn{M=1} for all nodes where the field is significantly above \code{u}.
+#' \eqn{M=0} for nodes where the process is significantly below `u` and
+#' \eqn{M=1} for all nodes where the field is significantly above `u`.
 #' Which values that should be present depends on what type of set that is calculated.}
-#' \item{F }{The excursion function corresponding to the set \code{E} calculated
-#' for values up to \code{F.limit}}
+#' \item{F }{The excursion function corresponding to the set `E` calculated
+#' for values up to `F.limit`}
 #' \item{rho }{Marginal excursion probabilities}
-#' \item{mean }{The mean \code{mu}.}
+#' \item{mean }{The mean `mu`.}
 #' \item{vars }{Marginal variances.}
 #' \item{meta }{A list containing various information about the calculation.}
 #' @export
 #' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren
 #' \email{finn.lindgren@@gmail.com}
-#' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour
-#' uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1,
+#' @references Bolin, D. and Lindgren, F. (2015) *Excursion and contour
+#' uncertainty regions for latent Gaussian models*, JRSS-series B, vol 77, no 1,
 #' pp 85-106.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
-#' @seealso \code{\link{excursions}}, \code{\link{excursions.inla}}
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion Sets and Related Quantities Using excursions*, Journal of Statistical Software, vol 86, no 1, pp 1-20.
+#' @seealso [excursions()], [excursions.inla()]
 #' @examples
 #' ## Create mean and a tridiagonal precision matrix
 #' n <- 101
@@ -361,7 +363,8 @@ excursions.mc <- function(samples,
                           reo,
                           ind,
                           max.size,
-                          verbose = FALSE) {
+                          verbose = FALSE,
+                          prune.ind = FALSE) {
   if (missing(alpha)) {
     stop("Must specify error probability")
   }
@@ -436,20 +439,21 @@ excursions.mc <- function(samples,
   res <- mcint(X = samples[reo, ], a = limits$a[reo], b = limits$b[reo])
 
   n <- length(mu)
-  ii <- which(res$Pv[1:n] > 0)
-  if (length(ii) == 0) i <- n + 1 else i <- min(ii)
+  ## ii and i are not used
+  # ii <- which(res$Pv[1:n] > 0)
+  # if (length(ii) == 0) i <- n + 1 else i <- min(ii)
 
-  F <- Fe <- E <- G <- rep(0, n)
-  F[reo] <- res$Pv
+  F_ <- Fe <- E <- G <- rep(0, n)
+  F_[reo] <- res$Pv
   Fe[reo] <- res$Ev
   ireo <- NULL
   ireo[reo] <- 1:n
 
-  ind.lowF <- F < 1 - F.limit
-  E[F > 1 - alpha] <- 1
+  ind.lowF <- F_ < 1 - F.limit
+  E[F_ > 1 - alpha] <- 1
 
   if (type == "=") {
-    F <- 1 - F
+    F_ <- 1 - F_
   }
 
   if (type == "<") {
@@ -458,7 +462,7 @@ excursions.mc <- function(samples,
     G[mu >= u] <- 1
   }
 
-  F[ind.lowF] <- Fe[ind.lowF] <- NA
+  F_[ind.lowF] <- Fe[ind.lowF] <- NA
 
   M <- rep(-1, n)
   if (type == "<") {
@@ -476,28 +480,55 @@ excursions.mc <- function(samples,
     ind <- which(ind)
   }
   vars <- rowSums((samples - rowMeans(samples))^2) / (dim(samples)[2] - 1)
-  output <- list(
-    F = F,
-    G = G,
-    M = M,
-    E = E,
-    mean = mu,
-    vars = vars,
-    rho = marg$rho,
-    meta = (list(
-      calculation = "excursions",
-      type = type,
-      level = u,
-      F.limit = F.limit,
-      alpha = alpha,
-      n.iter = dim(samples)[2],
-      method = "MC",
-      ind = ind,
-      reo = reo,
-      ireo = ireo,
-      Fe = Fe
-    ))
-  )
+
+  if (prune.ind) {
+    output <- list(
+      F = F_[ind],
+      G = G[ind],
+      M = M[ind],
+      E = E[ind],
+      mean = mu[ind],
+      vars = vars[ind],
+      rho = marg$rho[ind],
+      meta = (list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        F.limit = F.limit,
+        alpha = alpha,
+        n.iter = dim(samples)[2],
+        method = "MC",
+        ind = NULL,
+        reo = reo,
+        ireo = ireo,
+        Fe = Fe
+      ))
+    )
+  } else {
+    output <- list(
+      F = F_,
+      G = G,
+      M = M,
+      E = E,
+      mean = mu,
+      vars = vars,
+      rho = marg$rho,
+      meta = (list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        F.limit = F.limit,
+        alpha = alpha,
+        n.iter = dim(samples)[2],
+        method = "MC",
+        ind = ind,
+        reo = reo,
+        ireo = ireo,
+        Fe = Fe
+      ))
+    )
+  }
+
   class(output) <- "excurobj"
   output
 }

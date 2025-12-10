@@ -277,7 +277,7 @@ static int CheckSeed (unsigned long seed[6])
    for (i = 0; i < 3; ++i) {
       if (seed[i] >= m1) {
       	/* HS 01-25-2012 */
-      	error("Seed[%1d] >= %d, Seed is not set.\n", i,m1); 
+      	error("Seed[%1d] >= %f, Seed is not set.\n", i,m1); 
 	 /* original code
 	   fprintf (stderr, "****************************************\n"
 		 "ERROR: Seed[%1d] >= m1, Seed is not set.\n"
@@ -289,7 +289,7 @@ static int CheckSeed (unsigned long seed[6])
    for (i = 3; i < 6; ++i) {
       if (seed[i] >= m2) {
       	 /* HS 01-25-2012 */
-      	error("Seed[%1d] >= %d, Seed is not set.\n", i,m2); 
+      	error("Seed[%1d] >= %f, Seed is not set.\n", i,m2); 
 	 /* original code
 	 fprintf (stderr, "****************************************\n"
 		 "ERROR: Seed[%1d] >= m1, Seed is not set.\n"

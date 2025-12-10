@@ -24,12 +24,12 @@ if (require(fmesher)) {
   nxy <- 30
   x <- seq(from = 0, to = 4, length.out = nxy)
   lattice <- fm_lattice_2d(x = x, y = x)
-  mesh <- fm_mesh_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+  mesh <- fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
 
   # extract a part of the mesh inside a circle
   xy.in <- rowSums((mesh$loc[, 1:2] - 2)^2) < 1
-  submesh <- excursions:::submesh.mesh(matrix(xy.in, nxy, nxy), mesh)
-  plot(mesh$loc[, 1:2])
+  submesh <- submesh.mesh(matrix(xy.in, nxy, nxy), mesh)
+  plot(mesh$loc[, 1:2], pch = 20)
   lines(2 + cos(seq(0, 2 * pi, length.out = 100)), 2 + sin(seq(0, 2 * pi, length.out = 100)))
   plot(submesh, add = TRUE)
   points(mesh$loc[xy.in, 1:2], col = "2")

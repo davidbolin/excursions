@@ -20,7 +20,8 @@ excursions.inla(
   verbose = 0,
   max.threads = 0,
   compressed = TRUE,
-  seed = NULL
+  seed = NULL,
+  prune.ind = FALSE
 )
 }
 \arguments{
@@ -63,10 +64,10 @@ data and is then transformed to the scale of the linear predictor (default FALSE
 
 \item{type}{Type of region:
 \describe{
-    \item{'>' }{positive excursions}
-    \item{'<' }{negative excursions}
-    \item{'!=' }{contour avoiding function}
-    \item{'=' }{contour credibility function}
+\item{'>' }{positive excursions}
+\item{'<' }{negative excursions}
+\item{'!=' }{contour avoiding function}
+\item{'=' }{contour credibility function}
 }}
 
 \item{n.iter}{Number or iterations in the MC sampler that is used for
@@ -82,9 +83,12 @@ predictor is to be used, then only add the relevant part. Otherwise the
 entire linear predictor is added internally (default TRUE).}
 
 \item{seed}{Random seed (optional).}
+
+\item{prune.ind}{If \code{TRUE} and \code{ind} is supplied, then the result object is pruned to
+contain only the active nodes specified by \code{ind}.}
 }
 \value{
-\code{excursions.inla} returns an object of class "excurobj" with the 
+\code{excursions.inla} returns an object of class "excurobj" with the
 following elements
 \item{E }{Excursion set, contour credible region, or contour avoiding set}
 \item{F }{The excursion function corresponding to the set \code{E} calculated
@@ -197,7 +201,7 @@ Sets and Related Quantities Using excursions}, Journal of Statistical Software,
 vol 86, no 1, pp 1-20.
 }
 \seealso{
-\code{\link{excursions}}, \code{\link{excursions.mc}}
+\code{\link[=excursions]{excursions()}}, \code{\link[=excursions.mc]{excursions.mc()}}
 }
 \author{
 David Bolin \email{davidbolin@gmail.com} and Finn Lindgren

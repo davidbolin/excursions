@@ -27,8 +27,8 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macOS-latest, r: 'release'}
-#          - {os: windows-latest, r: 'release'}
+          - {os: macOS-latest, r: 'devel'}
+          - {os: windows-latest, r: 'devel'}
           - {os: ubuntu-latest, r: 'devel', http-user-agent: 'release'}
           - {os: ubuntu-latest, r: 'release'}
           - {os: ubuntu-latest, r: 'oldrel-1'}
@@ -38,7 +38,7 @@ jobs:
       R_KEEP_PKG_SOURCE: yes
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - uses: r-lib/actions/setup-pandoc@v2
 
@@ -48,6 +48,7 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
           extra-repositories: "https://inla.r-inla-download.org/R/testing"
+            #          extra-repositories: "https://inla.r-inla-download.org/R/testing https://inlabru-org.r-universe.dev"
 
       - name: Install system dependencies on MacOS (X11, gdal, gsl)
         if: runner.os == 'macOS'
@@ -63,6 +64,8 @@ jobs:
           dependencies: '"all"'
           extra-packages: |
              rcmdcheck
+             remotes
+             rmarkdown
 
       - name: Session info
         run: |
@@ -71,9 +74,9 @@ jobs:
           sessioninfo::session_info(pkgs, include_base = TRUE)
         shell: Rscript {0}
 
-      - name: Build and check (Linux or macOS)
-        if: runner.os != 'Windows'
-        uses: r-lib/actions/check-r-package@v2
+#      - name: Build and check (Linux or macOS)
+#        if: runner.os != 'Windows'
+      - uses: r-lib/actions/check-r-package@v2
         env:
           _R_CHECK_CRAN_INCOMING_REMOTE_: false
         with:

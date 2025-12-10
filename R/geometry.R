@@ -19,7 +19,7 @@
 
 ## Trace a length 2 contour segment through pixels
 ##
-contour.segment.pixels <- function(c.x, c.y,
+contour_segment_pixels <- function(c.x, c.y,
                                    edge.x, edge.y,
                                    pairs = FALSE) {
   nx <- length(edge.x)
@@ -28,11 +28,11 @@ contour.segment.pixels <- function(c.x, c.y,
   d.y <- diff(c.y)
   if (abs(d.x) < abs(d.y)) {
     ## Swap x and y
-    idx <- contour.segment.pixels(c.y, c.x, edge.y, edge.x, TRUE)
+    idx <- contour_segment_pixels(c.y, c.x, edge.y, edge.x, TRUE)
     idx <- list(x = idx$y, y = idx$x)
   } else if (d.y < 0) {
     ## Flip ordering of segment
-    idx <- contour.segment.pixels(c.x[2:1], c.y[2:1], edge.x, edge.y, TRUE)
+    idx <- contour_segment_pixels(c.x[2:1], c.y[2:1], edge.x, edge.y, TRUE)
     idx <- list(x = rev(idx$x), y = rev(idx$y))
   } else {
     idx <- list(x = numeric(0), y = numeric(0))
@@ -40,22 +40,16 @@ contour.segment.pixels <- function(c.x, c.y,
     dir.x <- sign(d.x) ## Can be 0 only if dir.y is 0
     dir.y <- sign(d.y) ## Must now be >= 0
     if (dir.y == 0) {
-      start.y <- min(which((c.y[1] >= edge.y[-ny]) &
-        (c.y[1] <= edge.y[-1])))
+      start.y <- min(which((c.y[1] >= edge.y[-ny]) & (c.y[1] <= edge.y[-1])))
       if (dir.x == 0) {
-        start.x <- min(which((c.x[1] >= edge.x[-nx]) &
-          (c.x[1] <= edge.x[-1])))
+        start.x <- min(which((c.x[1] >= edge.x[-nx]) & (c.x[1] <= edge.x[-1])))
         end.x <- start.x
       } else if (dir.x > 0) {
-        start.x <- min(which((c.x[1] >= edge.x[-nx]) &
-          (c.x[1] < edge.x[-1])))
-        end.x <- min(which((c.x[2] > edge.x[-nx]) &
-          (c.x[2] <= edge.x[-1])))
+        start.x <- min(which((c.x[1] >= edge.x[-nx]) & (c.x[1] < edge.x[-1])))
+        end.x <- min(which((c.x[2] > edge.x[-nx]) & (c.x[2] <= edge.x[-1])))
       } else { ## dir.x < 0
-        start.x <- min(which((c.x[1] > edge.x[-nx]) &
-          (c.x[1] <= edge.x[-1])))
-        end.x <- min(which((c.x[2] >= edge.x[-nx]) &
-          (c.x[2] < edge.x[-1])))
+        start.x <- min(which((c.x[1] > edge.x[-nx]) & (c.x[1] <= edge.x[-1])))
+        end.x <- min(which((c.x[2] >= edge.x[-nx]) & (c.x[2] < edge.x[-1])))
       }
       idx$x <- start.x:end.x
       idx$y <- rep(start.y, length(idx$x))
@@ -112,7 +106,7 @@ contour.segment.pixels <- function(c.x, c.y,
 }
 
 
-contour.pixels <- function(contourlines, pixelgrid, do.plot = 0) {
+contour_pixels <- function(contourlines, pixelgrid, do.plot = 0) {
   if (inherits(pixelgrid, "pgrid")) {
     mid.x <- pixelgrid$upx
     mid.y <- pixelgrid$upy
@@ -135,7 +129,7 @@ contour.pixels <- function(contourlines, pixelgrid, do.plot = 0) {
     c.x <- contourlines[[level]]$x
     c.y <- contourlines[[level]]$y
     for (segment in seq_len(length(c.x) - 1)) {
-      tmp <- contour.segment.pixels(
+      tmp <- contour_segment_pixels(
         c.x[segment + (0:1)],
         c.y[segment + (0:1)],
         edge.x,
@@ -350,7 +344,7 @@ outline.on.grid <- function(z, grid) {
   }
 
   ij2k <- function(i, j) {
-    return((j - 1) * ni + i)
+    (j - 1) * ni + i
   }
 
   seg <- matrix(integer(), 0, 2)
@@ -527,7 +521,7 @@ outline.on.mesh <- function(z, mesh, complement = FALSE) {
 
   if (length(t.keep) > 0) {
     graph <-
-      generate.trigraph.properties(
+      generate_trigraph_properties(
         list(tv = mesh$graph$tv[t.keep, , drop = FALSE]),
         Nv = nrow(mesh$loc)
       )
@@ -554,7 +548,7 @@ outline.on.mesh <- function(z, mesh, complement = FALSE) {
 #' present in the submesh.
 #' @param grid A list with locations and dimensions of the grid.
 #'
-#' @return An \code{inla.mesh} object.
+#' @return An `fm_mesh_2d` object.
 #' @export
 #' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @examples
@@ -594,9 +588,9 @@ submesh.grid <- function(z, grid = NULL) {
 #'
 #' @param z A matrix with values indicating which nodes that should be
 #' present in the submesh.
-#' @param mesh An \code{fm_mesh_2d} object.
+#' @param mesh An `fm_mesh_2d` object.
 #'
-#' @return An \code{fm_mesh_2d} object.
+#' @return An `fm_mesh_2d` object.
 #' @export
 #' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
 #' @examples
@@ -605,12 +599,12 @@ submesh.grid <- function(z, grid = NULL) {
 #'   nxy <- 30
 #'   x <- seq(from = 0, to = 4, length.out = nxy)
 #'   lattice <- fm_lattice_2d(x = x, y = x)
-#'   mesh <- fm_mesh_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+#'   mesh <- fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
 #'
 #'   # extract a part of the mesh inside a circle
 #'   xy.in <- rowSums((mesh$loc[, 1:2] - 2)^2) < 1
-#'   submesh <- excursions:::submesh.mesh(matrix(xy.in, nxy, nxy), mesh)
-#'   plot(mesh$loc[, 1:2])
+#'   submesh <- submesh.mesh(matrix(xy.in, nxy, nxy), mesh)
+#'   plot(mesh$loc[, 1:2], pch = 20)
 #'   lines(2 + cos(seq(0, 2 * pi, length.out = 100)), 2 + sin(seq(0, 2 * pi, length.out = 100)))
 #'   plot(submesh, add = TRUE)
 #'   points(mesh$loc[xy.in, 1:2], col = "2")
@@ -621,6 +615,11 @@ submesh.mesh <- function(z, mesh) {
   submesh.mesh.tri(outlinetri.on.mesh(z, mesh), mesh)
 }
 submesh.mesh.tri <- function(tri, mesh) {
+  if (utils::packageVersion("fmesher") >= "0.5.0.9003") {
+    # Can't access fm_subset prior to 0.5.0.9003, hence eval()
+    return(eval(parse(text = "fmesher::fm_subset(mesh, tri)")))
+  }
+
   tv <- mesh$graph$tv[tri, , drop = FALSE]
   v <- sort(unique(as.vector(tv)))
   idx <- rep(as.integer(NA), nrow(mesh$loc))
@@ -630,7 +629,6 @@ submesh.mesh.tri <- function(tri, mesh) {
 
   mesh <- fmesher::fm_rcdt_2d_inla(loc = loc, tv = tv, refine = FALSE)
 
-  idx <- rep(as.integer(NA), length(idx))
   idx[v] <- mesh$idx$loc
   mesh$idx$loc <- idx
 
@@ -749,35 +747,36 @@ as.Lines.raw <- function(cl, ID = " ") {
 #' for functions defined on a triangulation
 #'
 #' @export
-#' @param x An object generated by a call to \code{inla.mesh.2d} or
-#'   \code{inla.mesh.create}, a triangle-vertex index matrix, or a list
-#'   of triangulation information, \code{list(loc, graph=list(tv))}.
+#' @param x An object generated by a call to `fm_mesh_2d` or
+#'   `fm_rcdt_2d`, a triangle-vertex index matrix, or a list
+#'   of triangulation information, `list(loc, graph=list(tv))`.
 #' @param z A vector containing the values to be contoured
-#'   (\code{NA}s are allowed).
+#'   (`NA`s are allowed).
 #' @param nlevels Number of contour levels desired, if and only if
-#'   \code{levels} is not supplied.
+#'   `levels` is not supplied.
 #' @param levels Numeric vector of levels at which to calculate contour lines.
 #' @param ... Additional arguments passed to the other methods.
-#' @return For \code{tricontour}, a list with some of the fields that
-#'   \code{inla.mesh.segment} objects have:
+#' @return For `tricontour`, a list with some of the fields that
+#'   `fm_segm` objects have:
 #'   \item{loc}{A coordinate matrix}
 #'   \item{idx}{Contour segment indices, as a 2-column matrix, each row
 #'     indexing a single segment}
 #'   \item{grp}{A vector of group labels.  Each segment has a label, in
-#'     \code{1,...,nlevels*2+1}, where even labels indicate interior
+#'     `1,...,nlevels*2+1`, where even labels indicate interior
 #'     on-level contour segments, and odd labels indicate boundary segments
 #'     between levels.}
-#'   For \code{tricontourmap}, a list:
-#'   \item{contour}{A list of \code{sp} or \code{inla.mesh.segment} objects
+#'   For `tricontourmap`, a list:
+#'   \item{contour}{A list of `sp` or `fm_segm` objects
 #'     defining countour curves (level sets)}
-#'   \item{map}{A list of \code{sp} or \code{inla.mesh.segment} objects
+#'   \item{map}{A list of `sp` or `fm_segm` objects
 #'     enclosing regions between level sets}
 #'
 #' @author Finn Lindgren \email{finn.lindgren@@gmail.com}
 #'
 #' @examples
 #' \dontrun{
-#' if (require("fmesher")) {
+#' if (require("fmesher") &&
+#'   require("sp")) {
 #'   ## Generate mesh and SPDE model
 #'   n.lattice <- 20 # increase for more interesting, but slower, examples
 #'   x <- seq(from = 0, to = 10, length.out = n.lattice)
@@ -844,7 +843,7 @@ tricontour <-
 
 #' @rdname tricontour
 #' @export
-tricontour.inla.mesh <-
+tricontour.fm_mesh_2d <-
   function(x, z, nlevels = 10,
            levels = pretty(range(z, na.rm = TRUE), nlevels),
            ...) {
@@ -857,7 +856,7 @@ tricontour.inla.mesh <-
 
 #' @rdname tricontour
 #' @export
-#' @param loc coordinate matrix, to be supplied when \code{x} is given as a
+#' @param loc coordinate matrix, to be supplied when `x` is given as a
 #'   triangle-vertex index matrix only.
 tricontour.matrix <-
   function(x, z, nlevels = 10,
@@ -874,7 +873,7 @@ tricontour.matrix <-
 
 ## Generate triangulation graph properties
 ## Nt,Ne,Nv,ev,et,eti,ee,te,tt,tti
-generate.trigraph.properties <- function(x, Nv = NULL) {
+generate_trigraph_properties <- function(x, Nv = NULL) {
   stopifnot(is.list(x))
   stopifnot("tv" %in% names(x))
 
@@ -941,9 +940,9 @@ display.dim.list <- function(x) {
 
 #' @rdname tricontour
 #' @export
-#' @param type \code{"+"} or \code{"-"}, indicating positive or negative
-#'  association. For \code{+}, the generated contours enclose regions
-#'  where \eqn{u_1 \leq z < u_2}, for \code{-} the regions fulfil \eqn{u_1
+#' @param type `"+"` or `"-"`, indicating positive or negative
+#'  association. For `+`, the generated contours enclose regions
+#'  where \eqn{u_1 \leq z < u_2}, for `-` the regions fulfil \eqn{u_1
 #'    < z \leq u_2}.
 #' @param tol tolerance for determining if the value at a vertex lies on a level.
 tricontour.list <- function(x, z, nlevels = 10,
@@ -952,7 +951,7 @@ tricontour.list <- function(x, z, nlevels = 10,
   ## Returns val=list(loc, idx, grp), where
   ##   grp = 1,...,nlevels*2+1, level groups are even, 2,4,...
   ## Suitable for
-  ##   inla.mesh.segment(val$loc, val$idx[val$grp==k], val$idx[val$grp==k])
+  ##   fm_segm(val$loc, val$idx[val$grp==k], val$idx[val$grp==k])
   ##     (supports R2 and S2)
   ## and, for odd k=1,3,...,nlevels*2-1,nlevels*2+1,
   ##   seg <- as.fm_segm.outline(val, grp.ccw=c(k-1,k), grp.cw=c(k+1))
@@ -961,7 +960,7 @@ tricontour.list <- function(x, z, nlevels = 10,
   type <- match.arg(type)
   nlevels <- length(levels)
 
-  x <- generate.trigraph.properties(x)
+  x <- generate_trigraph_properties(x)
   Nv <- x$Nv
 
   ## Find vertices on levels
@@ -1206,7 +1205,7 @@ tricontourmap <- function(x, z, nlevels = 10,
 
 #' @rdname tricontour
 #' @export
-tricontourmap.inla.mesh <-
+tricontourmap.fm_mesh_2d <-
   function(x, z, nlevels = 10,
            levels = pretty(range(z, na.rm = TRUE), nlevels),
            ...) {
@@ -1234,7 +1233,8 @@ tricontourmap.matrix <-
 
 #' @rdname tricontour
 #' @param output The format of the generated output.  Implemented options
-#'   are \code{"sp"} (default) and \code{"fm"} (and deprecated \code{"inla.mesh.segment"}).
+#'   are `"sp"` (default) and `"fm"` (and deprecated
+#'   `"inla.mesh.segment"`, converted to `"fm"`).
 #' @importFrom fmesher fm_segm
 #' @export
 tricontourmap.list <-
@@ -1354,8 +1354,8 @@ tricontour_step <- function(x, z, levels, loc, ...) {
 
 
 ## Input: One of
-##   inla.mesh
-##   inla.mesh.lattice
+##   fm_mesh_2d
+##   fm_lattice_2d
 ##   list(loc, dims, ...)
 ##   list(x, y, ...)
 ## The last 3 are all treated as topological lattices, and code in
@@ -1391,17 +1391,44 @@ get.geometry <- function(geometry) {
     }
   }
   geometrytype <- match.arg(geometrytype, c("mesh", "lattice"))
-  manifoldtype <- match.arg(manifoldtype, c("M", "R1", "R2", "S2"))
+  manifoldtype <- match.arg(manifoldtype, c("M", "M1", "M2", "R1", "R2", "S2"))
   list(loc = loc, dims = dims, geometry = geometrytype, manifold = manifoldtype)
 }
 
 
 ## Input:
-##   list(loc, graph=list(tv, ...)) or an inla.mesh
+##   list(loc, graph=list(tv, ...)) or an fm_mesh_2d
 ## Output:
 ##   list(loc, graph=list(tv), A, idx=list(loc))
 subdivide.mesh <- function(mesh) {
-  graph <- generate.trigraph.properties(mesh$graph, nrow(mesh$loc))
+  if ((utils::packageVersion("fmesher") >= "0.5.0.9002") ||
+    ((utils::packageVersion("fmesher") >= "0.4.0") &&
+      !(fmesher::fm_manifold(mesh, "M")))) {
+    new_mesh <- fmesher::fm_subdivide(mesh, 1L)
+
+    ## Add mapping matrix
+    if (utils::packageVersion("fmesher") >= "0.5.0.9002") {
+      # Works for all manifolds:
+      new_mesh$A <- fmesher::fm_basis(mesh, new_mesh$bary)
+    } else {
+      # Does not work for M-manifolds (at least up to 0.5.0.9002)
+      new_mesh$A <- fmesher::fm_basis(mesh, new_mesh$loc)
+    }
+
+    if (utils::packageVersion("fmesher") < "0.5.0.9001") {
+      # Workaround for fmesher < 0.5.0.9001:
+      # Map original points:
+      new_mesh$idx$loc <- seq_len(nrow(mesh$loc))
+    }
+
+    return(new_mesh)
+  }
+
+  # Legacy code below.
+  # Only needed for fmesher < 0.5.0.9002
+  # For fmesher >= 0.4.0, only needed for M-manifolds
+
+  graph <- generate_trigraph_properties(mesh$graph, nrow(mesh$loc))
 
   v1 <- seq_len(graph$Nv)
   edges.boundary <- which(is.na(graph$ee))
@@ -1467,7 +1494,7 @@ subdivide.mesh <- function(mesh) {
   )
 
   newmesh <- fmesher::fm_rcdt_2d_inla(loc = loc, tv = tv)
-  ## Handle possible node reordering in inla.mesh.create()
+  ## Handle possible node reordering in fm_rcdt_2d_inla()
   newmesh$idx$loc <- newmesh$idx$loc[idx]
   ## Add mapping matrix
   newmesh$A <- A
@@ -1484,7 +1511,7 @@ subdivide.mesh <- function(mesh) {
 ## New geometry implementation ####
 
 # Copy 'G' and interpolate 'F' within coherent single level regions.
-F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
+F.interpolation <- function(F.geometry, F_, G, type, method, subdivisions = 1) {
   # Construct interpolation mesh
   F.geometry.A <- list()
   for (subdivision in seq_len(subdivisions)) {
@@ -1494,8 +1521,8 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
 
   if (method == "log") {
     F.zero <- -Inf
-    F <- log(F)
-    F[is.infinite(F) & F < 0] <- F.zero
+    F_ <- log(F_)
+    F_[is.infinite(F_) & F_ < 0] <- F.zero
   } else if (method == "linear") {
     F.zero <- 0
   } else {
@@ -1511,7 +1538,7 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
   }
   ## Copy 'G' and interpolate 'F' within coherent single level regions.
   G.interp <- G
-  F.interp <- F
+  F.interp <- F_
   for (subdivision in seq_len(subdivisions)) {
     G.input <- G.interp
     F.input <- F.interp
@@ -1537,26 +1564,27 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
   }
 
   if (method == "log") {
-    F <- exp(F.interp)
+    F_ <- exp(F.interp)
   } else if (method == "linear") {
-    F <- F.interp
+    F_ <- F.interp
   } else {
     ## 'step'
-    F <- F.interp
+    F_ <- F.interp
   }
-  F[G.interp == -1] <- 0
+  F_[G.interp == -1] <- 0
   G <- G.interp
 
   F.geometry <-
     fmesher::fm_rcdt_2d_inla(
       loc = F.geometry$loc,
-      tv = F.geometry$graph$tv
+      tv = F.geometry$graph$tv,
+      delaunay = FALSE
     )
-  ## Handle possible node reordering in inla.mesh.create()
-  F[F.geometry$idx$loc] <- F
+  ## Handle possible node reordering in fm_rcdt_2d_inla()
+  F_[F.geometry$idx$loc] <- F_
   G[F.geometry$idx$loc] <- G
 
-  list(F = F, G = G, F.geometry = F.geometry)
+  list(F = F_, G = G, F.geometry = F.geometry)
 }
 
 
@@ -1571,7 +1599,7 @@ F.interpolation <- function(F.geometry, F, G, type, method, subdivisions = 1) {
 ## To get only an "over/under set", use a constant non-negative integer G
 ##   and let calc.complement=FALSE
 probabilitymap <-
-  function(mesh, F, level, G,
+  function(mesh, F_, level, G,
            calc.complement = TRUE,
            tol = 1e-7,
            output = c("sp", "fm", "inla.mesh.segment"),
@@ -1603,7 +1631,7 @@ probabilitymap <-
           nrow(mesh$graph$tv), 3
         )) == 3) &
           (rowSums(matrix(
-            is.finite(F[mesh$graph$tv]),
+            is.finite(F_[mesh$graph$tv]),
             nrow(mesh$graph$tv), 3
           )) == 3))
 
@@ -1611,12 +1639,12 @@ probabilitymap <-
         submesh <- submesh.mesh.tri(active.triangles, mesh)
         active.nodes.idx <- which(!is.na(submesh$idx$loc))
         subF <- rep(NA, length(active.nodes.idx))
-        subF[submesh$idx$loc[active.nodes.idx]] <- F[active.nodes.idx]
+        subF[submesh$idx$loc[active.nodes.idx]] <- F_[active.nodes.idx]
 
         if (nrow(submesh$loc) > 0) {
           ##      submesh$n <- nrow(submesh$loc)
           ##      submesh$graph <-
-          ##        generate.trigraph.properties(
+          ##        generate_trigraph_properties(
           ##          list(tv=submesh$graph$tv),
           ##          Nv=nrow(submesh$loc))
 
@@ -1799,19 +1827,19 @@ gaussquad <- function(mesh, method = c("direct", "make.A")) {
 }
 
 
-calc.continuous.P0 <- function(F, G, F.geometry, method) {
+calc.continuous.P0 <- function(F_, G, F.geometry, method) {
   tri <-
     which((G[F.geometry$graph$tv[, 1]] >= 0) &
       (G[F.geometry$graph$tv[, 1]] == G[F.geometry$graph$tv[, 2]]) &
       (G[F.geometry$graph$tv[, 1]] == G[F.geometry$graph$tv[, 3]]) &
       (rowSums(matrix(
-        is.finite(F[F.geometry$graph$tv]),
+        is.finite(F_[F.geometry$graph$tv]),
         nrow(F.geometry$graph$tv), 3
       )) == 3))
   submesh <- submesh.mesh.tri(tri, F.geometry)
   active.nodes.idx <- which(!is.na(submesh$idx$loc))
   subF <- rep(NA, length(active.nodes.idx))
-  subF[submesh$idx$loc[active.nodes.idx]] <- F[active.nodes.idx]
+  subF[submesh$idx$loc[active.nodes.idx]] <- F_[active.nodes.idx]
 
   tot.area <- sum(fmesher::fm_fem(F.geometry, order = 0)$ta)
 
@@ -1841,50 +1869,51 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #'
 #' Calculates continuous domain excursion and credible contour sets
 #'
-#' @param ex An \code{excurobj} object generated by a call to \code{\link{excursions}}
-#' or \code{\link{contourmap}}.
+#' @param ex An `excurobj` object generated by a call to [excursions()]
+#' or [contourmap()].
 #' @param geometry Specification of the lattice or triangulation geometry of the input.
-#' One of \code{list(x, y)}, \code{list(loc, dims)}, \code{fm_lattice_2d},
-#' \code{inla.mesh.lattice}, \code{fm_mesh_2d}, or
-#' \code{inla.mesh}, where \code{x} and \code{y} are vectors, \code{loc} is
-#' a two-column matrix of coordinates, and \code{dims} is the lattice size vector.
+#' One of `list(x, y)`, `list(loc, dims)`, `fm_lattice_2d`,
+#' `inla.mesh.lattice`, `fm_mesh_2d`, or
+#' `inla.mesh`, where `x` and `y` are vectors, `loc` is
+#' a two-column matrix of coordinates, and `dims` is the lattice size vector.
 #' The first three versions are all treated topologically as lattices, and the
 #' lattice boxes are assumed convex.
 #' @param alpha The target error probability.  A warning is given if it is detected
-#' that the information \code{ex} isn't sufficient for the given \code{alpha}.
-#' Defaults to the value used when calculating \code{ex}.
+#' that the information `ex` isn't sufficient for the given `alpha`.
+#' Defaults to the value used when calculating `ex`.
 #' @param method The spatial probability interpolation transformation method to use.
-#' One of \code{log}, \code{linear}, or \code{step}.  For \code{log}, the probabilities
-#' are interpolated linearly in the transformed scale. For \code{step}, a conservative
+#' One of `log`, `linear`, or `step`.  For `log`, the probabilities
+#' are interpolated linearly in the transformed scale. For `step`, a conservative
 #' step function is used.
-#' @param output Specifies what type of object should be generated. \code{sp} gives a
-#' \code{SpatialPolygons} object, and \code{fm} or \code{inla} gives a \code{fm_segm} object.
+#' @param output Specifies what type of object should be generated. `sp` gives a
+#' `SpatialPolygons` object, and `fm` or `inla` gives a `fm_segm` object.
 #' @param subdivisions The number of mesh triangle subdivisions to perform for the
 #' interpolation of the excursions or contour function. 0 is no subdivision.
-#' The setting has a small effect on the evaluation of \code{P0} for the \code{log}
+#' The setting has a small effect on the evaluation of `P0` for the `log`
 #' method (higher values giving higher accuracy) but the main effect is on the visual
 #' appearance of the interpolation. Default=1.
 #' @param calc.credible Logical, if TRUE (default), calculate credible contour region
 #' objects in addition to avoidance sets.
 #'
 #' @return A list with elements
-#' \item{M}{\code{SpatialPolygons} or \code{inla.mesh.segment} object. The subsets
-#' are tagged, so that credible regions are tagged \code{"-1"}, and regions between
-#' levels are tagged \code{as.character(0:nlevels)}.}
+#' \item{M}{`SpatialPolygons` or `fm_segm` object. The subsets
+#' are tagged, so that credible regions are tagged `"-1"`, and regions between
+#' levels are tagged `as.character(0:nlevels)`.}
 #' \item{F}{Interpolated F function.}
 #' \item{G}{Contour and inter-level set indices for the interpolation.}
 #' \item{F.geometry}{Mesh geometry for the interpolation.}
-#' \item{P0}{P0 measure based on interpolated F function (only for \code{contourmap}
+#' \item{P0}{P0 measure based on interpolated F function (only for `contourmap`
 #' input).}
 #' @export
 #' @author Finn Lindgren \email{finn.lindgren@gmail.com}
-#' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the uncertainty of contour maps}, Journal of Computational and Graphical Statistics, vol 26, no 3, pp 513-524.
+#' @references Bolin, D. and Lindgren, F. (2017) *Quantifying the uncertainty of contour maps*, Journal of Computational and Graphical Statistics, vol 26, no 3, pp 513-524.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion Sets and Related Quantities Using excursions*, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 #'
 #' @examples
 #' \dontrun{
-#' if (require("fmesher")) {
+#' if (require("fmesher") &&
+#'   require("sp")) {
 #'   # Generate mesh and SPDE model
 #'   n.lattice <- 10 # Increase for more interesting, but slower, examples
 #'   x <- seq(from = 0, to = 10, length.out = n.lattice)
@@ -1906,7 +1935,7 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #'   ## Calculate posterior
 #'   Q.post <- (Q + (t(A) %*% A) / sigma2.e)
 #'   mu.post <- as.vector(solve(Q.post, (t(A) %*% Y) / sigma2.e))
-#'   vars.post <- excursions.variances(chol(Q.post))
+#'   vars.post <- excursions.variances(chol(Q.post), max.threads = 1)
 #'
 #'   ## Calculate contour map with two levels
 #'   map <- contourmap(
@@ -1940,6 +1969,7 @@ calc.continuous.P0 <- function(F, G, F.geometry, method) {
 #' }
 #' }
 #'
+#' @importFrom lifecycle deprecated
 continuous <- function(ex,
                        geometry,
                        alpha,
@@ -1951,6 +1981,12 @@ continuous <- function(ex,
   method <- match.arg(method)
   output <- match.arg(output)
   if (output == "inla") {
+    lifecycle::deprecate_warn(
+      "2.5.8.9001",
+      'continuous(output = "inla")',
+      'continuous(output = "fm")',
+      "The 'inla' output format is deprecated and may be removed in the future. Use 'fm' instead."
+    )
     output <- "fm"
   }
 
@@ -1975,7 +2011,7 @@ continuous <- function(ex,
   }
 
   info <- get.geometry(geometry)
-  if (!fmesher::fm_manifold(info, c("M", "R2", "S2"))) {
+  if (!fmesher::fm_manifold(info, c("M", "M2", "R2", "S2"))) {
     stop(paste("Unsupported manifold type '", fmesher::fm_manifold(info), "'.", sep = ""))
   }
   if ((output == "sp") && !fmesher::fm_manifold(info, c("R2"))) {
@@ -2015,7 +2051,7 @@ continuous <- function(ex,
     mesh <- submesh.grid(active.nodes, geometry)
   }
   mesh$graph <-
-    generate.trigraph.properties(mesh$graph, Nv = nrow(mesh$loc))
+    generate_trigraph_properties(mesh$graph, Nv = nrow(mesh$loc))
 
   active.nodes <- !is.na(mesh$idx$loc)
   F.ex[mesh$idx$loc[active.nodes]] <- F.ex[active.nodes]
@@ -2053,7 +2089,7 @@ continuous <- function(ex,
   }
 
   M <- probabilitymap(F.geometry,
-    F = F.ex,
+    F_ = F.ex,
     level = level,
     G = G.ex,
     calc.complement = calc.credible,

@@ -17,8 +17,8 @@
 
 #' Simultaneous confidence regions for latent Gaussian models
 #'
-#' \code{simconf.inla} is used for calculating simultaneous confidence regions
-#' for latent Gaussian models estimated using \code{INLA}.
+#' `simconf.inla` is used for calculating simultaneous confidence regions
+#' for latent Gaussian models estimated using `INLA`.
 #'
 #' @param result.inla Result object from INLA call.
 #' @param stack The stack object used in the INLA call.
@@ -43,6 +43,9 @@
 #' the model estimated with INLA (default FALSE).
 #' @param max.threads Decides the number of threads the program can use. Set to 0 for
 #' using the maximum number of threads allowed by the system (default).
+#' @param compressed If INLA is run in compressed mode and a part of the linear
+#' predictor is to be used, then only add the relevant part. Otherwise the
+#' entire linear predictor is added internally (default TRUE).
 #' @param seed Random seed (optional).
 #' @param inla.sample Set to TRUE if inla.posterior.sample should be used for the MC
 #' integration.
@@ -53,17 +56,17 @@
 #' \item{a.marginal }{The lower bound for pointwise confidence bands.}
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
 #' @export
-#' @details See \code{\link{simconf}} for details.
+#' @details See [simconf()] for details.
 #'
 #'
-#' @note This function requires the \code{INLA} package, which is not a CRAN package.
-#' See \url{https://www.r-inla.org/download-install} for easy installation instructions.
+#' @note This function requires the `INLA` package, which is not a CRAN package.
+#' See <https://www.r-inla.org/download-install> for easy installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com}
-#' @references Bolin et al. (2015) \emph{Statistical prediction of global sea level
-#' from global temperature}, Statistica Sinica, vol 25, pp 351-367.
+#' @references Bolin et al. (2015) *Statistical prediction of global sea level
+#' from global temperature*, Statistica Sinica, vol 25, pp 351-367.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
-#' @seealso \code{\link{simconf}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion Sets and Related Quantities Using excursions*, Journal of Statistical Software, vol 86, no 1, pp 1-20.
+#' @seealso [simconf()], [simconf.mc()], [simconf.mixture()]
 #' @examples
 #' \dontrun{
 #' if (require.nowarnings("INLA")) {
@@ -80,7 +83,11 @@
 #'     num.threads = "1:1"
 #'   )
 #'
-#'   res <- simconf.inla(result, name = "mu", alpha = 0.05, max.threads = 1)
+#'   res <- simconf.inla(
+#'     result,
+#'     name = "mu", alpha = 0.05,
+#'     max.threads = 1, num.threads = "1:1"
+#'   )
 #'
 #'   plot(result$summary.random$mu$mean, ylim = c(-2, 2))
 #'   lines(res$a)
@@ -98,9 +105,10 @@ simconf.inla <- function(result.inla,
                          alpha,
                          method = "NI",
                          n.iter = 10000,
-                         verbose = 0,
+                         verbose = FALSE,
                          link = FALSE,
                          max.threads = 0,
+                         compressed = TRUE,
                          seed = NULL,
                          inla.sample = TRUE) {
   if (!requireNamespace("INLA", quietly = TRUE)) {
@@ -118,25 +126,35 @@ simconf.inla <- function(result.inla,
     stop("INLA result must be calculated using control.compute$config=TRUE")
   }
 
-  n <- length(result.inla$misc$configs$config[[1]]$mean)
-
   if (!missing(ind)) {
     ind <- private.as.vector(ind)
   }
 
 
   # Get indices for the component of interest in the configs
-  ind.stack <- inla.output.indices(result.inla, name = name, stack = stack, tag = tag)
+  tmp <- inla.output.indices(result.inla,
+    name = name, stack = stack,
+    tag = tag, compressed = compressed
+  )
+  ind.stack <- tmp$index
+  result.inla.orig <- result.inla
+  if (tmp$result.updated) {
+    result.inla <- tmp$result
+    ind.stack.original <- tmp$index.original
+  } else {
+    ind.stack.original <- ind.stack
+  }
+  # n <- length(result.inla$misc$configs$config[[1]]$mean) ## Unused variable
   n.out <- length(ind.stack)
-  # Index vector for the nodes in the component of interest
   ind.int <- seq_len(n.out)
-
   # ind is assumed to contain indices within the component of interest
   if (!missing(ind) && !is.null(ind)) {
     ind.int <- ind.int[ind]
     ind.stack <- ind.stack[ind]
+    ind.stack.original <- ind.stack.original[ind]
   }
   ind <- ind.stack
+  # ind.original <- ind.stack.original # Unused variable
 
   links <- NULL
   if (link) {
@@ -174,7 +192,19 @@ simconf.inla <- function(result.inla,
     }
     w <- exp(w) / sum(exp(w))
     if (inla.sample) {
-      s <- suppressWarnings(INLA::inla.posterior.sample(n.iter, result.inla))
+      num.threads <- INLA::inla.getOption("num.threads")
+      if (max.threads > 0) {
+        if (is.character(num.threads)) {
+          num.threads <- as.numeric(strsplit(num.threads, ":")[[1]])
+        }
+        num.threads <- min(max.threads, num.threads[1])
+      }
+      s <- suppressWarnings(INLA::inla.posterior.sample(
+        n.iter, result.inla.orig,
+        use.improved.mean = FALSE,
+        skew.corr = FALSE,
+        num.threads = num.threads
+      ))
       samp <- matrix(0, n.iter, length(ind))
 
       for (i in seq_len(n.iter)) {
@@ -224,7 +254,8 @@ simconf.inla <- function(result.inla,
 
       r.o <- optimize(fmix.samp.opt,
         interval = c(0, alpha), mu = mu.m, alpha = alpha,
-        sd = sd.m, w = w, limits = limits, samples = samp
+        sd = sd.m, w = w, limits = limits, samples = samp,
+        verbose = verbose
       )
 
       a <- sapply(seq_len(length(ind)), function(i) {

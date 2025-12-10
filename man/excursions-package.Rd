@@ -3,14 +3,13 @@
 \docType{package}
 \name{excursions-package}
 \alias{excursions-package}
-\alias{_PACKAGE}
 \title{Excursions: Excursion Sets and Contour Credibility Regions for Random Fields}
 \description{
 \code{excursions} contains functions that compute probabilistic excursion sets,
 contour credibility regions, contour avoiding regions, contour map quality measures,
 and simultaneous confidence bands for latent Gaussian
-random processes and fields. A detailed manual can be found in the paper 
-Bolin, D and Lindgren, F  (2018) 
+random processes and fields. A detailed manual can be found in the paper
+Bolin, D and Lindgren, F  (2018)
 \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions},
 Journal of Statistical Software, 86(5), 1--20.
 }
@@ -22,18 +21,18 @@ The main functions in the package fall into three different categories described
 The main functions for computing excursion sets, contour credibility regions, and
 contour avoiding regions are
 \describe{
-\item{\code{\link{excursions}} }{The main function for Gaussian models.}
-\item{\code{\link{excursions.inla}} }{Interface for latent Gaussian models estimated using INLA.}
-\item{\code{\link{excursions.mc}} }{Function for analyzing models that have been
+\item{\code{\link[=excursions]{excursions()}} }{The main function for Gaussian models.}
+\item{\code{\link[=excursions.inla]{excursions.inla()}} }{Interface for latent Gaussian models estimated using INLA.}
+\item{\code{\link[=excursions.mc]{excursions.mc()}} }{Function for analyzing models that have been
 estimated using Monte Carlo methods.}
 }
 The output from the functions above provides a discrete domain estimate of the regions.
-Based on this estimate, the function \code{\link{continuous}} computes a continuous
+Based on this estimate, the function \code{\link[=continuous]{continuous()}} computes a continuous
 domain estimate.
 
- The main reference for these functions is Bolin, D. and Lindgren, F. (2015)
- \emph{Excursion and contour uncertainty regions for latent Gaussian models},
- JRSS-series B, vol 77, no 1, pp 85-106.
+The main reference for these functions is Bolin, D. and Lindgren, F. (2015)
+\emph{Excursion and contour uncertainty regions for latent Gaussian models},
+JRSS-series B, vol 77, no 1, pp 85-106.
 
 \strong{Contour map quality measures}
 
@@ -44,15 +43,15 @@ contours to use for the contour map.
 The main functions for computing contour maps and the corresponding quality measures
 are
 \describe{
-\item{\code{\link{contourmap}} }{The main function for Gaussian models.}
-\item{\code{\link{contourmap.inla}} }{Interface for latent Gaussian models estimated
+\item{\code{\link[=contourmap]{contourmap()}} }{The main function for Gaussian models.}
+\item{\code{\link[=contourmap.inla]{contourmap.inla()}} }{Interface for latent Gaussian models estimated
 using INLA.}
-\item{\code{\link{contourmap.mc}} }{Function for analyzing models that have been
+\item{\code{\link[=contourmap.mc]{contourmap.mc()}} }{Function for analyzing models that have been
 estimated using Monte Carlo methods.}
 }
-Other noteworthy functions relating to contourmaps are \code{\link{tricontour}} and
-\code{\link{tricontourmap}}, which compute contour curves for functinos defined on
-triangulations, as well as \code{\link{contourmap.colors}} which can be used to
+Other noteworthy functions relating to contourmaps are \code{\link[=tricontour]{tricontour()}} and
+\code{\link[=tricontourmap]{tricontourmap()}}, which compute contour curves for functinos defined on
+triangulations, as well as \code{\link[=contourmap.colors]{contourmap.colors()}} which can be used to
 compute appropriate colors for displaying contour maps.
 
 The main reference for these functions is Bolin, D. and Lindgren, F. (2017)
@@ -63,12 +62,12 @@ Graphical Statistics, 26:3, 513-524.
 
 The main functions for computing simultaneous confidence bands are
 \describe{
-\item{\code{\link{simconf}} }{Function for analyzing Gaussian models.}
-\item{\code{\link{simconf.inla}} }{Function for analyzing latent Gaussian models
+\item{\code{\link[=simconf]{simconf()}} }{Function for analyzing Gaussian models.}
+\item{\code{\link[=simconf.inla]{simconf.inla()}} }{Function for analyzing latent Gaussian models
 estimated using INLA.}
-\item{\code{\link{simconf.mc}} }{Function for analyzing models estimated using Monte
+\item{\code{\link[=simconf.mc]{simconf.mc()}} }{Function for analyzing models estimated using Monte
 Carlo methods.}
-\item{\code{\link{simconf.mixture}} }{Function for analyzing Gaussian mixture models.}
+\item{\code{\link[=simconf.mixture]{simconf.mixture()}} }{Function for analyzing Gaussian mixture models.}
 }
 
 The main reference for these functions is Bolin et al. (2015)
@@ -79,6 +78,7 @@ from global temperature}, Statistica Sinica, Vol 25, pp 351-367.
 Useful links:
 \itemize{
   \item \url{https://github.com/davidbolin/excursions}
+  \item \url{https://davidbolin.github.io/excursions/}
   \item Report bugs at \url{https://github.com/davidbolin/excursions/issues}
 }
 

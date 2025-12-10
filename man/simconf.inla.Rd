@@ -13,9 +13,10 @@ simconf.inla(
   alpha,
   method = "NI",
   n.iter = 10000,
-  verbose = 0,
+  verbose = FALSE,
   link = FALSE,
   max.threads = 0,
+  compressed = TRUE,
   seed = NULL,
   inla.sample = TRUE
 )
@@ -55,6 +56,10 @@ the model estimated with INLA (default FALSE).}
 \item{max.threads}{Decides the number of threads the program can use. Set to 0 for
 using the maximum number of threads allowed by the system (default).}
 
+\item{compressed}{If INLA is run in compressed mode and a part of the linear
+predictor is to be used, then only add the relevant part. Otherwise the
+entire linear predictor is added internally (default TRUE).}
+
 \item{seed}{Random seed (optional).}
 
 \item{inla.sample}{Set to TRUE if inla.posterior.sample should be used for the MC
@@ -72,7 +77,7 @@ An object of class "excurobj" with elements
 for latent Gaussian models estimated using \code{INLA}.
 }
 \details{
-See \code{\link{simconf}} for details.
+See \code{\link[=simconf]{simconf()}} for details.
 }
 \note{
 This function requires the \code{INLA} package, which is not a CRAN package.
@@ -94,7 +99,11 @@ if (require.nowarnings("INLA")) {
     num.threads = "1:1"
   )
 
-  res <- simconf.inla(result, name = "mu", alpha = 0.05, max.threads = 1)
+  res <- simconf.inla(
+    result,
+    name = "mu", alpha = 0.05,
+    max.threads = 1, num.threads = "1:1"
+  )
 
   plot(result$summary.random$mu$mean, ylim = c(-2, 2))
   lines(res$a)
@@ -112,7 +121,7 @@ from global temperature}, Statistica Sinica, vol 25, pp 351-367.
 Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 }
 \seealso{
-\code{\link{simconf}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}
+\code{\link[=simconf]{simconf()}}, \code{\link[=simconf.mc]{simconf.mc()}}, \code{\link[=simconf.mixture]{simconf.mixture()}}
 }
 \author{
 David Bolin \email{davidbolin@gmail.com}

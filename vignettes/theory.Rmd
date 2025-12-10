@@ -1,0 +1,141 @@
+---
+title: "Definitions and computational methodology"
+author: "David Bolin and Finn Lindgren"
+output: rmarkdown::html_vignette
+header-includes:
+   - \usepackage{amsmath}
+vignette: >
+  %\VignetteIndexEntry{Definitions and computational methodology}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+bibliography: ref.bib
+---
+\DeclareMathOperator*{\argmax}{arg\,max}
+\newcommand{\mapset}{G}
+\newcommand{\mv}[1]{{\boldsymbol{\mathrm{#1}}}}
+\newcommand{\exset}[2]{E_{{#1}}^{{#2}}}
+\newcommand{\md}{\,\mathrm{d}}
+
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+library(excursions)
+```
+
+```{r inla_link, include = FALSE}
+inla_link <- function() {
+  sprintf("[%s](%s)", "`R-INLA`", "https://www.r-inla.org")
+}
+```
+
+
+Hierarchical models are of great importance in many areas of statistics. In the simplest form, a hierarchical model has a likelihood distribution $\pi(\mv{Y}|\mv{X}, \mv{\theta})$ for observed data $\mv{Y}$, which is specified conditionally on a latent process of interest, $\mv{X}$,  which has a distribution $\pi(\mv{X}|\mv{\theta})$. For Bayesian hierarchical models, one also specifies prior distributions for the model parameters $\mv{\theta}$. The most important special case of these models are the LGMs, which are obtained by assuming that $\mv{X}|\mv{\theta}$ has a Gaussian distribution [@rue09]. Numerous applications can be studied using models of this form, and these are therefore the main focus of the methods in `excursions`.
+
+A statistical analysis using an LGM often concludes with reporting the posterior mean $E(\mv{X}|\mv{Y})$ as a point estimate of the latent field, possibly together with posterior variances as a measure of uncertainty. In many applications, however, reporting posterior means and variances are not enough. As stated in the introduction, one may be interested in computing regions where the latent field exceeds some given threshold, contour curves with their associated uncertainty, or simultaneous confidence bands. In some applications, only a contour map of the posterior mean is reported, where the number of levels in the contour map should represent the uncertainty in the estimate. These are quantities that can be computed with `excursions` and we now define these in more detail before outlining how they can be computed. For details we refer to [@bolin12] and [@bolin15contours].
+
+## Definitions
+The main quantities that can be computed using `excursions` are (1) excursion sets, (2) contour credible regions and level avoiding sets, (3) excursion  functions, (4) contour maps and their quality measures, (5) simultaneous confidence bands. This section defines these in more detail.
+
+Throughout the section, $X(\mv{s})$ will denote a stochastic process defined on some domain of interest, $\Omega$, which we assume is open with a well-defined area $|\Omega|<\infty$. Since it is not necessary for the definitions, we will not explicitly state the dependency on the data, but simply allow $X$ to have some possible non-stationary distribution. In practice, however, the distribution of $X$ will typically be a posterior distribution conditionally on data, $X(\mv{s})|\mv{Y}$. For frequentist models, the distribution of $X$ could also be conditionally on for example a maximum likelihood estimate of the parameters, $X(\mv{s})|\mv{Y},\widehat{\mv{\theta}}$.
+
+
+### Excursion sets
+An excursion set is a set where the process $X(\mv{s})$ exceeds or goes below some given level of interest, $u$. A where $X(\mv{s})>u$ is referred to as a positive excursion set, whereas a set where $X(\mv{s})<u$ is referred to as a negative excursion set. If $X(\mv{s})=f(\mv{s})$ is a known function, these sets can be computed directly as $A_u^+(f) = \{ \mv{s}\in\Omega; f(\mv{s})>u \}$ and $A_u^-(f) = \{ \mv{s}\in\Omega; f(\mv{s})<u \}$ respectively. If $X(\mv{s})$ is a latent random process, one can only provide a region where it with some (high) probability exceeds the level. More specifically, the positive level $u$ excursion set with probability $\alpha$, $\exset{u,\alpha}{+}(X)$, is defined as the largest set so that with probability $1-\alpha$ the level $u$ is exceeded at all locations in the set,
+$$
+\exset{u,\alpha}{+} = \argmax_{D}\{|D|:P[D\subset A_u^+(X)]\geq 1 - \alpha\}.
+$$
+Similarly, the negative $u$ excursion set with probability $\alpha$, $\exset{u,\alpha}{-}(X)$, is defined as the largest set so that with probability $1-\alpha$ the process is below the level $u$ at all locations in the set. This set is obtained by replacing $A_u^+(X)$ with $A_u^-(X)$ in the equation above.
+
+### Contour credible regions and level avoiding sets
+For a function $f$, a contour curve (or set in general) of a level $u$ is defined as the set of all level $u$ crossings. Formally, the level curve is defined as $A_u^c(f) = \left(A_u^+(f)^o\cup A_u^-(f)^o\right)^c$, where $B^o$ denotes the interior of the set $B$ and $B^c$ denotes the complement. Note that $A_u^c(f)$ not only includes the set of locations where $f(\mv{s})=u$, but also all discontinuous level crossings.
+
+For a latent random process $X$, one can only provide a credible region for the contour curve. A level $u$ contour credibility region, $\exset{u,\alpha}{c}(X)$, is defined as the smallest set such that with probability $1-\alpha$ \emph{all} level $u$ crossings of $X$ are in the set. This set can be seen as the complement of the level $u$ contour avoiding set $\exset{u,\alpha}{}(X)$, which is defined as the largest union $M_{u,\alpha}^+ \cup M_{u,\alpha}^-$, where jointly $X(\mv{s})>u$ in $M_{u,\alpha}^+$ and $X(\mv{s})<u$ in $M_{u,\alpha}^-$. Formally,
+\begin{equation*}
+(M_{u,\alpha}^+(X), M_{u,\alpha}^-(X)) = \argmax_{(D^+,D^-)}\{|D^-\cup D^+| :
+P(D^- \subseteq A_u^-(X),\, D^+ \subseteq A_u^+(X))
+\geq 1-\alpha\},
+\end{equation*}
+where the sets $(D^+,D^-)$ are open. The sets $M_{u,\alpha}^+$ and $M_{u,\alpha}^-$ are denoted as the pair of level $u$ avoiding sets. The notion of level avoiding sets can naturally be extended to multiple levels $u_1< u_2 < \cdots < u_k$, which is needed when studying contour maps. In this case, the multilevel contour avoiding set is denoted $C_{\mv{u},\alpha}(X)$ (For a formal definition, see [@bolin15contours]).
+
+### Excursion functions
+\cite{bolin12} introduced excursion functions as a tool for visualizing excursion sets simultaneously for all values of $\alpha$. For a level $u$, the positive and negative excursion functions are defined as $F_u^+(\mv{s}) = 1 - \inf\{\alpha ; \mv{s}\in \exset{u,\alpha}{+} \}$ and $F_u^-(\mv{s}) = 1 - \inf\{\alpha ; \mv{s}\in \exset{u,\alpha}{-} \}$, respectively. Similarly, the contour avoidance function, and the contour function are defined as $F_u(\mv{s}) = 1 -\inf\{\alpha ; \mv{s}\in \exset{u,\alpha}{} \}$ and
+$F_u^c(\mv{s}) = \sup\{\alpha; \mv{s}\in \exset{u,\alpha}{c}\}$, respectively. Finally, for levels $u_1< u_2 < \cdots < u_k$, one can define a contour map function as $F(\mv{s}) = \sup\{1-\alpha; \mv{s}\in C_{u,\alpha}\}$.
+
+These functions take values between zero and one and each set $\exset{u,\alpha}{\bullet}$ can be retrieved as the $1-\alpha$ excursion set of the function $F_u^{\bullet}(\mv{s})$. 
+
+
+### Contour maps and their quality measures
+For a function $f(\mv{s})$, a contour map $C_f$ with contour levels $u_1 < u_2 < \ldots < u_K$ is defined as the collection of contour curves $A_{u_1}^c(f), \ldots, A_{u_K}^c(f)$ and associated level sets $\mapset_k = \{\mv{s} : u_{k}< f(\mv{s}) < u_{k+1}\}$, for $0\leq k\leq K$, where one defines $u_0 = -\infty$ and $u_{K+1}=\infty$. In practice, a process $X(\mv{s})$ is often visualized using a contour map of the posterior mean $E(X(\mv{s})|\mv{Y})$. The contour maps is visualized either by just drawing the contour curves labeled by their values, or by also visualizing each level set in a specific color. The color for a set $\mapset_k$ is typically chosen as the color that corresponds to the level $u_k^e = (u_k+u_{k+1})/2$ in a given color map. 
+
+In order to choose an appropriate number of contours, one must be able to quantify the uncertainty of contour maps. The uncertainty can be represented using a contour map quality measure $P$, which is a function that takes values in $[0, 1]$. Here, $P$ should be chosen in such a way that $P \approx 1$ indicates that the contour map, in some sense, is appropriate as a description of the distribution of the random field, whereas $P \approx 0$ should indicate that the contour map is inappropriate.
+
+An example of a contour map quality measure is the normalized integral of the contour map function
+\begin{equation}
+P_0(X, C_f) = \frac1{|\Omega|}\int_{\Omega}F(\mv{s})d\mv{s}.
+\end{equation}
+The most useful quality measure is denoted $P_2$ and is defined as the simultaneous probability for the level crossings of $(u_1^e, \ldots , u_K^e)$ all falling within their respective level sets $(\mapset_1, \ldots, G_K)$  \cite[for details, see][]{bolin15contours}.
+
+An intuitively interpretable approach for choosing the number of contours in a contour map is to find the largest K such that $P_2$ is above some threshold. For a joint credibility of $90\%$, say, choose the largest number of contours such that $P_2 \geq 0.9$. How this can be done using `excursions` is illustrated in Section~\ref{sec:precip}.
+
+### Simultaneous confidence bands
+Especially for time series applications, the uncertainty in the latent process is often visualized using pointwise confidence bands. A pointwise confidence interval for $X$ at some location $\mv{s}$ is given by $[q_{\alpha/2}(\mv{s}),q_{1-\alpha/2}(\mv{s})]$, where $q_{\alpha}(\mv{s})$ denotes the $\alpha$-quantile in the marginal distribution of $X(\mv{s})$.
+
+A problem with using pointwise confidence bands is that there is not joint interpretation, and one is therefore often of interested in computing simultaneous confidence bands. For a process $X(\mv{s}), \mv{s}\in \Omega$, we define a simultaneous confidence band as the region $\{(\mv{s},y): \mv{s}\in \Omega, q_{\rho}(\mv{s}) \leq y \leq q_{1-\rho}(\mv{s})\}$. Here $\rho$ is chosen such that $P(q_{\rho}(\mv{s})<X(\mv{s}) <q_{1-\rho}(\mv{s}), \mv{s}\in \Omega)=1-\alpha$. Thus $\alpha$ controls the probability that the process is inside the confidence band at all locations in $\Omega$. 
+
+
+## Computational methods
+If the latent process $X(\mv{s})$ is defined on a continuous domain $\Omega$, one has to use a discretization, $\mv{x}$, of the process in the statistical analysis. The vector $\mv{x}$ may be the process evaluated at some locations of interest or more generally the weights in a basis expansion $X(\mv{s}) = \sum_i \varphi_i(\mv{s}) x_i$. Computations in the package are in a first stage performed using the distribution of $\mv{x}$. If $\Omega$ is continuous, computations in a second stage interpolates the results for $\mv{x}$ to $\Omega$. In this section, we briefly outline the computational methods used in these two stages. As most quantities of interest can be obtained using some excursion function, we focus on how these are computed. As a representative example, we outline how $F_u^+(\mv{s})$ is computed in the following sections.
+
+As before, let $\mv{Y}$ and $\mv{\theta}$ be a vectors respectively containing observations and model parameters. Computing an excursion function $\mv{F}_u^+ = \{F_u^+(x_1), \ldots, F_u^+(x_n)\}$ requires computing integrals of the posterior distribution for $\mv{x}$. To save computation time, it is assumed that $\exset{u,\alpha_1}{+} \subset \exset{u,\alpha_2}{+}$ if $\alpha_1 > \alpha_2$. This means that $\mv{F}_u$ can be obtained by first reordering the nodes and then computing a sequential integral. The reordering is in this case obtained by sorting the marginal probabilities $P(x_i > u)$ (for other options, see [@bolin12].
+After reordering, the $i$:th element of $\mv{F}_u^+$ is obtained as the integral
+$$
+\int_u^{\infty}\pi(\mv{x}_{1:i}|\mv{Y}) d\mv{x}_{1:i}.
+$$
+Using sequential importance sampling as described below, the whole sequence of integrals can be obtained with the same cost as computing only one integral with $i=n$, making the computation of $\mv{F}_u^+$ feasible also for large problems.
+
+### Gaussian integrals
+The basis for the computational methods in the package is the ability to compute the required integral when the posterior distribution is Gaussian. In this case, one should compute an integral
+\begin{equation}\label{eq:markovint}
+\frac{|\mv{Q}|^{1/2}}{(2\pi)^{d/2}}\int_{\mv{u}-\mv{\mu}\leq \mv{x}}\exp\left(-\frac{1}{2}\mv{x}^{\top}\mv{Q} \mv{x}\right) \md \mv{x}.
+\end{equation}
+Here $\mv{\mu}$ and $\mv{Q}$ are the posterior mean and posterior precision matrix respectively. To take advantage of the possible sparsity of $\mv{Q}$ if a Markovian model is used, the integral is rewritten as
+\begin{equation}\label{eq:seqint}
+\int_{a_d}^{\infty}\pi(x_d)
+\int_{a_{d-1}}^{\infty}\pi(x_{d-1}|x_d)
+\cdots
+\int_{a_2}^{\infty}\pi(x_2|\mv{x}_{3:d})
+\int_{a_1}^{\infty} \pi(x_1|\mv{x}_{2:d})
+\md \mv{x}
+\end{equation}
+where, if the problem has a Markov structure, $x_i|\mv{x}_{i+1:d}$ only depends on a few of the elements in $x_{i+1:d}$ given by the Markov structure. The integral is calculated using a sequential importance sampler by starting with the integral of the last component $\pi(x_d)$ and then moving backward in the indices, see \cite{bolin12} for further details.
+
+### Handling non-Gaussian data
+Using the sequential importance sampler above, $\mv{F}_u^+$ can be computed for Gaussian models with known parameters. For more complicated models, the latent Gaussian structure has to be handled, and this can be done in different ways depending on the accuracy that is needed. `excursions` currently supports the following five methods described in detail in [@bolin12]: Empirical Bayes (`EB`), Quantile Correction (`QC`), Numerical Integration (`NI`), Numerical integration with Quantile Corrections (`NIQC`), and improved Numerical integration with Quantile Corrections (`iNIQC`).
+
+The `EB` method is the simplest method and is based on using a Gaussian approximation of the posterior, $\pi(\mv{x}|\mv{Y}) \approx \pi_G(\mv{x}|\mv{Y},\widehat{\mv{\theta}})$. The `QC` method uses the same Gaussian approximation but modifies the limits in the integral to improve the accuracy. The three other methods are intended for Bayesian models, where the posterior is obtained by integrating over the parameters,
+\begin{equation*}
+\pi(\mv{x}\mid\mv{Y}) = \int \pi(\mv{x}\mid\mv{Y},\mv{\theta})\pi(\mv{\theta}\mid\mv{Y})d\mv{\theta}.
+\end{equation*}
+The `NI` method approximates the integration with respect to the parameters as in the INLA method, using a sum of representative parameter configurations, and the `NIQC` and `iNIQC` methods combines this with the `QC` method to improve the accuracy further.
+
+In general, `EB` and `QC` are suitable for frequentist models and for Bayesian models where the posterior distribution conditionally on the parameters is approximately Gaussian. The methods are equivalent if the posterior is Gaussian and in other cases `QC` is more accurate than `EB`. For Bayesian models, the `NI` method is, in general, more accurate than the `QC` method, and for non-Gaussian likelihoods, the `NIQC` and `iNIQC` methods can be used for improved results. In general the accuracy and computational cost of the methods are as follows
+
+
+Accuracy: `EB` $<$ `QC` $<$ `NI` $<$ `NIQC` $<$ `iNIQC` 
+
+Computational cost:  `EB` $\approx$ `QC` $<$ `NI` $\approx$ `NIQC` $<$ `iNIQC`.
+
+
+If the main purpose of the analysis is to construct excursion or contour sets for low values of $\alpha$, we recommend using the `QC` method for problems with Gaussian likelihoods and the `NIQC` method for problems with non-Gaussian likelihoods. The increase in accuracy of the `iNIQC` method is often small compared to the added computational cost.
+
+### Continuous domain interpolations
+For a continuous spatial domain, the excursion function $F_u^+(\mv{s})$  can be approximated using $\mv{F}_u^+$ computed at discrete point locations. The main idea is to interpolate $\mv{F}_u^+$ assuming monotonicity of the random field between the discrete computation locations. Specifically, assume that the values of $\mv{F}_u^+$ correspond to the values at the vertices of some triangulated mesh. If the excursion set $\exset{u,\alpha}{+}(X)$ should be computed for some specific value of $\alpha$, one has to find the $1-\alpha$ contour for $F_u^+(\mv{s})$. For interpolation to a location $\mv{s}$ within a specific triangle $\mathcal{T}$ with corners in $\mv{s}_1, \mv{s}_2,$ and $\mv{s}_3$, `excursions` by default uses log-linear interpolation, $F_u(\mv{s}) = \exp\{\sum_{k=1}^3 w_k\log[F_u(\mv{s}_k)]\}$. Here $\{(w_1,w_2,w_3);\, w_1,w_2,w_3\geq 0,\, \sum_{k=1}^3 w_i=1\}$ are the barycentric coordinates of $\mv{s}$ within the triangle.
+
+Further technical details of the continuous domain construction are given in   [@bolin15contours]. Studies of the resulting continuous domain excursion sets in [@bolin15contours] indicate that the log-linear interpolation method results in sets with coverage probability on target or slightly above target for large target probabilities. 
+
+
+## References
+

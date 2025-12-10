@@ -19,8 +19,6 @@
 
 #include <R.h>
 #include <Rmath.h>
-#include <Rdefines.h>
-#include <R_ext/PrtUtil.h>
 
 extern "C"{
   #include "RngStream.h"
@@ -28,7 +26,7 @@ extern "C"{
 
 #define max(a,b) (((a)>(b))?(a):(b))
 #define min(a,b) (((a)<(b))?(a):(b))
-
+#define used_with_openmp(X) (void)X
 using namespace std;
 
 extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in){
@@ -37,6 +35,7 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
   int K = opts[1];
   int max_size = opts[2];
   int n_threads = opts[3];
+  used_with_openmp(n_threads);
   int seed_provided = opts[4];
 
   double lim = lim_in[0];
@@ -211,13 +210,13 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
         }
 
         if (x[i][j] == numeric_limits<double>::infinity()){
-          Rprintf("simulated infinite value, changing to zero\n",i);
-          Rprintf("c= %f, d= %f, ,d-c= %f\n",c,d,d-c);
+          Rprintf("simulated infinite value, changing to zero\n");
+          Rprintf("i=%d, c= %f, d= %f, ,d-c= %f\n",i,c,d,d-c);
           x[i][j] = 0;
         }
 
         if (x[i][j]!=x[i][j]) {
-          Rprintf("%d x is nan: rtmp= %f, c= %f, d= %f, ai=%f",rtmp,c,d,ai);
+          Rprintf("%d : x is nan: rtmp= %f, c= %f, d= %f, ai=%f",i,rtmp,c,d,ai);
           Rprintf(", bi= %f, s[j] = %f, Li = %f",bi,s[j],Li[i]);
         }
       }
@@ -260,7 +259,9 @@ extern "C" void testRand( int * opts, double * x, int * seed_in){
   int n = opts[0];
   int n_threads = opts[1];
   int seed_provided = opts[2];
-
+  
+  used_with_openmp(n_threads);
+  
   #ifdef _OPENMP
     const int max_nP = omp_get_num_procs();
     int nPtmp;

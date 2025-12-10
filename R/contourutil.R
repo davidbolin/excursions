@@ -14,18 +14,16 @@ contourfunction.mc <- function(lp, mu, X, ind, alpha, verbose = FALSE) {
 
   lim <- excursions.limits(lp = lp, mu = mu, measure = 0)
 
-  m.size <- length(mu)
-  indices <- NULL
-
-  if (!missing(ind)) {
-    if (is.logical(ind)) {
-      indices <- ind
-      m.size <- sum(ind)
-    } else {
-      indices <- rep(FALSE, length(mu))
-      indices[ind] <- TRUE
-      m.size <- length(ind)
-    }
+  if (missing(ind)) {
+    indices <- NULL
+    # m.size <- length(mu)
+  } else if (is.logical(ind)) {
+    indices <- ind
+    # m.size <- sum(ind)
+  } else {
+    indices <- rep(FALSE, length(mu))
+    indices[ind] <- TRUE
+    # m.size <- length(ind)
   }
   if (verbose) cat("calculate marginals\n")
 
@@ -42,23 +40,23 @@ contourfunction.mc <- function(lp, mu, X, ind, alpha, verbose = FALSE) {
   ii <- which(res$Pv[1:n] > 0)
   if (length(ii) == 0) i <- n + 1 else i <- min(ii)
 
-  F <- Fe <- E <- rep(0, n)
-  F[reo] <- res$Pv
+  F_ <- Fe <- E <- rep(0, n)
+  F_[reo] <- res$Pv
   Fe[reo] <- res$Ev
 
   ireo <- NULL
   ireo[reo] <- 1:n
 
-  ind.lowF <- F < 1 - F.limit
-  E[F > 1 - alpha] <- 1
-  F[ind.lowF] <- Fe[ind.lowF] <- NA
+  ind.lowF <- F_ < 1 - F.limit
+  E[F_ > 1 - alpha] <- 1
+  F_[ind.lowF] <- Fe[ind.lowF] <- NA
 
   M <- rep(-1, n)
   for (i in 1:(lp$n.levels + 1)) {
     M[(lp$G == (i - 1)) & (E == 1)] <- i - 1
   }
 
-  return(list(F = F, Fe = Fe, E = E, M = M, rho = rho))
+  return(list(F = F_, Fe = Fe, E = E, M = M, rho = rho))
 }
 
 
@@ -102,24 +100,22 @@ contourfunction <- function(lp, mu, Q, vars, ind, alpha, n.iter = 10000,
   if (missing(vars)) {
     if (verbose) cat("calculate variances\n")
     if (is.chol) {
-      vars <- excursions.variances(L = Q)
+      vars <- excursions.variances(L = Q, max.threads = max.threads)
     } else {
-      vars <- excursions.variances(Q = Q)
+      vars <- excursions.variances(Q = Q, max.threads = max.threads)
     }
   }
 
-  m.size <- length(mu)
-  indices <- NULL
-
-  if (!missing(ind)) {
-    if (is.logical(ind)) {
-      indices <- ind
-      m.size <- sum(ind)
-    } else {
-      indices <- rep(FALSE, length(mu))
-      indices[ind] <- TRUE
-      m.size <- length(ind)
-    }
+  if (missing(ind)) {
+    indices <- NULL
+    m.size <- length(mu)
+  } else if (is.logical(ind)) {
+    indices <- ind
+    m.size <- sum(ind)
+  } else {
+    indices <- rep(FALSE, length(mu))
+    indices[ind] <- TRUE
+    m.size <- length(ind)
   }
   if (verbose) cat("calculate marginals\n")
   if (missing(rho) || is.null(rho)) {
@@ -152,23 +148,23 @@ contourfunction <- function(lp, mu, Q, vars, ind, alpha, n.iter = 10000,
   ii <- which(res$Pv[1:n] > 0)
   if (length(ii) == 0) i <- n + 1 else i <- min(ii)
 
-  F <- Fe <- E <- rep(0, n)
-  F[reo] <- res$Pv
+  F_ <- Fe <- E <- rep(0, n)
+  F_[reo] <- res$Pv
   Fe[reo] <- res$Ev
 
   ireo <- NULL
   ireo[reo] <- 1:n
 
-  ind.lowF <- F < 1 - F.limit
-  E[F > 1 - alpha] <- 1
-  F[ind.lowF] <- Fe[ind.lowF] <- NA
+  ind.lowF <- F_ < 1 - F.limit
+  E[F_ > 1 - alpha] <- 1
+  F_[ind.lowF] <- Fe[ind.lowF] <- NA
 
   M <- rep(-1, n)
   for (i in 1:(lp$n.levels + 1)) {
     M[(lp$G == (i - 1)) & (E == 1)] <- i - 1
   }
 
-  return(list(F = F, Fe = Fe, E = E, M = M, rho = rho))
+  return(list(F = F_, Fe = Fe, E = E, M = M, rho = rho))
 }
 
 ## Calculate marginal probabilities P(lim$a < X < lim$b) for
@@ -181,7 +177,8 @@ contourmap.marginals <- function(mu, vars, lim, ind) {
   } else {
     marg <- pnorm(lim$b, mu, sqrt(vars)) - pnorm(lim$a, mu, sqrt(vars))
   }
-  return(marg)
+
+  marg
 }
 
 ## Calculate marginal probabilities P(lim$a < X < lim$b) for
@@ -193,7 +190,8 @@ contourmap.marginals.mc <- function(X, lim, ind) {
   } else {
     marg <- rowMeans(lim$a < X & X < lim$b)
   }
-  return(marg)
+
+  marg
 }
 
 ## Create a levelplot with given levels/number of levels
@@ -276,7 +274,8 @@ excursions.levelplot <- function(mu, n.levels, ind, levels,
 
 ## Create a P-optimal levelplot.
 ## The function will take A LOT of time to run if use.marginals=FALSE.
-excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2, use.marginals = TRUE, ind) {
+excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2,
+                                     use.marginals = TRUE, ind, max.threads = 0) {
   if ((measure != 1) && (measure != 2) && (measure != 0)) {
     stop("only measure 0, 1, or 2 allowed")
   }
@@ -305,7 +304,8 @@ excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2, use.mar
       Q = Q,
       measure = measure,
       use.marginals = use.marginals,
-      ind = ind
+      ind = ind,
+      max.threads = max.threads
     )
   }
   plot(u.add, P.add)
@@ -338,7 +338,7 @@ excursions.opt.levelplot <- function(mu, vars, Q, n.levels, measure = 2, use.mar
 }
 ## Internal function for optimization of restricted P-optimal contour map
 restricted.lim.func <- function(u.add, u0, mu, vars, Q.chol, Q, measure,
-                                use.marginals, ind = ind) {
+                                use.marginals, ind = ind, max.threads = 0) {
   lp <- excursions.levelplot(mu = mu, levels = (u.add + u0), ind = ind)
   if (use.marginals) {
     val <- -Pmeasure.bound(lp = lp, mu = mu, vars = vars, type = measure, ind = ind)
@@ -346,7 +346,7 @@ restricted.lim.func <- function(u.add, u0, mu, vars, Q.chol, Q, measure,
   } else {
     val <- -Pmeasure(lp,
       mu = mu, Q = Q, Q.chol = Q.chol, type = measure,
-      ind = ind, vars = vars
+      ind = ind, vars = vars, max.threads = max.threads
     )
     cat(u.add, ": ", -val, "\n")
   }
@@ -356,7 +356,7 @@ restricted.lim.func <- function(u.add, u0, mu, vars, Q.chol, Q, measure,
 
 ## Internal function for optimization of P-optimal contour map
 excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
-                                use.marginals, ind = ind) {
+                                use.marginals, ind = ind, max.threads = 0) {
   lp <- excursions.levelplot(mu, levels = u, ind = ind)
   if ((min(u) <= min(mu[ind])) || (max(u) >= max(mu[ind]))) {
     # levels should be in (min(mu),max(mu))
@@ -381,7 +381,7 @@ excursions.lim.func <- function(u, mu, vars, Q.chol, Q, measure,
       } else {
         val <- -Pmeasure(lp,
           mu = mu, Q = Q, Q.chol = Q.chol, type = measure,
-          ind = ind, vars = vars
+          ind = ind, vars = vars, max.threads = max.threads
         )
         cat(u, ": ", -val, "\n")
       }
@@ -400,9 +400,14 @@ Pmeasure.bound <- function(lp, mu, vars, type, ind = NULL) {
 }
 
 ## Function that calculates the P measure for a given contour map.
-Pmeasure <- function(lp, mu, Q, Q.chol, ind = NULL, type, vars = vars, seed = NULL, n.iter = NULL) {
+Pmeasure <- function(lp, mu, Q, Q.chol, ind = NULL, type,
+                     vars = vars, seed = NULL, n.iter = NULL,
+                     max.threads = 0) {
   if (type == 0) {
-    res <- contourfunction(lp = lp, mu = mu, Q = Q, vars = vars, ind = ind)
+    res <- contourfunction(
+      lp = lp, mu = mu, Q = Q, vars = vars, ind = ind,
+      max.threads = max.threads
+    )
     p <- mean(res$F[ind])
   } else {
     if (type == 1 && length(lp$u) == 1) {
@@ -412,10 +417,13 @@ Pmeasure <- function(lp, mu, Q, Q.chol, ind = NULL, type, vars = vars, seed = NU
     res <- gaussint(
       mu = mu, Q = Q, Q.chol = Q.chol, a = limits$a,
       b = limits$b, ind = ind, use.reordering = "limits",
-      n.iter = n.iter, seed = seed
+      n.iter = n.iter, seed = seed,
+      max.threads = max.threads
     )
     p <- res$P[1]
   }
+  # TODO: Check if this should be P = p or P = res$P[1], as the 'p' values above
+  # are unused.
   return(list(P = res$P[1], E = res$E[1]))
 }
 
@@ -481,14 +489,15 @@ excursions.limits <- function(lp, mu, measure) {
   } else {
     stop("Measure must be 0, 1, or 2")
   }
-  return(list(a = a, b = b))
+
+  list(a = a, b = b)
 }
 
 #' Define a color map for displaying contour maps.
 #'
-#' \code{contourmap.colors} calculates suitable colours for displaying contour maps.
+#' `contourmap.colors` calculates suitable colours for displaying contour maps.
 #'
-#' @param lp A contourmap calculated by \code{contourmap}, \code{contourmap.inla}, or \code{contourmap.mc}
+#' @param lp A contourmap calculated by `contourmap`, `contourmap.inla`, or `contourmap.mc`
 #' @param zlim The range that should be used (optional). The default is the range of the mean value function used when creating the contourmap.
 #' @param col The colormap that the colours should be taken from.
 #' @param credible.col The color that should be used for displaying the credible regions for the contour curves (optional).
@@ -525,5 +534,5 @@ contourmap.colors <- function(lp, zlim, col, credible.col) {
     cmap <- c(credible.col, cmap)
   }
 
-  return(cmap)
+  cmap
 }

@@ -1,3 +1,21 @@
+# Development version
+
+# excursions 2.5.9
+
+* Add -DNPRINT to CAMD build, and remove fflush(stdout) use, to avoid fprint
+  and stdout usage
+* Fix issue with identity matrices, ensuring they are not treated as all-zero
+* Remove obsolete and unneded includes of Rdefines.h and R_ext/PrtUtil.h
+
+# excursions 2.5.8
+
+* Minor updates to C code to avoid warning with gcc13 and clang17 compilers
+
+# excursions 2.5.7
+
+* Update to make sure that max.threads properly limits the number of threads
+* Minor update to the documentation
+
 # excursions 2.5.6
 
 * Remove rgdal suggest

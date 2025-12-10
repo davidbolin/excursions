@@ -1,5 +1,6 @@
 test_that("Continous on contourmap, R2 mesh", {
   skip_on_cran()
+  skip_if_not_installed("sp")
 
   data <- integration.testdata1()
   res1 <- contourmap(data$mu, data$Q,
@@ -32,15 +33,15 @@ test_that("Continous on contourmap, R2 mesh", {
   res2 <- continuous(res1, mesh, method = "linear")
 
   expect_error(
-    continuous(res1, mesh, method = "linear", output = "inla"),
+    continuous(res1, mesh, method = "linear", output = "fm"),
     "Output format 'fm' not supported for 'calc.credible = TRUE'."
   )
   res3 <- continuous(res1, mesh,
-    method = "linear", output = "inla",
+    method = "linear", output = "fm",
     calc.credible = FALSE
   )
   res4 <- continuous(res1, mesh,
-    method = "log", output = "inla",
+    method = "log", output = "fm",
     calc.credible = FALSE
   )
   expect_s4_class(res2$M, "SpatialPolygons")
@@ -50,7 +51,7 @@ test_that("Continous on contourmap, R2 mesh", {
   testthat::skip_if_not_installed("fmesher", "0.1.2.9003")
   # 0.1.2 had a bug for empty segments.
   res5 <- continuous(res1, mesh,
-    method = "step", output = "inla",
+    method = "step", output = "fm",
     calc.credible = FALSE
   )
   expect_s3_class(res5$M, "fm_segm")
@@ -58,6 +59,7 @@ test_that("Continous on contourmap, R2 mesh", {
 
 test_that("Continous on contourmap, M mesh", {
   skip_on_cran()
+  skip_if_not_installed("sp")
 
   data <- integration.testdata1()
   res1 <- contourmap(data$mu, data$Q,
@@ -81,11 +83,11 @@ test_that("Continous on contourmap, M mesh", {
 
   # Alter z-coordinates and mark as general manifold
   mesh$loc[, 3] <- seq_len(mesh$n)
-  mesh$manifold <- "M"
+  mesh$manifold <- "M2"
 
   res2 <- continuous(res1, mesh,
     method = "linear",
-    output = "inla",
+    output = "fm",
     calc.credible = FALSE
   )
 
@@ -93,7 +95,7 @@ test_that("Continous on contourmap, M mesh", {
 
   res3 <- continuous(res1, mesh,
     method = "log",
-    output = "inla",
+    output = "fm",
     calc.credible = FALSE
   )
 
@@ -102,7 +104,7 @@ test_that("Continous on contourmap, M mesh", {
   testthat::skip_if_not_installed("fmesher", "0.1.2.9003")
   res4 <- continuous(res1, mesh,
     method = "step",
-    output = "inla",
+    output = "fm",
     calc.credible = FALSE
   )
   expect_s3_class(res4$M, "fm_segm")

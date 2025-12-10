@@ -17,7 +17,7 @@
 
 #' Contour maps and contour map quality measures for latent Gaussian models
 #'
-#' An interface to the \code{contourmap} function for latent Gaussian models
+#' An interface to the `contourmap` function for latent Gaussian models
 #' calculated using the INLA method.
 #'
 #' @param result.inla Result object from INLA call.
@@ -50,9 +50,9 @@
 #'      }
 #' @param alpha Maximal error probability in contour map function (default=1)
 #' @param F.limit The limit value for the computation of the F function. F is
-#' set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.
+#' set to NA for all nodes where F<1-F.limit. Default is F.limit = `alpha`.
 #' @param n.iter Number or iterations in the MC sampler that is used for
-#' calculating the quantities in \code{compute}. The default value is 10000.
+#' calculating the quantities in `compute`. The default value is 10000.
 #' @param verbose Set to TRUE for verbose mode (optional)
 #' @param max.threads Decides the number of threads the program can use. Set to
 #' 0 for using the maximum number of threads allowed by the system (default).
@@ -63,42 +63,42 @@
 #' @param ind If only a part of a component should be used in the calculations,
 #' this argument specifies the indices for that part (optional).
 #' @param ... Additional arguments to the contour map function. See the
-#' documentation for \code{contourmap} for details.
+#' documentation for `contourmap` for details.
 #'
-#' @return \code{contourmap.inla} returns an object of class "excurobj" with the
-#' same elements as returned by \code{contourmap}.
-#' @note This function requires the \code{INLA} package, which is not a CRAN
-#' package.  See \url{https://www.r-inla.org/download-install} for easy
+#' @return `contourmap.inla` returns an object of class "excurobj" with the
+#' same elements as returned by `contourmap`.
+#' @note This function requires the `INLA` package, which is not a CRAN
+#' package.  See <https://www.r-inla.org/download-install> for easy
 #' installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @details
 #' The INLA approximation of the quantity of interest is in general a weighted
 #' sum of Gaussian distributions with different parameters. If
-#' \code{method = 'EB'} is used, then the contour map is computed for the mean
+#' `method = 'EB'` is used, then the contour map is computed for the mean
 #' of the component in the weighted sum that has parameters with the highest
-#' likelihood. If on the other hand \code{method='QC'}, then the contour map is
+#' likelihood. If on the other hand `method='QC'`, then the contour map is
 #' computed for the posterior mean reported by INLA. If the EB method also is
 #' used in INLA, then this reported posterior mean is equal to the mean of the
-#' component with the highest likelihood. Therefore, \code{method='EB'} is
-#' appropriate if the EB method also is used in INLA, but \code{method='QC'}
+#' component with the highest likelihood. Therefore, `method='EB'` is
+#' appropriate if the EB method also is used in INLA, but `method='QC'`
 #' should be used in general.
 #'
-#' The \code{n.levels} contours in the contour map are are placed according
-#' to the argument \code{type}. A number of quality measures can be computed
+#' The `n.levels` contours in the contour map are are placed according
+#' to the argument `type`. A number of quality measures can be computed
 #' based based on the specified contour map and the distribution of the
 #' component of interest. What should be computed is specified using the
-#' \code{compute} argument. For details on these quanties, see the reference
+#' `compute` argument. For details on these quanties, see the reference
 #' below.
-#' @references Bolin, D. and Lindgren, F. (2017) \emph{Quantifying the
-#' uncertainty of contour maps}, Journal of Computational and Graphical
+#' @references Bolin, D. and Lindgren, F. (2017) *Quantifying the
+#' uncertainty of contour maps*, Journal of Computational and Graphical
 #' Statistics, 26:3, 513-524.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion
-#' Sets and Related Quantities Using excursions}, Journal of Statistical
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion
+#' Sets and Related Quantities Using excursions*, Journal of Statistical
 #' Software, vol 86, no 1, pp 1-20.
 #' @export
-#' @seealso \code{\link{contourmap}}, \code{\link{contourmap.mc}},
-#' \code{\link{contourmap.colors}}
+#' @seealso [contourmap()], [contourmap.mc()],
+#' [contourmap.colors()]
 #' @examples
 #' \dontrun{
 #' if (require.nowarnings("INLA")) {
@@ -106,7 +106,11 @@
 #'   n.lattice <- 10 # increase for more interesting, but slower, examples
 #'   x <- seq(from = 0, to = 10, length.out = n.lattice)
 #'   lattice <- fmesher::fm_lattice_2d(x = x, y = x)
-#'   mesh <- fmesher::fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+#'   mesh <- fmesher::fm_rcdt_2d_inla(
+#'     lattice = lattice,
+#'     extend = FALSE,
+#'     refine = FALSE
+#'   )
 #'   spde <- inla.spde2.matern(mesh, alpha = 2)
 #'
 #'   # Generate an artificial sample
@@ -117,7 +121,7 @@
 #'     runif(n.obs) * diff(range(x)) + min(x)
 #'   )
 #'   Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
-#'   x <- inla.qsample(Q = Q)
+#'   x <- inla.qsample(Q = Q, num.threads = 1)
 #'   A <- fmesher::fm_basis(mesh = mesh, loc = obs.loc)
 #'   Y <- as.vector(A %*% x + rnorm(n.obs) * sqrt(sigma2.e))
 #'
@@ -125,8 +129,18 @@
 #'   mesh.index <- inla.spde.make.index(name = "field", n.spde = spde$n.spde)
 #'   ef <- list(c(mesh.index, list(Intercept = 1)))
 #'
-#'   s.obs <- inla.stack(data = list(y = Y), A = list(A), effects = ef, tag = "obs")
-#'   s.pre <- inla.stack(data = list(y = NA), A = list(1), effects = ef, tag = "pred")
+#'   s.obs <- inla.stack(
+#'     data = list(y = Y),
+#'     A = list(A),
+#'     effects = ef,
+#'     tag = "obs"
+#'   )
+#'   s.pre <- inla.stack(
+#'     data = list(y = NA),
+#'     A = list(1),
+#'     effects = ef,
+#'     tag = "pred"
+#'   )
 #'   stack <- inla.stack(s.obs, s.pre)
 #'   formula <- y ~ -1 + Intercept + f(field, model = spde)
 #'   result <- inla(
@@ -178,7 +192,10 @@ contourmap.inla <- function(result.inla,
                             seed = NULL,
                             ind, ...) {
   if (!requireNamespace("INLA", quietly = TRUE)) {
-    stop("This function requires the INLA package (see www.r-inla.org/download-install)")
+    stop(paste0(
+      "This function requires the INLA package ",
+      "(see www.r-inla.org/download-install)"
+    ))
   }
   if (missing(result.inla)) {
     stop("Must supply INLA result object")
@@ -220,9 +237,10 @@ contourmap.inla <- function(result.inla,
   if (method == "QC") {
     qc <- TRUE
   }
-  # compute indices, here ind will contain the indices that are used to extract the
-  # relevant part from the configs, ind.int is the index vector for extracting marginal
-  # distributions for random effects, and indices is a logical version of ind
+  # compute indices, here ind will contain the indices that are used to extract
+  # the relevant part from the configs, ind.int is the index vector for
+  # extracting marginal distributions for random effects, and indices is a
+  # logical version of ind
   tmp <- inla.output.indices(result.inla,
     name = name, stack = stack,
     tag = tag, compressed = compressed
@@ -268,7 +286,8 @@ contourmap.inla <- function(result.inla,
     stop("INLA result must be calculated using return.marginals.predictor=TRUE if P measures are to be calculated for the linear predictor.")
   }
 
-  # If method=EB, we use the mean of the configuration at the mode for the contourmap
+  # If method=EB, we use the mean of the configuration at the mode for the
+  # contourmap
   # If method=QC, we instead use the total mean.
   if (method == "EB") {
     mu <- config$mu
@@ -287,7 +306,9 @@ contourmap.inla <- function(result.inla,
     Q = config$Q,
     ind = ind,
     compute = list(F = FALSE, measures = NULL),
-    n.levels = n.levels, ...
+    n.levels = n.levels,
+    max.threads = max.threads,
+    ...
   )
 
   # compute measures
@@ -318,8 +339,10 @@ contourmap.inla <- function(result.inla,
           })
         }
         rho[ind, ] <- t(rho.ind)
-        limits$a <- config$mu + sqrt(config$vars) * qnorm(pmin(pmax(rho[, 1], 0), 1))
-        limits$b <- config$mu + sqrt(config$vars) * qnorm(pmin(pmax(rho[, 2], 0), 1))
+        limits$a <-
+          config$mu + sqrt(config$vars) * qnorm(pmin(pmax(rho[, 1], 0), 1))
+        limits$b <-
+          config$mu + sqrt(config$vars) * qnorm(pmin(pmax(rho[, 2], 0), 1))
       } else {
         rho <- NULL
       }
@@ -330,7 +353,8 @@ contourmap.inla <- function(result.inla,
           tmp <- gaussint(
             mu = config$mu, Q = config$Q, a = limits$a,
             b = limits$b, ind = indices, use.reordering = "limits",
-            n.iter = n.iter, seed = seed
+            n.iter = n.iter, seed = seed,
+            max.threads = max.threads
           )
           cm$P1 <- tmp$P[1]
           cm$P1.error <- tmp$E[1]
@@ -343,6 +367,7 @@ contourmap.inla <- function(result.inla,
         tmp <- gaussint(
           mu = config$mu, Q = config$Q, a = limits$a,
           b = limits$b, ind = indices, use.reordering = "limits",
+          max.threads = max.threads,
           n.iter = n.iter, seed = seed
         )
         cm$P2 <- tmp$P
@@ -367,8 +392,10 @@ contourmap.inla <- function(result.inla,
       } else { # bounds
         if (method != "QC") {
           rho <- matrix(0, length(config$mu), 2)
-          rho[ind, 1] <- pnorm(limits$a[ind], config$mu[ind], sqrt(config$vars[ind]))
-          rho[ind, 2] <- pnorm(limits$b[ind], config$mu[ind], sqrt(config$vars[ind]))
+          rho[ind, 1] <-
+            pnorm(limits$a[ind], config$mu[ind], sqrt(config$vars[ind]))
+          rho[ind, 2] <-
+            pnorm(limits$b[ind], config$mu[ind], sqrt(config$vars[ind]))
         }
         if (measure[i] == "P0-bound") {
           cm$P0.bound <- mean(rho[ind, 2] - rho[ind, 1])

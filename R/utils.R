@@ -18,7 +18,7 @@
 
 ## Calculate upper triangular Cholesky decomposition, optionally with
 ## permutation. All Matrix::Cholesky options are allowed.
-## Returns list(R=dtCMatrix, reo=interger vector, ireo=interger vector)
+## Returns list(R=dtCMatrix, reo=integer vector, ireo=integer vector)
 private.Cholesky <- function(A, ...) {
   L <- expand(Matrix::Cholesky(private.as.dgCMatrix(A), ...))
   n <- nrow(A)
@@ -33,8 +33,8 @@ private.Cholesky <- function(A, ...) {
 
 #' Calculate variances from a sparse precision matrix
 #'
-#' \code{excursions.variances} calculates the diagonal of the inverse of a sparse
-#' symmetric positive definite matrix \code{Q}.
+#' `excursions.variances` calculates the diagonal of the inverse of a sparse
+#' symmetric positive definite matrix `Q`.
 #'
 #' @param L Cholesky factor of precision matrix.
 #' @param Q Precision matrix.
@@ -44,11 +44,11 @@ private.Cholesky <- function(A, ...) {
 #' @return A vector with the variances.
 #' @export
 #' @details The method for calculating the
-#' diagonal requires the Cholesky factor, \code{L}, of \code{Q}, which should be supplied if
-#' available. If \code{Q} is provided, the cholesky factor is
-#' calculated and the variances are then returned in the same ordering as \code{Q}.
-#' If \code{L} is provided, the variances are returned in the same ordering as \code{L},
-#' even if \code{L@invpivot} exists.
+#' diagonal requires the Cholesky factor, `L`, of `Q`, which should be supplied if
+#' available. If `Q` is provided, the cholesky factor is
+#' calculated and the variances are then returned in the same ordering as `Q`.
+#' If `L` is provided, the variances are returned in the same ordering as `L`,
+#' even if `L@invpivot` exists.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #'
 #' @examples
@@ -68,11 +68,12 @@ excursions.variances <- function(L, Q, max.threads = 0) {
     ireo <- L$ireo
     L <- L$R
   }
+  L_ipx <- private.sparse.get_ipx(L)
 
   out <- .C("Qinv",
-    Rir = as.integer(L@i),
-    Rjc = as.integer(L@p),
-    Rpr = as.double(L@x),
+    Rir = as.integer(L_ipx$i),
+    Rjc = as.integer(L_ipx$p),
+    Rpr = as.double(L_ipx$x),
     variances = double(dim(L)[1]),
     n = as.integer(dim(L)[1]),
     n_threads = as.integer(max.threads)
@@ -160,9 +161,10 @@ excursions.permutation <- function(rho, ind, use.camd = TRUE, alpha, Q) {
       }
       Q <- private.as.dgCMatrix(Q)
       ## call CAMD
+      Q_ipx <- private.sparse.get_ipx(Q)
       out <- .C("reordering",
-        nin = as.integer(n), Mp = as.integer(Q@p),
-        Mi = as.integer(Q@i), reo = as.integer(reo),
+        nin = as.integer(n), Mp = as.integer(Q_ipx$p),
+        Mi = as.integer(Q_ipx$i), reo = as.integer(reo),
         cind = as.integer(cind)
       )
       reo <- out$reo + 1
@@ -201,7 +203,8 @@ excursions.setlimits <- function(marg, vars, type, QC, u, mu) {
     a <- rep(-Inf, length(mu))
     b <- uv
   }
-  return(list(a = a, b = b))
+
+  list(a = a, b = b)
 }
 
 
@@ -250,7 +253,8 @@ private.as.vector <- function(v) {
     }
     return(as.vector(v))
   }
-  return(c(v))
+
+  c(v)
 }
 
 private.sparse.gettriplet <- function(M) {
@@ -258,6 +262,26 @@ private.sparse.gettriplet <- function(M) {
   M <- private.as.dgTMatrix(M)
   ## Extract triplets:
   list(i = M@i + 1L, j = M@j + 1L, x = M@x)
+}
+
+private.sparse.get_ipx <- function(M) {
+  if (!inherits(M, "CsparseMatrix")) {
+    stop("M must be a CsparseMatrix object")
+  }
+  M <- private.as.dgCMatrix(M)
+  ## Extract i,p,x in 0-based format:
+  ## If M is a unit diagonal matrix, may have length(i)==0
+  if (inherits(M, "triangularMatrix") &&
+    (M@diag == "U") &&
+    (length(M@i) == 0)) {
+    list(
+      i = seq_len(nrow(M)) - 1L,
+      p = seq_len(nrow(M) + 1) - 1L,
+      x = rep(1.0, nrow(M))
+    )
+  } else {
+    list(i = M@i, p = M@p, x = M@x)
+  }
 }
 
 private.as.dgTMatrix <- function(M, make_unique = TRUE) {
@@ -274,29 +298,29 @@ private.as.dgTMatrix <- function(M, make_unique = TRUE) {
 private.as.dgCMatrix <- function(M) {
   if (is.null(M) || is(M, "dgCMatrix")) {
     return(M)
-  } else {
-    if (!inherits(M, "Matrix")) {
-      M <- as(M, "Matrix")
-    }
-    ## Convert into dgCMatrix format of Matrix.
-    ## Convert via virtual class CsparseMatrix;
-    ## this allows more general conversions than direct conversion.
-    return(as(as(as(M, "dMatrix"), "generalMatrix"), "CsparseMatrix"))
   }
+
+  if (!inherits(M, "Matrix")) {
+    M <- as(M, "Matrix")
+  }
+  ## Convert into dgCMatrix format of Matrix.
+  ## Convert via virtual class CsparseMatrix;
+  ## this allows more general conversions than direct conversion.
+  as(as(as(M, "dMatrix"), "generalMatrix"), "CsparseMatrix")
 }
 
 private.as.dtCMatrix <- function(M) {
   if (is.null(M) || is(M, "dtCMatrix")) {
     return(M)
-  } else {
-    if (!inherits(M, "Matrix")) {
-      M <- as(M, "Matrix")
-    }
-    ## Convert into dtCMatrix format of Matrix.
-    ## Convert via virtual class CsparseMatrix;
-    ## this allows more general conversions than direct conversion.
-    return(as(as(as(M, "dMatrix"), "triangularMatrix"), "CsparseMatrix"))
   }
+
+  if (!inherits(M, "Matrix")) {
+    M <- as(M, "Matrix")
+  }
+  ## Convert into dtCMatrix format of Matrix.
+  ## Convert via virtual class CsparseMatrix;
+  ## this allows more general conversions than direct conversion.
+  as(as(as(M, "dMatrix"), "triangularMatrix"), "CsparseMatrix")
 }
 
 
@@ -403,11 +427,18 @@ fmix.opt <- function(x,
     cat("in optimization: ", x, " ", prob, " ", val, "\n")
   }
 
-  return(val)
+  val
 }
 
 
-fmix.samp.opt <- function(x, alpha, mu, sd, w, limits, samples) {
+fmix.samp.opt <- function(x,
+                          alpha,
+                          mu,
+                          sd,
+                          w,
+                          limits,
+                          samples,
+                          verbose = FALSE) {
   n <- dim(mu)[2]
   q.a <- sapply(seq_len(n), function(i) {
     Fmix_inv(x / 2,
@@ -430,7 +461,10 @@ fmix.samp.opt <- function(x, alpha, mu, sd, w, limits, samples) {
 
   prob <- mean(cover)
   val <- (prob - (1 - alpha))^2
-  cat("in optimization: ", x, " ", prob, " ", val, "\n")
+  if (verbose) {
+    cat("in optimization: ", x, " ", prob, " ", val, "\n")
+  }
+
   return(val)
 }
 
@@ -494,19 +528,19 @@ excursions.rand <- function(n, seed, n.threads = 1) {
 #'
 #' @param package The name of a package, given as a character string.
 #' @param lib.loc a character vector describing the location of R library trees
-#' to search through, or \code{NULL}.  The default value of \code{NULL}
-#' corresponds to all libraries currently known to \code{.libPaths()}.
+#' to search through, or `NULL`.  The default value of `NULL`
+#' corresponds to all libraries currently known to `.libPaths()`.
 #' Non-existent library trees are silently ignored.
-#' @param character.only a logical indicating whether \code{package} can be
+#' @param character.only a logical indicating whether `package` can be
 #' assumed to be a character string.
 #'
-#' @return \code{require.nowarnings} returns (invisibly) \code{TRUE} if it succeeds, otherwise \code{FALSE}
-#' @details \code{require(package)} acts the same as
-#' \code{require(package, quietly = TRUE)} but with warnings turned off.
+#' @return `require.nowarnings` returns (invisibly) `TRUE` if it succeeds, otherwise `FALSE`
+#' @details `require(package)` acts the same as
+#' `require(package, quietly = TRUE)` but with warnings turned off.
 #' In particular, no warning or error is given if the package is unavailable.
-#' Most cases should use \code{requireNamespace(package, quietly = TRUE)} instead,
+#' Most cases should use `requireNamespace(package, quietly = TRUE)` instead,
 #' which doesn't produce warnings.
-#' @seealso \code{\link{require}}
+#' @seealso [require()]
 #' @export
 #' @examples
 #' ## This should produce no output:
@@ -547,7 +581,7 @@ excursions.marginals.mc <- function(X, type, rho, mu, u) {
       }
     }
   }
-  return(rl)
+  rl
 }
 
 mcint <- function(X,
@@ -577,7 +611,7 @@ mcint <- function(X,
   # Estimate of MC error, not implemented yet
   Ev <- rep(0, n)
 
-  return(list(Pv = Pv, Ev = Ev, P = Pv[1], E = Ev[1]))
+  list(Pv = Pv, Ev = Ev, P = Pv[1], E = Ev[1])
 }
 
 
@@ -586,7 +620,7 @@ mcint <- function(X,
 #' Summary method for class "excurobj"
 #'
 #' @param object an object of class "excurobj", usually, a result of a call
-#'   to \code{\link{excursions}}.
+#'   to [excursions()].
 #' @param ... further arguments passed to or from other methods.
 #' @export
 #' @method summary excurobj
@@ -659,12 +693,12 @@ summary.excurobj <- function(object, ...) {
       }
     }
   }
-  return(out)
+  out
 }
 
 
 #' @param x an object of class "summary.excurobj", usually, a result of a call
-#'   to \code{\link{summary.excurobj}}.
+#'   to [summary.excurobj()].
 #' @export
 #' @method print summary.excurobj
 #' @rdname summary.excurobj

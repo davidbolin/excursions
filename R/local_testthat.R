@@ -32,8 +32,7 @@ exc_safe_inla <- function(multicore = NULL,
   if (requireNamespace("INLA", quietly = TRUE)) {
     if (is.null(multicore)) {
       multicore <-
-        !identical(Sys.getenv("TESTTHAT"), "true") ||
-          interactive()
+        !identical(Sys.getenv("TESTTHAT"), "true") || interactive()
     }
     if (!multicore) {
       n.t <- INLA::inla.getOption("num.threads")

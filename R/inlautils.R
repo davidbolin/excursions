@@ -177,7 +177,8 @@ private.get.config <- function(result, i) {
     function(x) x$log.posterior
   )))
   lp <- result$misc$configs$config[[i]]$log.posterior - m
-  return(list(mu = mu, Q = Q, vars = vars, lp = lp))
+
+  list(mu = mu, Q = Q, vars = vars, lp = lp)
 }
 
 ## Calculate the marginal probability for X_i>u or X_i<u.

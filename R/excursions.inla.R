@@ -42,11 +42,11 @@
 #' @param alpha Error probability for the excursion set of interest. The default
 #' value is 1.
 #' @param F.limit Error probability for when to stop the calculation of the
-#' excursion function. The default value is \code{alpha}, and the value cannot
-#' be smaller than \code{alpha}. A smaller value of \code{F.limit} results in a
+#' excursion function. The default value is `alpha`, and the value cannot
+#' be smaller than `alpha`. A smaller value of `F.limit` results in a
 #' smaller computation time.
 #' @param u Excursion or contour level.
-#' @param u.link If u.link is TRUE, \code{u} is assumed to be in the scale of the
+#' @param u.link If u.link is TRUE, `u` is assumed to be in the scale of the
 #' data and is then transformed to the scale of the linear predictor (default FALSE).
 #' @param type Type of region:
 #'  \describe{
@@ -64,16 +64,18 @@
 #' predictor is to be used, then only add the relevant part. Otherwise the
 #' entire linear predictor is added internally (default TRUE).
 #' @param seed Random seed (optional).
+#' @param prune.ind If `TRUE` and `ind` is supplied, then the result object is pruned to
+#' contain only the active nodes specified by `ind`.
 #'
-#' @return \code{excursions.inla} returns an object of class "excurobj" with the 
+#' @return `excursions.inla` returns an object of class "excurobj" with the
 #' following elements
 #' \item{E }{Excursion set, contour credible region, or contour avoiding set}
-#' \item{F }{The excursion function corresponding to the set \code{E} calculated
-#' for values up to \code{F.limit}}
+#' \item{F }{The excursion function corresponding to the set `E` calculated
+#' for values up to `F.limit`}
 #' \item{G }{ Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
 #' \item{M }{ Contour avoiding set. \eqn{M=-1} for all non-significant nodes.
-#' \eqn{M=0} for nodes where the process is significantly below \code{u} and
-#' \eqn{M=1} for all nodes where the field is significantly above \code{u}.
+#' \eqn{M=0} for nodes where the process is significantly below `u` and
+#' \eqn{M=1} for all nodes where the field is significantly above `u`.
 #' Which values that should be present depends on what type of set that is
 #' calculated.}
 #' \item{rho }{Marginal excursion probabilities}
@@ -82,36 +84,36 @@
 #' \item{meta }{A list containing various information about the calculation.}
 #' @export
 #' @details The different methods for handling the latent Gaussian structure are
-#' listed in order of accuracy and computational cost. The \code{EB} method is
+#' listed in order of accuracy and computational cost. The `EB` method is
 #' the simplest and is based on a Gaussian approximation of the posterior of the
-#' quantity of interest. The \code{QC} method uses the same Gaussian approximation
+#' quantity of interest. The `QC` method uses the same Gaussian approximation
 #' but improves the accuracy by modifying the limits in the integrals that are
 #' computed in order to find the region. The other three methods are intended for
 #' Bayesian models where the posterior distribution for the quantity of  interest
-#' is obtained by integrating over the parameters in the model. The \code{NI}
+#' is obtained by integrating over the parameters in the model. The `NI`
 #' method approximates this integration in the same way as is done in INLA, and
-#' the \code{NIQC} and \code{iNIQC} methods combine this apprximation with the
+#' the `NIQC` and `iNIQC` methods combine this apprximation with the
 #' QC method for improved accuracy.
 #'
 #' If the main purpose of the analysis is to construct excursion or contour sets
-#' for low values of \code{alpha}, we recommend using \code{QC} for problems with
-#' Gaussian likelihoods and \code{NIQC} for problems with non-Gaussian likelihoods.
+#' for low values of `alpha`, we recommend using `QC` for problems with
+#' Gaussian likelihoods and `NIQC` for problems with non-Gaussian likelihoods.
 #' The reason for this is that the more accurate methods also have higher
 #' computational costs.
 #'
-#' @note This function requires the \code{INLA} package, which is not a CRAN
-#' package.  See \url{https://www.r-inla.org/download-install} for easy
+#' @note This function requires the `INLA` package, which is not a CRAN
+#' package.  See <https://www.r-inla.org/download-install> for easy
 #' installation instructions.
 #' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren
 #' \email{finn.lindgren@@gmail.com}
-#' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour
-#' uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1,
+#' @references Bolin, D. and Lindgren, F. (2015) *Excursion and contour
+#' uncertainty regions for latent Gaussian models*, JRSS-series B, vol 77, no 1,
 #' pp 85-106.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion
-#' Sets and Related Quantities Using excursions}, Journal of Statistical Software,
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion
+#' Sets and Related Quantities Using excursions*, Journal of Statistical Software,
 #' vol 86, no 1, pp 1-20.
-#' @seealso \code{\link{excursions}}, \code{\link{excursions.mc}}
+#' @seealso [excursions()], [excursions.mc()]
 #'
 #' @examples
 #' ## In this example, we calculate the excursion function
@@ -186,7 +188,8 @@ excursions.inla <- function(result.inla,
                             verbose = 0,
                             max.threads = 0,
                             compressed = TRUE,
-                            seed = NULL) {
+                            seed = NULL,
+                            prune.ind = FALSE) {
   if (!requireNamespace("INLA", quietly = TRUE)) {
     stop("This function requires the INLA package (see www.r-inla.org/download-install)")
   }
@@ -261,8 +264,8 @@ excursions.inla <- function(result.inla,
 
   # Are we interested in a random effect?
   random.effect <- FALSE
-  if (!missing(name) && !is.null(name) && name != "APredictor" &&
-    name != "Predictor") {
+  if (!missing(name) && !is.null(name) && (name != "APredictor") &&
+    (name != "Predictor")) {
     random.effect <- TRUE
     if (is.null(result.inla$marginals.random)) {
       stop("INLA result must be calculated using return.marginals.random=TRUE if excursion sets to be calculated for a random effect of the model")
@@ -308,7 +311,7 @@ excursions.inla <- function(result.inla,
       vars = config$vars, rho = rho, ind = ind, n.iter = n.iter,
       max.threads = max.threads, seed = seed
     )
-    F <- res$F[ind]
+    F_ <- res$F[ind]
   } else if (method == "NI" || method == "NIQC") {
     qc <- "QC"
     if (method == "NI") {
@@ -335,9 +338,9 @@ excursions.inla <- function(result.inla,
 
     w <- exp(lw) / sum(exp(lw))
 
-    F <- w[1] * res[[1]]$F[ind]
+    F_ <- w[1] * res[[1]]$F[ind]
     for (i in 2:n.theta) {
-      F <- F + w[i] * res[[i]]$F[ind]
+      F_ <- F_ + w[i] * res[[i]]$F[ind]
     }
   } else if (method == "iNIQC") {
     pfam.i <- rep(-0.1, n)
@@ -353,7 +356,17 @@ excursions.inla <- function(result.inla,
 
       conf.i <- private.get.config(result.inla, i)
       lw[i] <- conf.i$lp
-      r.i <- INLA::inla(result.inla$.args$formula,
+      # INLA sets the formula environment to NULL, but
+      # keeps the .parent.frame intact (2024-10-31).
+      # If it's NULL for whatever reason, set it to something
+      # potentially useful:
+      if (!is.null(result.inla$.args[[".parent.frame"]])) {
+        par.fr <- result.inla$.args[[".parent.frame"]]
+      } else {
+        par.fr <- parent.frame()
+      }
+      r.i <- INLA::inla(
+        result.inla$.args$formula,
         family = result.inla$.args$family,
         data = result.inla$.args$data,
         control.compute = list(
@@ -364,9 +377,11 @@ excursions.inla <- function(result.inla,
         control.mode = list(
           theta =
             as.vector(result.inla$misc$configs$config[[i]]$theta),
-          fixed = TRUE
+          fixed = TRUE,
+          restart = FALSE
         ),
-        num.threads = "1:1"
+        num.threads = "1:1",
+        .parent.frame = par.fr
       )
       # TODO: May refine the num.threads argument above to make it configurable, but
       # since the inla() call is only constructing the model and optimising over the
@@ -400,9 +415,9 @@ excursions.inla <- function(result.inla,
     }
 
     w <- exp(lw) / sum(exp(lw))
-    F <- w[1] * res[[1]]$F[ind]
+    F_ <- w[1] * res[[1]]$F[ind]
     for (i in 2:n.theta) {
-      F <- F + w[i] * res[[i]]$F[ind]
+      F_ <- F_ + w[i] * res[[i]]$F[ind]
     }
   } else {
     stop("Method must be one of EB, QC, NI, NIQC, iNIQC")
@@ -417,7 +432,7 @@ excursions.inla <- function(result.inla,
 
   F.out <- mu.out <- rho.out <- vars.out <- E.out <- M.out <- G.out <- rep(NA, n.out)
 
-  F.out[ind.int] <- F
+  F.out[ind.int] <- F_
   vars.out[ind.int] <- config$vars[ind]
   mu.out[ind.int] <- config$mu[ind]
   rho.out[ind.int] <- rho.ind
@@ -431,11 +446,11 @@ excursions.inla <- function(result.inla,
   }
   G.out[ind.int] <- G
 
-  E <- rep(0, length(F))
-  E[F > 1 - alpha] <- 1
+  E <- rep(0, length(F_))
+  E[F_ > 1 - alpha] <- 1
   E.out[ind.int] <- E
 
-  M <- rep(-1, length(F))
+  M <- rep(-1, length(F_))
   if (type == "<") {
     M[E == 1] <- 0
   } else if (type == ">") {
@@ -446,28 +461,52 @@ excursions.inla <- function(result.inla,
   }
 
   M.out[ind.int] <- M
-
-  output <- list(
-    E = E.out,
-    F = F.out,
-    G = G.out,
-    M = M.out,
-    mean = mu.out,
-    vars = vars.out,
-    rho = rho.out,
-    meta = list(
-      calculation = "excursions",
-      type = type,
-      level = u,
-      level.link = u.link,
-      alpha = alpha,
-      F.limit = F.limit,
-      n.iter = n.iter,
-      method = method,
-      ind = ind.int,
-      call = match.call()
+  if (prune.ind) {
+    output <- list(
+      E = E.out[ind.int],
+      F = F.out[ind.int],
+      G = G.out[ind.int],
+      M = M.out[ind.int],
+      mean = mu.out[ind.int],
+      vars = vars.out[ind.int],
+      rho = rho.out[ind.int],
+      meta = list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        level.link = u.link,
+        alpha = alpha,
+        F.limit = F.limit,
+        n.iter = n.iter,
+        method = method,
+        ind = NULL,
+        call = match.call()
+      )
     )
-  )
+  } else {
+    output <- list(
+      E = E.out,
+      F = F.out,
+      G = G.out,
+      M = M.out,
+      mean = mu.out,
+      vars = vars.out,
+      rho = rho.out,
+      meta = list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        level.link = u.link,
+        alpha = alpha,
+        F.limit = F.limit,
+        n.iter = n.iter,
+        method = method,
+        ind = ind.int,
+        call = match.call()
+      )
+    )
+  }
+
   class(output) <- "excurobj"
   output
 }

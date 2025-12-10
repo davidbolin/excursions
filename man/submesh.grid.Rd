@@ -13,7 +13,7 @@ present in the submesh.}
 \item{grid}{A list with locations and dimensions of the grid.}
 }
 \value{
-An \code{inla.mesh} object.
+An \code{fm_mesh_2d} object.
 }
 \description{
 Extracts a part of a grid.

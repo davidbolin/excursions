@@ -1,0 +1,60 @@
+on:
+  push:
+    branches:
+      - devel
+
+name: pkgdown
+
+jobs:
+  pkgdown:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-pandoc@v2
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "release"
+          extra-repositories: "https://inla.r-inla-download.org/R/testing https://inlabru-org.r-universe.dev https://rcppcore.r-universe.dev"
+
+      - name: Install system dependencies on Linux (GL)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y libglu1-mesa-dev libeigen3-dev
+          sudo ln -s /usr/bin/gcc /usr/local/bin/gcc
+          sudo ln -s /usr/bin/g++ /usr/local/bin/g++     
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          cache-version: 2
+          dependencies: '"all"'
+          extra-packages: |
+             Rcpp
+             pkgdown
+             remotes
+             rmarkdown
+
+      - name: Installing inlabru devel version (temporary for version 2.11.1.9017)
+        run: |
+          remotes::install_version("inlabru", version = ">= 2.11.1.9017")
+        shell: Rscript {0} 
+
+      - name: Session info
+        run: |
+          options(width = 100)
+          pkgs <- installed.packages()[, "Package"]
+          sessioninfo::session_info(pkgs, include_base = TRUE)
+        shell: Rscript {0}
+
+      - name: Install package
+        run: R CMD INSTALL .
+
+      - name: Deploy package
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          Rscript -e 'pkgdown::clean_site()'
+          Rscript -e 'pkgdown::deploy_to_branch(new_process = FALSE)'

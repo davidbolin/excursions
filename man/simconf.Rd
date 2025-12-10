@@ -54,14 +54,14 @@ and \eqn{b} such that \eqn{P(a<x<b) = 1-\alpha}.
 }
 \details{
 The pointwise confidence bands are based on the marginal quantiles,
-meaning that \code{a.marignal} is a vector where the ith element equals 
+meaning that \code{a.marignal} is a vector where the ith element equals
 \eqn{\mu_i + q_{\alpha,i}}  and \code{b.marginal} is a vector where the ith element
-equals  \eqn{\mu_i + q_{1-\alpha,i}}, where \eqn{\mu_i} is the expected value 
+equals  \eqn{\mu_i + q_{1-\alpha,i}}, where \eqn{\mu_i} is the expected value
 of the \eqn{x_i} and \eqn{q_{\alpha,i}} is the \eqn{\alpha}-quantile of \eqn{x_i-\mu_i}.
 
-The simultaneous confidence band is defined by the lower limit vector \code{a} and 
-the upper limit vector \code{b}, where \eqn{a_i = \mu_i +c q_{\alpha}} and 
-\eqn{b_i = \mu_i + c q_{1-\alpha}}, where \eqn{c} is a constant computed such 
+The simultaneous confidence band is defined by the lower limit vector \code{a} and
+the upper limit vector \code{b}, where \eqn{a_i = \mu_i +c q_{\alpha}} and
+\eqn{b_i = \mu_i + c q_{1-\alpha}}, where \eqn{c} is a constant computed such
 that \eqn{P(a < x < b) = 1-\alpha}.
 }
 \examples{
@@ -86,7 +86,7 @@ from global temperature}, Statistica Sinica, vol 25, pp 351-367.
 Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 }
 \seealso{
-\code{\link{simconf.inla}}, \code{\link{simconf.mc}}, \code{\link{simconf.mixture}}
+\code{\link[=simconf.inla]{simconf.inla()}}, \code{\link[=simconf.mc]{simconf.mc()}}, \code{\link[=simconf.mixture]{simconf.mixture()}}
 }
 \author{
 David Bolin \email{davidbolin@gmail.com} and Finn Lindgren \email{finn.lindgren@gmail.com}

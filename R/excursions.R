@@ -17,8 +17,8 @@
 
 #' Excursion Sets and Contour Credibility Regions for Random Fields
 #'
-#' \code{excursions} is one of the main functions in the package with the same name.
-#' For an introduction to the package, see \code{\link{excursions-package}}. 
+#' `excursions` is one of the main functions in the package with the same name.
+#' For an introduction to the package, see [excursions-package()].
 #' The function is used for calculating excursion sets, contour credible regions,
 #' and contour avoiding sets for latent Gaussian models. Details on the function and the
 #' package are given in the sections below.
@@ -35,7 +35,7 @@
 #'     \item{'='}{contour credibility region}}
 #' @param n.iter Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 10000.
 #' @param Q.chol The Cholesky factor of the precision matrix (optional).
-#' @param F.limit The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.
+#' @param F.limit The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = `alpha`.
 #' @param vars Precomputed marginal variances (optional).
 #' @param rho Marginal excursion probabilities (optional). For contour regions, provide \eqn{P(X>u)}.
 #' @param reo Reordering (optional).
@@ -48,20 +48,22 @@
 #' @param verbose Set to TRUE for verbose mode (optional).
 #' @param max.threads Decides the number of threads the program can use. Set to 0 for using the maximum number of threads allowed by the system (default).
 #' @param seed Random seed (optional).
+#' @param prune.ind If `TRUE` and `ind` is supplied, then the result object is pruned to
+#' contain only the active nodes specified by `ind`.
 #'
-#' @return \code{excursions} returns an object of class "excurobj" with the following elements
+#' @return `excursions` returns an object of class "excurobj" with the following elements
 #' \item{E}{Excursion set, contour credible region, or contour avoiding set}
 #' \item{G}{Contour map set. \eqn{G=1} for all nodes where the \eqn{mu > u}.}
-#' \item{M}{Contour avoiding set. \eqn{M=-1} for all non-significant nodes. \eqn{M=0} for nodes where the process is significantly below \code{u} and \eqn{M=1} for all nodes where the field is significantly above \code{u}. Which values that should be present depends on what type of set that is calculated.}
-#' \item{F}{The excursion function corresponding to the set \code{E} calculated or values up to \code{F.limit}}
+#' \item{M}{Contour avoiding set. \eqn{M=-1} for all non-significant nodes. \eqn{M=0} for nodes where the process is significantly below `u` and \eqn{M=1} for all nodes where the field is significantly above `u`. Which values that should be present depends on what type of set that is calculated.}
+#' \item{F}{The excursion function corresponding to the set `E` calculated or values up to `F.limit`}
 #' \item{rho}{Marginal excursion probabilities}
-#' \item{mean}{The mean \code{mu}.}
+#' \item{mean}{The mean `mu`.}
 #' \item{vars}{Marginal variances.}
 #' \item{meta}{A list containing various information about the calculation.}
 #' @export
 #' @details
 #' The estimation of the region is done using sequential importance sampling with
-#' \code{n.iter} samples. The procedure requires computing the marginal variances of
+#' `n.iter` samples. The procedure requires computing the marginal variances of
 #' the field, which should be supplied if available. If not, they are computed using
 #' the Cholesky factor of the precision matrix. The cost of this step can therefore be
 #' reduced by supplying the Cholesky factor if it is available.
@@ -71,17 +73,17 @@
 #' exact for problems with Gaussian posterior distributions. For problems with
 #' non-Gaussian posteriors, the QC method can be used for improved results. In order to use
 #' the QC method, the true marginal excursion probabilities must be supplied using the
-#' argument \code{rho}.
+#' argument `rho`.
 #' Other more
 #' complicated methods for handling non-Gaussian posteriors must be implemented manually
-#' unless \code{INLA} is used to fit the model. If the model is fitted using \code{INLA},
-#' the method \code{excursions.inla} can be used. See the Package section for further details
+#' unless `INLA` is used to fit the model. If the model is fitted using `INLA`,
+#' the method `excursions.inla` can be used. See the Package section for further details
 #' about the different options.
 #' @author David Bolin \email{davidbolin@@gmail.com} and Finn Lindgren \email{finn.lindgren@@gmail.com}
-#' @references Bolin, D. and Lindgren, F. (2015) \emph{Excursion and contour uncertainty regions for latent Gaussian models}, JRSS-series B, vol 77, no 1, pp 85-106.
+#' @references Bolin, D. and Lindgren, F. (2015) *Excursion and contour uncertainty regions for latent Gaussian models*, JRSS-series B, vol 77, no 1, pp 85-106.
 #'
-#' Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
-#' @seealso \code{\link{excursions-package}}, \code{\link{excursions.inla}}, \code{\link{excursions.mc}}
+#' Bolin, D. and Lindgren, F. (2018), *Calculating Probabilistic Excursion Sets and Related Quantities Using excursions*, Journal of Statistical Software, vol 86, no 1, pp 1-20.
+#' @seealso [excursions-package()], [excursions.inla()], [excursions.mc()]
 #'
 #' @examples
 #' ## Create a tridiagonal precision matrix
@@ -121,7 +123,8 @@ excursions <- function(alpha,
                        max.size,
                        verbose = 0,
                        max.threads = 0,
-                       seed) {
+                       seed,
+                       prune.ind = FALSE) {
   if (method == "QC") {
     qc <- TRUE
   } else if (method == "EB") {
@@ -176,9 +179,9 @@ excursions <- function(alpha,
 
   if (missing(vars)) {
     if (is.chol) {
-      vars <- excursions.variances(L = Q)
+      vars <- excursions.variances(L = Q, max.threads = max.threads)
     } else {
-      vars <- excursions.variances(Q = Q)
+      vars <- excursions.variances(Q = Q, max.threads = max.threads)
     }
   } else {
     vars <- private.as.vector(vars)
@@ -231,7 +234,11 @@ excursions <- function(alpha,
     cat("Calculate permutation\n")
   }
   if (missing(reo)) {
-    use.camd <- !missing(ind) || F.limit < 1
+    ## TODO: Check if there is a reason use.camd is unconditionally
+    ## set to TRUE in the excursions.permutation calls, or if this computed
+    ## value can safely be used instead. If not, it should be removed, and
+    ## the reason documented.
+    use.camd <- !missing(ind) || (F.limit < 1)
     if (qc) {
       reo <- excursions.permutation(marg$rho_ng, indices,
         use.camd = TRUE, F.limit, Q
@@ -257,21 +264,22 @@ excursions <- function(alpha,
   )
 
   n <- length(mu)
-  ii <- which(res$Pv[1:n] > 0)
-  if (length(ii) == 0) i <- n + 1 else i <- min(ii)
+  ## ii and i are unused
+  # ii <- which(res$Pv[1:n] > 0)
+  # if (length(ii) == 0) i <- n + 1 else i <- min(ii)
 
-  F <- Fe <- E <- G <- rep(0, n)
-  F[reo] <- res$Pv
+  F_ <- Fe <- E <- G <- rep(0, n)
+  F_[reo] <- res$Pv
   Fe[reo] <- res$Ev
 
   ireo <- NULL
   ireo[reo] <- 1:n
 
-  ind.lowF <- F < 1 - F.limit
-  E[F > 1 - alpha] <- 1
+  ind.lowF <- F_ < 1 - F.limit
+  E[F_ > 1 - alpha] <- 1
 
   if (type == "=") {
-    F <- 1 - F
+    F_ <- 1 - F_
   }
 
   if (type == "<") {
@@ -280,7 +288,7 @@ excursions <- function(alpha,
     G[mu >= u] <- 1
   }
 
-  F[ind.lowF] <- Fe[ind.lowF] <- NA
+  F_[ind.lowF] <- Fe[ind.lowF] <- NA
 
   M <- rep(-1, n)
   if (type == "<") {
@@ -298,29 +306,56 @@ excursions <- function(alpha,
     ind <- which(ind)
   }
 
-  output <- list(
-    F = F,
-    G = G,
-    M = M,
-    E = E,
-    mean = mu,
-    vars = vars,
-    rho = marg$rho,
-    meta = (list(
-      calculation = "excursions",
-      type = type,
-      level = u,
-      F.limit = F.limit,
-      alpha = alpha,
-      n.iter = n.iter,
-      method = method,
-      ind = ind,
-      reo = reo,
-      ireo = ireo,
-      Fe = Fe,
-      call = match.call()
-    ))
-  )
+  if (prune.ind) {
+    output <- list(
+      F = F_[ind],
+      G = G[ind],
+      M = M[ind],
+      E = E[ind],
+      mean = mu[ind],
+      vars = vars[ind],
+      rho = marg$rho[ind],
+      meta = (list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        F.limit = F.limit,
+        alpha = alpha,
+        n.iter = n.iter,
+        method = method,
+        ind = NULL,
+        reo = reo,
+        ireo = ireo,
+        Fe = Fe,
+        call = match.call()
+      ))
+    )
+  } else {
+    output <- list(
+      F = F_,
+      G = G,
+      M = M,
+      E = E,
+      mean = mu,
+      vars = vars,
+      rho = marg$rho,
+      meta = (list(
+        calculation = "excursions",
+        type = type,
+        level = u,
+        F.limit = F.limit,
+        alpha = alpha,
+        n.iter = n.iter,
+        method = method,
+        ind = ind,
+        reo = reo,
+        ireo = ireo,
+        Fe = Fe,
+        call = match.call()
+      ))
+    )
+  }
+
   class(output) <- "excurobj"
   output
 }

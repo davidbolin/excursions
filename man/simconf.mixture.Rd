@@ -12,7 +12,7 @@ simconf.mixture(
   ind,
   n.iter = 10000,
   vars,
-  verbose = 0,
+  verbose = FALSE,
   max.threads = 0,
   seed = NULL,
   mix.samp = TRUE
@@ -59,7 +59,7 @@ The function returns upper and lower bounds \eqn{a} and \eqn{b} such that
 \eqn{P(a<x<b) = 1-\alpha}.
 }
 \details{
-See \code{\link{simconf}} for details.
+See \code{\link[=simconf]{simconf()}} for details.
 }
 \examples{
 n <- 11
@@ -86,7 +86,7 @@ from global temperature}, Statistica Sinica, vol 25, pp 351-367.
 Bolin, D. and Lindgren, F. (2018), \emph{Calculating Probabilistic Excursion Sets and Related Quantities Using excursions}, Journal of Statistical Software, vol 86, no 1, pp 1-20.
 }
 \seealso{
-\code{\link{simconf}}, \code{\link{simconf.inla}}, \code{\link{simconf.mc}}
+\code{\link[=simconf]{simconf()}}, \code{\link[=simconf.inla]{simconf.inla()}}, \code{\link[=simconf.mc]{simconf.mc()}}
 }
 \author{
 David Bolin \email{davidbolin@gmail.com}

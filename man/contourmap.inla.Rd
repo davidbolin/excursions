@@ -44,22 +44,22 @@ only Empirical Bayes (EB) and Quantile corrections (QC) are supported.}
 
 \item{type}{Type of contour map. One of:
 \describe{
-    \item{'standard' }{Equidistant levels between smallest and largest value
-    of the posterior mean (default).}
-    \item{'pretty' }{Equally spaced 'round' values which cover the range of
-    the values in the posterior mean.}
-    \item{'equalarea' }{Levels such that different spatial regions are
-    approximately equal in size.}
-    }}
+\item{'standard' }{Equidistant levels between smallest and largest value
+of the posterior mean (default).}
+\item{'pretty' }{Equally spaced 'round' values which cover the range of
+the values in the posterior mean.}
+\item{'equalarea' }{Levels such that different spatial regions are
+approximately equal in size.}
+}}
 
 \item{compute}{A list with quality indices to compute
 \describe{
-     \item{'F': }{TRUE/FALSE indicating whether the contour map function
-     should be computed (default TRUE)}
-     \item{'measures': }{A list with the quality measures to compute ("P0",
-     "P1", "P2") or corresponding bounds based only on the marginal
-     probabilities ("P0-bound", "P1-bound", "P2-bound")}
-     }}
+\item{'F': }{TRUE/FALSE indicating whether the contour map function
+should be computed (default TRUE)}
+\item{'measures': }{A list with the quality measures to compute ("P0",
+"P1", "P2") or corresponding bounds based only on the marginal
+probabilities ("P0-bound", "P1-bound", "P2-bound")}
+}}
 
 \item{alpha}{Maximal error probability in contour map function (default=1)}
 
@@ -125,7 +125,11 @@ if (require.nowarnings("INLA")) {
   n.lattice <- 10 # increase for more interesting, but slower, examples
   x <- seq(from = 0, to = 10, length.out = n.lattice)
   lattice <- fmesher::fm_lattice_2d(x = x, y = x)
-  mesh <- fmesher::fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+  mesh <- fmesher::fm_rcdt_2d_inla(
+    lattice = lattice,
+    extend = FALSE,
+    refine = FALSE
+  )
   spde <- inla.spde2.matern(mesh, alpha = 2)
 
   # Generate an artificial sample
@@ -136,7 +140,7 @@ if (require.nowarnings("INLA")) {
     runif(n.obs) * diff(range(x)) + min(x)
   )
   Q <- inla.spde2.precision(spde, theta = c(log(sqrt(0.5)), log(sqrt(1))))
-  x <- inla.qsample(Q = Q)
+  x <- inla.qsample(Q = Q, num.threads = 1)
   A <- fmesher::fm_basis(mesh = mesh, loc = obs.loc)
   Y <- as.vector(A \%*\% x + rnorm(n.obs) * sqrt(sigma2.e))
 
@@ -144,8 +148,18 @@ if (require.nowarnings("INLA")) {
   mesh.index <- inla.spde.make.index(name = "field", n.spde = spde$n.spde)
   ef <- list(c(mesh.index, list(Intercept = 1)))
 
-  s.obs <- inla.stack(data = list(y = Y), A = list(A), effects = ef, tag = "obs")
-  s.pre <- inla.stack(data = list(y = NA), A = list(1), effects = ef, tag = "pred")
+  s.obs <- inla.stack(
+    data = list(y = Y),
+    A = list(A),
+    effects = ef,
+    tag = "obs"
+  )
+  s.pre <- inla.stack(
+    data = list(y = NA),
+    A = list(1),
+    effects = ef,
+    tag = "pred"
+  )
   stack <- inla.stack(s.obs, s.pre)
   formula <- y ~ -1 + Intercept + f(field, model = spde)
   result <- inla(
@@ -187,8 +201,8 @@ Sets and Related Quantities Using excursions}, Journal of Statistical
 Software, vol 86, no 1, pp 1-20.
 }
 \seealso{
-\code{\link{contourmap}}, \code{\link{contourmap.mc}},
-\code{\link{contourmap.colors}}
+\code{\link[=contourmap]{contourmap()}}, \code{\link[=contourmap.mc]{contourmap.mc()}},
+\code{\link[=contourmap.colors]{contourmap.colors()}}
 }
 \author{
 David Bolin \email{davidbolin@gmail.com}
