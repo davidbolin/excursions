@@ -112,7 +112,7 @@ MAP or ML estimate of the parameters.
 
 The function has a version `excursions.inla` used to analyze outputs of
 `INLA`, which is described further in the [`INLA`
-interface](https://davidbolin.github.io/excursions/articles/inla.md)
+interface](https://davidbolin.github.io/excursions/articles/inla.html)
 vignette.
 
 The function `excursions.mc` can be used to post-process Monte Carlo

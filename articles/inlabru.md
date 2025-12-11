@@ -169,10 +169,10 @@ print(data.frame(
   row.names = c("EB", "QC", "NI", "NIQC")
 ))
 #>        time
-#> EB    3.940
-#> QC    4.066
-#> NI   38.378
-#> NIQC 42.403
+#> EB    4.034
+#> QC    4.172
+#> NI   40.620
+#> NIQC 44.781
 ```
 
 We can see that the `EB` and `QC` methods have similar computation times
