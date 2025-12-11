@@ -5,13 +5,18 @@
 
 `excursions` is an R package that contains functions that compute probabilistic excursion sets, contour credibility regions, and simultaneous confidence bands for latent Gaussian random processes and fields.
 
-See the [package homepage](https://davidbolin.github.io/excursions/news/index.html) for details and tutorials. 
+See the [package homepage](https://davidbolin.github.io/excursions/) for details and tutorials. 
 
-The theory of the methods used in the package are described in the papers [Bolin and Lindgren (2015)](http://onlinelibrary.wiley.com/doi/10.1111/rssb.12055/abstract), [Bolin and Lindgren (2016)](http://www.tandfonline.com/doi/full/10.1080/10618600.2016.1228537) , and [Bolin et al (2015)](http://www3.stat.sinica.edu.tw/statistica/j25n1/J25N120/J25N120.html).
+The theory of the methods used in the package are described in the papers
+[Bolin and Lindgren (2015)](http://doi.org/10.1111/rssb.12055),
+[Bolin and Lindgren (2016)](http://doi.org/10.1080/10618600.2016.1228537),
+and [Bolin et al (2015)](https://www3.stat.sinica.edu.tw/statistica/J25N1/J25N120/J25N120.html).
 
  
 # Versions #
-The development version of the package contains new features and fixes that are not on CRAN, see `NEWS.md`. To install this version, see the instructions below.
+The development version of the package contains new features and fixes that are
+not on CRAN, see [NEWS](https://davidbolin.github.io/excursions/news/).
+To install this version, see the instructions below.
 
 # Installation instructions #
 The latest CRAN release of the package can be installed directly from CRAN with `install.packages("excursions")`.

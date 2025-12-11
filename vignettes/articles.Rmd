@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 ## Package vignettes
 
 These package vignettes are available in the R package and on
-(https://davidbolin.github.io/excursions/):
+[`https://davidbolin.github.io/excursions/`](https://davidbolin.github.io/excursions/):
 
 ```{r, echo=FALSE,results="asis"}
 files <- list.files(".", "\\.Rmd$")
@@ -45,8 +45,8 @@ for (file in files) {
 ## Package examples
 
 Package examples using
-(https://www.r-inla.org) are available on
-(https://davidbolin.github.io/excursions/):
+[`https://www.r-inla.org`](https://www.r-inla.org) are available on
+[`https://davidbolin.github.io/excursions/`](https://davidbolin.github.io/excursions/):
 
 ```{r, echo=FALSE,results="asis"}
 files <- list.files("articles", "\\.Rmd$")
@@ -59,7 +59,7 @@ for (file in file.path("articles", files)) {
     title <- sub('"$', "", title)
     cat("* [",
       title,
-      "](davidbolin.github.io/excursions/articles/",
+      "](https://davidbolin.github.io/excursions/articles/",
       sub("\\.Rmd", ".html", basename(file)),
       ")\n",
       sep = ""
