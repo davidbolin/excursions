@@ -30,24 +30,24 @@ should be analyzed. The standard method for purely Gaussian models is to
 specify the model by providing the parameters of the Gaussian process.
 For more general models, the input can either be given as Monte Carlo
 simulations of the process or as the result from an analysis using the
-[R-INLA](https://davidbolin.github.io/excursions//articles/inla.html "`INLA` vignette")
+[R-INLA](https://davidbolin.github.io/excursions/articles/inla.html "`INLA` vignette")
 or
-[inlabru](https://davidbolin.github.io/excursions//articles/inlabru.html "`inlabru` vignette")
+[inlabru](https://davidbolin.github.io/excursions/articles/inlabru.html "`inlabru` vignette")
 packages.
 
 See the [Getting
-started](https://davidbolin.github.io/rSPDE//articles/excursions.html "An introduction to the excursions package")
+started](https://davidbolin.github.io/excursions/articles/excursions.html "An introduction to the excursions package")
 vignette for an introduction to the main functions of the package. A
 complete list of functions is contained in the [`excursions`
-documentation](https://davidbolin.github.io/rSPDE/reference/index.html "`excursions` documentation.")
+documentation](https://davidbolin.github.io/excursions/reference/index.html "`excursions` documentation.")
 and a brief introduction to the theory is provided in the
-[Methodology](https://davidbolin.github.io/rSPDE//articles/theory.html "Methodology")
+[Methodology](https://davidbolin.github.io/excursions/articles/theory.html "Methodology")
 vignette.
 
 The `INLA` interface is introduced in the
-[R-INLA](https://davidbolin.github.io/excursions//articles/inla.html "`INLA` vignette")
+[R-INLA](https://davidbolin.github.io/excursions/articles/inla.html "`INLA` vignette")
 vignette and the `inlabru` interface is introduced in the
-[inlabru](https://davidbolin.github.io/excursions//articles/inlabru.html "`inlabru` vignette")
+[inlabru](https://davidbolin.github.io/excursions/articles/inlabru.html "`inlabru` vignette")
 vignette.
 
 # Installation instructions
