@@ -98,7 +98,7 @@ The argument `F.limit` is used to specify when to stop the computation of the ex
 
 The function has the EB method as default strategy for handling the possible latent Gaussian structure. In the simulated example, the likelihood is Gaussian and the parameters are assumed to be known, so the EB method is exact. The QC method can be used instead by specifying `method='QC'`. In this case, the argument `rho` should be used to also provide a vector with point-wise marginal probabilities: $P(x_i>u)$ for positive excursions and contour regions, and $P(x_i<u)$ for negative excursions. In the situation when $\pi(\mv{x}|\mv{Y},\mv{\theta})$ is Gaussian but $\pi(\mv{x}|\mv{Y})$ is not, the marginal probabilities should be calculated under the distribution $\pi(\mv{x}|\mv{Y})$ and `mu` and `Q` should be chosen as the mean and precision for the distribution $\pi(\mv{x}|\mv{Y},\hat{\mv{\theta}})$ where $\hat{\mv{\theta}}$ is the MAP or ML estimate of the parameters.
 
-The function has a version `excursions.inla` used to analyze outputs of `INLA`, which is described further in the [`INLA` interface](inla.html) vignette.
+The function has a version `excursions.inla` used to analyze outputs of `INLA`, which is described further in the [`INLA` interface](https://davidbolin.github.io/excursions/articles/inla.html) vignette.
 
 The function `excursions.mc` can be used to post-process Monte Carlo model simulations in order to compute excursion sets and credible regions. For this function, the model is not specified explicitly. Instead a $d \times N$ matrix `X` containing $N$ Monte Carlo simulations of the $d$ dimensional process of interest is provided. A basic call to the function looks like
 ```{r, eval=FALSE}
