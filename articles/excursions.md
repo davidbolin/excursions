@@ -169,7 +169,7 @@ using an `INLA` object, or `contourmap.mc` for model specification using
 Monte Carlo simulations of the model. The model specification using
 these functions is identical to that in the corresponding `excursions`
 functions. See the [`INLA`
-interface](https://davidbolin.github.io/excursions/articles/inla.md)
+interface](https://davidbolin.github.io/excursions/articles/inla.html)
 vignette for examples using `contourmap.inla`.
 
 ## Continuous domain interpretations
