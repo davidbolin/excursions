@@ -117,7 +117,7 @@ res.con <- contourmap(
 ```
 Here, `mu` is again the mean value and `Q` is the precision matrix of the model. The parameter `n.levels` sets the number of contours that should be used in the contour map, and these are spaced equidistant in the range of `mu` by default. Other types of contour maps can be obtained using the `type` argument. For manual specification of the levels, the `levels` argument can be used instead. By default, the function computes the specified contour map but no quality measures and it does not compute the contour map function. If quality measures should be computed, this is specified using the `compute` argument. This argument is also used to decide whether the contour map function $F$ should be computed.
 
-As for `excursions`, this function comes in two other versions depending on the form of the input:  `contourmap.inla` for model specification using an `INLA` object, or `contourmap.mc` for model specification using Monte Carlo simulations of the model. The model specification using these functions is identical to that in the corresponding `excursions` functions. See the [`INLA` interface](inla.html) vignette for examples using `contourmap.inla`.
+As for `excursions`, this function comes in two other versions depending on the form of the input:  `contourmap.inla` for model specification using an `INLA` object, or `contourmap.mc` for model specification using Monte Carlo simulations of the model. The model specification using these functions is identical to that in the corresponding `excursions` functions. See the [`INLA` interface](https://davidbolin.github.io/excursions/articles/inla.html) vignette for examples using `contourmap.inla`.
 
 
 ## Continuous domain interpretations
