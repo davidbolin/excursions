@@ -1,5 +1,9 @@
 # Changelog
 
+## excursions 2.5.10
+
+- Corrections to various links in documentation
+
 ## excursions 2.5.9
 
 - Add -DNPRINT to CAMD build, and remove fflush(stdout) use, to avoid
