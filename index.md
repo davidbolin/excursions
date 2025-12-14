@@ -30,8 +30,8 @@ in R. The development version can be installed using the command
 remotes::install_github("davidbolin/excursions", ref = "devel")
 ```
 
-[ref1]: https://davidbolin.github.io/rSPDE//articles/excursions.html "An introduction to the excursions package"
-[ref2]: https://davidbolin.github.io/rSPDE/reference/index.html "`excursions` documentation."
-[ref3]: https://davidbolin.github.io/rSPDE//articles/theory.html "Methodology"
-[ref4]: https://davidbolin.github.io/excursions//articles/inla.html "`INLA` vignette"
-[ref5]: https://davidbolin.github.io/excursions//articles/inlabru.html "`inlabru` vignette"
+[ref1]: https://davidbolin.github.io/excursions/articles/excursions.html "An introduction to the excursions package"
+[ref2]: https://davidbolin.github.io/excursions/reference/index.html "`excursions` documentation."
+[ref3]: https://davidbolin.github.io/excursions/articles/theory.html "Methodology"
+[ref4]: https://davidbolin.github.io/excursions/articles/inla.html "`INLA` vignette"
+[ref5]: https://davidbolin.github.io/excursions/articles/inlabru.html "`inlabru` vignette"
