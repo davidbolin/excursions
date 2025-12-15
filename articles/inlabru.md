@@ -170,9 +170,9 @@ print(data.frame(
 ))
 #>        time
 #> EB    3.837
-#> QC    4.008
-#> NI   38.086
-#> NIQC 41.505
+#> QC    4.005
+#> NI   38.066
+#> NIQC 41.692
 ```
 
 We can see that the `EB` and `QC` methods have similar computation times
