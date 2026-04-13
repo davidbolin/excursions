@@ -13,3 +13,4 @@
 ^index\.md$
 ^\.vscode$
 ^vignettes/articles$
+^\jarl.toml$
