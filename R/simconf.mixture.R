@@ -86,7 +86,7 @@ simconf.mixture <- function(alpha,
     n <- length(mu[[1]])
     for (k in seq_len(K)) {
       mu[[k]] <- private.as.vector(mu[[k]])
-      if (any(is.na(mu[[k]]))) {
+      if (anyNA(mu[[k]])) {
         stop("mu contains NA")
       }
     }
@@ -106,7 +106,7 @@ simconf.mixture <- function(alpha,
     stop("Must provide list with mixture weights")
   } else {
     w <- private.as.vector(w)
-    if (any(is.na(w))) {
+    if (anyNA(w)) {
       stop("w contains NA")
     }
   }

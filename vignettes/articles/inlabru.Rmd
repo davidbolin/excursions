@@ -109,7 +109,7 @@ image(proj$x, proj$y, fm_evaluate(proj, field = sets$F),
 
 Above we used the `QC` method to compute the set. Let us now try the other available options and compare their timings and results.
 ```{r}
-t.EB <- system.time(
+t.EB <- system.time({
   res.EB <- excursions.inla(result_bru,
     name = "APredictor",
     ind = bru_index(result_bru, "prd"),
@@ -118,8 +118,8 @@ t.EB <- system.time(
     prune.ind = TRUE,
     max.threads = 2
   )
-)
-t.QC <- system.time(
+})
+t.QC <- system.time({
   res.QC <- excursions.inla(result_bru,
     name = "APredictor",
     ind = bru_index(result_bru, "prd"),
@@ -128,8 +128,8 @@ t.QC <- system.time(
     prune.ind = TRUE,
     max.threads = 2
   )
-)
-t.NI <- system.time(
+})
+t.NI <- system.time({
   res.NI <- excursions.inla(result_bru,
     name = "APredictor",
     ind = bru_index(result_bru, "prd"),
@@ -138,8 +138,8 @@ t.NI <- system.time(
     prune.ind = TRUE,
     max.threads = 2
   )
-)
-t.NIQC <- system.time(
+})
+t.NIQC <- system.time({
   res.NIQC <- excursions.inla(result_bru,
     name = "APredictor",
     ind = bru_index(result_bru, "prd"),
@@ -148,7 +148,7 @@ t.NIQC <- system.time(
     prune.ind = TRUE,
     max.threads = 2
   )
-)
+})
 ```
 
 The computation time for the different methods are 

@@ -186,7 +186,7 @@ private.get.config <- function(result, i) {
 ## predictor if predictor==TRUE, whereas it refers to a location
 ## in the random effect vector otherwise.
 inla.get.marginal <- function(i, u, result, effect.name = NULL, u.link, type) {
-  if (is.null(effect.name) && u.link == TRUE) {
+  if (is.null(effect.name) && u.link) {
     marg.p <- result$marginals.fitted.values[[i]]
   } else if (is.null(effect.name)) {
     # Calculate marginals using linear predictor

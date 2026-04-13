@@ -122,7 +122,7 @@ simconf.inla <- function(result.inla,
     stop("Must supply error probability alpha")
   }
 
-  if (result.inla$.args$control.compute$config == FALSE) {
+  if (!result.inla$.args$control.compute$config) {
     stop("INLA result must be calculated using control.compute$config=TRUE")
   }
 

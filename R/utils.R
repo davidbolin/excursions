@@ -210,7 +210,7 @@ excursions.setlimits <- function(marg, vars, type, QC, u, mu) {
 
 
 excursions.call <- function(a, b, reo, Q, is.chol = FALSE, lim, K, max.size, n.threads, seed) {
-  if (is.chol == FALSE) {
+  if (!is.chol) {
     a.sort <- a[reo]
     b.sort <- b[reo]
     Q <- Q[reo, reo]
@@ -247,14 +247,11 @@ private.check.integer <- function(v) {
 private.as.vector <- function(v) {
   if (is.null(v) || is.vector(v)) {
     return(v)
-  } else {
-    if (min(dim(v) > 1)) {
-      stop("vector has wrong dimensions")
-    }
-    return(as.vector(v))
   }
-
-  c(v)
+  if (min(dim(v) > 1)) {
+    stop("vector has wrong dimensions")
+  }
+  as.vector(v)
 }
 
 private.sparse.gettriplet <- function(M) {

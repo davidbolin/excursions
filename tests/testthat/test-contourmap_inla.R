@@ -3,7 +3,8 @@ test_that("stack extraction", {
   local_exc_safe_inla()
 
   data <- testdata.inla.small()
-  tmp <- excursions:::inla.output.indices(data$result,
+  # note: private function
+  tmp <- inla.output.indices(data$result,
     stack = data$stack,
     tag = "pred"
   )
@@ -16,7 +17,8 @@ test_that("stack extraction", {
 
   expect_equal(ind, c(6, 7, 8, 9, 10, 11, 12), tolerance = 1e-7)
   for (i in 1:result$misc$configs$nconfig) {
-    config <- excursions:::private.get.config(result, i)
+    # note: private function
+    config <- private.get.config(result, i)
     if (config$lp == 0) {
       break
     }
@@ -30,7 +32,8 @@ test_that("stack extraction", {
 
   # test compact mode
   data2 <- testdata.inla.small(inla.mode = "compact")
-  tmp <- excursions:::inla.output.indices(data2$result,
+  # note: private function
+  tmp <- inla.output.indices(data2$result,
     stack = data$stack,
     tag = "pred", compressed = FALSE
   )
@@ -38,14 +41,16 @@ test_that("stack extraction", {
   result <- tmp$result
   expect_equal(ind2, c(6, 7, 8, 9, 10, 11, 12), tolerance = 1e-7)
   for (i in 1:result$misc$configs$nconfig) {
-    config2 <- excursions:::private.get.config(result, i)
+    # note: private function
+    config2 <- private.get.config(result, i)
     if (config2$lp == 0) {
       break
     }
   }
   expect_equal(config2$mu, config$mu, tolerance = 1e-2)
 
-  tmp <- excursions:::inla.output.indices(data2$result,
+  # note: private function
+  tmp <- inla.output.indices(data2$result,
     stack = data$stack,
     tag = "pred", compressed = TRUE
   )
@@ -53,7 +58,8 @@ test_that("stack extraction", {
   result <- tmp$result
   expect_equal(ind3, seq_along(c(6, 7, 8, 9, 10, 11, 12)), tolerance = 1e-7)
   for (i in 1:result$misc$configs$nconfig) {
-    config3 <- excursions:::private.get.config(result, i)
+    # note: private function
+    config3 <- private.get.config(result, i)
     if (config3$lp == 0) {
       break
     }

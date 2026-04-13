@@ -198,7 +198,7 @@ contourmap <- function(mu,
     } else if (missing(vars)) {
       vars <- excursions.variances(Q = Q, max.threads = max.threads)
     }
-    if (use.marginals == TRUE) {
+    if (use.marginals) {
       if (missing(Q)) {
         stop("The precision matrix must be supplied unless marginals are used")
       }

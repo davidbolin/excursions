@@ -64,7 +64,7 @@ testdata.inla <- function(inla.mode = "classic") {
   }
 }
 
-testdata.inla.small <- function(inla.mode = "classic") {
+testdata.inla.small <- function(inla.mode = "classic", generate = FALSE) {
   if (require("INLA", quietly = TRUE)) {
     local_exc_safe_inla()
     n <- 7
@@ -80,7 +80,7 @@ testdata.inla.small <- function(inla.mode = "classic") {
       dims = c(n.obs, n)
     )
     
-    if (FALSE) {
+    if (generate) {
       set.seed(1)
       rho <- 0.9
       sigma <- 3
@@ -93,12 +93,12 @@ testdata.inla.small <- function(inla.mode = "classic") {
         symmetric = TRUE
       ) / (1 - rho^2) / sigma^2
       
-      X <- mu + INLA::inla.qsample(1, Q, seed=12345L)[,1]
+      X <- mu + INLA::inla.qsample(1, Q, seed=12345L, num.threads = "1:1")[,1]
       Y <- as.vector(A %*% X +
                        INLA::inla.qsample(
                          1,
                          Matrix::Diagonal(n.obs, 10.0),
-                         seed = 98765L)[, 1])
+                         seed = 98765L, num.threads = "1:1")[, 1])
     } else {
       Y <- c(4.812842, 5.165710, 2.786433, 1.391536, 3.094942)
     }

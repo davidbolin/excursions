@@ -212,7 +212,7 @@ gaussint <- function(mu,
   a[a == -Inf] <- -.Machine$double.xmax
   b[b == -Inf] <- -.Machine$double.xmax
 
-  if (reordered == TRUE) {
+  if (reordered) {
     a <- a[reo]
     b <- b[reo]
   }

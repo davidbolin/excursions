@@ -225,7 +225,7 @@ contourmap.inla <- function(result.inla,
   if (compute$F) { # compute P0 measure if F is computed anyway
     if (is.null(measure)) {
       measure <- c("P0")
-    } else if (("P0" %in% measure) == FALSE) {
+    } else if (!("P0" %in% measure)) {
       measure <- c(measure, "P0")
     }
   }

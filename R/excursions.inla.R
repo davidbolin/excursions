@@ -207,7 +207,7 @@ excursions.inla <- function(result.inla,
     stop("Must specify type of excursion")
   }
 
-  if (result.inla$.args$control.compute$config == FALSE) {
+  if (!result.inla$.args$control.compute$config) {
     stop("INLA result must be calculated using control.compute$config=TRUE")
   }
 
@@ -244,7 +244,7 @@ excursions.inla <- function(result.inla,
   # If u.link is TRUE, the limit is given in linear scale
   # then transform to the scale of the linear predictor
   u.t <- rho <- rep(0, n)
-  if (u.link == TRUE) {
+  if (u.link) {
     links <- result.inla$misc$linkfunctions$names[
       result.inla$misc$linkfunctions$link
     ]

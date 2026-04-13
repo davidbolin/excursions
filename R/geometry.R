@@ -334,13 +334,13 @@ outline.on.grid <- function(z, grid) {
     }
     ni <- nrow(z)
     nj <- ncol(z)
-    z <- (z != FALSE)
+    z <- as.logical(z)
     grid <- list(x = seq(0, 1, length = ni), y = seq(0, 1, length = nj))
     grid$loc <- cbind(rep(grid$x, times = nj), rep(grid$y, each = ni))
   } else {
     ni <- grid$dims[1]
     nj <- grid$dims[2]
-    z <- matrix(z != FALSE, ni, nj)
+    z <- matrix(as.logical(z), ni, nj)
   }
 
   ij2k <- function(i, j) {
