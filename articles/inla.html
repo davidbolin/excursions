@@ -201,7 +201,7 @@ confidence band with dotted lines.</p>
 <span>  col <span class="op">=</span> <span class="fl">1</span>, add <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cbind.html" class="external-link">cbind</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">a</span>, <span class="va">res</span><span class="op">$</span><span class="va">b</span><span class="op">)</span>, type <span class="op">=</span> <span class="st">"l"</span>, lty <span class="op">=</span> <span class="fl">3</span>, col <span class="op">=</span> <span class="fl">2</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="inla_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" width="700"></p>
+<p><img src="inla_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 <div class="section level3">
 <h3 id="a-spatial-example">A spatial example<a class="anchor" aria-label="anchor" href="#a-spatial-example"></a>
@@ -230,7 +230,7 @@ data using a different non-Gaussian SPDE model.</p>
 <span><span class="va">Y</span> <span class="op">&lt;-</span> <span class="va">Y</span><span class="op">[</span><span class="va">ind</span><span class="op">]</span></span>
 <span><span class="va">coords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="va">PRprec</span><span class="op">[</span><span class="va">ind</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_nonconvex_hull.html" class="external-link">fm_nonconvex_hull</a></span><span class="op">(</span><span class="va">coords</span>, <span class="op">-</span><span class="fl">0.03</span>, <span class="op">-</span><span class="fl">0.05</span>, resolution <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">prmesh</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_mesh_2d.html" class="external-link">fm_mesh_2d</a></span><span class="op">(</span>boundary <span class="op">=</span> <span class="va">b</span>, max.edge <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">.45</span>, <span class="fl">1</span><span class="op">)</span>, cutoff <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span>
+<span><span class="va">prmesh</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_mesh_2d.html" class="external-link">fm_mesh_2d</a></span><span class="op">(</span>boundary <span class="op">=</span> <span class="va">b</span>, max.edge <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.45</span>, <span class="fl">1</span><span class="op">)</span>, cutoff <span class="op">=</span> <span class="fl">0.2</span><span class="op">)</span></span>
 <span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu">inla.spde.make.A</span><span class="op">(</span><span class="va">prmesh</span>, loc <span class="op">=</span> <span class="va">coords</span><span class="op">)</span></span>
 <span><span class="va">spde</span> <span class="op">&lt;-</span> <span class="fu">inla.spde2.matern</span><span class="op">(</span><span class="va">prmesh</span>, alpha <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="va">mesh.index</span> <span class="op">&lt;-</span> <span class="fu">inla.spde.make.index</span><span class="op">(</span>name <span class="op">=</span> <span class="st">"field"</span>, n.spde <span class="op">=</span> <span class="va">spde</span><span class="op">$</span><span class="va">n.spde</span><span class="op">)</span></span></code></pre></div>
@@ -325,7 +325,7 @@ with the contour curve using the following commands.</p>
 <span>  col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">con</span><span class="op">$</span><span class="va">map</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="inla_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" width="700"></p>
+<p><img src="inla_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="700"></p>
 <p>To visualize the posterior mean using a contour map using the
 following commands</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
@@ -336,7 +336,7 @@ following commands</p>
 <span><span class="op">)</span></span>
 <span><span class="va">tmap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tricontour.html">tricontourmap</a></span><span class="op">(</span><span class="va">submesh</span>, z <span class="op">=</span> <span class="va">lp</span><span class="op">$</span><span class="va">meta</span><span class="op">$</span><span class="va">mu</span>, levels <span class="op">=</span> <span class="va">lp</span><span class="op">$</span><span class="va">meta</span><span class="op">$</span><span class="va">levels</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tmap</span><span class="op">$</span><span class="va">map</span>, col <span class="op">=</span> <span class="fu"><a href="../reference/contourmap.colors.html">contourmap.colors</a></span><span class="op">(</span><span class="va">lp</span>, col <span class="op">=</span> <span class="va">cmap</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="inla_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" width="700"></p>
+<p><img src="inla_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="700"></p>
 <p>Here, the <code>contourmap.inla</code> computes the levels of the
 contour map and <code>tricontourmap</code> computes the contour map on
 the mesh. Finally, <code>contourmap.colors</code> is used to compute
@@ -363,11 +363,11 @@ three levels.</p>
 <span>    <span class="st">"n.level = 3"</span>, <span class="st">"n.level = 4"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                       P2</span></span>
-<span><span class="co">#&gt; n.level = 1 0.9999999965</span></span>
-<span><span class="co">#&gt; n.level = 2 0.6536147661</span></span>
-<span><span class="co">#&gt; n.level = 3 0.0337022283</span></span>
-<span><span class="co">#&gt; n.level = 4 0.0001892993</span></span></code></pre></div>
+<span><span class="co">#&gt;                      P2</span></span>
+<span><span class="co">#&gt; n.level = 1 0.999999996</span></span>
+<span><span class="co">#&gt; n.level = 2 0.653607689</span></span>
+<span><span class="co">#&gt; n.level = 3 0.033701155</span></span>
+<span><span class="co">#&gt; n.level = 4 0.000189293</span></span></code></pre></div>
 <p>We see that using only one or two contours give very high
 credibility, whereas using four contours give a credibility that is
 close to zero. The contour map with three contours has a credibility

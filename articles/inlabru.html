@@ -138,17 +138,20 @@ later.</p>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: `like()` was deprecated in inlabru 2.12.0.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `bru_obs()` instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once per session.</span></span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
 <span><span class="co">#&gt; Warning: The `data` argument of `bru_obs()` has deprecated support for `Spatial` input</span></span>
 <span><span class="co">#&gt; as of inlabru 2.12.0.9023.</span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Please use `sf` input instead.</span></span>
-<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">inlabru</span> package.</span></span>
-<span><span class="co">#&gt;   Please report the issue at <span style="color: #0000BB; font-style: italic;">&lt;https://github.com/inlabru-org/inlabru/issues&gt;</span>.</span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> The deprecated feature was likely used in the <span style="color: #0000BB;">base</span> package.</span></span>
+<span><span class="co">#&gt;   Please report the issue to the authors.</span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once per session.</span></span></span>
 <span><span class="co">#&gt; <span style="color: #555555;">Call `lifecycle::last_lifecycle_warnings()` to see where this warning was</span></span></span>
-<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #555555;">generated.</span></span></span>
+<span><span class="co">#&gt; Warning: Using `as.character()` on a quosure is deprecated as of rlang 0.3.0. Please use</span></span>
+<span><span class="co">#&gt; `as_label()` or `as_name()` instead.</span></span>
+<span><span class="co">#&gt; <span style="color: #555555;">This warning is displayed once every 8 hours.</span></span></span></code></pre></div>
 <p>We can now compute excursion sets using the
 <code>excursions.inla</code> function. As no stack object is constructed
 when using <code>inlabru</code>, we use the argument
@@ -182,7 +185,7 @@ function</p>
 <span>  col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  main <span class="op">=</span> <span class="st">"excursion function"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="inlabru_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" width="700"></p>
+<p><img src="inlabru_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="" width="700"></p>
 </div>
 <div class="section level2">
 <h2 id="comparison-of-the-different-types-of-approximations">comparison of the different types of approximations<a class="anchor" aria-label="anchor" href="#comparison-of-the-different-types-of-approximations"></a>
@@ -191,7 +194,7 @@ function</p>
 now try the other available options and compare their timings and
 results.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">t.EB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">t.EB</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>  <span class="va">res.EB</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>,</span>
 <span>    name <span class="op">=</span> <span class="st">"APredictor"</span>,</span>
 <span>    ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
@@ -200,8 +203,8 @@ results.</p>
 <span>    prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    max.threads <span class="op">=</span> <span class="fl">2</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">t.QC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">t.QC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>  <span class="va">res.QC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>,</span>
 <span>    name <span class="op">=</span> <span class="st">"APredictor"</span>,</span>
 <span>    ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
@@ -210,8 +213,8 @@ results.</p>
 <span>    prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    max.threads <span class="op">=</span> <span class="fl">2</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">t.NI</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">t.NI</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>  <span class="va">res.NI</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>,</span>
 <span>    name <span class="op">=</span> <span class="st">"APredictor"</span>,</span>
 <span>    ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
@@ -220,8 +223,8 @@ results.</p>
 <span>    prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    max.threads <span class="op">=</span> <span class="fl">2</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">t.NIQC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span></span>
+<span><span class="op">}</span><span class="op">)</span></span>
+<span><span class="va">t.NIQC</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.time.html" class="external-link">system.time</a></span><span class="op">(</span><span class="op">{</span></span>
 <span>  <span class="va">res.NIQC</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.inla.html">excursions.inla</a></span><span class="op">(</span><span class="va">result_bru</span>,</span>
 <span>    name <span class="op">=</span> <span class="st">"APredictor"</span>,</span>
 <span>    ind <span class="op">=</span> <span class="fu">bru_index</span><span class="op">(</span><span class="va">result_bru</span>, <span class="st">"prd"</span><span class="op">)</span>,</span>
@@ -230,7 +233,7 @@ results.</p>
 <span>    prune.ind <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>    max.threads <span class="op">=</span> <span class="fl">2</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>The computation time for the different methods are</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -238,10 +241,10 @@ results.</p>
 <span>  row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EB"</span>, <span class="st">"QC"</span>, <span class="st">"NI"</span>, <span class="st">"NIQC"</span><span class="op">)</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;        time</span></span>
-<span><span class="co">#&gt; EB    3.837</span></span>
-<span><span class="co">#&gt; QC    4.005</span></span>
-<span><span class="co">#&gt; NI   38.066</span></span>
-<span><span class="co">#&gt; NIQC 41.692</span></span></code></pre></div>
+<span><span class="co">#&gt; EB    4.240</span></span>
+<span><span class="co">#&gt; QC    4.385</span></span>
+<span><span class="co">#&gt; NI   40.396</span></span>
+<span><span class="co">#&gt; NIQC 45.385</span></span></code></pre></div>
 <p>We can see that the <code>EB</code> and <code>QC</code> methods have
 similar computation times and that <code>NI</code> and <code>NIQC</code>
 take longer. Let us now plot the corresponding sets, we start with the
@@ -256,7 +259,7 @@ take longer. Let us now plot the corresponding sets, we start with the
 <span>col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>main <span class="op">=</span> <span class="st">"EB"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="inlabru_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" width="700"></p>
+<p><img src="inlabru_files/figure-html/unnamed-chunk-8-1.png" class="r-plt" alt="" width="700"></p>
 <p>Then the <code>QC</code> result:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>,</span>
@@ -268,7 +271,7 @@ take longer. Let us now plot the corresponding sets, we start with the
 <span>col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>main <span class="op">=</span> <span class="st">"QC"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="inlabru_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" width="700"></p>
+<p><img src="inlabru_files/figure-html/unnamed-chunk-9-1.png" class="r-plt" alt="" width="700"></p>
 <p>Then the <code>NI</code> result:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>,</span>
@@ -280,7 +283,7 @@ take longer. Let us now plot the corresponding sets, we start with the
 <span>col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>main <span class="op">=</span> <span class="st">"NI"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="inlabru_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" width="700"></p>
+<p><img src="inlabru_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="700"></p>
 <p>and finally the <code>NIQC</code> result:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>,</span>
@@ -292,7 +295,7 @@ take longer. Let us now plot the corresponding sets, we start with the
 <span>col <span class="op">=</span> <span class="va">cmap.F</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, asp <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>main <span class="op">=</span> <span class="st">"NIQC"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="inlabru_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" width="700"></p>
+<p><img src="inlabru_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="700"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

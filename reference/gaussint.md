@@ -163,5 +163,5 @@ Q.x <- Matrix(toeplitz(c(1, -0.1, rep(0, n - 2))))
 ## Calculate the probability that the variable is between mu-3 and mu+3
 prob <- gaussint(mu = mu.x, Q = Q.x, a = mu.x - 3, b = mu.x + 3, max.threads = 2)
 prob$P
-#> [1] 0.9680017
+#> [1] 0.967999
 ```

@@ -159,7 +159,7 @@ ind <- !is.na(Y)
 Y <- Y[ind]
 coords <- as.matrix(PRprec[ind, 1:2])
 b <- fm_nonconvex_hull(coords, -0.03, -0.05, resolution = c(100, 100))
-prmesh <- fm_mesh_2d(boundary = b, max.edge = c(.45, 1), cutoff = 0.2)
+prmesh <- fm_mesh_2d(boundary = b, max.edge = c(0.45, 1), cutoff = 0.2)
 A <- inla.spde.make.A(prmesh, loc = coords)
 spde <- inla.spde2.matern(prmesh, alpha = 2)
 mesh.index <- inla.spde.make.index(name = "field", n.spde = spde$n.spde)
@@ -310,11 +310,11 @@ print(data.frame(
     "n.level = 3", "n.level = 4"
   )
 ))
-#>                       P2
-#> n.level = 1 0.9999999965
-#> n.level = 2 0.6536147661
-#> n.level = 3 0.0337022283
-#> n.level = 4 0.0001892993
+#>                      P2
+#> n.level = 1 0.999999996
+#> n.level = 2 0.653607689
+#> n.level = 3 0.033701155
+#> n.level = 4 0.000189293
 ```
 
 We see that using only one or two contours give very high credibility,

@@ -59,17 +59,20 @@ result_bru <- bru(~ Intercept(1) + field(coordinates, model = rspde_model),
 )
 #> Warning: `like()` was deprecated in inlabru 2.12.0.
 #> ℹ Please use `bru_obs()` instead.
-#> This warning is displayed once every 8 hours.
+#> This warning is displayed once per session.
 #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
 #> generated.
 #> Warning: The `data` argument of `bru_obs()` has deprecated support for `Spatial` input
 #> as of inlabru 2.12.0.9023.
 #> ℹ Please use `sf` input instead.
-#> ℹ The deprecated feature was likely used in the inlabru package.
-#>   Please report the issue at <https://github.com/inlabru-org/inlabru/issues>.
-#> This warning is displayed once every 8 hours.
+#> ℹ The deprecated feature was likely used in the base package.
+#>   Please report the issue to the authors.
+#> This warning is displayed once per session.
 #> Call `lifecycle::last_lifecycle_warnings()` to see where this warning was
 #> generated.
+#> Warning: Using `as.character()` on a quosure is deprecated as of rlang 0.3.0. Please use
+#> `as_label()` or `as_name()` instead.
+#> This warning is displayed once every 8 hours.
 ```
 
 We can now compute excursion sets using the `excursions.inla` function.
@@ -119,7 +122,7 @@ Above we used the `QC` method to compute the set. Let us now try the
 other available options and compare their timings and results.
 
 ``` r
-t.EB <- system.time(
+t.EB <- system.time({
   res.EB <- excursions.inla(result_bru,
     name = "APredictor",
     ind = bru_index(result_bru, "prd"),
@@ -128,8 +131,8 @@ t.EB <- system.time(
     prune.ind = TRUE,
     max.threads = 2
   )
-)
-t.QC <- system.time(
+})
+t.QC <- system.time({
   res.QC <- excursions.inla(result_bru,
     name = "APredictor",
     ind = bru_index(result_bru, "prd"),
@@ -138,8 +141,8 @@ t.QC <- system.time(
     prune.ind = TRUE,
     max.threads = 2
   )
-)
-t.NI <- system.time(
+})
+t.NI <- system.time({
   res.NI <- excursions.inla(result_bru,
     name = "APredictor",
     ind = bru_index(result_bru, "prd"),
@@ -148,8 +151,8 @@ t.NI <- system.time(
     prune.ind = TRUE,
     max.threads = 2
   )
-)
-t.NIQC <- system.time(
+})
+t.NIQC <- system.time({
   res.NIQC <- excursions.inla(result_bru,
     name = "APredictor",
     ind = bru_index(result_bru, "prd"),
@@ -158,7 +161,7 @@ t.NIQC <- system.time(
     prune.ind = TRUE,
     max.threads = 2
   )
-)
+})
 ```
 
 The computation time for the different methods are
@@ -169,10 +172,10 @@ print(data.frame(
   row.names = c("EB", "QC", "NI", "NIQC")
 ))
 #>        time
-#> EB    3.837
-#> QC    4.005
-#> NI   38.066
-#> NIQC 41.692
+#> EB    4.240
+#> QC    4.385
+#> NI   40.396
+#> NIQC 45.385
 ```
 
 We can see that the `EB` and `QC` methods have similar computation times

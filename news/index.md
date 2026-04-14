@@ -2,6 +2,8 @@
 
 ## excursions 2.5.11
 
+CRAN release: 2025-12-15
+
 - Update link to external inla vignette in documentation
 
 ## excursions 2.5.10

@@ -183,5 +183,5 @@ plot(lp$map)
 
 # display quality measures
 c(lp$P1, lp$P2)
-#> [1] 0.2 0.0
+#> [1] 0.18 0.00
 ```
