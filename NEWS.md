@@ -1,4 +1,9 @@
-# Development version 
+# Development version
+
+
+# excursions 2.5.11
+ 
+* Update link to external inla vignette in documentation
 
 # excursions 2.5.10
  
