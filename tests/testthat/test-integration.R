@@ -249,7 +249,9 @@ gaussint.subprocess <- function(env, max.threads) {
 test_that("Integration respects the OpenMP thread limits", {
   skip_on_cran()
   skip_if_not(excursions:::private.openmp.info()[["openmp"]] == 1, "no OpenMP")
-  skip_if(excursions:::private.openmp.info()[["num.procs"]] < 4, "fewer than 4 processors")
+  ## More processors than the thread limit of 2 used below, so that asking for
+  ## 4 threads asks for more threads than the limit allows
+  skip_if(excursions:::private.openmp.info()[["num.procs"]] < 3, "fewer than 3 processors")
 
   ref2 <- gaussint.subprocess(character(0), max.threads = 2)
   skip_if(is.null(ref2), "could not run R in a subprocess")
