@@ -61,15 +61,18 @@ jobs:
           brew install proj@9
           brew install gdal
           brew install gsl
-          # For git2r, which has no binary for R-devel and is built from source
-          brew install libgit2
+          # There are no binary packages for R-devel on macOS, so the
+          # dependencies are built from source and need these libraries
+          # (units, systemfonts, textshaping, s2, svglite)
+          brew install udunits freetype harfbuzz fribidi abseil libpng
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: '"all"'
+          # remotes is not needed here, and pulls in git2r (a suggested package
+          # of remotes), which fails to build from source on macOS R-devel
           extra-packages: |
              rcmdcheck
-             remotes
              rmarkdown
 
       - name: Session info
