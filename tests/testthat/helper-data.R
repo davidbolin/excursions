@@ -130,3 +130,50 @@ testdata.inla.small <- function(inla.mode = "classic", generate = FALSE) {
     return(list(result = result, stack = stack, seed = seed, n = n))
   }
 }
+
+## Model with an offset, an intercept shared by all predictor rows, and
+## prediction-only random effects with weak prior precision. In compact mode
+## this requires the linear predictor to be added back to the configs.
+testdata.inla.offset <- function(inla.mode = "classic", n.obs = 100,
+                                 n.pred = 2000, n.grp = 10, prec = 1e-5) {
+  if (require("INLA", quietly = TRUE)) {
+    local_exc_safe_inla()
+    set.seed(1)
+    n <- n.obs + n.pred
+    off <- runif(n, 0, 3)
+    y <- c(1 + off[1:n.obs] + rnorm(n.obs), rep(NA, n.pred))
+    grp <- c(rep(1, n.obs), sample(2:n.grp, n.pred, replace = TRUE))
+    A.grp <- sparseMatrix(i = 1:n, j = grp, x = 1, dims = c(n, n.grp))
+    stack <- INLA::inla.stack(
+      data = list(y = y), A = list(1, A.grp),
+      effects = list(list(intercept = rep(1, n)), list(grp = 1:n.grp)),
+      tag = "all"
+    )
+    formula <- y ~ -1 + intercept +
+      f(grp, model = "iid", hyper = list(
+        prec = list(initial = log(prec), fixed = TRUE)
+      ))
+    result <- INLA::inla(
+      formula = formula,
+      data = INLA::inla.stack.data(stack),
+      offset = off,
+      control.predictor = list(
+        A = INLA::inla.stack.A(stack),
+        compute = TRUE
+      ),
+      control.compute = list(
+        config = TRUE,
+        return.marginals.predictor = TRUE
+      ),
+      control.family = list(hyper = list(
+        prec = list(initial = 0, fixed = TRUE)
+      )),
+      num.threads = "1:1",
+      inla.mode = inla.mode
+    )
+    return(list(
+      result = result, stack = stack, n.obs = n.obs, n.pred = n.pred,
+      ind = n.obs + seq_len(n.pred)
+    ))
+  }
+}

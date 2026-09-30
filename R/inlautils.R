@@ -1,13 +1,25 @@
 ## For a result object computed in experimental mode, add back the linear
 ## predictor to the configs
 inla.add.linearpredictor <- function(result, ind = NULL) {
-  tau <- 1e9
+  ## Precision of the link between the linear predictor and the latent field.
+  ## Uses the INLA default predictor precision; much larger values make the
+  ## joint precision numerically singular when A has dense columns (e.g. an
+  ## intercept), causing the Cholesky factorisation to fail.
+  tau <- exp(15)
   A <- rbind(
     result$misc$configs$pA %*% result$misc$configs$A,
     result$misc$configs$A
   )
+  ## Offsets are not part of the latent field, so they must be added to the
+  ## predictor mean. They are stored for the (A)Predictor rows only.
+  offsets <- rep(0, dim(A)[1])
+  off <- result$misc$configs$offsets
+  if (length(off) > 0) {
+    offsets[seq_along(off)] <- off
+  }
   if (!is.null(ind)) {
-    A <- A[ind, ]
+    A <- A[ind, , drop = FALSE]
+    offsets <- offsets[ind]
   }
 
   I <- Diagonal(dim(A)[1])
@@ -25,11 +37,11 @@ inla.add.linearpredictor <- function(result, ind = NULL) {
     )
 
     result$misc$configs$config[[i]]$mean <- c(
-      as.double(A %*% result$misc$configs$config[[i]]$mean),
+      offsets + as.double(A %*% result$misc$configs$config[[i]]$mean),
       result$misc$configs$config[[i]]$mean
     )
     result$misc$configs$config[[i]]$improved.mean <- c(
-      as.double(A %*% result$misc$configs$config[[i]]$improved.mean),
+      offsets + as.double(A %*% result$misc$configs$config[[i]]$improved.mean),
       result$misc$configs$config[[i]]$improved.mean
     )
   }

@@ -1,5 +1,11 @@
 # Development version
 
+* Fix `excursions.inla()`, `contourmap.inla()` and `simconf.inla()` for
+  linear predictors in compact INLA mode: offsets are now included in the
+  predictor mean, and the linear predictor is linked to the latent field
+  with the INLA default precision `exp(15)` instead of `1e9`, which made
+  the joint precision numerically singular (`D[i,i] is negative`) for
+  larger models.
 
 # excursions 2.5.11
  

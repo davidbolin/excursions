@@ -136,3 +136,54 @@ test_that("excursions.inla, compact mode, indexing", {
   expect_equal(res7$F, res8$F, tolerance = 1e-4)
   expect_equal(res8$F, res9$F, tolerance = 1e-4)
 })
+
+test_that("excursions.inla, compact mode, offsets", {
+  skip_on_cran()
+  local_exc_safe_inla()
+
+  data1 <- testdata.inla.offset(inla.mode = "classic", prec = 4)
+  data2 <- testdata.inla.offset(inla.mode = "compact", prec = 4)
+
+  res1 <- excursions.inla(data1$result,
+    name = "APredictor", ind = data1$ind,
+    method = "EB", u = 2, type = ">", alpha = 0.05,
+    max.threads = 1
+  )
+  res2 <- excursions.inla(data2$result,
+    name = "APredictor", ind = data2$ind,
+    method = "EB", u = 2, type = ">", alpha = 0.05,
+    max.threads = 1
+  )
+
+  # The mean must include the offset
+  expect_equal(res2$mean[data2$ind],
+    data2$result$summary.linear.predictor$mean[data2$ind],
+    tolerance = 1e-3
+  )
+  # The inla estimates for different inla.mode will be different,
+  # but should be similar; points at the boundary of the set may differ
+  expect_true(sum(res2$E, na.rm = TRUE) > 0)
+  expect_gt(mean(res1$E == res2$E, na.rm = TRUE), 0.99)
+  both <- !is.na(res1$F) & !is.na(res2$F)
+  expect_gt(sum(both), 0)
+  expect_equal(res1$F[both], res2$F[both], tolerance = 1e-2)
+})
+
+test_that("excursions.inla, compact mode, ill-conditioned predictor", {
+  skip_on_cran()
+  local_exc_safe_inla()
+
+  data <- testdata.inla.offset(inla.mode = "compact", prec = 1e-5)
+
+  expect_no_error(
+    res <- excursions.inla(data$result,
+      name = "APredictor", ind = data$ind,
+      method = "EB", u = 2.5, type = ">", alpha = 0.05,
+      max.threads = 1
+    )
+  )
+  expect_equal(res$mean[data$ind],
+    data$result$summary.linear.predictor$mean[data$ind],
+    tolerance = 1e-3
+  )
+})
