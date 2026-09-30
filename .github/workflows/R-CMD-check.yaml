@@ -66,8 +66,21 @@ jobs:
           brew install libomp
           # There are no binary packages for R-devel on macOS, so the
           # dependencies are built from source and need these libraries
-          # (units, systemfonts, textshaping, s2, svglite)
-          brew install udunits freetype harfbuzz fribidi abseil libpng
+          # (units, systemfonts, textshaping, s2, svglite, dotCall64)
+          brew install udunits freetype harfbuzz fribidi abseil libpng gettext
+
+      - name: Let source packages find the Homebrew libraries on MacOS
+        if: runner.os == 'macOS'
+        run: |
+          # R only looks for headers and libraries in /opt/R/arm64, where the
+          # CRAN build machine has them, so packages that do not use
+          # pkg-config (such as dotCall64, which needs libintl.h) do not find
+          # the ones from Homebrew. libomp is keg-only, so this does not
+          # change which OpenMP header or runtime the package uses.
+          mkdir -p ~/.R
+          echo "CPPFLAGS += -I$(brew --prefix)/include" >> ~/.R/Makevars
+          echo "LDFLAGS += -L$(brew --prefix)/lib" >> ~/.R/Makevars
+          cat ~/.R/Makevars
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:

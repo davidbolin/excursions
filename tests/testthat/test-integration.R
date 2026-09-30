@@ -211,41 +211,35 @@ test_that("Integration with a Cholesky factor matches the precision matrix", {
   expect_equal(r.L, r.Q, tolerance = 1e-12)
 })
 
-## Run gaussint in a new R process with the given environment variables. They
-## must be set before the OpenMP runtime starts, which happens when the package
-## is loaded, so they are set with Sys.setenv() before loading it. (The env
-## argument of system2() is not supported for Rscript on Windows.)
+## Run gaussint in a new R process with the given environment variables,
+## such as "OMP_THREAD_LIMIT=2". The OpenMP runtime reads them when it starts,
+## which on Linux is when R starts, so they are set in this process around the
+## call and inherited by the new process. (The env argument of system2() is
+## not supported for Rscript on Windows.)
 gaussint.subprocess <- function(env, max.threads) {
   out <- tempfile(fileext = ".rds")
-  on.exit(unlink(out))
-  set.env <- if (length(env) > 0) {
-    kv <- strsplit(env, "=", fixed = TRUE)
-    paste0(
-      "Sys.setenv(",
-      paste(vapply(kv, function(x) sprintf("%s = '%s'", x[1], x[2]), ""), collapse = ", "),
-      ");"
-    )
-  } else {
-    ""
-  }
-  code <- paste(
-    set.env,
-    sprintf(".libPaths(%s);", paste(deparse(.libPaths()), collapse = "")),
-    "suppressMessages(library(excursions)); library(Matrix);",
-    "Q <- Matrix::forceSymmetric(Matrix::crossprod(Matrix::bandSparse(200, k = 0:1,",
-    "diagonals = list(rep(2, 200), rep(-1, 199)))));",
-    "r <- gaussint(Q = Q, a = rep(-3, 200), b = rep(3, 200), seed = 1:6,",
-    sprintf("max.threads = %d, n.iter = 1001);", max.threads),
-    "saveRDS(list(r = r, info = excursions:::private.openmp.info()),",
-    sprintf("%s)", deparse(out))
-  )
   script <- tempfile(fileext = ".R")
-  on.exit(unlink(script), add = TRUE)
-  writeLines(code, script)
-  status <- system2(file.path(R.home("bin"), "Rscript"),
+  on.exit(unlink(c(out, script)))
+  writeLines(c(
+    sprintf(".libPaths(%s)", paste(deparse(.libPaths()), collapse = "")),
+    "suppressMessages(library(excursions))",
+    "Q <- Matrix::forceSymmetric(Matrix::crossprod(Matrix::bandSparse(200,",
+    "  k = 0:1, diagonals = list(rep(2, 200), rep(-1, 199)))))",
+    "r <- gaussint(Q = Q, a = rep(-3, 200), b = rep(3, 200), seed = 1:6,",
+    sprintf("  max.threads = %d, n.iter = 1001)", max.threads),
+    "saveRDS(list(r = r, info = excursions:::private.openmp.info()),",
+    sprintf("  %s)", deparse(out))
+  ), script)
+  vars <- character(0)
+  if (length(env) > 0) {
+    kv <- strsplit(env, "=", fixed = TRUE)
+    vars <- stats::setNames(vapply(kv, `[`, "", 2), vapply(kv, `[`, "", 1))
+  }
+  status <- withr::with_envvar(vars, system2(
+    file.path(R.home("bin"), "Rscript"),
     c("--vanilla", shQuote(script)),
     stdout = FALSE, stderr = FALSE
-  )
+  ))
   if (status != 0 || !file.exists(out)) {
     return(NULL)
   }
