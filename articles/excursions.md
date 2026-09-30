@@ -79,7 +79,7 @@ regions is `excursions`. A typical call to the function looks like
 
 res.exc <- excursions(
   mu = mu.post, Q = Q.post, alpha = 0.1, type = ">",
-  u = 0, F.limit = 1
+  u = 0, F.limit = 1, max.threads = 2
 )
 ```
 
@@ -157,7 +157,8 @@ call to the function looks like
 res.con <- contourmap(
   mu = mu.post, Q = Q.post,
   n.levels = 4, alpha = 0.1,
-  compute = list(F = TRUE, measures = c("P0"))
+  compute = list(F = TRUE, measures = c("P0")),
+  max.threads = 2
 )
 ```
 

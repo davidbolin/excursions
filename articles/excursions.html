@@ -147,7 +147,7 @@ like</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res.exc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.html">excursions</a></span><span class="op">(</span></span>
 <span>  mu <span class="op">=</span> <span class="va">mu.post</span>, Q <span class="op">=</span> <span class="va">Q.post</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>,</span>
-<span>  u <span class="op">=</span> <span class="fl">0</span>, F.limit <span class="op">=</span> <span class="fl">1</span></span>
+<span>  u <span class="op">=</span> <span class="fl">0</span>, F.limit <span class="op">=</span> <span class="fl">1</span>, max.threads <span class="op">=</span> <span class="fl">2</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Here, <code>mu</code> and <code>Q</code> are the mean vector and
 precision matrix for the joint distribution of the Gaussian vector
@@ -229,7 +229,8 @@ Monte Carlo samples that are provided to the function.</p>
 <code class="sourceCode R"><span><span class="va">res.con</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/contourmap.html">contourmap</a></span><span class="op">(</span></span>
 <span>  mu <span class="op">=</span> <span class="va">mu.post</span>, Q <span class="op">=</span> <span class="va">Q.post</span>,</span>
 <span>  n.levels <span class="op">=</span> <span class="fl">4</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>,</span>
-<span>  compute <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>F <span class="op">=</span> <span class="cn">TRUE</span>, measures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"P0"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  compute <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>F <span class="op">=</span> <span class="cn">TRUE</span>, measures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"P0"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  max.threads <span class="op">=</span> <span class="fl">2</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>Here, <code>mu</code> is again the mean value and <code>Q</code> is
 the precision matrix of the model. The parameter <code>n.levels</code>
