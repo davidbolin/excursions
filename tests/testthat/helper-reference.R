@@ -14,6 +14,11 @@
 ## 1e-4. The entry sc was recomputed after a.marginal and b.marginal were
 ## swapped back in simconf(), and its bounds a and b are unchanged.
 ##
+## The entries for the contours (tc.*, seg3 and cont.*) summarise the
+## geometry in a way that does not depend on the numbering of the mesh, which
+## differs between platforms. See the fingerprint functions in
+## helper-regression.R.
+##
 ## Monte Carlo results depend on the random number streams, so only change
 ## these values if a change in the results is intended.
 
@@ -83,32 +88,47 @@ REF <- list(
     bm.sum = 76.387380483202605, bm.wsum = 3906.7845736077102),
   scmc.ind = c(a.sum = -92.689890258060103, a.wsum = -2810.9468494457801, b.sum = 93.529234153426998, 
     b.wsum = 3012.8174934969202),
-  tc.plus = c(nloc = 618, loc1 = 285.87994960819299, loc2 = 316.06554468742701, loc.w1 = 90962.199762039701, 
-    loc.w2 = 107607.569034228, nidx = 620, idx1 = 67272585, idx2 = 67637456,
-    grp1 = 0, grp2 = 60, grp3 = 5, grp4 = 141, grp5 = 10, grp6 = 220, grp7 = 5,
-    grp8 = 179, grp.w = 1088564),
-  tc.minus = c(nloc = 445, loc1 = 208.85461889154399, loc2 = 223.330344012171, loc.w1 = 48219.287696675303, 
-    loc.w2 = 55278.857245715502, nidx = 447, idx1 = 25490772, idx2 = 25700045,
-    grp1 = 0, grp2 = 60, grp3 = 8, grp4 = 187, grp5 = 10, grp6 = 180, grp7 = 2,
-    grp.w = 455662),
-  tc.onlevel = c(nloc = 279, loc1 = 117.926216320084, loc2 = 153.48078663925401, loc.w1 = 15169.9752760421, 
-    loc.w2 = 26031.8663492054, nidx = 284, idx1 = 6794547, idx2 = 6865835,
-    grp1 = 0, grp2 = 50, grp3 = 5, grp4 = 92, grp5 = 8, grp6 = 125, grp7 = 4,
-    grp.w = 191569),
+  tc.plus = c(nloc = 618, loc1 = 285.87994960819299, loc2 = 316.06554468742701, loc3 = 127741.71468111299, 
+    loc4 = 97034.486880877099, nidx = 620, edges1 = 287.12842375069101, edges2 = 317.67325376595301,
+    edges3 = 285.86807463555903, edges4 = 316.70222924456101, edges5 = 3536,
+    edges6 = 128751.038857169, edges7 = 97730.456333036404, edges8 = 127745.748065765,
+    edges9 = 98453.700240614897, edges10 = 1126038, grp1 = 0, grp2 = 60, grp3 = 5,
+    grp4 = 141, grp5 = 10, grp6 = 220, grp7 = 5, grp8 = 179),
+  tc.minus = c(nloc = 445, loc1 = 208.85461889154399, loc2 = 223.330344012171, loc3 = 66573.475183506394, 
+    loc4 = 48516.503648151302, nidx = 447, edges1 = 210.42353706421699, edges2 = 224.33217896181301,
+    edges3 = 209.765405775787, edges4 = 223.06789675353099, edges5 = 2036,
+    edges6 = 67328.588634891305, edges7 = 48843.698519199497, edges8 = 66872.713441708998,
+    edges9 = 49333.729430458101, edges10 = 463032, grp1 = 0, grp2 = 60, grp3 = 8,
+    grp4 = 187, grp5 = 10, grp6 = 180, grp7 = 2),
+  tc.onlevel = c(nloc = 279, loc1 = 117.926216320084, loc2 = 153.48078663925401, loc3 = 24570.590994507998, 
+    loc4 = 20504.401158415702, nidx = 284, edges1 = 120.426216320084, edges2 = 156.62220799549101,
+    edges3 = 118.61524315084201, edges4 = 155.33936528301601, edges5 = 1301,
+    edges6 = 25598.629343135799, edges7 = 21346.893734054702, edges8 = 24974.0046063874,
+    edges9 = 21646.984781091502, edges10 = 190801, grp1 = 0, grp2 = 50, grp3 = 5,
+    grp4 = 92, grp5 = 8, grp6 = 125, grp7 = 4),
   seg1 = c(n = 3, len1 = 5, len2 = 4, len3 = 3, seq1 = 35, seq2 = 67, seq3 = 62, 
     seg1 = 30, seg2 = 37, seg3 = 25, grp1 = 17, grp2 = 6, grp3 = 9),
   seg2 = c(n = 4, len1 = 3, len2 = 4, len3 = 3, len4 = 3, seq1 = 10, seq2 = 63, 
     seq3 = 58, seq4 = 14, seg1 = 4, seg2 = 35, seg3 = 26, seg4 = 11, grp1 = 3,
     grp2 = 6, grp3 = 9, grp4 = 6),
-  seg3 = c(n = 4, len1 = 78, len2 = 61, len3 = 101, len4 = 19, seq1 = 677586, seq2 = 451817, 
-    seq3 = 1159300, seq4 = 50454, seg1 = 649232, seg2 = 456082, seg3 = 1257014,
-    seg4 = 37590, grp1 = 11631, grp2 = 3660, grp3 = 20200, grp4 = 684),
-  cont.step = c(F.sum = 22.093875436561198, F.wsum = 3109.5259125662201, M = 112, Msum = 56.3333333333333, 
-    Mw = 3230.5555555555602),
-  cont.linear = c(F.sum = 35.778768513192702, F.wsum = 5718.3966037660302, M = 192, Msum = 93.630651539414401, 
-    Mw = 9858.3864816036803),
-  cont.log = c(F.sum = 22.331549129995601, F.wsum = 3156.4153417207899, M = 112, Msum = 56.3333333333333, 
-    Mw = 3230.5555555555602)
+  seg3 = c(n = 4, seqs1 = 259, seqs2 = 4, seqs3 = 892, seqs4 = 106.284177414244, 
+    seqs5 = 128.78149111978399, seqs6 = 779, seqs7 = 10, seqs8 = 2812, seqs9 = 303.20430430792101,
+    seqs10 = 387.93083215784401),
+  cont.step = c(F1 = 180.5, F2 = 180.5, F.F = 22.093875436561198, F4 = 44102.166666666701, 
+    F5 = 33272.166666666701, F.F = 4304.6942374058099, nrings = 4, rings1 = 1,
+    rings2 = 52, rings3 = 1.0370370370370401, rings4 = 27.8888888888889, rings5 = 24.8888888888889,
+    rings6 = 4, rings7 = 148, rings8 = 3.0864197530864201, rings9 = 81.4444444444444,
+    rings10 = 74.2222222222222),
+  cont.linear = c(F1 = 180.5, F2 = 180.5, F.F = 35.778768513192702, F4 = 44102.166666666701, 
+    F5 = 33272.166666666701, F.F = 7068.9659322732696, nrings = 4, rings1 = 1,
+    rings2 = 92, rings3 = 1.0451819136746801, rings4 = 49.953502553009201,
+    rings5 = 40.3438156530719, rings6 = 4, rings7 = 246, rings8 = 3.1031297896091501,
+    rings9 = 142.786494019239, rings10 = 119.389190349351),
+  cont.log = c(F1 = 180.5, F2 = 180.5, F.F = 22.331549129995601, F4 = 44102.166666666701, 
+    F5 = 33272.166666666701, F.F = 4356.77248810322, nrings = 4, rings1 = 1,
+    rings2 = 52, rings3 = 1.0370370370370401, rings4 = 27.8888888888889, rings5 = 24.8888888888889,
+    rings6 = 4, rings7 = 148, rings8 = 3.0864197530864201, rings9 = 81.4444444444444,
+    rings10 = 74.2222222222222)
 )
 
 ## Integration with very narrow intervals for some nodes, computed as above

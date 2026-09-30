@@ -147,12 +147,12 @@ test_that("excursions.inla, compact mode, offsets", {
   res1 <- excursions.inla(data1$result,
     name = "APredictor", ind = data1$ind,
     method = "EB", u = 2, type = ">", alpha = 0.05,
-    max.threads = 1
+    max.threads = 1, seed = 1:6
   )
   res2 <- excursions.inla(data2$result,
     name = "APredictor", ind = data2$ind,
     method = "EB", u = 2, type = ">", alpha = 0.05,
-    max.threads = 1
+    max.threads = 1, seed = 1:6
   )
 
   # The mean must include the offset
@@ -161,9 +161,11 @@ test_that("excursions.inla, compact mode, offsets", {
     tolerance = 1e-3
   )
   # The inla estimates for different inla.mode will be different,
-  # but should be similar; points at the boundary of the set may differ
+  # but should be similar; points at the boundary of the set may differ.
+  # The fits also differ between platforms, and 98.75% agreement has been
+  # seen on Windows, so allow for a few percent.
   expect_true(sum(res2$E, na.rm = TRUE) > 0)
-  expect_gt(mean(res1$E == res2$E, na.rm = TRUE), 0.99)
+  expect_gt(mean(res1$E == res2$E, na.rm = TRUE), 0.97)
   both <- !is.na(res1$F) & !is.na(res2$F)
   expect_gt(sum(both), 0)
   expect_equal(res1$F[both], res2$F[both], tolerance = 1e-2)

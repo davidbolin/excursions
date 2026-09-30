@@ -16,6 +16,9 @@ name: R-CMD-check-no-suggests
 jobs:
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
+    # Fail jobs that hang, e.g. in apt-get on the runner, instead of
+    # waiting for the six hour limit
+    timeout-minutes: 120
 
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
 

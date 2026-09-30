@@ -8,6 +8,9 @@ name: pkgdown
 jobs:
   pkgdown:
     runs-on: ubuntu-latest
+    # Fail jobs that hang, e.g. in apt-get on the runner, instead of
+    # waiting for the six hour limit
+    timeout-minutes: 120
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
     steps:

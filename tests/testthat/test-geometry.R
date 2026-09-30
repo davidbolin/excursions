@@ -93,7 +93,9 @@ test_that("Segments are connected into sequences", {
   tm <- testdata.mesh()
   tc <- tricontour(tm$mesh, z = tm$z, levels = c(-1, 0, 1))
   res <- excursions:::connect.segments(tc$idx, tc$grp, grp.ccw = c(2, 3), grp.cw = 4)
-  expect_equal(unlist(fingerprint.segments(res)), REF$seg3)
+  expect_equal(unlist(fingerprint.segments.geometry(res, tc$loc)), REF$seg3,
+    tolerance = 1e-10
+  )
   check.segments(res, tc$idx, tc$grp, grp.ccw = c(2, 3), grp.cw = 4)
 
   ## No segments
@@ -111,14 +113,7 @@ test_that("Continuous excursion sets are unchanged", {
   )
   for (method in c("step", "linear", "log")) {
     r <- continuous(ex, lat, method = method, output = "sp")
-    crd <- unlist(lapply(r$M@polygons, function(p) {
-      lapply(p@Polygons, function(q) q@coords)
-    }))
-    expect_equal(
-      c(
-        F = ref.summary(r$F), P0 = r$P0, M = length(crd), Msum = sum(crd),
-        Mw = sum(crd * seq_along(crd))
-      ),
+    expect_equal(unlist(fingerprint.continuous(r)),
       REF[[paste0("cont.", method)]],
       tolerance = 1e-10
     )

@@ -48,22 +48,40 @@ testdata.mesh <- function(m = 25) {
   list(mesh = mesh, z = z)
 }
 
+## Weighted column sums of the rows of a matrix after sorting them, which
+## does not depend on the order of the rows. The values are rounded before
+## sorting, so that rounding differences between platforms cannot change the
+## order of rows with (almost) equal values.
+sorted.summary <- function(M, digits = 8) {
+  M <- as.matrix(M)
+  if (nrow(M) == 0) {
+    return(rep(0, 2 * ncol(M)))
+  }
+  R <- round(M, digits)
+  o <- do.call(order, lapply(seq_len(ncol(R)), function(k) R[, k]))
+  c(colSums(M), colSums(M[o, , drop = FALSE] * seq_along(o)))
+}
+
 ## Summary of the output of tricontour, for comparisons with reference values
-## without storing the whole output.
+## without storing the whole output. The numbering of the vertices and the
+## order of the edges depend on the numbering of the mesh, which can differ
+## between platforms, so the summary only uses the geometry: the vertex
+## coordinates, and the edges as the coordinates of their end points together
+## with their group.
 fingerprint.tricontour <- function(x) {
-  w <- seq_len(nrow(x$idx))
+  loc <- x$loc[, 1:2, drop = FALSE]
+  edges <- cbind(loc[x$idx[, 1], , drop = FALSE], loc[x$idx[, 2], , drop = FALSE], x$grp)
   list(
-    nloc = nrow(x$loc),
-    loc = colSums(x$loc[, 1:2, drop = FALSE]),
-    loc.w = colSums(x$loc[, 1:2, drop = FALSE] * seq_len(nrow(x$loc))),
+    nloc = nrow(loc),
+    loc = sorted.summary(loc),
     nidx = nrow(x$idx),
-    idx = colSums(x$idx * w),
-    grp = tabulate(x$grp),
-    grp.w = sum(x$grp * w)
+    edges = sorted.summary(edges),
+    grp = tabulate(x$grp)
   )
 }
 
-## Summary of the output of connect.segments
+## Summary of the output of connect.segments, for segments given by node
+## indices in a fixed order
 fingerprint.segments <- function(x) {
   list(
     n = length(x$sequences),
@@ -71,6 +89,42 @@ fingerprint.segments <- function(x) {
     seq = vapply(x$sequences, function(s) sum(s * seq_along(s)), 0),
     seg = vapply(x$seg, function(s) sum(s * seq_along(s)), 0),
     grp = vapply(x$grp, function(s) sum(s * seq_along(s)), 0)
+  )
+}
+
+## Summary of the output of connect.segments that only depends on the
+## geometry: for each sequence, its length, whether it is closed, its groups,
+## and the coordinates of its nodes (without the repeated first node of a
+## closed sequence, whose choice depends on the numbering).
+fingerprint.segments.geometry <- function(x, loc) {
+  seqs <- t(vapply(seq_along(x$sequences), function(k) {
+    s <- x$sequences[[k]]
+    closed <- s[1] == s[length(s)]
+    nodes <- if (closed) s[-length(s)] else s
+    c(
+      length(s), closed, sum(x$grp[[k]]),
+      colSums(loc[nodes, 1:2, drop = FALSE])
+    )
+  }, numeric(5)))
+  list(n = length(x$sequences), seqs = sorted.summary(seqs))
+}
+
+## Summary of the output of continuous(): the excursion function at the
+## nodes of the geometry, paired with their coordinates, and the rings of the
+## polygons, without their start point.
+fingerprint.continuous <- function(r) {
+  rings <- do.call(rbind, lapply(r$M@polygons, function(p) {
+    t(vapply(p@Polygons, function(q) {
+      crd <- q@coords[-nrow(q@coords), , drop = FALSE]
+      c(q@hole, nrow(crd), q@area, colSums(crd))
+    }, numeric(5)))
+  }))
+  F <- r$F
+  F[is.na(F)] <- -1
+  list(
+    F = sorted.summary(cbind(r$F.geometry$loc[, 1:2], F)),
+    nrings = nrow(rings),
+    rings = sorted.summary(rings)
   )
 }
 
