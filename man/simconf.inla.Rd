@@ -53,8 +53,11 @@ probabilities. The default value is 10000.}
 \item{link}{Transform output to the scale of the data using the link function as defined in
 the model estimated with INLA (default FALSE).}
 
-\item{max.threads}{Decides the number of threads the program can use. Set to 0 for
-using the maximum number of threads allowed by the system (default).}
+\item{max.threads}{The number of threads that the program can use. The
+default, 0, uses the default number of threads of OpenMP, which can be
+set with the environment variable \code{OMP_NUM_THREADS}. The number of
+threads is at most \code{OMP_THREAD_LIMIT}, and is one if the package was built
+without OpenMP.}
 
 \item{compressed}{If INLA is run in compressed mode and a part of the linear
 predictor is to be used, then only add the relevant part. Otherwise the

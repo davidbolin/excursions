@@ -210,3 +210,84 @@ test_that("Integration with a Cholesky factor matches the precision matrix", {
   r.L <- gaussint(Q.chol = chol(d$Q), a = a, b = b, seed = d$seed, max.threads = 1, n.iter = 1000)
   expect_equal(r.L, r.Q, tolerance = 1e-12)
 })
+
+## Run gaussint in a new R process with the given environment variables. They
+## must be set before the OpenMP runtime starts, which happens when the package
+## is loaded, so they are set with Sys.setenv() before loading it. (The env
+## argument of system2() is not supported for Rscript on Windows.)
+gaussint.subprocess <- function(env, max.threads) {
+  out <- tempfile(fileext = ".rds")
+  on.exit(unlink(out))
+  set.env <- if (length(env) > 0) {
+    kv <- strsplit(env, "=", fixed = TRUE)
+    paste0(
+      "Sys.setenv(",
+      paste(vapply(kv, function(x) sprintf("%s = '%s'", x[1], x[2]), ""), collapse = ", "),
+      ");"
+    )
+  } else {
+    ""
+  }
+  code <- paste(
+    set.env,
+    sprintf(".libPaths(%s);", paste(deparse(.libPaths()), collapse = "")),
+    "suppressMessages(library(excursions)); library(Matrix);",
+    "Q <- Matrix::forceSymmetric(Matrix::crossprod(Matrix::bandSparse(200, k = 0:1,",
+    "diagonals = list(rep(2, 200), rep(-1, 199)))));",
+    "r <- gaussint(Q = Q, a = rep(-3, 200), b = rep(3, 200), seed = 1:6,",
+    sprintf("max.threads = %d, n.iter = 1001);", max.threads),
+    "saveRDS(list(r = r, info = excursions:::private.openmp.info()),",
+    sprintf("%s)", deparse(out))
+  )
+  script <- tempfile(fileext = ".R")
+  on.exit(unlink(script), add = TRUE)
+  writeLines(code, script)
+  status <- system2(file.path(R.home("bin"), "Rscript"),
+    c("--vanilla", shQuote(script)),
+    stdout = FALSE, stderr = FALSE
+  )
+  if (status != 0 || !file.exists(out)) {
+    return(NULL)
+  }
+  readRDS(out)
+}
+
+test_that("Integration respects the OpenMP thread limits", {
+  skip_on_cran()
+  skip_if_not(excursions:::private.openmp.info()[["openmp"]] == 1, "no OpenMP")
+  skip_if(excursions:::private.openmp.info()[["num.procs"]] < 4, "fewer than 4 processors")
+
+  ref2 <- gaussint.subprocess(character(0), max.threads = 2)
+  skip_if(is.null(ref2), "could not run R in a subprocess")
+  ref1 <- gaussint.subprocess(character(0), max.threads = 1)
+
+  ## With OMP_THREAD_LIMIT=2, the runtime gives at most 2 threads. Asking for
+  ## more used to leave some of the samples out of the estimate.
+  lim <- gaussint.subprocess("OMP_THREAD_LIMIT=2", max.threads = 4)
+  expect_equal(lim$info[["thread.limit"]], 2)
+  expect_identical(lim$r, ref2$r)
+
+  ## The default number of threads follows OMP_NUM_THREADS
+  def <- gaussint.subprocess("OMP_NUM_THREADS=2", max.threads = 0)
+  expect_identical(def$r, ref2$r)
+  def1 <- gaussint.subprocess("OMP_NUM_THREADS=1", max.threads = 0)
+  expect_identical(def1$r, ref1$r)
+})
+
+test_that("Integration with several threads agrees with one thread", {
+  skip_if_not(excursions:::private.openmp.info()[["openmp"]] == 1, "no OpenMP")
+  d <- testdata.spde(10)
+  a <- d$mu - 2.5
+  b <- d$mu + 2.5
+  r1 <- gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = 1, n.iter = 4000)
+  r2 <- gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = 2, n.iter = 4000)
+  ## Different random streams, so equal up to the Monte Carlo error
+  expect_false(identical(r1$Pv, r2$Pv))
+  expect_lt(abs(r2$P - r1$P), 4 * sqrt(r1$E^2 + r2$E^2))
+  ok <- r1$Pv > 0 & r2$Pv > 0
+  expect_true(all(abs(r2$Pv[ok] - r1$Pv[ok]) < 4 * sqrt(r1$Ev[ok]^2 + r2$Ev[ok]^2) + 1e-12))
+  expect_identical(
+    gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = 2, n.iter = 4000),
+    r2
+  )
+})

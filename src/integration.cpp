@@ -16,7 +16,9 @@
 #include<omp.h>
 #endif
 
+#define R_NO_REMAP
 #include <R.h>
+#include <Rinternals.h>
 #include <Rmath.h>
 
 extern "C"{
@@ -28,17 +30,47 @@ extern "C"{
 #define used_with_openmp(X) (void)X
 using namespace std;
 
-// Number of threads to use, and set it for the following parallel regions.
+// Number of threads to request for the parallel regions. With n_threads = 0
+// this is the OpenMP default, which respects OMP_NUM_THREADS, and otherwise
+// n_threads, at most the number of processors. In both cases it is at most
+// OMP_THREAD_LIMIT. The runtime may still give fewer threads, so the parallel
+// regions must use the size of the team they get. The number of threads is
+// requested with num_threads() rather than omp_set_num_threads(), which would
+// change the default for later calls and for other packages.
 static int setup_threads(int n_threads) {
   used_with_openmp(n_threads);
   #ifdef _OPENMP
-    const int max_nP = omp_get_num_procs();
-    const int nP = (n_threads == 0) ? max_nP : min(max_nP, max(n_threads, 1));
-    omp_set_num_threads(nP);
-    return nP;
+    int nP = (n_threads <= 0) ? omp_get_max_threads() : min(n_threads, omp_get_num_procs());
+    nP = min(nP, omp_get_thread_limit());
+    return max(nP, 1);
   #else
     return 1;
   #endif
+}
+
+// Summary of the OpenMP support, for checking the installation: whether the
+// package was compiled with OpenMP, and the default and maximal number of
+// threads.
+extern "C" SEXP excursions_openmp_info() {
+  SEXP out = PROTECT(Rf_allocVector(INTSXP, 4));
+  int *v = INTEGER(out);
+  #ifdef _OPENMP
+    v[0] = 1;
+    v[1] = omp_get_max_threads();
+    v[2] = omp_get_thread_limit();
+    v[3] = omp_get_num_procs();
+  #else
+    v[0] = 0;
+    v[1] = v[2] = v[3] = 1;
+  #endif
+  SEXP names = PROTECT(Rf_allocVector(STRSXP, 4));
+  SET_STRING_ELT(names, 0, Rf_mkChar("openmp"));
+  SET_STRING_ELT(names, 1, Rf_mkChar("max.threads"));
+  SET_STRING_ELT(names, 2, Rf_mkChar("thread.limit"));
+  SET_STRING_ELT(names, 3, Rf_mkChar("num.procs"));
+  Rf_setAttrib(out, R_NamesSymbol, names);
+  UNPROTECT(2);
+  return out;
 }
 
 // Seed the RngStream package, from seed_in if provided and from R otherwise.
@@ -86,7 +118,9 @@ static void setup_seed(int seed_provided, int * seed_in) {
  probability for the components i, ..., n-1.
 
  The K samples are split into one contiguous block per thread, and each
- thread draws from its own random stream. The samples are stored with the
+ thread draws from its own random stream. The blocks are determined by the
+ number of threads in the team, so for a given seed the results only depend
+ on the number of threads that are used. The samples are stored with the
  sample index running fastest, x[i*K + j], so that the conditional means
  s[j] = sum_k R(i, k) x[k, j] are computed with unit stride over the block.
 */
@@ -152,6 +186,7 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
     RngArray[t] = RngStream_CreateStream("namehere");
   }
   vector<double> fsum_t(nP), fsum2_t(nP);
+  int team = 1;
 
   for (int i = n-1; i >= lo; i--) {
     double * xi = &x[(size_t) (i - lo) * K];
@@ -161,12 +196,16 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
 
     #pragma omp parallel num_threads(nP)
     {
-      int myrank = 0;
+      int myrank = 0, nteam = 1;
       #ifdef _OPENMP
         myrank = omp_get_thread_num();
+        nteam = omp_get_num_threads();
       #endif
-      const int j0 = (int) (((long long) K * myrank) / nP);
-      const int j1 = (int) (((long long) K * (myrank + 1)) / nP);
+      if (myrank == 0) {
+        team = nteam;
+      }
+      const int j0 = (int) (((long long) K * myrank) / nteam);
+      const int j1 = (int) (((long long) K * (myrank + 1)) / nteam);
 
       for (int j = j0; j < j1; j++) {
         s[j] = 0.0;
@@ -230,7 +269,7 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
     }
 
     double fsum = 0.0, fsum2 = 0.0;
-    for (int t = 0; t < nP; t++) {
+    for (int t = 0; t < team; t++) {
       fsum += fsum_t[t];
       fsum2 += fsum2_t[t];
     }

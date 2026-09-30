@@ -61,6 +61,9 @@ jobs:
           brew install proj@9
           brew install gdal
           brew install gsl
+          # The header omp.h, so that the package is built with OpenMP using the
+          # runtime shipped with R (see configure.ac)
+          brew install libomp
           # There are no binary packages for R-devel on macOS, so the
           # dependencies are built from source and need these libraries
           # (units, systemfonts, textshaping, s2, svglite)

@@ -1,5 +1,16 @@
 # Development version
 
+* OpenMP is now used on macOS. The CRAN build of R for macOS ships the OpenMP
+  runtime `libomp.dylib`, and the configure script now tests if the package
+  can be built with it (with `-Xclang -fopenmp`). If this fails, for example if 
+  the header `omp.h` is not available, the package is built without OpenMP as 
+  before. Set the environment variable `EXCURSIONS_OPENMP=no` when installing 
+  to build without OpenMP.
+* The default number of threads (`max.threads = 0`) is now the default of
+  OpenMP, which can be set with `OMP_NUM_THREADS`, and the number of threads
+  is limited by `OMP_THREAD_LIMIT`. The number of threads is no longer set
+  globally with `omp_set_num_threads()`, which also changed the default for
+  other packages.
 * Fix `excursions.inla()`, `contourmap.inla()` and `simconf.inla()` for
   linear predictors in compact INLA mode: offsets are now included in the
   predictor mean, and the linear predictor is linked to the latent field

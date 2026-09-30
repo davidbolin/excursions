@@ -89,7 +89,7 @@ The main function for computing excursion sets and contour credible regions is  
 ```{r}
 res.exc <- excursions(
   mu = mu.post, Q = Q.post, alpha = 0.1, type = ">",
-  u = 0, F.limit = 1
+  u = 0, F.limit = 1, max.threads = 2
 )
 ```
 Here, `mu` and `Q` are the mean vector and precision matrix for the joint distribution of the Gaussian vector `x`. The arguments `alpha`, `u`, and `type` are used to specify what type of excursion set that should be computed: `alpha` is the error probability, `u` is the excursion or contour level, and `type` determines what type of region that is considered: '>' for positive excursion regions, '<' for negative excursion regions, '!=' for contour avoiding regions, and '=' for contour credibility regions. Thus, the call above computes the excursion set $\exset{0,0.1}{+}$ as introduced in [Definitions and computational methodology](theory.html).
@@ -112,7 +112,8 @@ The main function for analysis of contour maps is `contourmap`. A basic call to 
 res.con <- contourmap(
   mu = mu.post, Q = Q.post,
   n.levels = 4, alpha = 0.1,
-  compute = list(F = TRUE, measures = c("P0"))
+  compute = list(F = TRUE, measures = c("P0")),
+  max.threads = 2
 )
 ```
 Here, `mu` is again the mean value and `Q` is the precision matrix of the model. The parameter `n.levels` sets the number of contours that should be used in the contour map, and these are spaced equidistant in the range of `mu` by default. Other types of contour maps can be obtained using the `type` argument. For manual specification of the levels, the `levels` argument can be used instead. By default, the function computes the specified contour map but no quality measures and it does not compute the contour map function. If quality measures should be computed, this is specified using the `compute` argument. This argument is also used to decide whether the contour map function $F$ should be computed.

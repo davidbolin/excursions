@@ -16,9 +16,11 @@ static const R_CMethodDef CEntries[] = {
 
 /* .Call calls */
 extern SEXP Qinv(SEXP, SEXP, SEXP, SEXP);
+extern SEXP excursions_openmp_info(void);
 
 static const R_CallMethodDef CallEntries[] = {
     {"Qinv", (DL_FUNC) &Qinv, 4},
+    {"excursions_openmp_info", (DL_FUNC) &excursions_openmp_info, 0},
     {NULL, NULL, 0}
 };
 

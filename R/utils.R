@@ -89,6 +89,13 @@ excursions.variances <- function(L, Q, max.threads = 0) {
 }
 
 
+## OpenMP support of the installed package: whether it was compiled with
+## OpenMP, and the default and maximal number of threads
+private.openmp.info <- function() {
+  .Call("excursions_openmp_info", PACKAGE = "excursions")
+}
+
+
 excursions.marginals <- function(type, rho, vars, mu, u, QC = FALSE) {
   rl <- list()
   if (type == "=" || type == "!=") {
