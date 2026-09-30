@@ -326,8 +326,8 @@ print(data.frame(
 ))
 #>                       P2
 #> n.level = 1 9.998710e-01
-#> n.level = 2 1.192346e-01
-#> n.level = 3 4.647503e-05
+#> n.level = 2 1.192338e-01
+#> n.level = 3 4.647343e-05
 #> n.level = 4 0.000000e+00
 ```
 
