@@ -4,7 +4,6 @@
 #include <string.h>
 #include <math.h>
 #include <vector>
-#include <map>
 #include <algorithm>
 #include <limits>
 #include <time.h>
@@ -29,86 +28,27 @@ extern "C"{
 #define used_with_openmp(X) (void)X
 using namespace std;
 
-extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in){
-
-  int n = opts[0];
-  int K = opts[1];
-  int max_size = opts[2];
-  int n_threads = opts[3];
+// Number of threads to use, and set it for the following parallel regions.
+static int setup_threads(int n_threads) {
   used_with_openmp(n_threads);
-  int seed_provided = opts[4];
-
-  double lim = lim_in[0];
-
-  vector< map<int,double> > L;
-
-  int i,row,col;
-
-
-  for (i=0; i<n; i++) {
-    map<int,double> m;
-    L.push_back(m);
-  }
-
-  col = 0;
-  for(i=0;i<Mp[n];i++){
-    row = Mi[i];
-    if (i>=Mp[col+1]) {
-      col++;
-    }
-    L[row][col] = Mv[i];
-  }
-
-
-
-  double *al, *bl,*f,*s,*Li;
-  double ** x;
-  double fsum,fsum2,Pi,Ei,ai,bi,c,d,rtmp;
-  int j;
-
-  al = new double[n];
-  bl = new double[n];
-  f = new double[K];
-  s = new double[K];
-  Li = new double[n];
-
-  x = new double*[n];
-  for (i=0; i<n; i++) {
-    Li[i] = L[i][i];
-    al[i] = Li[i]*a[i];
-    bl[i] = Li[i]*b[i];
-    x[i] = new double[K];
-    for(j=0;j<K;j++){
-      x[i][j] = 0.0;
-    }
-  }
-
-  for (i=0; i<K; i++) {
-    f[i] = 1.0;
-  }
-
-
   #ifdef _OPENMP
     const int max_nP = omp_get_num_procs();
-    int nPtmp;
-    if(n_threads == 0){
-      nPtmp = max_nP;
-    } else {
-      nPtmp = min(max_nP, max(n_threads,1));
-    }
-    const int nP = nPtmp;
+    const int nP = (n_threads == 0) ? max_nP : min(max_nP, max(n_threads, 1));
     omp_set_num_threads(nP);
+    return nP;
   #else
-    const int nP = 1;
+    return 1;
   #endif
+}
 
-
+// Seed the RngStream package, from seed_in if provided and from R otherwise.
+static void setup_seed(int seed_provided, int * seed_in) {
   unsigned long m_1 = 4294967087U;
   unsigned long m_2 = 4294944443U;
   unsigned long seed[6];
 
   if(seed_provided == 1){
-    for(i=0;i<6;i++){
+    for(int i=0;i<6;i++){
       seed[i] = (unsigned long) seed_in[i];
     }
   } else {
@@ -121,10 +61,8 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
       }
     #endif
     if (seed_read != (ssize_t) sizeof(seed)) {
-      //srand(time(0));
       GetRNGstate();
-      for(i=0;i<6;i++){
-        //seed[i] = rand();
+      for(int i=0;i<6;i++){
         seed[i] = round(RAND_MAX*unif_rand());
       }
       PutRNGstate();
@@ -139,47 +77,122 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
   seed[5] = seed[5] % m_2;
 
   RngStream_SetPackageSeed(seed);
-  RngStream * RngArray = new RngStream[nP];
-  int myrank = 0;
+}
 
-  for (i=0; i<nP; i++) {
-    RngArray[i] = RngStream_CreateStream("namehere");
+/*
+ Sequential importance sampling estimate of P(a < x < b) for x ~ N(0, Q^-1),
+ with Q = R^T R and R upper triangular given in CSC format (Mp, Mi, Mv).
+ Components are integrated from the last to the first, and Pv[i] is the
+ probability for the components i, ..., n-1.
+
+ The K samples are split into one contiguous block per thread, and each
+ thread draws from its own random stream. The samples are stored with the
+ sample index running fastest, x[i*K + j], so that the conditional means
+ s[j] = sum_k R(i, k) x[k, j] are computed with unit stride over the block.
+*/
+extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in){
+
+  const int n = opts[0];
+  const int K = opts[1];
+  const int max_size = opts[2];
+  const int n_threads = opts[3];
+  const int seed_provided = opts[4];
+  const double lim = lim_in[0];
+
+  if (n <= 0 || K <= 0) {
+    return;
   }
 
-  for (i=n-1; i>=0; i--) {
-    for (j=0; j<K; j++) {
-      s[j] = 0;
-    }
-    fsum = 0;
-    fsum2 = 0;
-
-    for(map<int,double>::iterator iter = (L[i]).begin(); iter != (L[i]).end(); iter++ ) {
-      for (j=0; j<K; j++) {
-        s[j] += (iter->second)*x[iter->first][j];
+  // Rows of R without the diagonal, in CSR format, and the diagonal.
+  vector<int> rp(n + 1, 0), ri;
+  vector<double> rv, Li(n, 0.0);
+  for (int c = 0; c < n; c++) {
+    for (int q = Mp[c]; q < Mp[c + 1]; q++) {
+      if (Mi[q] == c) {
+        Li[c] = Mv[q];
+      } else {
+        rp[Mi[q] + 1]++;
       }
     }
+  }
+  for (int i = 0; i < n; i++) {
+    rp[i + 1] += rp[i];
+  }
+  ri.resize(rp[n]);
+  rv.resize(rp[n]);
+  {
+    vector<int> next(rp.begin(), rp.end() - 1);
+    for (int c = 0; c < n; c++) {
+      for (int q = Mp[c]; q < Mp[c + 1]; q++) {
+        const int r = Mi[q];
+        if (r != c) {
+          ri[next[r]] = c;
+          rv[next[r]++] = Mv[q];
+        }
+      }
+    }
+  }
 
-    #pragma omp parallel private(myrank,ai,bi,c,d,j,rtmp)
+  // Only the rows lo, ..., n-1 are needed, see max_size below.
+  const int lo = max(n - max_size, 0);
+  const size_t nrows = (size_t) (n - lo);
+
+  vector<double> al(n), bl(n), f(K, 1.0), s(K);
+  vector<double> x(nrows * (size_t) K, 0.0);
+  for (int i = 0; i < n; i++) {
+    al[i] = Li[i]*a[i];
+    bl[i] = Li[i]*b[i];
+  }
+
+  const int nP = setup_threads(n_threads);
+  setup_seed(seed_provided, seed_in);
+
+  vector<RngStream> RngArray(nP);
+  for (int t = 0; t < nP; t++) {
+    RngArray[t] = RngStream_CreateStream("namehere");
+  }
+  vector<double> fsum_t(nP), fsum2_t(nP);
+
+  for (int i = n-1; i >= lo; i--) {
+    double * xi = &x[(size_t) (i - lo) * K];
+    const double ali = al[i];
+    const double bli = bl[i];
+    const double Lii = Li[i];
+
+    #pragma omp parallel num_threads(nP)
     {
+      int myrank = 0;
       #ifdef _OPENMP
         myrank = omp_get_thread_num();
       #endif
+      const int j0 = (int) (((long long) K * myrank) / nP);
+      const int j1 = (int) (((long long) K * (myrank + 1)) / nP);
 
-      #pragma omp for reduction(+:fsum,fsum2)
-      for (j=0; j<K; j++) {
-        ai = al[i] + s[j];
-        bi = bl[i] + s[j];
+      for (int j = j0; j < j1; j++) {
+        s[j] = 0.0;
+      }
+      for (int q = rp[i]; q < rp[i + 1]; q++) {
+        const double v = rv[q];
+        const double * xk = &x[(size_t) (ri[q] - lo) * K];
+        for (int j = j0; j < j1; j++) {
+          s[j] += v*xk[j];
+        }
+      }
 
-        if (al[i] == -numeric_limits<double>::infinity()){
+      double fsum = 0.0, fsum2 = 0.0;
+      for (int j = j0; j < j1; j++) {
+        double ai, bi, c, d, rtmp = 0;
+
+        if (ali == -numeric_limits<double>::infinity()){
           ai = -numeric_limits<double>::infinity();
         } else {
-          ai = al[i] + s[j];
+          ai = ali + s[j];
         }
 
-        if (bl[i] == numeric_limits<double>::infinity()){
+        if (bli == numeric_limits<double>::infinity()){
           bi = numeric_limits<double>::infinity();
         } else {
-          bi = bl[i] + s[j];
+          bi = bli + s[j];
         }
 
         if (ai<-9) {
@@ -200,40 +213,36 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
         f[j] = f[j]*(d-c);
         fsum += f[j];
         fsum2 += f[j]*f[j];
-        
+
         if (d-c<1e-12) { //no weight is given to this sample
-          rtmp = 0;
-          x[i][j] = 0; //just set x to zero
+          xi[j] = 0; //just set x to zero
         } else {
           rtmp = c+(d-c)* RngStream_RandU01(RngArray[myrank]);
-          x[i][j] = (gsl_cdf_ugaussian_Pinv(rtmp)-s[j])/Li[i];
+          xi[j] = (gsl_cdf_ugaussian_Pinv(rtmp)-s[j])/Lii;
         }
 
-        if (x[i][j] == numeric_limits<double>::infinity()){
-          Rprintf("simulated infinite value, changing to zero\n");
-          Rprintf("i=%d, c= %f, d= %f, ,d-c= %f\n",i,c,d,d-c);
-          x[i][j] = 0;
-        }
-
-        if (x[i][j]!=x[i][j]) {
-          Rprintf("%d : x is nan: rtmp= %f, c= %f, d= %f, ai=%f",i,rtmp,c,d,ai);
-          Rprintf(", bi= %f, s[j] = %f, Li = %f",bi,s[j],Li[i]);
+        if (xi[j] == numeric_limits<double>::infinity()){
+          xi[j] = 0;
         }
       }
+      fsum_t[myrank] = fsum;
+      fsum2_t[myrank] = fsum2;
     }
 
-    Pi = fsum/K;
+    double fsum = 0.0, fsum2 = 0.0;
+    for (int t = 0; t < nP; t++) {
+      fsum += fsum_t[t];
+      fsum2 += fsum2_t[t];
+    }
+
+    const double Pi = fsum/K;
     if (Pi!=Pi) {
       Rprintf("%d Estimated probability is nan, stopping estimation\n",i);
       break;
     }
-    Ei = sqrt(max((fsum2-fsum*fsum/K)/K/K,0));
+    const double Ei = sqrt(max((fsum2-fsum*fsum/K)/K/K,0));
 
     if (Pi<lim) {
-      break;
-    }
-
-    if(i<n-max_size){
       break;
     }
 
@@ -241,87 +250,25 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
     Ev[i] = Ei;
   }
 
-  delete[] al;
-  delete[] bl;
-  delete[] f;
-  delete[] s;
-  delete[] Li;
-  for (i=0; i<n; i++) {
-    delete[] x[i];
+  for (int t = 0; t < nP; t++) {
+    RngStream_DeleteStream(&RngArray[t]);
   }
-  delete[] x;
-  delete[] RngArray;
-
 }
 
 extern "C" void testRand( int * opts, double * x, int * seed_in){
 
-  int n = opts[0];
-  int n_threads = opts[1];
-  int seed_provided = opts[2];
-  
-  used_with_openmp(n_threads);
-  
-  #ifdef _OPENMP
-    const int max_nP = omp_get_num_procs();
-    int nPtmp;
-    if(n_threads == 0){
-      nPtmp = max_nP;
-    } else {
-      nPtmp = min(max_nP, max(n_threads,1));
-    }
-    const int nP = nPtmp;
-    omp_set_num_threads(nP);
-  #else
-    const int nP = 1;
-  #endif
+  const int n = opts[0];
+  const int nP = setup_threads(opts[1]);
+  setup_seed(opts[2], seed_in);
 
-
-  unsigned long m_1 = 4294967087U;
-  unsigned long m_2 = 4294944443U;
-  unsigned long seed[6];
-
-  if(seed_provided == 1){
-    for(int i=0;i<6;i++){
-      seed[i] = (unsigned long) seed_in[i];
-    }
-  } else {
-    ssize_t seed_read = 0;
-    #if defined (__APPLE__) && defined (__linux__)
-      int randomSrc = open("/dev/urandom", O_RDONLY);
-      if (randomSrc > 0) {
-      seed_read = read(randomSrc, seed, sizeof(seed));
-      close(randomSrc);
-      }
-    #endif
-    if (seed_read != (ssize_t) sizeof(seed)) {
-      //srand(time(0));
-      GetRNGstate();
-      for(int i=0;i<6;i++){
-        //seed[i] = rand();
-        seed[i] = round(RAND_MAX*unif_rand());
-      }
-      PutRNGstate();
-    }
+  vector<RngStream> RngArray(nP);
+  for (int t = 0; t < nP; t++) {
+    RngArray[t] = RngStream_CreateStream("namehere");
   }
 
-  seed[0] = seed[0] % m_1;
-  seed[1] = seed[1] % m_1;
-  seed[2] = seed[2] % m_1;
-  seed[3] = seed[3] % m_2;
-  seed[4] = seed[4] % m_2;
-  seed[5] = seed[5] % m_2;
-
-  RngStream_SetPackageSeed(seed);
-  RngStream * RngArray = new RngStream[nP];
-  int myrank = 0;
-
-  for (int i=0; i<nP; i++) {
-    RngArray[i] = RngStream_CreateStream("namehere");
-  }
-
-  #pragma omp parallel private(myrank)
+  #pragma omp parallel num_threads(nP)
   {
+    int myrank = 0;
   #ifdef _OPENMP
     myrank = omp_get_thread_num();
   #endif
@@ -331,5 +278,8 @@ extern "C" void testRand( int * opts, double * x, int * seed_in){
       x[i] = RngStream_RandU01(RngArray[myrank]);
     }
   }
-  delete[] RngArray;
+
+  for (int t = 0; t < nP; t++) {
+    RngStream_DeleteStream(&RngArray[t]);
+  }
 }

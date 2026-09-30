@@ -20,6 +20,7 @@ library(rSPDE)
 library(RColorBrewer)
 library(INLA)
 library(inlabru)
+library(fmesher)
 library(sp)
 set.seed(123)
 ```

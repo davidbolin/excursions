@@ -105,7 +105,7 @@ triangle-vertex index matrix only.}
 \item{type}{\code{"+"} or \code{"-"}, indicating positive or negative
 association. For \code{+}, the generated contours enclose regions
 where \eqn{u_1 \leq z < u_2}, for \code{-} the regions fulfil \eqn{u_1
-   < z \leq u_2}.}
+  < z \leq u_2}.}
 
 \item{tol}{tolerance for determining if the value at a vertex lies on a level.}
 

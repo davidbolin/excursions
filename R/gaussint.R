@@ -138,6 +138,7 @@ gaussint <- function(mu,
   use.reordering <- match.arg(use.reordering)
 
   if (!missing(ind) && !is.null(ind)) {
+    ind <- private.ind.logical(ind, n)
     a[!ind] <- -Inf
     b[!ind] <- Inf
   }

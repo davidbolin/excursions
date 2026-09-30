@@ -128,7 +128,7 @@ simconf <- function(alpha,
     q <- qnorm(x / 100) * sd
     prob <- gaussint(
       a = -q, b = q, Q.chol = L, ind = ind, lim = 1 - 1.1 * alpha,
-      max.threads = max.threads, seed = seed
+      n.iter = n.iter, max.threads = max.threads, seed = seed
     )
     if (verbose) {
       cat(x, prob$P, "\n")
@@ -149,8 +149,8 @@ simconf <- function(alpha,
   a <- mu - qnorm(r.o$minimum / 100) * sd
   b <- mu + qnorm(r.o$minimum / 100) * sd
 
-  a.marg <- mu - qnorm(alpha / 2) * sd
-  b.marg <- mu + qnorm(alpha / 2) * sd
+  a.marg <- mu + qnorm(alpha / 2) * sd
+  b.marg <- mu - qnorm(alpha / 2) * sd
 
 
   if (is.null(ind)) {

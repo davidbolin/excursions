@@ -167,12 +167,8 @@ simconf.inla <- function(result.inla,
   n.theta <- result.inla$misc$configs$nconfig
 
   if (method == "EB") {
-    for (i in 1:n.theta) {
-      config <- private.get.config(result.inla, i)
-      if (config$lp == 0) {
-        break
-      }
-    }
+    i <- private.mode.config(result.inla)
+    config <- private.get.config(result.inla, i)
     res <- simconf(
       alpha = alpha, mu = config$mu, Q = config$Q,
       vars = config$vars, n.iter = n.iter, ind = ind,
@@ -218,38 +214,22 @@ simconf.inla <- function(result.inla,
         sd.m[k, ] <- sqrt(vars[[k]][ind])
       }
       limits <- c(-1000, 1000)
-      a.marg <- sapply(seq_len(length(ind)), function(i) {
-        Fmix_inv(
-          p = alpha / 2,
-          mu = mu.m[, i], sd = sd.m[, i],
-          w = w, br = limits
-        )
-      })
+      a.marg <- Fmix_inv_vec(
+        p = alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+      )
 
-      b.marg <- sapply(seq_len(length(ind)), function(i) {
-        Fmix_inv(
-          p = 1 - alpha / 2,
-          mu = mu.m[, i], sd = sd.m[, i],
-          w = w, br = limits
-        )
-      })
+      b.marg <- Fmix_inv_vec(
+        p = 1 - alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+      )
       while (min(a.marg) == limits[1] || max(b.marg) == limits[2]) {
         limits <- 2 * limits
-        a.marg <- sapply(seq_len(length(ind)), function(i) {
-          Fmix_inv(
-            p = alpha / 2,
-            mu = mu.m[, i], sd = sd.m[, i],
-            w = w, br = limits
-          )
-        })
+        a.marg <- Fmix_inv_vec(
+          p = alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+        )
 
-        b.marg <- sapply(seq_len(length(ind)), function(i) {
-          Fmix_inv(
-            p = -alpha / 2,
-            mu = mu.m[, i], sd = sd.m[, i],
-            w = w, br = limits
-          )
-        })
+        b.marg <- Fmix_inv_vec(
+          p = 1 - alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+        )
       }
 
       r.o <- optimize(fmix.samp.opt,
@@ -258,21 +238,13 @@ simconf.inla <- function(result.inla,
         verbose = verbose
       )
 
-      a <- sapply(seq_len(length(ind)), function(i) {
-        Fmix_inv(
-          p = r.o$minimum / 2,
-          mu = mu.m[, i], sd = sd.m[, i],
-          w = w, br = limits
-        )
-      })
+      a <- Fmix_inv_vec(
+        p = r.o$minimum / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+      )
 
-      b <- sapply(seq_len(length(ind)), function(i) {
-        Fmix_inv(
-          p = 1 - r.o$minimum / 2,
-          mu = mu.m[, i], sd = sd.m[, i],
-          w = w, br = limits
-        )
-      })
+      b <- Fmix_inv_vec(
+        p = 1 - r.o$minimum / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+      )
 
       res <- list(
         a = a, b = b, a.marginal = a.marg, b.marginal = b.marg,

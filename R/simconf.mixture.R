@@ -43,6 +43,8 @@
 #' \item{b }{The upper bound.}
 #' \item{a.marginal }{The lower bound for pointwise confidence bands.}
 #' \item{b.marginal }{The upper bound for pointwise confidence bands.}
+#' \item{mean }{The mean of the mixture.}
+#' \item{vars }{The marginal variances of the mixture.}
 #' @export
 #' @details See [simconf()] for details.
 #' @author David Bolin \email{davidbolin@@gmail.com}
@@ -109,10 +111,13 @@ simconf.mixture <- function(alpha,
     if (anyNA(w)) {
       stop("w contains NA")
     }
+    if (length(w) != K) {
+      stop("Input lists are of different length")
+    }
   }
   if (!missing(vars)) {
     compute.vars <- FALSE
-    if (length(w) != K) {
+    if (length(vars) != K) {
       stop("Input lists are of different length")
     }
     for (k in seq_len(K)) {
@@ -150,63 +155,52 @@ simconf.mixture <- function(alpha,
     }
 
     limits <- c(-1000, 1000)
-    a.marg <- sapply(seq_len(n), function(i) {
-      Fmix_inv(
-        p = alpha / 2,
-        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
-      )
-    })
+    a.marg <- Fmix_inv_vec(
+      p = alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+    )
 
-    b.marg <- sapply(seq_len(n), function(i) {
-      Fmix_inv(
-        p = 1 - alpha / 2,
-        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
-      )
-    })
+    b.marg <- Fmix_inv_vec(
+      p = 1 - alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+    )
 
     while (min(a.marg) == limits[1] || max(b.marg) == limits[2]) {
       limits <- 2 * limits
-      a.marg <- sapply(seq_len(n), function(i) {
-        Fmix_inv(
-          p = alpha / 2,
-          mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
-        )
-      })
+      a.marg <- Fmix_inv_vec(
+        p = alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+      )
 
-      b.marg <- sapply(seq_len(n), function(i) {
-        Fmix_inv(
-          p = 1 - alpha / 2,
-          mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
-        )
-      })
+      b.marg <- Fmix_inv_vec(
+        p = 1 - alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+      )
     }
-    samp <- mix.sample(n.iter, mu, Q.chol, w)
+    if (is.null(seed)) {
+      samp <- mix.sample(n.iter, mu, Q.chol, w)
+    } else {
+      samp <- withr::with_seed(seed[1], mix.sample(n.iter, mu, Q.chol, w))
+    }
     r.o <- optimize(fmix.samp.opt,
       interval = c(0, alpha),
-      mu = mu.m[, ind], alpha = alpha,
-      sd = sd.m[, ind], w = w, limits = limits, samples = samp[, ind]
+      mu = mu.m[, ind, drop = FALSE], alpha = alpha,
+      sd = sd.m[, ind, drop = FALSE], w = w, limits = limits,
+      samples = samp[, ind, drop = FALSE]
     )
 
-    a <- sapply(seq_len(n), function(i) {
-      Fmix_inv(
-        p = r.o$minimum / 2,
-        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
-      )
-    })
+    a <- Fmix_inv_vec(
+      p = r.o$minimum / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+    )
 
-    b <- sapply(seq_len(n), function(i) {
-      Fmix_inv(
-        p = 1 - r.o$minimum / 2,
-        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
-      )
-    })
+    b <- Fmix_inv_vec(
+      p = 1 - r.o$minimum / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+    )
   } else {
-    if (!missing(ind)) {
-      if (!is.logical(ind)) {
-        lind <- rep(FALSE, n)
-        lind[ind] <- TRUE
-        ind <- lind
-      }
+    if (missing(ind) || is.null(ind)) {
+      ind <- rep(TRUE, n)
+    } else if (!is.logical(ind)) {
+      lind <- rep(FALSE, n)
+      lind[ind] <- TRUE
+      ind <- lind
+    }
+    if (!all(ind)) {
       cind <- reo <- rep(1, n)
       cind[!ind] <- 0
       Q_ipx <- private.sparse.get_ipx(Q[[1]])
@@ -229,41 +223,30 @@ simconf.mixture <- function(alpha,
       Q.chol[[k]] <- private.Cholesky(Q[[k]][reo, reo], perm = FALSE)$R
       mu.m[k, ] <- mu[[k]][reo]
       if (compute.vars) {
-        vars[[k]] <- excursions.variances(L = Q.chol[[k]], max.threads = max.threads)
+        ## The factor is for the reordered field; store in the original order
+        vars[[k]] <- excursions.variances(L = Q.chol[[k]])[ireo]
       }
       sd.m[k, ] <- sqrt(vars[[k]][reo])
     }
 
     limits <- c(-1000, 1000)
-    a.marg <- sapply(seq_len(n), function(i) {
-      Fmix_inv(
-        p = alpha / 2,
-        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
-      )
-    })[ireo]
+    a.marg <- Fmix_inv_vec(
+      p = alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+    )[ireo]
 
-    b.marg <- sapply(seq_len(n), function(i) {
-      Fmix_inv(
-        p = 1 - alpha / 2,
-        mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
-      )
-    })[ireo]
+    b.marg <- Fmix_inv_vec(
+      p = 1 - alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+    )[ireo]
 
     while (min(a.marg) == limits[1] || max(b.marg) == limits[2]) {
       limits <- 2 * limits
-      a.marg <- sapply(seq_len(n), function(i) {
-        Fmix_inv(
-          p = alpha / 2,
-          mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
-        )
-      })[ireo]
+      a.marg <- Fmix_inv_vec(
+        p = alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+      )[ireo]
 
-      b.marg <- sapply(seq_len(n), function(i) {
-        Fmix_inv(
-          p = 1 - alpha / 2,
-          mu = mu.m[, i], sd = sd.m[, i], w = w, br = limits
-        )
-      })[ireo]
+      b.marg <- Fmix_inv_vec(
+        p = 1 - alpha / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+      )[ireo]
     }
 
     r.o <- optimize(fmix.opt,
@@ -275,37 +258,32 @@ simconf.mixture <- function(alpha,
       w = w,
       ind = ind[reo],
       limits = limits,
+      n.iter = n.iter,
       max.threads = max.threads,
+      seed = seed,
       verbose = verbose
     )
 
-    a <- sapply(seq_len(n), function(i) {
-      Fmix_inv(
-        p = r.o$minimum / 2,
-        mu = mu.m[, i],
-        sd = sd.m[, i],
-        w = w,
-        br = limits
-      )
-    })[ireo]
+    a <- Fmix_inv_vec(
+      p = r.o$minimum / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+    )[ireo]
 
-    b <- sapply(seq_len(n), function(i) {
-      Fmix_inv(
-        p = 1 - r.o$minimum / 2,
-        mu = mu.m[, i],
-        sd = sd.m[, i],
-        w = w,
-        br = limits
-      )
-    })[ireo]
+    b <- Fmix_inv_vec(
+      p = 1 - r.o$minimum / 2, mu = mu.m, sd = sd.m, w = w, br = limits
+    )[ireo]
   }
+  ## Mean and variance of the mixture
+  mix.mean <- Reduce(`+`, lapply(seq_len(K), function(k) w[k] * mu[[k]]))
+  mix.vars <- Reduce(`+`, lapply(seq_len(K), function(k) {
+    w[k] * (vars[[k]] + mu[[k]]^2)
+  })) - mix.mean^2
   output <- list(
     a = a[ind],
     b = b[ind],
     a.marginal = a.marg[ind],
     b.marginal = b.marg[ind],
-    mean = mu[ind],
-    vars = vars[ind]
+    mean = mix.mean[ind],
+    vars = mix.vars[ind]
   )
   output$meta <- list(
     calculation = "simconf",

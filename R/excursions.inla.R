@@ -293,12 +293,8 @@ excursions.inla <- function(result.inla,
   rho[ind] <- rho.ind
 
   n.theta <- result.inla$misc$configs$nconfig
-  for (i in 1:n.theta) {
-    config <- private.get.config(result.inla, i)
-    if (config$lp == 0) {
-      break
-    }
-  }
+  i <- private.mode.config(result.inla)
+  config <- private.get.config(result.inla, i)
 
   if (verbose) {
     cat("Calculating excursion function using the ", method, " method\n")
@@ -346,7 +342,7 @@ excursions.inla <- function(result.inla,
     pfam.i <- rep(-0.1, n)
     pfam.i[ind] <- rho.ind
     reo <- sort(pfam.i, index.return = TRUE)$ix
-    pfam.i[!ind] <- 0
+    pfam.i[-ind] <- 0
     res <- lw <- NULL
 
     for (i in 1:n.theta) {
@@ -365,24 +361,24 @@ excursions.inla <- function(result.inla,
       } else {
         par.fr <- parent.frame()
       }
-      r.i <- INLA::inla(
-        result.inla$.args$formula,
-        family = result.inla$.args$family,
-        data = result.inla$.args$data,
-        control.compute = list(
-          config = TRUE,
-          return.marginals.predictor = TRUE
-        ),
-        control.predictor = result.inla$.args$control.predictor,
-        control.mode = list(
-          theta =
-            as.vector(result.inla$misc$configs$config[[i]]$theta),
-          fixed = TRUE,
-          restart = FALSE
-        ),
-        num.threads = "1:1",
-        .parent.frame = par.fr
+      ## Refit with the hyperparameters fixed at this configuration, reusing
+      ## all the arguments of the original fit so that the model is the same
+      args.i <- result.inla$.args
+      args.i$control.compute <- c(
+        list(config = TRUE, return.marginals.predictor = TRUE),
+        args.i$control.compute[setdiff(
+          names(args.i$control.compute),
+          c("config", "return.marginals.predictor")
+        )]
       )
+      args.i$control.mode <- list(
+        theta = as.vector(result.inla$misc$configs$config[[i]]$theta),
+        fixed = TRUE,
+        restart = FALSE
+      )
+      args.i$num.threads <- "1:1"
+      args.i$.parent.frame <- par.fr
+      r.i <- do.call(INLA::inla, args.i)
       # TODO: May refine the num.threads argument above to make it configurable, but
       # since the inla() call is only constructing the model and optimising over the
       # latent field once, for fixed hyperparameters, single threads is probably ok.
@@ -397,7 +393,7 @@ excursions.inla <- function(result.inla,
       } else {
         p1.i <- sapply(seq_along(ind), function(j) {
           inla.get.marginal(ind[j],
-            u = u, result = result.inla,
+            u = u, result = r.i,
             u.link = u.link, type = type
           )
         })

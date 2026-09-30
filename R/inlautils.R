@@ -33,15 +33,10 @@ inla.add.linearpredictor <- function(result, ind = NULL) {
 
     ## The Qinv stored by INLA is only computed on the sparsity pattern of Q,
     ## so A %*% Qinv %*% t(A) misses covariances needed for the predictor
-    ## variances. Compute them from the joint precision instead, so that they
-    ## are consistent with the Q used in the integration.
-    vars.joint <- excursions.variances(
-      Q = forceSymmetric(result$misc$configs$config[[i]]$Q)
-    )
-    result$misc$configs$config[[i]]$Qinv <- bdiag(
-      Diagonal(dim(A)[1], vars.joint[seq_len(dim(A)[1])]),
-      result$misc$configs$config[[i]]$Qinv
-    )
+    ## variances. They are computed from the joint precision instead, so that
+    ## they are consistent with the Q used in the integration. This is done in
+    ## private.get.config(), only for the configurations that are used.
+    result$misc$configs$config[[i]]$n.predictor <- dim(A)[1]
 
     result$misc$configs$config[[i]]$mean <- c(
       offsets + as.double(A %*% result$misc$configs$config[[i]]$mean),
@@ -187,10 +182,26 @@ private.link.function <- function(x, link, inv = FALSE) {
   return(do.call(paste("inla.link.", link, sep = ""), list(x = x, inv = inv)))
 }
 
+## Index of the configuration with the largest log posterior (the first one,
+## if there are ties)
+private.mode.config <- function(result) {
+  which.max(vapply(
+    result$misc$configs$config,
+    function(x) x$log.posterior,
+    0.0
+  ))
+}
+
 private.get.config <- function(result, i) {
   mu <- result$misc$configs$config[[i]]$mean
   Q <- forceSymmetric(result$misc$configs$config[[i]]$Q)
   vars <- diag(result$misc$configs$config[[i]]$Qinv)
+  n.pred <- result$misc$configs$config[[i]]$n.predictor
+  if (!is.null(n.pred)) {
+    ## Linear predictor added by inla.add.linearpredictor()
+    vars.joint <- excursions.variances(Q = Q)
+    vars <- c(vars.joint[seq_len(n.pred)], vars)
+  }
   m <- max(unlist(lapply(
     result$misc$configs$config,
     function(x) x$log.posterior
@@ -232,5 +243,5 @@ inla.get.marginal.int <- function(i, a, b, result, effect.name = NULL) {
     # Calculate marginals using a random effect
     marg.p <- result$marginals.random[[effect.name]][[i]]
   }
-  return(c(INLA::inla.pmarginal(a, marg.p), INLA::inla.pmarginal(b, marg.p)))
+  INLA::inla.pmarginal(c(a, b), marg.p)
 }

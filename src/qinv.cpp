@@ -1,157 +1,126 @@
-#include <iostream>
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
 #include <vector>
-#include <map>
 #include <algorithm>
 
-#define used_with_openmp(X) (void)X
-
-#ifdef _OPENMP
-	#include<omp.h>
-#endif
+#include <R.h>
+#include <Rinternals.h>
 
 using namespace std;
 
-extern "C" void Qinv(int * Rir, int * Rjc, double * Rpr, double * variances, int * nin, int * n_threads){
-  int n = nin[0];
+/*
+ Diagonal of the inverse of Q = L L^T, computed with the Takahashi recursion
+ on the sparsity pattern of the Cholesky factor.
 
-  typedef pair<size_t,double> Qpairtype;
-  typedef vector< Qpairtype > Qvectype;
-  typedef vector< Qvectype > Qtype;
+ Input is a triangular factor in CSC format (0-based). If lower is TRUE it is
+ the lower triangular L, otherwise the upper triangular R = L^T. The upper
+ case is transposed to lower CSC once, which is the same as reading R in CSR.
 
-  int i,j;
+ The selected inverse Z is stored flat, sharing L's pattern exactly, so that
+ Z(r, c) for r >= c is z[q] at the offset q that holds L(r, c). The current
+ column is scattered into dense workspaces (pos, lj), which turns what would
+ be a search per access into an array index. This replaces the earlier
+ vector-of-vectors version, which searched sorted rows for every product.
+*/
+// Returns 0 on success, or the 1-based column with a missing diagonal.
+static int qinv_diag(int n, const int *Ap, const int *Ai, const double *Ax,
+                     bool lower, double *variances) {
+  const int nnz = Ap[n];
 
-  #ifdef _OPENMP
-    const int max_nP = omp_get_num_procs();
-    int nPtmp;
-    if(n_threads[0] == 0){
-      nPtmp = max_nP;
-    } else {
-      nPtmp = min(max_nP, max(n_threads[0],1));
+  const int *Lp, *Li;
+  const double *Lx;
+  vector<int> tp, ti;
+  vector<double> tx;
+  if (lower) {
+    Lp = Ap;
+    Li = Ai;
+    Lx = Ax;
+  } else {
+    // Transpose the upper triangular R to lower triangular L = R^T. A counting
+    // sort by row keeps the row indices in each column of L sorted, so the
+    // diagonal comes first in each column.
+    tp.assign(n + 1, 0);
+    ti.resize(nnz);
+    tx.resize(nnz);
+    for (int q = 0; q < nnz; ++q)
+      ++tp[Ai[q] + 1];
+    for (int j = 0; j < n; ++j)
+      tp[j + 1] += tp[j];
+    vector<int> next(tp.begin(), tp.end() - 1);
+    for (int c = 0; c < n; ++c) {
+      for (int q = Ap[c]; q < Ap[c + 1]; ++q) {
+        const int r = Ai[q];
+        ti[next[r]] = c;
+        tx[next[r]++] = Ax[q];
+      }
     }
-    const int nP = nPtmp;
-    omp_set_num_threads(nP);
-  #else
-    const int nP = 1;
-  #endif
-  used_with_openmp(nP);
-  /*
-  Copy cholesky factor to more convenient format and extract diagonal elements
-  */
-
-  Qtype R(n);
-  vector<double> D(n);
-  //Extract the elements and store the sparse R-matrix
-  //in a more convinient format.
-  if(Rjc[n]-Rjc[n-1] == 1){
-    //only one element in the last column, assume lower triangular matrix
-    for(int c=0;c<n;++c){
-      D[c] = Rpr[Rjc[c]];
-      R[c].resize(Rjc[c+1]-Rjc[c]);
-      for(j=Rjc[c],i=0;j<Rjc[c+1];++j,++i)
-        R[c][i] = Qpairtype(Rir[j], Rpr[j]);
-    }
-  }else{
-    //assume upper triangular matrix - first find number of element in each row
-    vector<size_t> nRow(n), iRow(n);
-    for(int c=0;c<n;++c){
-      for(j=Rjc[c];j<Rjc[c+1];++j)
-        ++nRow[Rir[j]];
-      D[c] = Rpr[Rjc[c+1]-1];
-    }
-    for(int c=0;c<n;++c)
-      R[c].resize( nRow[c] );
-    for(int c=0;c<n;++c){
-      for(j=Rjc[c];j<Rjc[c+1];++j)
-        R[Rir[j]][iRow[Rir[j]]++] = Qpairtype(c, Rpr[j]);
-    }
+    Lp = tp.data();
+    Li = ti.data();
+    Lx = tx.data();
   }
 
-  /* Calculate inverse */
-  Qvectype::iterator pos;
-  size_t Nmax=0;
-  
-  //divide all elemnts in R by the diagonal-elements
-  for(i=0; i<n; ++i){
-    //find the maximal number of non-zero elements in any row of R
-    if(Nmax < R[i].size())
-      Nmax = R[i].size();
-    //compute R[i,j]/D[i]
-    for(pos=R[i].begin(); pos!=R[i].end(); ++pos)
-      (pos->second) /=D[i];
-    //and compute 1/d^2
-    D[i] = 1/(D[i]*D[i]);
-  }
+  vector<double> z(nnz, 0.0);
+  vector<int> pos(n, -1);
+  vector<double> lj(n, 0.0);
+  vector<double> acc;
 
-  //count number of elements that is going to end up in iQ
-  vector<size_t> nnz(n,1);
-  for(i=0; i<n; ++i){
-    //first find the indices of the non-zero elements
-    for(pos=R[i].begin(), ++pos; pos!=R[i].end(); ++pos){
-      nnz[i]++;
-      nnz[pos->first]++;
+  for (int j = n - 1; j >= 0; --j) {
+    const int start = Lp[j], end = Lp[j + 1];
+    if (start >= end || Li[start] != j)
+      return j + 1;
+    const double Ljj = Lx[start];
+    const int m = end - start - 1;
+
+    for (int t = 0; t < m; ++t) {
+      const int r = Li[start + 1 + t];
+      pos[r] = t;
+      lj[r] = Lx[start + 1 + t] / Ljj;
     }
-  }
+    acc.assign(m, 0.0);
 
-  //vectors containing the location and values within one column
-  vector<size_t> ii(Nmax);
-  vector<double> s(Nmax);
-  vector< Qvectype::iterator > iQpos(Nmax);
-  vector< Qvectype::iterator > iQstart(n);
-
-  //create a structure holding the inverse matrix
-  Qtype iQ(n);
-  for(i=0; i<n; ++i){
-    iQ[i].resize(nnz[i]);
-    iQstart[i] = iQ[i].end();
-  }
-
-  //loop over the columns of the matrix
-  int Rsize;
-  i = n;
-  while(i>0){
-    --i;
-    Rsize = (int) R[i].size();
-    //first find the indices of the non-zero elements
-    for(pos=R[i].begin(), ++pos, j=0; pos!=R[i].end(); ++pos, j++){
-      ii[j] = pos->first; //index of elements
-      s[j] = 0; //set values to zero
-      iQpos[j] = iQstart[ii[j]]; //start of each iQ row
-    }
-
-    //multiply the row of R with the rows of iQ
-    #pragma omp parallel for private(pos)
-    for(int j2=0; j2<(Rsize-1); ++j2){
-      Qvectype::iterator iQpos_tmp = iQpos[j2];
-      Qvectype::iterator iQend = iQ[ii[j2]].end();
-      for(pos=R[i].begin(), ++pos; pos!=R[i].end(); ++pos){
-        for(;iQpos_tmp != iQend && iQpos_tmp->first < pos->first; ++iQpos_tmp){}
-        if(iQpos_tmp != iQend && iQpos_tmp->first == pos->first)
-          s[j2] += (iQpos_tmp->second) * (pos->second);
+    // acc[a] accumulates -sum_k Ltil(k, j) Z(r_a, k) over the rows k of this
+    // column. Walking column c yields Z(r, c) for r >= c, and that value
+    // serves both the (i = r, k = c) and the (i = c, k = r) term, so one pass
+    // over the already computed columns covers every pair without a search.
+    for (int b = 0; b < m; ++b) {
+      const int c = Li[start + 1 + b];
+      const double lc = lj[c];
+      for (int q = Lp[c]; q < Lp[c + 1]; ++q) {
+        const int a = pos[Li[q]];
+        if (a < 0)
+          continue;
+        const double v = z[q];
+        acc[a] -= lc * v;
+        if (Li[q] != c)
+          acc[b] -= lj[Li[q]] * v;
       }
     }
 
-    //the diagonal elements
-    double diag = D[i];
-    for(pos=R[i].begin(), ++pos, j=0; pos!=R[i].end(); ++pos, ++j)
-      diag += s[j] * (pos->second);
+    double accd = 0.0;
+    for (int t = 0; t < m; ++t) {
+      z[start + 1 + t] = acc[t];
+      accd += lj[Li[start + 1 + t]] * acc[t];
+    }
+    z[start] = 1.0 / (Ljj * Ljj) - accd;
+    variances[j] = z[start];
 
-    //add the elements to iQ
-    j = R[i].size()-1;
-    while(j>0){
-      --j;
-      *(--iQstart[i]) = Qpairtype(ii[j], -s[j]);
-      *(--iQstart[ ii[j] ]) = Qpairtype(i, -s[j]);
-    }
-    *(--iQstart[i]) = Qpairtype(i, diag);
-  }
-  for (i=0; i<n; i++) {
-    for(pos=iQ[i].begin(); pos!=iQ[i].end(); ++pos){
-      if (i==(int)pos->first) {
-        variances[i] = pos->second;
-      }
+    for (int t = 0; t < m; ++t) {
+      const int r = Li[start + 1 + t];
+      pos[r] = -1;
+      lj[r] = 0.0;
     }
   }
+  return 0;
+}
+
+extern "C" SEXP Qinv(SEXP Rp, SEXP Ri, SEXP Rx, SEXP Rlower) {
+  const int n = Rf_length(Rp) - 1;
+  if (n < 0 || Rf_length(Ri) < INTEGER(Rp)[n] || Rf_length(Rx) < INTEGER(Rp)[n])
+    Rf_error("Qinv: invalid sparse matrix.");
+  SEXP out = PROTECT(Rf_allocVector(REALSXP, n));
+  const int bad = n > 0 ? qinv_diag(n, INTEGER(Rp), INTEGER(Ri), REAL(Rx),
+                                    Rf_asLogical(Rlower) == TRUE, REAL(out))
+                        : 0;
+  UNPROTECT(1);
+  if (bad)
+    Rf_error("Qinv: the Cholesky factor has no diagonal element in column %d.", bad);
+  return out;
 }

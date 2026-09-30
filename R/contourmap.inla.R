@@ -264,12 +264,8 @@ contourmap.inla <- function(result.inla,
   ind <- ind.stack
   ind.original <- ind.stack.original
 
-  for (i in 1:result.inla$misc$configs$nconfig) {
-    config <- private.get.config(result.inla, i)
-    if (config$lp == 0) {
-      break
-    }
-  }
+  i <- private.mode.config(result.inla)
+  config <- private.get.config(result.inla, i)
   indices <- rep(FALSE, length(config$mu))
   indices[ind] <- TRUE
 

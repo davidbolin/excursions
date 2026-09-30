@@ -247,8 +247,12 @@ simconf.mc <- function(samples,
     ind <- seq_len(dim(samples)[1])
   }
 
-  a.marg <- apply(samples, 1, quantile, 1, probs = c(alpha / 2))
-  b.marg <- apply(samples, 1, quantile, 1, probs = c(1 - alpha / 2))
+  ## Sort the samples once, for the quantiles in the search below
+  sorted <- private.sort.rows(samples)
+  a.marg <- private.samples.quantile(samples, alpha / 2, sorted)
+  b.marg <- private.samples.quantile(samples, 1 - alpha / 2, sorted)
+  samples.ind <- samples[ind, , drop = FALSE]
+  sorted.ind <- if (is.null(sorted)) NULL else sorted[ind, , drop = FALSE]
 
   # Simple golden section search
   lb <- 0
@@ -258,8 +262,14 @@ simconf.mc <- function(samples,
   x2 <- lb + gr * (ub - lb)
 
 
-  f1 <- fsamp.opt(x1, samples = samples[ind, ], verbose = verbose)
-  f2 <- fsamp.opt(x2, samples = samples[ind, ], verbose = verbose)
+  f1 <- fsamp.opt(x1,
+    samples = samples.ind, verbose = verbose,
+    sorted = sorted.ind
+  )
+  f2 <- fsamp.opt(x2,
+    samples = samples.ind, verbose = verbose,
+    sorted = sorted.ind
+  )
 
   while (abs(ub - lb) > 1e-4) {
     if (f2 < 1 - alpha) {
@@ -268,20 +278,25 @@ simconf.mc <- function(samples,
       x2 <- x1
       f2 <- f1
       x1 <- ub - gr * (ub - lb)
-      f1 <- fsamp.opt(x1, samples = samples[ind, ], verbose = verbose)
+      f1 <- fsamp.opt(x1,
+        samples = samples.ind, verbose = verbose,
+        sorted = sorted.ind
+      )
     } else {
       lb <- x1
       x1 <- x2
       f1 <- f2
       x2 <- lb + gr * (ub - lb)
-      f2 <- fsamp.opt(x2, samples = samples[ind, ], verbose = verbose)
+      f2 <- fsamp.opt(x2,
+        samples = samples.ind, verbose = verbose,
+        sorted = sorted.ind
+      )
     }
   }
 
   rho <- (lb + ub) / 2
-  cat(rho)
-  a <- apply(samples, 1, quantile, 1, probs = c(rho / 2))
-  b <- apply(samples, 1, quantile, 1, probs = c(1 - rho / 2))
+  a <- private.samples.quantile(samples, rho / 2, sorted)
+  b <- private.samples.quantile(samples, 1 - rho / 2, sorted)
 
   return(list(
     a = a[ind],

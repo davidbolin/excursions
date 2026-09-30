@@ -50,6 +50,8 @@ An object of class "excurobj" with elements
 \item{b }{The upper bound.}
 \item{a.marginal }{The lower bound for pointwise confidence bands.}
 \item{b.marginal }{The upper bound for pointwise confidence bands.}
+\item{mean }{The mean of the mixture.}
+\item{vars }{The marginal variances of the mixture.}
 }
 \description{
 \code{simconf.mixture} is used for calculating simultaneous confidence regions

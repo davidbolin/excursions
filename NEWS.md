@@ -16,6 +16,47 @@
 * Fix `continuous()` for excursion and contour map objects computed with an
   `ind` argument that selects a strict subset of the geometry nodes, which
   failed with a `non-conformable arguments` error.
+* Faster marginal variances in `excursions.variances()`, and therefore in
+  most other functions, using a scatter-based Takahashi recursion on the
+  pattern of the Cholesky factor. The argument `max.threads` of 
+  `excursions.variances()` is no longer used.
+* Faster sequential importance sampling in `gaussint()`, `excursions()`,
+  `contourmap()` and `simconf()`. With several threads, all of the work is
+  now done in parallel, and the results for a given seed only depend on the
+  number of threads. Results for a single thread are unchanged.
+* Faster `tricontour()`, `tricontourmap()` and `continuous()`, which were
+  quadratic in the number of contour segments, and faster `simconf.mc()`,
+  `excursions.mc()`, `contourmap.mc()`, `simconf.mixture()` and
+  `simconf.inla()` with `method = "NI"`.
+* Much faster reordering of the nodes in `excursions()`, `contourmap()` and
+  the INLA interfaces when many nodes have marginal probabilities above the
+  threshold, by merging single node constraint sets before calling CAMD.
+  With `excursions.inla()`, the joint variances of the linear predictor are
+  now only computed for the configurations that are used. 
+* Fix the reordering of the nodes above the threshold, where the two nodes
+  with the largest marginal probabilities were in the same constraint set
+  and could be integrated in the wrong order. They are now integrated in the
+  order of their probabilities like the other nodes.
+* The quantiles of Gaussian mixtures in `simconf.mixture()` and
+  `simconf.inla()` are now computed to full precision.
+* Fix `simconf()`, which returned `a.marginal` and `b.marginal` swapped, and
+  ignored `n.iter`.
+* Fix `gaussint()` and `simconf()`, which ignored `ind` when it was given
+  as integer indices. This also affects `simconf.inla()` with `ind`.
+* Fix `excursions()` and `contourmap()` with `Q.chol`, where the Cholesky
+  factor was used as a precision matrix when the nodes were reordered.
+* Fix `excursions.inla()` with `method = "iNIQC"`, which failed for models
+  with fixed hyperparameters since the refits did not use all the arguments
+  of the original fit, and which used the marginals of the original fit
+  instead of the refits for the linear predictor.
+* Fix `simconf.mixture()`: `mix.samp = FALSE` failed without `ind`, and
+  permuted computed variances twice when `ind` was given; `seed` is now used
+  for `mix.samp = TRUE`; the returned `mean` and `vars` are now the mean and
+  variances of the mixture; and a single mixture component is supported.
+* Fix a wrong quantile in `simconf.inla()` with `method = "NI"` when the
+  limits of the mixture quantiles had to be extended.
+* `simconf.mc()` no longer prints the estimated level.
+* `excursions.variances()` accepts supernodal Cholesky factors.
 
 # excursions 2.5.11
  

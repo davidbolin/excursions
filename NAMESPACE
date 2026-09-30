@@ -34,12 +34,16 @@ import(Matrix)
 importFrom(fmesher,fm_segm)
 importFrom(graphics,lines)
 importFrom(lifecycle,deprecated)
-importFrom(methods,as)
-importFrom(methods,is)
-importFrom(stats,optimize)
-importFrom(stats,pnorm)
-importFrom(stats,qnorm)
-importFrom(stats,quantile)
-importFrom(stats,rnorm)
-importFrom(stats,uniroot)
+importFrom(methods,
+  as,
+  is
+)
+importFrom(stats,
+  optimize,
+  pnorm,
+  qnorm,
+  quantile,
+  rnorm,
+  uniroot
+)
 useDynLib(excursions, .registration = TRUE)

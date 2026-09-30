@@ -11,8 +11,8 @@ excursions.variances(L, Q, max.threads = 0)
 
 \item{Q}{Precision matrix.}
 
-\item{max.threads}{Decides the number of threads the program can use. Set to 0 for using
-the maximum number of threads allowed by the system (default).}
+\item{max.threads}{Not used. The computation is sequential, and the argument is
+kept for backwards compatibility.}
 }
 \value{
 A vector with the variances.

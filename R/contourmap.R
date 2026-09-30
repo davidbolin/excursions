@@ -227,6 +227,15 @@ contourmap <- function(mu,
     if (missing(Q)) {
       stop("precision matrix must be supplied if measure should be calculated")
     }
+    ## Compute the variances once, if more than one step needs them
+    if (missing(vars) &&
+      sum(c(
+        "P0" %in% measure,
+        any(c("P0-bound", "P1-bound", "P2-bound") %in% measure),
+        !("P0" %in% measure) && (is.null(compute$F) || compute$F)
+      )) > 1) {
+      vars <- excursions.variances(Q = Q, max.threads = max.threads)
+    }
 
     for (i in seq_along(measure)) {
       if (measure[i] == "P1") {

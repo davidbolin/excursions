@@ -38,8 +38,8 @@ private.Cholesky <- function(A, ...) {
 #'
 #' @param L Cholesky factor of precision matrix.
 #' @param Q Precision matrix.
-#' @param max.threads Decides the number of threads the program can use. Set to 0 for using
-#' the maximum number of threads allowed by the system (default).
+#' @param max.threads Not used. The computation is sequential, and the argument is
+#' kept for backwards compatibility.
 #'
 #' @return A vector with the variances.
 #' @export
@@ -60,29 +60,31 @@ private.Cholesky <- function(A, ...) {
 #' v1 <- diag(solve(Q))
 excursions.variances <- function(L, Q, max.threads = 0) {
   if (!missing(L) && !is.null(L)) {
-    reordered <- FALSE
-    L <- private.as.dtCMatrixU(L)
+    perm <- NULL
+    if (inherits(L, "sparseMatrix") && !inherits(L, "triangularMatrix")) {
+      ## For example a supernodal factor, which may store zeros on the other
+      ## side of the diagonal
+      L <- Matrix::drop0(L)
+    }
+    L <- private.as.dtCMatrix(L)
   } else {
-    reordered <- TRUE
-    L <- private.Cholesky(Q, LDL = FALSE)
-    ireo <- L$ireo
-    L <- L$R
+    ## Keep the factor lower triangular, as the C code works on columns of L.
+    ch <- Matrix::Cholesky(private.as.dgCMatrix(Q), LDL = FALSE, perm = TRUE)
+    perm <- ch@perm + 1L
+    L <- as(ch, "CsparseMatrix")
   }
-  L_ipx <- private.sparse.get_ipx(L)
+  lower <- L@uplo == "L"
+  if (L@diag == "U") {
+    L <- as(L, "generalMatrix")
+  }
 
-  out <- .C("Qinv",
-    Rir = as.integer(L_ipx$i),
-    Rjc = as.integer(L_ipx$p),
-    Rpr = as.double(L_ipx$x),
-    variances = double(dim(L)[1]),
-    n = as.integer(dim(L)[1]),
-    n_threads = as.integer(max.threads)
-  )
+  variances <- .Call("Qinv", L@p, L@i, as.double(L@x), lower)
 
-  if (reordered) {
-    out$variances[ireo]
+  if (is.null(perm)) {
+    variances
   } else {
-    out$variances
+    variances[perm] <- variances
+    variances
   }
 }
 
@@ -131,7 +133,7 @@ excursions.marginals <- function(type, rho, vars, mu, u, QC = FALSE) {
 
 excursions.permutation <- function(rho, ind, use.camd = TRUE, alpha, Q) {
   if (!missing(ind) && !is.null(ind)) {
-    rho[!ind] <- -1
+    rho[!private.ind.logical(ind, length(rho))] <- -1
   }
   n <- length(rho)
   v.s <- sort(rho, index.return = TRUE)
@@ -141,10 +143,10 @@ excursions.permutation <- function(rho, ind, use.camd = TRUE, alpha, Q) {
   ireo[reo] <- 1:n
   if (use.camd) {
     k <- 0
-    i <- n - 1
+    i <- n
     # add nodes to lower bound
     cindr <- cind <- rep(0, n)
-    while (rho_sort[i] > 1 - alpha && i > 0) {
+    while (i > 0 && rho_sort[i] > 1 - alpha) {
       cindr[i] <- k
       i <- i - 1
       k <- k + 1
@@ -156,21 +158,50 @@ excursions.permutation <- function(rho, ind, use.camd = TRUE, alpha, Q) {
         i <- i - 1
       }
       # change back to original ordering
-      for (i in 1:n) {
-        cind[i] <- k - cindr[ireo[i]]
-      }
-      Q <- private.as.dgCMatrix(Q)
-      ## call CAMD
-      Q_ipx <- private.sparse.get_ipx(Q)
-      out <- .C("reordering",
-        nin = as.integer(n), Mp = as.integer(Q_ipx$p),
-        Mi = as.integer(Q_ipx$i), reo = as.integer(reo),
-        cind = as.integer(cind)
-      )
-      reo <- out$reo + 1
+      cind <- k - cindr[ireo]
+      reo <- private.camd(Q, cind)
     }
   }
   return(reo)
+}
+
+## Constrained approximate minimum degree ordering of Q, where the nodes with
+## constraint cind == c are ordered before the nodes with cind == c + 1.
+##
+## A constraint set with a single node fixes the position of that node, and
+## CAMD is slow when there are many constraint sets. Runs of consecutive
+## single node sets are therefore merged into one set before calling CAMD,
+## and the nodes of each merged run are then put back in their fixed order.
+## This does not change the ordering, since the order of the nodes within a
+## run does not change the graph that remains for the other sets.
+private.camd <- function(Q, cind) {
+  n <- length(cind)
+  Q <- private.as.dgCMatrix(Q)
+  Q_ipx <- private.sparse.get_ipx(Q)
+
+  sets <- sort(unique(cind))
+  single <- tabulate(match(cind, sets), length(sets)) == 1
+  ## New set index, shared by consecutive single node sets
+  merged <- cumsum(!(single & c(FALSE, single[-length(single)])))
+  cind.merged <- merged[match(cind, sets)] - 1L
+
+  out <- .C("reordering",
+    nin = as.integer(n), Mp = as.integer(Q_ipx$p),
+    Mi = as.integer(Q_ipx$i), reo = integer(n),
+    cind = as.integer(cind.merged)
+  )
+  reo <- out$reo + 1L
+
+  ## Restore the fixed order within each merged run. The nodes of a set are
+  ## consecutive in reo, so sorting by the original set index within the
+  ## positions of the merged set restores it.
+  runs <- which(tabulate(cind.merged + 1L, max(merged)) > 1 &
+    vapply(split(single, merged), all, TRUE))
+  for (r in runs) {
+    pos <- which(cind.merged[reo] == r - 1L)
+    reo[pos] <- reo[pos][order(cind[reo[pos]])]
+  }
+  reo
 }
 
 
@@ -210,6 +241,13 @@ excursions.setlimits <- function(marg, vars, type, QC, u, mu) {
 
 
 excursions.call <- function(a, b, reo, Q, is.chol = FALSE, lim, K, max.size, n.threads, seed) {
+  if (is.chol && !identical(as.integer(reo), seq_len(length(reo)))) {
+    ## The factor is for the original ordering, so form the precision matrix
+    ## and factorise it in the integration order
+    L <- private.as.dtCMatrixU(Q)
+    Q <- crossprod(L)
+    is.chol <- FALSE
+  }
   if (!is.chol) {
     a.sort <- a[reo]
     b.sort <- b[reo]
@@ -223,9 +261,9 @@ excursions.call <- function(a, b, reo, Q, is.chol = FALSE, lim, K, max.size, n.t
       max.threads = n.threads, seed = seed
     )
   } else {
-    # assume that everything already is ordered
+    ## The integration order is the order of the factor
     res <- gaussint(
-      Q = Q, a = a, b = b, lim = lim, n.iter = K,
+      Q.chol = Q, a = a, b = b, lim = lim, n.iter = K,
       max.size = max.size,
       max.threads = n.threads, seed = seed
     )
@@ -242,6 +280,17 @@ private.check.integer <- function(v) {
   } else if (length(v) > 1) {
     stop("Anticipated scalar value, got vector")
   }
+}
+
+## Logical vector of length n from indices, which may be given as a logical
+## vector or as integer indices
+private.ind.logical <- function(ind, n) {
+  if (is.logical(ind)) {
+    return(rep_len(ind, n))
+  }
+  lind <- rep(FALSE, n)
+  lind[ind] <- TRUE
+  lind
 }
 
 private.as.vector <- function(v) {
@@ -335,16 +384,71 @@ private.as.dtCMatrixU <- function(M) {
 
 
 ##
-# Distribution function of Gaussian mixture \Sum_k w[k]*N(mu[k],sigma[k]^2)
-##
-Fmix <- function(x, mu, sd, w) sum(w * pnorm(x, mean = mu, sd = sd))
-
-##
 # Quantile function of Gaussian mixture
 ##
-Fmix_inv <- function(p, mu, sd, w, br = c(-1000, 1000)) {
-  G <- function(x) Fmix(x, mu, sd, w) - p
-  return(uniroot(G, br)$root)
+##
+# Quantile function of Gaussian mixtures, vectorised over locations.
+# mu and sd are K x n matrices, with one column per location, and w are the
+# K mixture weights. Returns the p-quantile at each of the n locations.
+#
+# The quantile lies between the smallest and largest component quantiles,
+# which gives a starting bracket. Safeguarded Newton steps are then taken
+# for all locations at once. Quantiles outside br are set to the nearest end point of br.
+##
+Fmix_inv_vec <- function(p, mu, sd, w, br = c(-1000, 1000),
+                         tol = 1e-10, max.iter = 100) {
+  mu <- as.matrix(mu)
+  sd <- as.matrix(sd)
+  n <- ncol(mu)
+  zp <- stats::qnorm(p)
+  qk <- mu + sd * zp
+  lo <- apply(qk, 2, min)
+  hi <- apply(qk, 2, max)
+  x <- (lo + hi) / 2
+  ## Quantiles beyond an end point of br are set to that end point
+  Fmix.at <- function(y, idx) {
+    colSums(w * stats::pnorm((y - mu[, idx, drop = FALSE]) /
+      sd[, idx, drop = FALSE]))
+  }
+  below.br <- above.br <- logical(n)
+  idx <- which(lo < br[1])
+  below.br[idx] <- Fmix.at(br[1], idx) >= p
+  idx <- which(hi > br[2])
+  above.br[idx] <- Fmix.at(br[2], idx) <= p
+  lo <- pmax(lo, br[1])
+  hi <- pmin(hi, br[2])
+  x[below.br] <- br[1]
+  x[above.br] <- br[2]
+  active <- which(hi > lo & !below.br & !above.br)
+  dx.old <- hi - lo
+  iter <- 0
+  while (length(active) > 0 && iter < max.iter) {
+    iter <- iter + 1
+    xa <- x[active]
+    z <- (rep(xa, each = nrow(mu)) - mu[, active, drop = FALSE]) /
+      sd[, active, drop = FALSE]
+    Fx <- colSums(w * stats::pnorm(z)) - p
+    fx <- colSums(w * stats::dnorm(z) / sd[, active, drop = FALSE])
+    below <- Fx < 0
+    lo[active[below]] <- xa[below]
+    hi[active[!below]] <- xa[!below]
+    ## Newton step, unless it leaves the bracket or does not reduce the
+    ## step length fast enough, in which case bisect (as in rtsafe)
+    dx <- Fx / fx
+    dx[Fx == 0] <- 0
+    converged <- Fx == 0 | abs(dx) <= tol * (1 + abs(xa))
+    xn <- xa - dx
+    bisect <- !converged &
+      (!is.finite(xn) | xn <= lo[active] | xn >= hi[active] |
+        abs(2 * Fx) > abs(dx.old[active] * fx))
+    xn[bisect] <- (lo[active[bisect]] + hi[active[bisect]]) / 2
+    dx[bisect] <- xa[bisect] - xn[bisect]
+    dx.old[active] <- dx
+    x[active] <- xn
+    done <- converged | abs(dx) <= tol * (1 + abs(xa))
+    active <- active[!done]
+  }
+  x
 }
 
 ##
@@ -359,25 +463,12 @@ fmix.opt <- function(x,
                      limits,
                      verbose,
                      max.threads,
-                     ind) {
+                     ind,
+                     n.iter = 10000,
+                     seed = NULL) {
   K <- dim(mu)[1]
-  n <- dim(mu)[2]
-  q.a <- sapply(seq_len(n), function(i) {
-    Fmix_inv(x / 2,
-      mu = mu[, i],
-      sd = sd[, i],
-      w = w,
-      br = limits
-    )
-  })
-  q.b <- sapply(seq_len(n), function(i) {
-    Fmix_inv(1 - x / 2,
-      mu = mu[, i],
-      sd = sd[, i],
-      w = w,
-      br = limits
-    )
-  })
+  q.a <- Fmix_inv_vec(x / 2, mu = mu, sd = sd, w = w, br = limits)
+  q.b <- Fmix_inv_vec(1 - x / 2, mu = mu, sd = sd, w = w, br = limits)
 
   prob <- 0
   stopped <- 0
@@ -399,7 +490,9 @@ fmix.opt <- function(x,
       b = q.b,
       ind = ind,
       lim = max(0, lim),
-      max.threads = max.threads
+      n.iter = n.iter,
+      max.threads = max.threads,
+      seed = seed
     )
     if (p$P == 0) {
       stopped <- 1
@@ -436,25 +529,11 @@ fmix.samp.opt <- function(x,
                           limits,
                           samples,
                           verbose = FALSE) {
-  n <- dim(mu)[2]
-  q.a <- sapply(seq_len(n), function(i) {
-    Fmix_inv(x / 2,
-      mu = mu[, i],
-      sd = sd[, i],
-      w = w,
-      br = limits
-    )
-  })
-  q.b <- sapply(seq_len(n), function(i) {
-    Fmix_inv(1 - x / 2,
-      mu = mu[, i],
-      sd = sd[, i],
-      w = w,
-      br = limits
-    )
-  })
+  q.a <- Fmix_inv_vec(x / 2, mu = mu, sd = sd, w = w, br = limits)
+  q.b <- Fmix_inv_vec(1 - x / 2, mu = mu, sd = sd, w = w, br = limits)
 
-  cover <- sapply(seq_len(dim(samples)[1]), function(i) (sum(samples[i, ] > q.b) + sum(samples[i, ] < q.a)) == 0)
+  ## samples has one row per sample, compare column-wise on the transpose
+  cover <- colSums(t(samples) > q.b | t(samples) < q.a) == 0
 
   prob <- mean(cover)
   val <- (prob - (1 - alpha))^2
@@ -465,10 +544,52 @@ fmix.samp.opt <- function(x,
   return(val)
 }
 
-fsamp.opt <- function(x, samples, verbose = FALSE) {
-  q.a <- apply(samples, 1, quantile, 1, probs = c(x / 2))
-  q.b <- apply(samples, 1, quantile, 1, probs = c(1 - x / 2))
-  prob <- mean(apply((samples < q.b) * (samples > q.a), 2, prod))
+## Type 7 quantiles, as in stats::quantile, of each row of a matrix whose
+## rows are sorted and free of NA.
+private.row.quantile <- function(sorted, p) {
+  index <- 1 + max(ncol(sorted) - 1, 0) * p
+  lo <- floor(index)
+  hi <- ceiling(index)
+  qs <- sorted[, lo]
+  if (index > lo) {
+    x.hi <- sorted[, hi]
+    i <- which(x.hi != qs)
+    h <- index - lo
+    qs[i] <- (1 - h) * qs[i] + h * x.hi[i]
+  }
+  qs
+}
+
+## Row-wise quantiles of samples, using the row-sorted samples if available.
+private.samples.quantile <- function(samples, p, sorted = NULL) {
+  if (is.null(sorted)) {
+    apply(samples, 1, quantile, 1, probs = p)
+  } else {
+    private.row.quantile(sorted, p)
+  }
+}
+
+## Sort each row of samples, or NULL if samples has missing values.
+private.sort.rows <- function(samples) {
+  if (anyNA(samples)) {
+    return(NULL)
+  }
+  sorted <- t(apply(samples, 1, sort))
+  if (ncol(samples) == 1) {
+    sorted <- t(sorted)
+  }
+  sorted
+}
+
+fsamp.opt <- function(x, samples, verbose = FALSE, sorted = NULL) {
+  q.a <- private.samples.quantile(samples, x / 2, sorted)
+  q.b <- private.samples.quantile(samples, 1 - x / 2, sorted)
+  if (is.null(sorted)) {
+    prob <- mean(apply((samples < q.b) * (samples > q.a), 2, prod))
+  } else {
+    ## As a double vector, so that mean() gives the same result as above
+    prob <- mean(as.double(colSums(!((samples < q.b) & (samples > q.a))) == 0))
+  }
   if (verbose) {
     cat("in optimization: ", x, " ", prob, "\n")
   }
@@ -599,11 +720,23 @@ mcint <- function(X,
   }
 
   if (!missing(ind) && !is.null(ind)) {
+    ind <- private.ind.logical(ind, n)
     a[!ind] <- -Inf
     b[!ind] <- Inf
   }
 
-  Pv <- rowMeans(apply(apply(apply(a < X & X < b, 2, rev), 2, cumprod), 2, rev))
+  inside <- a < X & X < b
+  if (anyNA(inside)) {
+    Pv <- rowMeans(apply(apply(apply(inside, 2, rev), 2, cumprod), 2, rev))
+  } else {
+    ## Pv[i] is the fraction of samples inside the limits for all j >= i
+    Pv <- numeric(n)
+    alive <- rep(TRUE, ncol(inside))
+    for (i in rev(seq_len(n))) {
+      alive <- alive & inside[i, ]
+      Pv[i] <- mean(alive)
+    }
+  }
 
   # Estimate of MC error, not implemented yet
   Ev <- rep(0, n)

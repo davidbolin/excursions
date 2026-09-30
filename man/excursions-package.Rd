@@ -88,6 +88,7 @@ Useful links:
 
 Authors:
 \itemize{
+  \item David Bolin \email{davidbolin@gmail.com} (\href{https://orcid.org/0000-0003-2361-5465}{ORCID})
   \item Finn Lindgren \email{finn.lindgren@gmail.com} (\href{https://orcid.org/0000-0002-5833-2011}{ORCID})
 }
 

@@ -224,27 +224,31 @@ connect.segments <- function(segment.set,
   ## Node remapping done
 
   segment.unused <- rep(TRUE, nE)
-  segment.unused.idx <- which(segment.unused)
-  segment.VV <- Matrix::sparseMatrix(
-    i = segment.set[, 1],
-    j = segment.set[, 2],
-    x = seq_len(nE),
-    dims = c(nV, nV)
-  )
+  n.unused <- nE
+  next.unused <- 1L
+  ## Segments starting (ending) in each node, ordered by their end (start) node
+  o <- order(segment.set[, 1], segment.set[, 2])
+  segment.out <- split(o, factor(segment.set[o, 1], levels = seq_len(nV)))
+  o <- order(segment.set[, 2], segment.set[, 1])
+  segment.in <- split(o, factor(segment.set[o, 2], levels = seq_len(nV)))
+  fwd <- integer(nE)
+  bwd <- integer(nE)
   loops.seg <- list()
   loops <- list()
   grp <- list()
-  while (length(segment.unused.idx) > 0) {
-    n <- 0
-    loop.seg <- integer(0)
+  while (n.unused > 0) {
+    n.fwd <- 0L
+    n.bwd <- 0L
     ## Forward loop
-    ##        message("Forwards")
-    while (length(segment.unused.idx) > 0) {
-      if (n == 0) {
-        si <- segment.unused.idx[1]
+    while (n.unused > 0) {
+      if (n.fwd == 0) {
+        while (!segment.unused[next.unused]) {
+          next.unused <- next.unused + 1L
+        }
+        si <- next.unused
       } else {
-        si <- as.vector(as.matrix(segment.VV[segment.set[si, 2], ]))
-        si <- si[si %in% segment.unused.idx]
+        si <- segment.out[[segment.set[si, 2]]]
+        si <- si[segment.unused[si]]
         if (length(si) == 0) {
           ## End of sequence
           break
@@ -255,57 +259,44 @@ connect.segments <- function(segment.set,
           si <- si[1]
         }
       }
-      segment.unused.idx <-
-        segment.unused.idx[segment.unused.idx != si]
       segment.unused[si] <- FALSE
-      loop.seg <- c(loop.seg, si)
-      n <- n + 1
-
-      ##            print(loop.seg)
-      ##            loop <- c(segment.set[loop.seg,1],
-      ##                      segment.set[loop.seg[n],2])
-      ##            print(loop)
+      n.unused <- n.unused - 1L
+      n.fwd <- n.fwd + 1L
+      fwd[n.fwd] <- si
     }
-    if ((segment.set[loop.seg[n], 2] != segment.set[loop.seg[1], 1]) &&
-      (length(segment.unused.idx) > 0)) {
+    if ((segment.set[fwd[n.fwd], 2] != segment.set[fwd[1], 1]) &&
+      (n.unused > 0)) {
       ## No closed sequence found
       ## Backward loop
-      ##            message("Backwards")
-      si <- loop.seg[1]
-      while (length(segment.unused.idx) > 0) {
-        si <- as.vector(as.matrix(segment.VV[, segment.set[si, 1]]))
-        si <- si[si %in% segment.unused.idx]
+      si <- fwd[1]
+      while (n.unused > 0) {
+        si <- segment.in[[segment.set[si, 1]]]
+        si <- si[segment.unused[si]]
         if (length(si) == 0) {
           ## End of sequence
           break
         } else if (length(si) > 1) {
           warning("Ambiguous segment sequence.")
           si <- si[1]
-        } else {
-          si <- si[1]
         }
-        segment.unused.idx <-
-          segment.unused.idx[segment.unused.idx != si]
         segment.unused[si] <- FALSE
-        loop.seg <- c(si, loop.seg)
-        n <- n + 1
-
-        ##                print(loop.seg)
-        ##                loop <- c(segment.set[loop.seg,1],
-        ##                          segment.set[loop.seg[n],2])
-        ##                print(loop)
+        n.unused <- n.unused - 1L
+        n.bwd <- n.bwd + 1L
+        bwd[n.bwd] <- si
       }
     }
 
+    loop.seg <- c(rev(bwd[seq_len(n.bwd)]), fwd[seq_len(n.fwd)])
     loop <- c(
       segment.set[loop.seg, 1],
-      segment.set[loop.seg[n], 2]
+      segment.set[loop.seg[length(loop.seg)], 2]
     )
     loop.grp <- segment.grp[loop.seg]
 
-    loops.seg <- c(loops.seg, list(loop.seg))
-    loops <- c(loops, list(loop))
-    grp <- c(grp, list(loop.grp))
+    k <- length(loops) + 1L
+    loops.seg[[k]] <- loop.seg
+    loops[[k]] <- loop
+    grp[[k]] <- loop.grp
   }
 
   ## Remap nodes and segments back to original indices
@@ -975,8 +966,14 @@ tricontour.list <- function(x, z, nlevels = 10,
   ## For each triangle, find non-level edge crossings, and
   ##   store new vertex-edge crossing edges
   ##   store new edge-edge crossing edges
-  idx <- matrix(0, 0, 2)
-  grp <- integer(0)
+  ## Collect the edge pieces in lists, and bind them together at the end
+  idx.list <- list()
+  grp.list <- list()
+  add.edges <- function(i, g) {
+    k <- length(idx.list) + 1L
+    idx.list[[k]] <<- i
+    grp.list[[k]] <<- g
+  }
 
   ## Find vertices on levels
   vcross.lev <- integer(length(z))
@@ -1025,18 +1022,15 @@ tricontour.list <- function(x, z, nlevels = 10,
     if (is.na(neighb.t)) {
       ## Make sure the edge gets the right label
       if (sign1 != 0) {
-        idx <- rbind(idx, x$ev[edge, ])
         ## Associate with the neighbour
-        grp <- c(grp, lev * 2L + sign1)
+        add.edges(x$ev[edge, ], lev * 2L + sign1)
       } else {
-        idx <- rbind(idx, x$ev[edge, ])
-        grp <- c(grp, lev * 2L + (type == "+") - (type == "-"))
+        add.edges(x$ev[edge, ], lev * 2L + (type == "+") - (type == "-"))
       }
     } else if (((sign1 > 0) && (sign2 < 0)) ||
       ((type == "+") && ((sign1 == 0) && (sign2 < 0))) ||
       ((type == "-") && ((sign1 > 0) && (sign2 == 0)))) {
-      idx <- rbind(idx, x$ev[edge, ])
-      grp <- c(grp, lev * 2L)
+      add.edges(x$ev[edge, ], lev * 2L)
     }
   }
 
@@ -1046,8 +1040,10 @@ tricontour.list <- function(x, z, nlevels = 10,
   e.upper <- ecross.grp.upper - ((ecross.grp.upper - 1) %% 2)
   e.on.bnd <- which(is.na(x$tti[x$et + (x$eti - 1) * x$Nt]))
   e.noncrossing <- e.on.bnd[e.lower[e.on.bnd] == e.upper[e.on.bnd]]
-  idx <- rbind(idx, x$ev[e.noncrossing, , drop = FALSE])
-  grp <- c(grp, as.integer(e.lower[e.noncrossing]))
+  add.edges(
+    x$ev[e.noncrossing, , drop = FALSE],
+    as.integer(e.lower[e.noncrossing])
+  )
 
   ## For each edge crossing at least one level,
   ##   calculate splitting vertices
@@ -1058,10 +1054,24 @@ tricontour.list <- function(x, z, nlevels = 10,
     sum(e.upper[e.bndcrossing] - e.lower[e.bndcrossing]) / 2) / 2
   loc.new <- matrix(NA, Nnewv, ncol(loc))
   loc.last <- 0L
-  e.newv <- sparseMatrix(
-    i = integer(0), j = integer(0), x = double(0),
-    dims = c(x$Ne, length(levels))
-  )
+  ## New vertices on each edge. The levels crossed by an edge are contiguous,
+  ## so edge e has the new vertex e.newv.base[e] + lev for each level lev in
+  ## e.newv.lo[e]:e.newv.hi[e], and none if e.newv.lo[e] is zero.
+  e.newv.lo <- integer(x$Ne)
+  e.newv.hi <- integer(x$Ne)
+  e.newv.base <- numeric(x$Ne)
+  e.newv <- function(edge, lev) {
+    ifelse(lev >= e.newv.lo[edge] & lev <= e.newv.hi[edge],
+      e.newv.base[edge] + lev, 0
+    )
+  }
+  e.newv.levels <- function(edge) {
+    if (e.newv.lo[edge] > 0) {
+      e.newv.lo[edge]:e.newv.hi[edge]
+    } else {
+      integer(0)
+    }
+  }
   for (edge in e.crossing) {
     is.boundary.edge <- is.na(x$tt[x$et[edge], x$eti[edge]])
     if (is.boundary.edge) {
@@ -1110,24 +1120,27 @@ tricontour.list <- function(x, z, nlevels = 10,
       (as.matrix(1 - beta) %*% loc[x$ev[edge, 1], , drop = FALSE] +
         as.matrix(beta) %*% loc[x$ev[edge, 2], , drop = FALSE])
 
-    e.newv[edge, e.levels] <- Nv + loc.new.idx
-    if (!is.boundary.edge) {
-      e.newv[edge.reverse, e.levels] <- Nv + loc.new.idx
-    } else { ## edge is a boundary edge, handle now
+    edges <- if (is.boundary.edge) edge else c(edge, edge.reverse)
+    e.newv.lo[edges] <- min(e.levels)
+    e.newv.hi[edges] <- max(e.levels)
+    e.newv.base[edges] <- Nv + loc.last - min(e.levels) + 1
+    if (is.boundary.edge) { ## edge is a boundary edge, handle now
       ev <- x$ev[edge, ]
-      the.levels <- which(e.newv[edge, ] > 0)
-      the.loc.idx <- e.newv[edge, the.levels]
+      the.levels <- e.newv.levels(edge)
+      the.loc.idx <- e.newv(edge, the.levels)
       the.levels <- c(min(the.levels) - 1L, the.levels) * 2L + 1L
       if (z[ev[1]] > z[ev[2]]) {
         the.loc.idx <- rev(the.loc.idx)
         the.levels <- rev(the.levels)
       }
 
-      idx <- rbind(idx, cbind(
-        c(ev[1], the.loc.idx),
-        c(the.loc.idx, ev[2])
-      ))
-      grp <- c(grp, the.levels)
+      add.edges(
+        cbind(
+          c(ev[1], the.loc.idx),
+          c(the.loc.idx, ev[2])
+        ),
+        the.levels
+      )
     }
     loc.last <- loc.last + length(e.levels)
   }
@@ -1143,42 +1156,43 @@ tricontour.list <- function(x, z, nlevels = 10,
     v.lev <- vcross.lev[x$tv[tri, ]]
     for (vi in which(v.lev > 0)) {
       opposite.edge <- x$te[tri, vi]
-      opposite.v <- e.newv[opposite.edge, v.lev[vi]]
+      opposite.v <- e.newv(opposite.edge, v.lev[vi])
       if (opposite.v > 0) {
         ## v2 on the right, v3 on the left
         v123 <- x$tv[tri, ((vi + (0:2) - 1) %% 3) + 1]
         if (z[v123[3]] > z[v123[1]]) {
-          idx <- rbind(idx, cbind(v123[1], opposite.v))
+          add.edges(cbind(v123[1], opposite.v), v.lev[vi] * 2L)
         } else {
-          idx <- rbind(idx, cbind(opposite.v, v123[1]))
+          add.edges(cbind(opposite.v, v123[1]), v.lev[vi] * 2L)
         }
-        grp <- c(grp, v.lev[vi] * 2L)
       }
     }
     ## connect edge-edge
     for (ei in 1:3) {
       edge <- x$te[tri, ei]
       next.edge <- x$te[tri, (ei %% 3L) + 1L]
-      e.lev <- which(e.newv[edge, ] > 0)
-      e.lev <- e.lev[e.newv[next.edge, e.lev] > 0]
+      e.lev <- e.newv.levels(edge)
+      e.lev <- e.lev[e.newv(next.edge, e.lev) > 0]
       if (length(e.lev) > 0) {
         ## v1 on the left, v2 on the right
         v12 <- x$ev[edge, ]
         if (z[v12[1]] > z[v12[2]]) {
-          idx <- rbind(idx, cbind(
-            e.newv[edge, e.lev],
-            e.newv[next.edge, e.lev]
-          ))
+          add.edges(
+            cbind(e.newv(edge, e.lev), e.newv(next.edge, e.lev)),
+            e.lev * 2L
+          )
         } else {
-          idx <- rbind(idx, cbind(
-            e.newv[next.edge, e.lev],
-            e.newv[edge, e.lev]
-          ))
+          add.edges(
+            cbind(e.newv(next.edge, e.lev), e.newv(edge, e.lev)),
+            e.lev * 2L
+          )
         }
-        grp <- c(grp, e.lev * 2L)
       }
     }
   }
+
+  idx <- do.call(rbind, c(list(matrix(0, 0, 2)), idx.list))
+  grp <- as.integer(unlist(grp.list))
 
   ## Filter out unused nodes
   reo <- sort(unique(as.vector(idx)))
@@ -1553,9 +1567,15 @@ F.interpolation <- function(F.geometry, F_, G, type, method, subdivisions = 1) {
     ok.in <- (G.input >= 0)
     ok.out <- (G.interp >= 0)
     if (method == "step") {
-      for (vtx in which(ok.out)) {
-        F.interp[vtx] <- min(F.input[F.geometry.A[[subdivision]][vtx, ] > 0])
-      }
+      ## Minimum of F.input over the positive entries in each row of A
+      A <- as(F.geometry.A[[subdivision]], "TsparseMatrix")
+      pos <- A@x > 0
+      F.min <- vapply(
+        split(F.input[A@j[pos] + 1L], factor(A@i[pos] + 1L, seq_len(nrow(A)))),
+        function(v) suppressWarnings(min(v)),
+        0.0
+      )
+      F.interp[ok.out] <- F.min[ok.out]
     } else {
       F.interp[ok.out] <-
         as.vector(F.geometry.A[[subdivision]][ok.out, ok.in, drop = FALSE] %*%
@@ -1858,7 +1878,7 @@ calc.continuous.P0 <- function(F_, G, F.geometry, method) {
       nrow(submesh$graph$tv),
       ncol(submesh$graph$tv)
     )
-    tmp <- apply(tmp, 1, min)
+    tmp <- do.call(pmin, lapply(seq_len(ncol(tmp)), function(k) tmp[, k]))
     P0 <- sum(I.w * tmp) / tot.area
   }
   P0
