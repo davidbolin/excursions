@@ -58,11 +58,13 @@ CRAN with `install.packages("excursions")`. The latest stable version
 installed by using the command
 
 ``` r
+
 remotes::install_github("davidbolin/excursions", ref = "stable")
 ```
 
 in R. The development version can be installed using the command
 
 ``` r
+
 remotes::install_github("davidbolin/excursions", ref = "devel")
 ```

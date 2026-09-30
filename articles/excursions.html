@@ -12,8 +12,8 @@
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Roboto_Slab-0.4.10/font.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Roboto_Slab-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Calculating probabilistic excursion sets and related quantities using excursions">
@@ -91,12 +91,12 @@ of the process. These different categories are described in further
 detail below.</p>
 <p>As an example that will be used to illustrate the methods in later
 sections, we generate data
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Y</mi><mi>i</mi></msub><mo>∼</mo><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi mathvariant="normal">s</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">Y_i \sim N(X({\boldsymbol{\mathrm{s}}}_i),\sigma^2)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>Y</mi><mi>i</mi></msub><mo>∼</mo><mi>N</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo stretchy="false" form="prefix">(</mo><msub><mi mathvariant="normal">s</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo><mo>,</mo><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">Y_i \sim N(X({\boldsymbol{\mathrm{s}}}_i),\sigma^2)</annotation></semantics></math>
 at some locations
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi mathvariant="normal">s</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi mathvariant="normal">s</mi><mn>100</mn></msub></mrow><annotation encoding="application/x-tex">{\boldsymbol{\mathrm{s}}}_1, \ldots, {\boldsymbol{\mathrm{s}}}_{100}</annotation></semantics></math>
 where
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi mathvariant="normal">s</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">X({\boldsymbol{\mathrm{s}}})</annotation></semantics></math>
-is a Gaussian random field specified using a stationary SPDE model <span class="citation">(Finn Lindgren, Rue, and Lindström 2011)</span>.</p>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo stretchy="false" form="prefix">(</mo><mi mathvariant="normal">s</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">X({\boldsymbol{\mathrm{s}}})</annotation></semantics></math>
+is a Gaussian random field specified using a stationary SPDE model <span class="citation">(Lindgren et al. 2011)</span>.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span>from <span class="op">=</span> <span class="fl">0</span>, to <span class="op">=</span> <span class="fl">10</span>, length.out <span class="op">=</span> <span class="fl">20</span><span class="op">)</span></span>
 <span><span class="va">mesh</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_rcdt_2d.html" class="external-link">fm_rcdt_2d_inla</a></span><span class="op">(</span></span>
@@ -109,7 +109,7 @@ is a Gaussian random field specified using a stationary SPDE model <span class="
 <p>Based on the observations, we calculate the posterior distribution of
 the latent field, which is Gaussian with mean <code>mu.post</code> and
 precision matrix <code>Q.post</code>, these are computed as follows. We
-refer to <span class="citation">(F. Lindgren and Rue 2015)</span> for
+refer to <span class="citation">(Lindgren and Rue 2015)</span> for
 details about the <code>INLA</code> related details in the code.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_basis.html" class="external-link">fm_basis</a></span><span class="op">(</span><span class="va">mesh</span>, loc <span class="op">=</span> <span class="va">obs.loc</span><span class="op">)</span></span>
@@ -175,19 +175,19 @@ the EB method is exact. The QC method can be used instead by specifying
 <code>method='QC'</code>. In this case, the argument <code>rho</code>
 should be used to also provide a vector with point-wise marginal
 probabilities:
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>&gt;</mo><mi>u</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">P(x_i&gt;u)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>&gt;</mo><mi>u</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">P(x_i&gt;u)</annotation></semantics></math>
 for positive excursions and contour regions, and
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>&lt;</mo><mi>u</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">P(x_i&lt;u)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>&lt;</mo><mi>u</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">P(x_i&lt;u)</annotation></semantics></math>
 for negative excursions. In the situation when
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi mathvariant="normal">x</mi><mo stretchy="false" form="prefix">|</mo><mi mathvariant="normal">Y</mi><mo>,</mo><mi mathvariant="normal">θ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\pi({\boldsymbol{\mathrm{x}}}|{\boldsymbol{\mathrm{Y}}},{\boldsymbol{\mathrm{\theta}}})</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mi mathvariant="normal">x</mi><mo stretchy="false" form="prefix">|</mo><mi mathvariant="normal">Y</mi><mo>,</mo><mi mathvariant="normal">θ</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\pi({\boldsymbol{\mathrm{x}}}|{\boldsymbol{\mathrm{Y}}},{\boldsymbol{\mathrm{\theta}}})</annotation></semantics></math>
 is Gaussian but
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi mathvariant="normal">x</mi><mo stretchy="false" form="prefix">|</mo><mi mathvariant="normal">Y</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\pi({\boldsymbol{\mathrm{x}}}|{\boldsymbol{\mathrm{Y}}})</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mi mathvariant="normal">x</mi><mo stretchy="false" form="prefix">|</mo><mi mathvariant="normal">Y</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\pi({\boldsymbol{\mathrm{x}}}|{\boldsymbol{\mathrm{Y}}})</annotation></semantics></math>
 is not, the marginal probabilities should be calculated under the
 distribution
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi mathvariant="normal">x</mi><mo stretchy="false" form="prefix">|</mo><mi mathvariant="normal">Y</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\pi({\boldsymbol{\mathrm{x}}}|{\boldsymbol{\mathrm{Y}}})</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mi mathvariant="normal">x</mi><mo stretchy="false" form="prefix">|</mo><mi mathvariant="normal">Y</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\pi({\boldsymbol{\mathrm{x}}}|{\boldsymbol{\mathrm{Y}}})</annotation></semantics></math>
 and <code>mu</code> and <code>Q</code> should be chosen as the mean and
 precision for the distribution
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi mathvariant="normal">x</mi><mo stretchy="false" form="prefix">|</mo><mi mathvariant="normal">Y</mi><mo>,</mo><mover><mi mathvariant="normal">θ</mi><mo accent="true">̂</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\pi({\boldsymbol{\mathrm{x}}}|{\boldsymbol{\mathrm{Y}}},\hat{{\boldsymbol{\mathrm{\theta}}}})</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mi mathvariant="normal">x</mi><mo stretchy="false" form="prefix">|</mo><mi mathvariant="normal">Y</mi><mo>,</mo><mover><mi mathvariant="normal">θ</mi><mo accent="true">̂</mo></mover><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">\pi({\boldsymbol{\mathrm{x}}}|{\boldsymbol{\mathrm{Y}}},\hat{{\boldsymbol{\mathrm{\theta}}}})</annotation></semantics></math>
 where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mover><mi mathvariant="normal">θ</mi><mo accent="true">̂</mo></mover><annotation encoding="application/x-tex">\hat{{\boldsymbol{\mathrm{\theta}}}}</annotation></semantics></math>
 is the MAP or ML estimate of the parameters.</p>
@@ -290,7 +290,7 @@ what type of object should be generated. The options are currently
 </h2>
 <p>The function <code>simconf</code> can be used for calculating
 simultaneous confidence bands for a Gaussian process
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>s</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">X(s)</annotation></semantics></math>.
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo stretchy="false" form="prefix">(</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">X(s)</annotation></semantics></math>.
 A basic call to the function looks like</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/simconf.html">simconf</a></span><span class="op">(</span><span class="va">alpha</span>, <span class="va">mu</span>, <span class="va">Q</span><span class="op">)</span></span></code></pre></div>
@@ -307,7 +307,7 @@ can analyze Monte Carlo samples (<code>simconf.mc</code>). Furthermore,
 there is a version <code>simconf.mixture</code> which is used to compute
 simultaneous confidence regions for Gaussian mixture models with a joint
 distribution on the form
-<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>x</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></munderover><msub><mi>w</mi><mi>k</mi></msub><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mi>k</mi></msub><mo>,</mo><msubsup><mi>Q</mi><mi>k</mi><mrow><mo>−</mo><mn>1</mn></mrow></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>π</mi><mo stretchy="false" form="prefix">(</mo><mi>x</mi><mo stretchy="false" form="postfix">)</mo><mo>=</mo><munderover><mo>∑</mo><mrow><mi>k</mi><mo>=</mo><mn>1</mn></mrow><mi>K</mi></munderover><msub><mi>w</mi><mi>k</mi></msub><mi>N</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>μ</mi><mi>k</mi></msub><mo>,</mo><msubsup><mi>Q</mi><mi>k</mi><mrow><mi>−</mi><mn>1</mn></mrow></msubsup><mo stretchy="false" form="postfix">)</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">
 \pi(x) = \sum_{k=1}^K w_k N(\mu_k, Q_k^{-1}).
 </annotation></semantics></math> This particular function was used to
 analyze the models in <span class="citation">(Bolin et al. 2015)</span>
@@ -383,7 +383,7 @@ package. The estimated excursion set can be visualized as</p>
 that we can see how the set is interpolated by the
 <code>continuous</code> function. Finally, the interpolated excursion
 function
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>F</mi><mi>u</mi><mo>+</mo></msubsup><mrow><mo stretchy="true" form="prefix">(</mo><mi mathvariant="normal">s</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">F_u^+({\boldsymbol{\mathrm{s}}})</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>F</mi><mi>u</mi><mo>+</mo></msubsup><mo stretchy="false" form="prefix">(</mo><mi mathvariant="normal">s</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">F_u^+({\boldsymbol{\mathrm{s}}})</annotation></semantics></math>,
 can be plotted easily using the <code>fm_evaluator</code> function from
 the <code>INLA</code> package.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -401,19 +401,17 @@ it in the same figure as the interpolated excursion function.</p>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-bolin2014statistical" class="csl-entry">
-Bolin, David, Peter Guttorp, Alex Januzzi, Daniel Jones, Marie Novak,
-Harry Podschwit, Lee Richardson, Aila Särkkä, Colin Sowder, and Aaron
-Zimmerman. 2015. <span>“Statistical Prediction of Global Sea Level from
-Global Temperature.”</span> <em>Statistica Sinica</em> 25: 351–67. <a href="https://doi.org/10.5705/ss.2013.222w" class="external-link">https://doi.org/10.5705/ss.2013.222w</a>.
+Bolin, David, Peter Guttorp, Alex Januzzi, et al. 2015.
+<span>“Statistical Prediction of Global Sea Level from Global
+Temperature.”</span> <em>Statistica Sinica</em> 25: 351–67. <a href="https://doi.org/10.5705/ss.2013.222w" class="external-link">https://doi.org/10.5705/ss.2013.222w</a>.
 </div>
 <div id="ref-guttorp2014assessing" class="csl-entry">
-Guttorp, Peter, Alex Januzzi, Marie Novak, Harry Podschwit, Lee
-Richardson, Colin D Sowder, Aaron Zimmerman, David Bolin, and Aila
-Särkkä. 2014. <span>“Assessing the Uncertainty in Projecting Local Mean
-Sea Level from Global Temperature.”</span> <em>Journal of Applied
-Meteorology and Climatology</em> 53 (9): 2163–70. <a href="https://doi.org/10.1175/jamc-d-13-0308.1" class="external-link">https://doi.org/10.1175/jamc-d-13-0308.1</a>.
+Guttorp, Peter, Alex Januzzi, Marie Novak, et al. 2014. <span>“Assessing
+the Uncertainty in Projecting Local Mean Sea Level from Global
+Temperature.”</span> <em>Journal of Applied Meteorology and
+Climatology</em> 53 (9): 2163–70. <a href="https://doi.org/10.1175/jamc-d-13-0308.1" class="external-link">https://doi.org/10.1175/jamc-d-13-0308.1</a>.
 </div>
 <div id="ref-lindgren10" class="csl-entry">
 Lindgren, Finn, Håvard Rue, and Johan Lindström. 2011. <span>“An
@@ -440,7 +438,7 @@ Software</em> 63 (19). <a href="https://doi.org/10.18637/jss.v063.i19" class="ex
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

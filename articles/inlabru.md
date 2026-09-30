@@ -12,6 +12,7 @@ using simulated data.
 Let us generate some data
 
 ``` r
+
 n.lattice <- 30
 x <- seq(from = 0, to = 10, length.out = n.lattice)
 lattice <- fm_lattice_2d(x = x, y = x)
@@ -36,6 +37,7 @@ which contains `NA` observations at the mesh locations. We then give
 this component a tag (`pred` below) so that we can access these later.
 
 ``` r
+
 rspde_model <- rspde.matern(mesh = mesh, nu = 1.5)
 data <- data.frame(x1 = obs.loc[, 1], x2 = obs.loc[, 2], y = Y)
 coordinates(data) <- c("x1", "x2")
@@ -84,6 +86,7 @@ case, we want the indices which correspond to the likelihood component
 which we gave the tag `"pred"` above, so the call looks as follows.
 
 ``` r
+
 res.qc_bru <- excursions.inla(result_bru,
   name = "APredictor",
   ind = bru_index(result_bru, "prd"),
@@ -100,12 +103,14 @@ we want the result object only evaluated at the indices specified by the
 through the `continuous` function
 
 ``` r
+
 sets <- continuous(res.qc_bru, mesh, alpha = 0.1)
 ```
 
 Finally, we can plot the results
 
 ``` r
+
 cmap.F <- colorRampPalette(brewer.pal(9, "Greens"))(100)
 proj <- fm_evaluator(sets$F.geometry, dims = c(300, 200))
 image(proj$x, proj$y, fm_evaluate(proj, field = sets$F),
@@ -122,6 +127,7 @@ Above we used the `QC` method to compute the set. Let us now try the
 other available options and compare their timings and results.
 
 ``` r
+
 t.EB <- system.time({
   res.EB <- excursions.inla(result_bru,
     name = "APredictor",
@@ -167,15 +173,16 @@ t.NIQC <- system.time({
 The computation time for the different methods are
 
 ``` r
+
 print(data.frame(
   time = c(t.EB[3], t.QC[3], t.NI[3], t.NIQC[3]),
   row.names = c("EB", "QC", "NI", "NIQC")
 ))
 #>        time
-#> EB    4.240
-#> QC    4.385
-#> NI   40.396
-#> NIQC 45.385
+#> EB    1.492
+#> QC    1.697
+#> NI   17.106
+#> NIQC 16.403
 ```
 
 We can see that the `EB` and `QC` methods have similar computation times
@@ -183,6 +190,7 @@ and that `NI` and `NIQC` take longer. Let us now plot the corresponding
 sets, we start with the `EB` result:
 
 ``` r
+
 image(proj$x, proj$y, fm_evaluate(proj,
   field = continuous(res.EB,
     mesh,
@@ -199,6 +207,7 @@ main = "EB"
 Then the `QC` result:
 
 ``` r
+
 image(proj$x, proj$y, fm_evaluate(proj,
   field = continuous(res.QC,
     mesh,
@@ -215,6 +224,7 @@ main = "QC"
 Then the `NI` result:
 
 ``` r
+
 image(proj$x, proj$y, fm_evaluate(proj,
   field = continuous(res.NI,
     mesh,
@@ -231,6 +241,7 @@ main = "NI"
 and finally the `NIQC` result:
 
 ``` r
+
 image(proj$x, proj$y, fm_evaluate(proj,
   field = continuous(res.NIQC,
     mesh,

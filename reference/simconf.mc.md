@@ -75,7 +75,6 @@ Q.x <- Matrix(toeplitz(c(1, -0.1, rep(0, n - 2))))
 X <- mu.x + solve(chol(Q.x), matrix(rnorm(n = n * 100), nrow = n, ncol = 100))
 ## calculate the confidence region
 conf <- simconf.mc(X, 0.2)
-#> 0.02017992
 ## Plot the region
 plot(mu.x,
   type = "l", ylim = c(-10, 10),

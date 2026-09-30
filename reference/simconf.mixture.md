@@ -93,6 +93,14 @@ An object of class "excurobj" with elements
 
   The upper bound for pointwise confidence bands.
 
+- mean :
+
+  The mean of the mixture.
+
+- vars :
+
+  The marginal variances of the mixture.
+
 ## Details
 
 See

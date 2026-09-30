@@ -21,8 +21,8 @@ excursions.variances(L, Q, max.threads = 0)
 
 - max.threads:
 
-  Decides the number of threads the program can use. Set to 0 for using
-  the maximum number of threads allowed by the system (default).
+  Not used. The computation is sequential, and the argument is kept for
+  backwards compatibility.
 
 ## Value
 

@@ -1,5 +1,5 @@
-pandoc: 3.1.11
-pkgdown: 2.2.0
+pandoc: 3.8.3
+pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   articles: articles.html
@@ -7,7 +7,7 @@ articles:
   articles/inla: inla.html
   articles/inlabru: inlabru.html
   theory: theory.html
-last_built: 2026-04-14T13:48Z
+last_built: 2026-09-30T20:56Z
 urls:
   reference: https://davidbolin.github.io/excursions/reference
   article: https://davidbolin.github.io/excursions/articles

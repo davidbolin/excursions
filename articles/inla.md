@@ -9,6 +9,7 @@ except that `mu` and `Q` are replaced with arguments related to `INLA`.
 A basic call to the function `excursions.inla` looks like
 
 ``` r
+
 excursions.inla(result.inla, name, alpha, u, type)
 ```
 
@@ -19,6 +20,7 @@ the model in `INLA` using an `inla.stack` object. If this is done, the
 call to `excursions.inla` will instead look like
 
 ``` r
+
 excursions.inla(result.inla, stack, tag, alpha, u, type)
 ```
 
@@ -48,15 +50,16 @@ analyzed binomial time series from (Kitagawa 1987). Each day during the
 years 1983 and 1984, it was recorded whether there was more than 1 mm
 rainfall in Tokyo. Of interest is to study the underlying probability of
 rainfall as a function of day of the year. The data is modelled as
-$y_{i} \sim Bin\left( n_{i},p_{i} \right)$ for calendar day
-$i = 1,\ldots,366$. Here $n_{i} = 2$ for all days except for February 29
-($i = 60$) which only occurred during the leap year of 1984. The
-probability $p_{i}$ is modeled as a logit-transformed Gaussian process.
+$`y_i \sim Bin(n_i,p_i)`$ for calendar day $`i = 1,\dots,366`$. Here
+$`n_i = 2`$ for all days except for February 29 ($`i=60`$) which only
+occurred during the leap year of 1984. The probability $`p_i`$ is
+modeled as a logit-transformed Gaussian process.
 
 The model and the following `INLA` implementation of the model is
 described further in (Lindgren and Rue 2015).
 
 ``` r
+
 data("Tokyo")
 mesh <- fm_mesh_1d(seq(1, 367, length = 25),
   interval = c(1, 367),
@@ -86,6 +89,7 @@ function. This makes the function save some extra output needed by
 `excursions`.
 
 ``` r
+
 result <- inla(y ~ -1 + f(time, model = spde),
   family = "binomial",
   data = data,
@@ -106,6 +110,7 @@ want joint confidence bands, we can estimate these using `simconf.inla`
 as
 
 ``` r
+
 res <- simconf.inla(result, stack,
   tag = "est", alpha = 0.05, link = TRUE,
   max.threads = 2
@@ -119,6 +124,7 @@ confidence bands with dashed lines and the simultaneous confidence band
 with dotted lines.
 
 ``` r
+
 index <- inla.stack.index(stack, "est")$data
 plot(Tokyo$time, Tokyo$y / Tokyo$n, xlab = "Day", ylab = "Probability", pch = 20)
 lines(result$summary.fitted.values$mean[index])
@@ -142,16 +148,17 @@ following analysis, we analyze the data from the month of January.
 
 The statistical model used for the data is a latent Gaussian model,
 where the precipitation measurements are assumed to be
-$\Gamma$-distributed with a spatially varying mean. The mean is modeled
-as a log-Gaussian Mat'ern field specified as an SPDE model. Details of
-the current model model and the following INLA implementation can be
-found in the SPDE tutorial available on the `INLA` homepage, see (Wallin
-and Bolin 2015) for an analysis of the data using a different
+$`\Gamma`$-distributed with a spatially varying mean. The mean is
+modeled as a log-Gaussian Mat'ern field specified as an SPDE model.
+Details of the current model model and the following INLA implementation
+can be found in the SPDE tutorial available on the `INLA` homepage, see
+(Wallin and Bolin 2015) for an analysis of the data using a different
 non-Gaussian SPDE model.
 
 We start by loading the data and defining the model:
 
 ``` r
+
 data("PRprec")
 data("PRborder")
 Y <- rowMeans(PRprec[, 3 + (1:31)])
@@ -173,6 +180,7 @@ package. The function `inout` from the package `splancs` is used to find
 the locations on the lattice that are within the region of interest.
 
 ``` r
+
 nxy <- c(50, 50)
 projgrid <- fm_evaluator(
   prmesh,
@@ -192,6 +200,7 @@ Again note that we have to set the `control.compute` argument of the
 results is to be used by `excursions`.
 
 ``` r
+
 A.prd <- inla.spde.make.A(prmesh, loc = submesh$loc)
 stk.prd <- inla.stack(
   data = list(y = NA), A = list(A.prd, 1),
@@ -234,12 +243,13 @@ r <- inla(y ~ -1 + Intercept + f(field, model = spde),
 
 We now want to find areas that likely experienced large amounts of
 precipitation. In the following code, we compute the excursion set for
-the posterior mean for the level $7$ mm of precipitation. To indicate
+the posterior mean for the level $`7`$ mm of precipitation. To indicate
 that this level is in the scale of the data, and not in the scale of the
 linear predictor, we use the `u.link=TRUE` argument in the `excursions`
 call.
 
 ``` r
+
 exc <- excursions.inla(r, stk,
   tag = "prd", u = 7, u.link = TRUE,
   type = ">", F.limit = 0.6, method = "QC",
@@ -252,6 +262,7 @@ We also compute the contour curve for the level of interest on the
 continuous domain, using the `tricontourmap` function.
 
 ``` r
+
 con <- tricontourmap(submesh, z = exc$mean, levels = log(7))
 ```
 
@@ -259,6 +270,7 @@ We plot the resulting continuous domain excursion function together with
 the contour curve using the following commands.
 
 ``` r
+
 cmap.F <- colorRampPalette(brewer.pal(9, "Greens"))(100)
 proj <- fm_evaluator(sets$F.geometry, dims = c(300, 200))
 image(proj$x, proj$y, fm_evaluate(proj, field = sets$F),
@@ -273,6 +285,7 @@ To visualize the posterior mean using a contour map using the following
 commands
 
 ``` r
+
 cmap <- colorRampPalette(brewer.pal(9, "YlGnBu"))(100)
 lp <- contourmap.inla(r,
   stack = stk, tag = "prd", n.levels = 2,
@@ -291,10 +304,11 @@ visualizing the contour map.
 
 The contour map we computed had two contours, and a relevant question is
 now if this is an appropriate number. To investigate this, we compute
-the $P_{2}$ quality measure for this contour map and for contour maps
+the $`P_2`$ quality measure for this contour map and for contour maps
 with one and three levels.
 
 ``` r
+
 lps <- list()
 for (i in 1:4) {
   lps[[i]] <- contourmap.inla(r,
@@ -310,16 +324,16 @@ print(data.frame(
     "n.level = 3", "n.level = 4"
   )
 ))
-#>                      P2
-#> n.level = 1 0.999999996
-#> n.level = 2 0.653607689
-#> n.level = 3 0.033701155
-#> n.level = 4 0.000189293
+#>                       P2
+#> n.level = 1 9.998710e-01
+#> n.level = 2 1.192346e-01
+#> n.level = 3 4.647503e-05
+#> n.level = 4 0.000000e+00
 ```
 
 We see that using only one or two contours give very high credibility,
 whereas using four contours give a credibility that is close to zero.
-The contour map with three contours has a credibility around $0.2$ and
+The contour map with three contours has a credibility around $`0.2`$ and
 seems to be a good compromise for this application.
 
 ## References

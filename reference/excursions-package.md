@@ -128,6 +128,9 @@ Useful links:
 
 Authors:
 
+- David Bolin <davidbolin@gmail.com>
+  ([ORCID](https://orcid.org/0000-0003-2361-5465))
+
 - Finn Lindgren <finn.lindgren@gmail.com>
   ([ORCID](https://orcid.org/0000-0002-5833-2011))
 

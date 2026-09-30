@@ -12,8 +12,8 @@
 <link rel="icon" sizes="any" href="../favicon.ico">
 <link rel="manifest" href="../site.webmanifest">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/Roboto_Slab-0.4.10/font.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/Roboto_Slab-0.4.10/font.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Using excursions with INLA">
@@ -126,7 +126,7 @@ the much analyzed binomial time series from <span class="citation">(Kitagawa 198
 and 1984, it was recorded whether there was more than 1 mm rainfall in
 Tokyo. Of interest is to study the underlying probability of rainfall as
 a function of day of the year. The data is modelled as
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub><mo>∼</mo><mi>B</mi><mi>i</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>n</mi><mi>i</mi></msub><mo>,</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">y_i \sim Bin(n_i,p_i)</annotation></semantics></math>
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>i</mi></msub><mo>∼</mo><mi>B</mi><mi>i</mi><mi>n</mi><mo stretchy="false" form="prefix">(</mo><msub><mi>n</mi><mi>i</mi></msub><mo>,</mo><msub><mi>p</mi><mi>i</mi></msub><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">y_i \sim Bin(n_i,p_i)</annotation></semantics></math>
 for calendar day
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>i</mi><mo>=</mo><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mn>366</mn></mrow><annotation encoding="application/x-tex">i = 1,\dots,366</annotation></semantics></math>.
 Here
@@ -215,7 +215,7 @@ around the stated of Paran'a in Brazil. In the following analysis, we
 analyze the data from the month of January.</p>
 <p>The statistical model used for the data is a latent Gaussian model,
 where the precipitation measurements are assumed to be
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>Γ</mi><annotation encoding="application/x-tex">\Gamma</annotation></semantics></math>-distributed
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi mathvariant="normal">Γ</mi><annotation encoding="application/x-tex">\Gamma</annotation></semantics></math>-distributed
 with a spatially varying mean. The mean is modeled as a log-Gaussian
 Mat'ern field specified as an SPDE model. Details of the current model
 model and the following INLA implementation can be found in the SPDE
@@ -363,11 +363,11 @@ three levels.</p>
 <span>    <span class="st">"n.level = 3"</span>, <span class="st">"n.level = 4"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                      P2</span></span>
-<span><span class="co">#&gt; n.level = 1 0.999999996</span></span>
-<span><span class="co">#&gt; n.level = 2 0.653607689</span></span>
-<span><span class="co">#&gt; n.level = 3 0.033701155</span></span>
-<span><span class="co">#&gt; n.level = 4 0.000189293</span></span></code></pre></div>
+<span><span class="co">#&gt;                       P2</span></span>
+<span><span class="co">#&gt; n.level = 1 9.998710e-01</span></span>
+<span><span class="co">#&gt; n.level = 2 1.192346e-01</span></span>
+<span><span class="co">#&gt; n.level = 3 4.647503e-05</span></span>
+<span><span class="co">#&gt; n.level = 4 0.000000e+00</span></span></code></pre></div>
 <p>We see that using only one or two contours give very high
 credibility, whereas using four contours give a credibility that is
 close to zero. The contour map with three contours has a credibility
@@ -379,7 +379,7 @@ and seems to be a good compromise for this application.</p>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div id="refs" class="references csl-bib-body hanging-indent" entry-spacing="0">
+<div id="refs" class="references csl-bib-body hanging-indent">
 <div id="ref-kitagawa1987non" class="csl-entry">
 Kitagawa, Genshiro. 1987. <span>“Non-Gaussian State-Space Modeling of
 Nonstationary Time Series.”</span> <em>Journal of the American
@@ -408,7 +408,7 @@ Using Non-<span>G</span>aussian <span>M</span>atérn Fields.”</span>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>
