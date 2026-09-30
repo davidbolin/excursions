@@ -109,3 +109,37 @@ test_that("Continous on contourmap, M mesh", {
   )
   expect_s3_class(res4$M, "fm_segm")
 })
+
+test_that("Continuous on excursions, lattice with partial ind", {
+  skip_on_cran()
+  skip_if_not_installed("sp")
+
+  nxy <- 10
+  x <- seq(0, 1, length.out = nxy)
+  lattice <- fmesher::fm_lattice_2d(x = x, y = x)
+  mesh <- fmesher::fm_rcdt_2d_inla(lattice = lattice, extend = FALSE, refine = FALSE)
+  Q <- fmesher::fm_matern_precision(mesh, alpha = 2, rho = 0.3, sigma = 1)
+  # Order mean and precision as the lattice nodes
+  reo <- mesh$idx$lattice
+  Q <- Q[reo, reo]
+  mu <- 3 * (lattice$loc[, 1] + lattice$loc[, 2] - 1)
+
+  # Leave out a corner block, so that the active set is a strict subset
+  ind <- which(!(lattice$loc[, 1] < 0.35 & lattice$loc[, 2] < 0.35))
+  ex <- excursions(
+    alpha = 0.1, u = 0, mu = mu, Q = Q, type = ">",
+    ind = ind, F.limit = 1, seed = 1:6, max.threads = 1
+  )
+  expect_true(any(ex$E[ind] == 1))
+
+  res <- continuous(ex, lattice, alpha = 0.1, method = "linear")
+  expect_s4_class(res$M, "SpatialPolygons")
+
+  # The interpolated F must equal the input F at the active lattice nodes
+  loc.key <- function(loc) paste(round(loc[, 1], 8), round(loc[, 2], 8))
+  vtx <- match(loc.key(lattice$loc[ind, , drop = FALSE]), loc.key(res$F.geometry$loc))
+  expect_false(anyNA(vtx))
+  F.in <- ex$F[ind]
+  F.in[is.na(F.in)] <- 0
+  expect_equal(res$F[vtx], F.in, tolerance = 1e-10)
+})

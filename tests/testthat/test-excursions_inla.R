@@ -187,3 +187,25 @@ test_that("excursions.inla, compact mode, ill-conditioned predictor", {
     tolerance = 1e-3
   )
 })
+
+test_that("excursions.inla, compact mode, predictor variances", {
+  skip_on_cran()
+  local_exc_safe_inla()
+
+  # All hyperparameters are fixed, so there is a single configuration and
+  # the variances must match the INLA predictor variances
+  data <- testdata.inla.offset(inla.mode = "compact", prec = 4, ar1 = TRUE)
+
+  res <- excursions.inla(data$result,
+    name = "APredictor", ind = data$ind,
+    method = "QC", u = 2, type = ">", alpha = 0.05, F.limit = 1,
+    max.threads = 1, seed = 1
+  )
+  expect_equal(res$vars[data$ind],
+    data$result$summary.linear.predictor$sd[data$ind]^2,
+    tolerance = 1e-3
+  )
+  # The joint excursion probability can not exceed the marginal probability
+  ok <- !is.na(res$F)
+  expect_true(all(res$F[ok] <= res$rho[ok] + 1e-3))
+})

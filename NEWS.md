@@ -6,6 +6,16 @@
   with the INLA default precision `exp(15)` instead of `1e9`, which made
   the joint precision numerically singular (`D[i,i] is negative`) for
   larger models.
+* Fix the marginal variances of linear predictors in compact INLA mode in
+  `excursions.inla()`, `contourmap.inla()` and `simconf.inla()`. They were
+  computed from the sparse partial inverse stored by INLA, which misses
+  covariances between latent components, and are now computed from the joint
+  precision. The wrong variances made `method = "QC"` inconsistent (excursion
+  function larger than the marginal probabilities) and gave suboptimal
+  orderings for the other methods.
+* Fix `continuous()` for excursion and contour map objects computed with an
+  `ind` argument that selects a strict subset of the geometry nodes, which
+  failed with a `non-conformable arguments` error.
 
 # excursions 2.5.11
  

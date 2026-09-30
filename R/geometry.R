@@ -2053,8 +2053,11 @@ continuous <- function(ex,
   mesh$graph <-
     generate_trigraph_properties(mesh$graph, Nv = nrow(mesh$loc))
 
+  ## The submesh only contains the active nodes, so F must be mapped to it
   active.nodes <- !is.na(mesh$idx$loc)
-  F.ex[mesh$idx$loc[active.nodes]] <- F.ex[active.nodes]
+  F.sub <- rep(0, nrow(mesh$loc))
+  F.sub[mesh$idx$loc[active.nodes]] <- F.ex[active.nodes]
+  F.ex <- F.sub
   G.ex <- rep(-1, nrow(mesh$loc))
   G.ex[mesh$idx$loc[active.nodes]] <- ex$G[active.nodes]
 

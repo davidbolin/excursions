@@ -31,8 +31,15 @@ inla.add.linearpredictor <- function(result, ind = NULL) {
     )
     result$misc$configs$config[[i]]$Q <- Q + tau * Abar
 
+    ## The Qinv stored by INLA is only computed on the sparsity pattern of Q,
+    ## so A %*% Qinv %*% t(A) misses covariances needed for the predictor
+    ## variances. Compute them from the joint precision instead, so that they
+    ## are consistent with the Q used in the integration.
+    vars.joint <- excursions.variances(
+      Q = forceSymmetric(result$misc$configs$config[[i]]$Q)
+    )
     result$misc$configs$config[[i]]$Qinv <- bdiag(
-      A %*% result$misc$configs$config[[i]]$Qinv %*% t(A),
+      Diagonal(dim(A)[1], vars.joint[seq_len(dim(A)[1])]),
       result$misc$configs$config[[i]]$Qinv
     )
 

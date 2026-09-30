@@ -134,8 +134,11 @@ testdata.inla.small <- function(inla.mode = "classic", generate = FALSE) {
 ## Model with an offset, an intercept shared by all predictor rows, and
 ## prediction-only random effects with weak prior precision. In compact mode
 ## this requires the linear predictor to be added back to the configs.
+## With ar1 = TRUE the random effects are correlated, so that the prediction-only
+## effects are correlated with the observed one without being neighbours in Q.
 testdata.inla.offset <- function(inla.mode = "classic", n.obs = 100,
-                                 n.pred = 2000, n.grp = 10, prec = 1e-5) {
+                                 n.pred = 2000, n.grp = 10, prec = 1e-5,
+                                 ar1 = FALSE) {
   if (require("INLA", quietly = TRUE)) {
     local_exc_safe_inla()
     set.seed(1)
@@ -149,10 +152,18 @@ testdata.inla.offset <- function(inla.mode = "classic", n.obs = 100,
       effects = list(list(intercept = rep(1, n)), list(grp = 1:n.grp)),
       tag = "all"
     )
-    formula <- y ~ -1 + intercept +
-      f(grp, model = "iid", hyper = list(
-        prec = list(initial = log(prec), fixed = TRUE)
-      ))
+    if (ar1) {
+      formula <- y ~ -1 + intercept +
+        f(grp, model = "ar1", hyper = list(
+          prec = list(initial = log(prec), fixed = TRUE),
+          rho = list(initial = 3, fixed = TRUE)
+        ))
+    } else {
+      formula <- y ~ -1 + intercept +
+        f(grp, model = "iid", hyper = list(
+          prec = list(initial = log(prec), fixed = TRUE)
+        ))
+    }
     result <- INLA::inla(
       formula = formula,
       data = INLA::inla.stack.data(stack),
