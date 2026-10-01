@@ -227,5 +227,5 @@ plot(lp$map)
 
 # Display the quality measures
 cat(c(lp$P1, lp$P2))
-#> 0.908944 0.4677515
+#> 0.9109411 0.4665119
 ```

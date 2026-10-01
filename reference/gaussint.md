@@ -24,7 +24,9 @@ gaussint(
   use.reordering = c("natural", "sparsity", "limits"),
   max.size,
   max.threads = 0,
-  seed
+  seed,
+  tol = NULL,
+  tol.level = NULL
 )
 ```
 
@@ -100,6 +102,22 @@ gaussint(
 
   The random seed to use (optional).
 
+- tol:
+
+  Target for the estimated error (optional). If `tol` is given, the
+  number of iterations is chosen adaptively: the integral is first
+  estimated with 1000 iterations, and iterations are then added until
+  the estimated error is at most `tol`, using at most `n.iter`
+  iterations in total. By default, `n.iter` iterations are always used.
+
+- tol.level:
+
+  The probability level where the error is controlled if `tol` is given
+  (optional). The error is then controlled for the sub-integral
+  estimates where the estimates go below `tol.level`, which is useful
+  when one is interested in where the sub-integrals pass a probability
+  level. By default, the error of `P` is controlled.
+
 ## Value
 
 A list with elements
@@ -119,6 +137,10 @@ A list with elements
 - Ev :
 
   A vector with the estimated errors of the Pv estimates.
+
+- n.iter :
+
+  The number of iterations that were used.
 
 ## Details
 
@@ -141,6 +163,14 @@ reordering is typically most appropriate since this combines sparisty
 handling of dimensions with limits `a=-Inf` and `b=Inf`, which do not
 affect the probability but affect the computation time if they are not
 handled separately.
+
+The estimated error is the standard error of the estimate, which
+decreases as one over the square root of the number of iterations. With
+`tol`, the iterations are added in batches, where each batch is sized to
+reach `tol` from the estimated error so far, and the estimates are
+averages over all batches. The number of iterations that is needed for a
+given accuracy depends strongly on the problem, and `tol` can therefore
+save a lot of computation time compared to a fixed number of iterations.
 
 ## References
 
@@ -166,5 +196,5 @@ Q.x <- Matrix(toeplitz(c(1, -0.1, rep(0, n - 2))))
 ## Calculate the probability that the variable is between mu-3 and mu+3
 prob <- gaussint(mu = mu.x, Q = Q.x, a = mu.x - 3, b = mu.x + 3, max.threads = 2)
 prob$P
-#> [1] 0.967999
+#> [1] 0.968005
 ```

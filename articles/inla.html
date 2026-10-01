@@ -349,9 +349,9 @@ compute regions with at least 10 nodes.</p>
 <span>  max.threads <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">reg</span><span class="op">$</span><span class="va">regions</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 97 45 23 18</span></span>
+<span><span class="co">#&gt; [1] 97 45 22 18</span></span>
 <span><span class="va">reg</span><span class="op">$</span><span class="va">P</span></span>
-<span><span class="co">#&gt; [1] 0.9016428 0.9081087 0.9012864 0.9059150</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.9006901 0.9067072 0.9050992 0.9078535</span></span></code></pre></div>
 <p>The function returns the regions as indices of the nodes in the
 <code>"prd"</code> part of the stack, largest first, together with the
 joint excursion probability of each region. As for excursion sets, we
@@ -411,9 +411,9 @@ three levels.</p>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                       P2</span></span>
-<span><span class="co">#&gt; n.level = 1 9.998710e-01</span></span>
-<span><span class="co">#&gt; n.level = 2 1.192330e-01</span></span>
-<span><span class="co">#&gt; n.level = 3 4.647203e-05</span></span>
+<span><span class="co">#&gt; n.level = 1 9.999155e-01</span></span>
+<span><span class="co">#&gt; n.level = 2 1.187183e-01</span></span>
+<span><span class="co">#&gt; n.level = 3 5.247523e-05</span></span>
 <span><span class="co">#&gt; n.level = 4 0.000000e+00</span></span></code></pre></div>
 <p>We see that using only one or two contours give very high
 credibility, whereas using four contours give a credibility that is

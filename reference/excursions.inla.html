@@ -69,7 +69,8 @@ calculated using the INLA method.</p>
 <span>  max.threads <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  compressed <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  prune.ind <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  prune.ind <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  tol <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -162,7 +163,8 @@ data and is then transformed to the scale of the linear predictor (default FALSE
 
 <dt id="arg-n-iter">n.iter<a class="anchor" aria-label="anchor" href="#arg-n-iter"></a></dt>
 <dd><p>Number or iterations in the MC sampler that is used for
-approximating probabilities. The default value is 10000.</p></dd>
+approximating probabilities. The default value is 10000. If <code>tol</code> is
+given, this is the maximal number of iterations.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -190,6 +192,13 @@ entire linear predictor is added internally (default TRUE).</p></dd>
 <dt id="arg-prune-ind">prune.ind<a class="anchor" aria-label="anchor" href="#arg-prune-ind"></a></dt>
 <dd><p>If <code>TRUE</code> and <code>ind</code> is supplied, then the result object is pruned to
 contain only the active nodes specified by <code>ind</code>.</p></dd>
+
+
+<dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
+<dd><p>Target for the estimated error of the excursion function at the
+boundary of the excursion set (optional). If <code>tol</code> is given, the number of
+iterations is chosen adaptively, using at most <code>n.iter</code> iterations, see
+<code><a href="excursions.html">excursions()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

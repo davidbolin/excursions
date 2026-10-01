@@ -23,7 +23,8 @@ excursions.inla(
   max.threads = 0,
   compressed = TRUE,
   seed = NULL,
-  prune.ind = FALSE
+  prune.ind = FALSE,
+  tol = NULL
 )
 ```
 
@@ -123,7 +124,8 @@ excursions.inla(
 - n.iter:
 
   Number or iterations in the MC sampler that is used for approximating
-  probabilities. The default value is 10000.
+  probabilities. The default value is 10000. If `tol` is given, this is
+  the maximal number of iterations.
 
 - verbose:
 
@@ -151,6 +153,14 @@ excursions.inla(
 
   If `TRUE` and `ind` is supplied, then the result object is pruned to
   contain only the active nodes specified by `ind`.
+
+- tol:
+
+  Target for the estimated error of the excursion function at the
+  boundary of the excursion set (optional). If `tol` is given, the
+  number of iterations is chosen adaptively, using at most `n.iter`
+  iterations, see
+  [`excursions()`](https://davidbolin.github.io/excursions/reference/excursions.md).
 
 ## Value
 

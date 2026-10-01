@@ -28,7 +28,9 @@ excursions(
   verbose = 0,
   max.threads = 0,
   seed,
-  prune.ind = FALSE
+  prune.ind = FALSE,
+  tol = NULL,
+  Qinv
 )
 ```
 
@@ -73,7 +75,8 @@ excursions(
 - n.iter:
 
   Number or iterations in the MC sampler that is used for approximating
-  probabilities. The default value is 10000.
+  probabilities. The default value is 10000. If `tol` is given, this is
+  the maximal number of iterations.
 
 - Q.chol:
 
@@ -138,6 +141,23 @@ excursions(
   If `TRUE` and `ind` is supplied, then the result object is pruned to
   contain only the active nodes specified by `ind`.
 
+- tol:
+
+  Target for the estimated error of the excursion function where it
+  passes `1 - alpha`, that is, at the boundary of the excursion set, or
+  where it passes 0.5 if `alpha = 1` (optional). If `tol` is given, the
+  number of iterations is chosen adaptively, using at most `n.iter`
+  iterations, see
+  [`gaussint()`](https://davidbolin.github.io/excursions/reference/gaussint.md).
+  By default, `n.iter` iterations are always used.
+
+- Qinv:
+
+  Covariances of the field on (at least) the sparsity pattern of `Q`
+  (optional), as a sparse matrix that can store only one triangle, for
+  example the selected inverse of `Q`. If `vars` is not given, it is
+  computed from `Qinv`. See the details.
+
 ## Value
 
 `excursions` returns an object of class "excurobj" with the following
@@ -178,15 +198,35 @@ elements
 - meta:
 
   A list containing various information about the calculation.
+  `meta$n.iter.used` is the number of iterations that were used.
 
 ## Details
 
 The estimation of the region is done using sequential importance
-sampling with `n.iter` samples. The procedure requires computing the
-marginal variances of the field, which should be supplied if available.
-If not, they are computed using the Cholesky factor of the precision
-matrix. The cost of this step can therefore be reduced by supplying the
-Cholesky factor if it is available.
+sampling with `n.iter` samples, or with an adaptive number of samples if
+`tol` is given. The standard errors of the estimates of the excursion
+function are returned in `meta$Fe`. The number of samples that is needed
+for a given accuracy depends strongly on the problem and on `alpha`, and
+`tol` can therefore save a lot of computation time.
+
+The nodes are integrated in decreasing order of their marginal
+probabilities, and the integration stops when the probability goes below
+`1 - F.limit`. Only the nodes that are reached have to be in this order,
+and the other nodes are ordered to make the Cholesky factor sparse,
+which can make it much faster to compute. If the covariances of
+neighbouring nodes are available, the number of nodes that are reached
+is approximated from them, and the nodes are ordered accordingly. If the
+integration still does not stop among these nodes, more nodes are put in
+the order and the integration is repeated, so the results do not depend
+on the approximation. The covariances are available if `Qinv` is given,
+or if the variances are computed, since they are then computed together
+with the variances. If `vars` is given but not `Qinv`, all nodes that
+can be reached are put in the order of the marginal probabilities. The
+procedure requires computing the marginal variances of the field, which
+should be supplied if available. If not, they are computed using the
+Cholesky factor of the precision matrix. The cost of this step can
+therefore be reduced by supplying the Cholesky factor if it is
+available.
 
 The latent structure in the latent Gaussian model can be handled in
 several different ways. The default strategy is the EB method, which is
@@ -238,8 +278,8 @@ res.x <- excursions(
   type = ">", verbose = 1, max.threads = 2
 )
 #> Calculate marginals
-#> Calculate permutation
 #> Calculate limits
+#> Calculate permutation
 
 ## Plot the excursion function and the marginal excursion probabilities
 plot(res.x$F,

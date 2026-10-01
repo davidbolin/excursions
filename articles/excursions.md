@@ -175,7 +175,7 @@ res.reg <- excursions.regions(
 lengths(res.reg$regions)
 #> [1] 13  8  8  7
 res.reg$P
-#> [1] 0.9127013 0.9464842 0.9082509 0.9199373
+#> [1] 0.9126323 0.9455173 0.9074094 0.9214456
 ```
 
 The arguments `mu`, `Q`, `alpha`, `u` and `type` are the same as for

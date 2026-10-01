@@ -293,7 +293,7 @@ res$regions
 #> [1] 37 38 39
 #> 
 res$P
-#> [1] 0.9213783 0.9337460
+#> [1] 0.9219503 0.9347214
 plot(x, mu, type = "l")
 points(x, mu, col = res$labels + 1, pch = 19)
 ```

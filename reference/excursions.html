@@ -79,7 +79,9 @@ package are given in the sections below.</p>
 <span>  verbose <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  max.threads <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  <span class="va">seed</span>,</span>
-<span>  prune.ind <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  prune.ind <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  tol <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  <span class="va">Qinv</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -120,7 +122,7 @@ package are given in the sections below.</p>
 
 
 <dt id="arg-n-iter">n.iter<a class="anchor" aria-label="anchor" href="#arg-n-iter"></a></dt>
-<dd><p>Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 10000.</p></dd>
+<dd><p>Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 10000. If <code>tol</code> is given, this is the maximal number of iterations.</p></dd>
 
 
 <dt id="arg-q-chol">Q.chol<a class="anchor" aria-label="anchor" href="#arg-q-chol"></a></dt>
@@ -181,6 +183,21 @@ without OpenMP.</p></dd>
 <dd><p>If <code>TRUE</code> and <code>ind</code> is supplied, then the result object is pruned to
 contain only the active nodes specified by <code>ind</code>.</p></dd>
 
+
+<dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
+<dd><p>Target for the estimated error of the excursion function where it
+passes <code>1 - alpha</code>, that is, at the boundary of the excursion set, or where
+it passes 0.5 if <code>alpha = 1</code> (optional). If <code>tol</code> is given, the number of iterations is chosen
+adaptively, using at most <code>n.iter</code> iterations, see <code><a href="gaussint.html">gaussint()</a></code>. By
+default, <code>n.iter</code> iterations are always used.</p></dd>
+
+
+<dt id="arg-qinv">Qinv<a class="anchor" aria-label="anchor" href="#arg-qinv"></a></dt>
+<dd><p>Covariances of the field on (at least) the sparsity pattern of
+<code>Q</code> (optional), as a sparse matrix that can store only one triangle, for
+example the selected inverse of <code>Q</code>. If <code>vars</code> is not given, it is
+computed from <code>Qinv</code>. See the details.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -207,13 +224,31 @@ contain only the active nodes specified by <code>ind</code>.</p></dd>
 <dd><p>Marginal variances.</p></dd>
 
 <dt>meta</dt>
-<dd><p>A list containing various information about the calculation.</p></dd>
+<dd><p>A list containing various information about the calculation.
+<code>meta$n.iter.used</code> is the number of iterations that were used.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p>The estimation of the region is done using sequential importance sampling with
-<code>n.iter</code> samples. The procedure requires computing the marginal variances of
+<code>n.iter</code> samples, or with an adaptive number of samples if <code>tol</code> is given.
+The standard errors of the estimates of the excursion function are returned
+in <code>meta$Fe</code>. The number of samples that is needed for a given accuracy
+depends strongly on the problem and on <code>alpha</code>, and <code>tol</code> can therefore
+save a lot of computation time.</p>
+<p>The nodes are integrated in decreasing order of their marginal
+probabilities, and the integration stops when the probability goes below
+<code>1 - F.limit</code>. Only the nodes that are reached have to be in this order, and
+the other nodes are ordered to make the Cholesky factor sparse, which can
+make it much faster to compute. If the covariances of neighbouring nodes
+are available, the number of nodes that are reached is approximated from
+them, and the nodes are ordered accordingly. If the integration still does
+not stop among these nodes, more nodes are put in the order and the
+integration is repeated, so the results do not depend on the
+approximation. The covariances are available if <code>Qinv</code> is given, or if the
+variances are computed, since they are then computed together with the
+variances. If <code>vars</code> is given but not <code>Qinv</code>, all nodes that can be reached
+are put in the order of the marginal probabilities. The procedure requires computing the marginal variances of
 the field, which should be supplied if available. If not, they are computed using
 the Cholesky factor of the precision matrix. The cost of this step can therefore be
 reduced by supplying the Cholesky factor if it is available.</p>
@@ -260,8 +295,8 @@ about the different options.</p>
 <span class="r-in"><span>  type <span class="op">=</span> <span class="st">"&gt;"</span>, verbose <span class="op">=</span> <span class="fl">1</span>, max.threads <span class="op">=</span> <span class="fl">2</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Calculate marginals</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Calculate permutation</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Calculate limits</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Calculate permutation</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Plot the excursion function and the marginal excursion probabilities</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">res.x</span><span class="op">$</span><span class="cn">F</span>,</span></span>
