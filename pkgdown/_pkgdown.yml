@@ -50,6 +50,7 @@ reference:
   - title: main functions
     contents:
     - excursions
+    - excursions.regions
     - simconf
     - contourmap
     - gaussint
@@ -58,6 +59,7 @@ reference:
   - title: INLA interface
     contents:
     - excursions.inla
+    - excursions.regions.inla
     - contourmap.inla
     - simconf.inla
   - title: Monte Carlo methods

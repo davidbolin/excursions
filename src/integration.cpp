@@ -124,7 +124,21 @@ static void setup_seed(int seed_provided, int * seed_in) {
  sample index running fastest, x[i*K + j], so that the conditional means
  s[j] = sum_k R(i, k) x[k, j] are computed with unit stride over the block.
 */
-extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in){
+/*
+ Sequential importance sampling for P(a < X < b), where X has precision
+ Q = R^T R and R is upper triangular. The rows are integrated from the last
+ to the first, and Pv[i] and Ev[i] are the estimate and its standard error
+ for the rows i, ..., n-1.
+
+ Rows with probe[i] != 0 are probes: they should have infinite limits a and
+ b, so that they are sampled without constraint, and Pp[i] is then the
+ estimate of the probability for rows i+1, ..., n-1 together with the probe
+ limits pa[i] < X_i < pb[i], with standard error Pe[i]. Since the probe rows
+ are sampled from their conditional distribution, the estimate for each probe
+ only involves the constraints of the other rows. probe can be NULL.
+*/
+static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in,
+                      const int * probe, const double * pa, const double * pb, double * Pp, double * Pe){
 
   const int n = opts[0];
   const int K = opts[1];
@@ -185,7 +199,7 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
   for (int t = 0; t < nP; t++) {
     RngArray[t] = RngStream_CreateStream("namehere");
   }
-  vector<double> fsum_t(nP), fsum2_t(nP);
+  vector<double> fsum_t(nP), fsum2_t(nP), psum_t(nP), psum2_t(nP);
   int team = 1;
 
   for (int i = n-1; i >= lo; i--) {
@@ -193,6 +207,9 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
     const double ali = al[i];
     const double bli = bl[i];
     const double Lii = Li[i];
+    const bool is_probe = probe != NULL && probe[i];
+    const double pali = is_probe ? Lii * pa[i] : 0.0;
+    const double pbli = is_probe ? Lii * pb[i] : 0.0;
 
     #pragma omp parallel num_threads(nP)
     {
@@ -218,9 +235,19 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
         }
       }
 
-      double fsum = 0.0, fsum2 = 0.0;
+      double fsum = 0.0, fsum2 = 0.0, psum = 0.0, psum2 = 0.0;
       for (int j = j0; j < j1; j++) {
         double ai, bi, c, d, rtmp = 0;
+
+        if (is_probe) {
+          const double pc = (pali == -numeric_limits<double>::infinity()) ? 0.0 :
+            gsl_cdf_ugaussian_P(pali + s[j]);
+          const double pd = (pbli == numeric_limits<double>::infinity()) ? 1.0 :
+            gsl_cdf_ugaussian_P(pbli + s[j]);
+          const double fp = f[j] * max(pd - pc, 0.0);
+          psum += fp;
+          psum2 += fp * fp;
+        }
 
         if (ali == -numeric_limits<double>::infinity()){
           ai = -numeric_limits<double>::infinity();
@@ -266,12 +293,20 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
       }
       fsum_t[myrank] = fsum;
       fsum2_t[myrank] = fsum2;
+      psum_t[myrank] = psum;
+      psum2_t[myrank] = psum2;
     }
 
-    double fsum = 0.0, fsum2 = 0.0;
+    double fsum = 0.0, fsum2 = 0.0, psum = 0.0, psum2 = 0.0;
     for (int t = 0; t < team; t++) {
       fsum += fsum_t[t];
       fsum2 += fsum2_t[t];
+      psum += psum_t[t];
+      psum2 += psum2_t[t];
+    }
+    if (is_probe) {
+      Pp[i] = psum / K;
+      Pe[i] = sqrt(max((psum2 - psum * psum / K) / K / K, 0.0));
     }
 
     const double Pi = fsum/K;
@@ -292,6 +327,15 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
   for (int t = 0; t < nP; t++) {
     RngStream_DeleteStream(&RngArray[t]);
   }
+}
+
+extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in){
+  shape_int(Mp, Mi, Mv, a, b, opts, lim_in, Pv, Ev, seed_in, NULL, NULL, NULL, NULL, NULL);
+}
+
+extern "C" void shapeIntProbe(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in,
+                              int * probe, double * pa, double * pb, double * Pp, double * Pe){
+  shape_int(Mp, Mi, Mv, a, b, opts, lim_in, Pv, Ev, seed_in, probe, pa, pb, Pp, Pe);
 }
 
 extern "C" void testRand( int * opts, double * x, int * seed_in){

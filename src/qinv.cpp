@@ -20,9 +20,11 @@ using namespace std;
  be a search per access into an array index. This replaces the earlier
  vector-of-vectors version, which searched sorted rows for every product.
 */
-// Returns 0 on success, or the 1-based column with a missing diagonal.
+// Returns 0 on success, or the 1-based column with a missing diagonal. If
+// selected is not NULL, the selected inverse is also copied to it, in the
+// pattern of L (only used for lower triangular input).
 static int qinv_diag(int n, const int *Ap, const int *Ai, const double *Ax,
-                     bool lower, double *variances) {
+                     bool lower, double *variances, double *selected = NULL) {
   const int nnz = Ap[n];
 
   const int *Lp, *Li;
@@ -108,6 +110,8 @@ static int qinv_diag(int n, const int *Ap, const int *Ai, const double *Ax,
       lj[r] = 0.0;
     }
   }
+  if (selected)
+    std::copy(z.begin(), z.end(), selected);
   return 0;
 }
 
@@ -122,5 +126,22 @@ extern "C" SEXP Qinv(SEXP Rp, SEXP Ri, SEXP Rx, SEXP Rlower) {
   UNPROTECT(1);
   if (bad)
     Rf_error("Qinv: the Cholesky factor has no diagonal element in column %d.", bad);
+  return out;
+}
+
+// The selected inverse of Q = L L^T on the pattern of the lower triangular
+// factor L, in the same order as L@x.
+extern "C" SEXP Qinv_selected(SEXP Rp, SEXP Ri, SEXP Rx) {
+  const int n = Rf_length(Rp) - 1;
+  if (n < 0 || Rf_length(Ri) < INTEGER(Rp)[n] || Rf_length(Rx) < INTEGER(Rp)[n])
+    Rf_error("Qinv_selected: invalid sparse matrix.");
+  SEXP var = PROTECT(Rf_allocVector(REALSXP, n));
+  SEXP out = PROTECT(Rf_allocVector(REALSXP, n > 0 ? INTEGER(Rp)[n] : 0));
+  const int bad = n > 0 ? qinv_diag(n, INTEGER(Rp), INTEGER(Ri), REAL(Rx),
+                                    true, REAL(var), REAL(out))
+                        : 0;
+  UNPROTECT(2);
+  if (bad)
+    Rf_error("Qinv_selected: the Cholesky factor has no diagonal element in column %d.", bad);
   return out;
 }

@@ -1,5 +1,22 @@
 # Development version
 
+* New function `excursions.regions()` that computes connected excursion
+  regions. The first region is the largest connected region found where the
+  field jointly exceeds the level with probability at least `1 - alpha`. Its
+  nodes are then removed and the search is repeated, which gives a map of
+  non-overlapping connected regions that each satisfy the probability
+  requirement. The neighbourhood graph can be given as a sparse matrix or an
+  `fm_mesh_2d` object. The regions are grown using pairwise failure
+  probabilities from the selected inverse of the precision matrix, and the
+  joint probabilities are computed with the same sequential importance
+  sampler as `excursions()`.
+* New function `excursions.regions.inla()`, the interface of
+  `excursions.regions()` for models fitted with `INLA` or `inlabru`. It
+  supports the `EB`, `QC`, `NI` and `NIQC` methods, where `NI` and `NIQC`
+  mix the joint probabilities over the hyperparameter configurations. For
+  `inlabru`, use `name = "APredictor"` and `ind = bru_index(result, tag)` as
+  for `excursions.inla()`, and give the graph of the locations, for example
+  the mesh.
 * OpenMP is now used on macOS. The CRAN build of R for macOS ships the OpenMP
   runtime `libomp.dylib`, and the configure script now tests if the package
   can be built with it (with `-Xclang -fopenmp`). If this fails, for example if 

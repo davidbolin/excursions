@@ -780,6 +780,17 @@ summary.excurobj <- function(object, ...) {
     out$alpha <- object$meta$alpha
     out$F.limit <- object$meta$F.limit
     out$method <- object$meta$method
+  } else if (object$meta$calculation == "regions") {
+    if (object$meta$type == ">") {
+      out$computation <- "Connected positive excursion regions"
+    } else {
+      out$computation <- "Connected negative excursion regions"
+    }
+    out$u <- object$meta$level
+    out$alpha <- object$meta$alpha
+    out$method <- object$meta$method
+    out$sizes <- lengths(object$regions)
+    out$P <- object$P
   } else if (object$meta$calculation == "simconf") {
     out$computation <- "Simultaneous confidence band"
     out$alpha <- object$alpha
@@ -854,6 +865,24 @@ print.summary.excurobj <- function(x, ...) {
     cat(x$F.limit, "\n")
     cat("Method used : ")
     cat(x$method, "\n")
+  } else if (x$calculation == "regions") {
+    cat("Level: u = ")
+    cat(x$u, "\n")
+    cat("Error probability: alpha = ")
+    cat(x$alpha, "\n")
+    cat("Method used : ")
+    cat(x$method, "\n")
+    cat("Number of regions: ")
+    cat(length(x$sizes), "\n")
+    if (length(x$sizes) > 0) {
+      shown <- seq_len(min(10, length(x$sizes)))
+      print(data.frame(
+        region = shown, size = x$sizes[shown], P = signif(x$P[shown], 4)
+      ), row.names = FALSE)
+      if (length(x$sizes) > 10) {
+        cat("...\n")
+      }
+    }
   } else if (x$calculation == "simconf") {
     cat("Error probability: alpha = ")
     cat(x$alpha, "\n")
