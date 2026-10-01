@@ -221,11 +221,101 @@ of increasing the accuracy of the results is to increase the number of
 Monte Carlo samples that are provided to the function.</p>
 </div>
 <div class="section level2">
+<h2 id="connected-excursion-regions">Connected excursion regions<a class="anchor" aria-label="anchor" href="#connected-excursion-regions"></a>
+</h2>
+<p>The excursion set
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>E</mi><mrow><mi>u</mi><mo>,</mo><mi>α</mi></mrow><mo>+</mo></msubsup><annotation encoding="application/x-tex">E_{{u,\alpha}}^{{+}}</annotation></semantics></math>
+does not have to be connected, and it often consists of several pieces
+spread over the domain. In many applications, the interest is instead in
+connected regions, such as a single area where a pollutant exceeds a
+threshold. The function <code>excursions.regions</code> computes the
+largest connected region
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>D</mi><annotation encoding="application/x-tex">D</annotation></semantics></math>
+such that
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>P</mi><mo stretchy="false" form="prefix">(</mo><mi>X</mi><mo stretchy="false" form="prefix">(</mo><mi mathvariant="normal">s</mi><mo stretchy="false" form="postfix">)</mo><mo>&gt;</mo><mi>u</mi><mo>,</mo><mi mathvariant="normal">s</mi><mo>∈</mo><mi>D</mi><mo stretchy="false" form="postfix">)</mo><mo>≥</mo><mn>1</mn><mo>−</mo><mi>α</mi><mi>.</mi></mrow><annotation encoding="application/x-tex">
+P(X({\boldsymbol{\mathrm{s}}}) &gt; u, {\boldsymbol{\mathrm{s}}} \in D) \geq 1 - \alpha.
+</annotation></semantics></math> The nodes of this region are then
+removed, and the search is repeated in the remaining nodes. This gives a
+map of non-overlapping connected regions, where each region individually
+satisfies the probability requirement. Note that the probability
+statement is for each region separately, and not for the union of the
+regions.</p>
+<p>A typical call to the function looks like</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">res.reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.regions.html">excursions.regions</a></span><span class="op">(</span></span>
+<span>  mu <span class="op">=</span> <span class="va">mu.post</span>, Q <span class="op">=</span> <span class="va">Q.post</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, type <span class="op">=</span> <span class="st">"&gt;"</span>, u <span class="op">=</span> <span class="fl">0</span>,</span>
+<span>  graph <span class="op">=</span> <span class="va">mesh</span>, min.size <span class="op">=</span> <span class="fl">5</span>, max.threads <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="va">exc.seed</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">res.reg</span><span class="op">$</span><span class="va">regions</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 13  8  8  7</span></span>
+<span><span class="va">res.reg</span><span class="op">$</span><span class="va">P</span></span>
+<span><span class="co">#&gt; [1] 0.9127013 0.9464842 0.9082509 0.9199373</span></span></code></pre></div>
+<p>The arguments <code>mu</code>, <code>Q</code>, <code>alpha</code>,
+<code>u</code> and <code>type</code> are the same as for
+<code>excursions</code>, but only positive and negative excursion
+regions are supported. The argument <code>graph</code> defines which
+nodes are neighbours, either as a symmetric sparse matrix or as a mesh,
+in which case the edges of the mesh are used. If no graph is given, the
+non-zero elements of <code>Q</code> are used, which for the SPDE models
+typically also connects nodes that are two edges apart. The argument
+<code>min.size</code> gives the minimal number of nodes in a region.
+Every node with marginal probability at least
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mi>α</mi></mrow><annotation encoding="application/x-tex">1-\alpha</annotation></semantics></math>
+is a region of its own, so without <code>min.size</code> or
+<code>max.regions</code>, which limits the number of regions, the map
+covers all such nodes. The function returns the regions as node indices,
+largest first, together with their joint probabilities <code>P</code>,
+and a vector <code>labels</code> with the region of each node.</p>
+<p>A region can only contain nodes with marginal excursion probability
+at least
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mi>α</mi></mrow><annotation encoding="application/x-tex">1-\alpha</annotation></semantics></math>,
+so the search is done within each connected component of these nodes. In
+each component, a region is grown from a start point, and the joint
+probabilities of all regions in the growth sequence are computed with
+the same sequential importance sampling method as in
+<code>excursions</code>. The start points are the local maxima of the
+marginal probabilities in the component, since the largest maximum does
+not always give the largest region. The argument <code>n.starts</code>
+sets how many local maxima are tried, and <code>min.prominence</code>
+can be used to only use maxima that are clearly separated from higher
+maxima, which reduces the computation time when the posterior mean is
+noisy. Finding the largest connected region is a hard combinatorial
+problem, so the regions are not guaranteed to be the largest possible
+ones, but the joint probability of each returned region is computed as
+in <code>excursions</code>.</p>
+<p>The following figure shows the excursion set computed by
+<code>excursions</code> to the left, and the connected regions to the
+right, where each region has its own colour.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">con0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tricontour.html">tricontourmap</a></span><span class="op">(</span><span class="va">mesh</span>, z <span class="op">=</span> <span class="va">mu.post</span>, levels <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="va">reg.col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"grey85"</span>, <span class="fu">brewer.pal</span><span class="op">(</span><span class="fl">8</span>, <span class="st">"Set1"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">1.5</span>, <span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">mesh</span><span class="op">$</span><span class="va">loc</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">res.exc</span><span class="op">$</span><span class="va">E</span> <span class="op">==</span> <span class="fl">1</span>, <span class="st">"red"</span>, <span class="st">"grey85"</span><span class="op">)</span>, pch <span class="op">=</span> <span class="fl">19</span>, cex <span class="op">=</span> <span class="fl">0.6</span>,</span>
+<span>  asp <span class="op">=</span> <span class="fl">1</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>, main <span class="op">=</span> <span class="st">"Excursion set"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">con0</span><span class="op">$</span><span class="va">map</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">mesh</span><span class="op">$</span><span class="va">loc</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>  col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">res.reg</span><span class="op">$</span><span class="va">labels</span> <span class="op">==</span> <span class="fl">0</span>, <span class="st">"grey85"</span>,</span>
+<span>    <span class="va">reg.col</span><span class="op">[</span><span class="op">(</span><span class="va">res.reg</span><span class="op">$</span><span class="va">labels</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">8</span> <span class="op">+</span> <span class="fl">2</span><span class="op">]</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  pch <span class="op">=</span> <span class="fl">19</span>, cex <span class="op">=</span> <span class="fl">0.6</span>, asp <span class="op">=</span> <span class="fl">1</span>, axes <span class="op">=</span> <span class="cn">FALSE</span>, xlab <span class="op">=</span> <span class="st">""</span>, ylab <span class="op">=</span> <span class="st">""</span>,</span>
+<span>  main <span class="op">=</span> <span class="st">"Connected regions"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">con0</span><span class="op">$</span><span class="va">map</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="excursions_files/figure-html/unnamed-chunk-7-1.png" class="r-plt" alt="" width="672" style="display: block; margin: auto;"></p>
+<p>The function has a version <code>excursions.regions.inla</code> for
+models estimated using <code>INLA</code> or <code>inlabru</code>, which
+is described in the <a href="https://davidbolin.github.io/excursions/articles/inla.html"><code>INLA</code>
+interface</a> and <a href="https://davidbolin.github.io/excursions/articles/inlabru.html"><code>inlabru</code>
+interface</a> vignettes.</p>
+</div>
+<div class="section level2">
 <h2 id="analysis-of-contour-maps">Analysis of contour maps<a class="anchor" aria-label="anchor" href="#analysis-of-contour-maps"></a>
 </h2>
 <p>The main function for analysis of contour maps is
 <code>contourmap</code>. A basic call to the function looks like</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res.con</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/contourmap.html">contourmap</a></span><span class="op">(</span></span>
 <span>  mu <span class="op">=</span> <span class="va">mu.post</span>, Q <span class="op">=</span> <span class="va">Q.post</span>,</span>
 <span>  n.levels <span class="op">=</span> <span class="fl">4</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>,</span>
@@ -265,7 +355,7 @@ function <code>continuous</code> can be used to interpolate the
 discretely computed values by assuming monotonicity of the random field
 in between the discrete computation locations, as discussed in <a href="theory.html">Definitions and computational methodology</a>. A
 typical calls to the function looks like</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">sets.exc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/continuous.html">continuous</a></span><span class="op">(</span>ex <span class="op">=</span> <span class="va">res.exc</span>, geometry <span class="op">=</span> <span class="va">mesh</span>, alpha <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></code></pre></div>
 <p>Here <code>ex</code> is the result of the call to
 <code>contourmap</code> or <code>excursions</code> and
@@ -285,6 +375,17 @@ object. Finally, an argument <code>output</code> can be used to specify
 what type of object should be generated. The options are currently
 <code>sp</code> which gives a <code>SpatialPolygons</code> object, and
 <code>inla</code> which gives an <code>fm_segm</code> object.</p>
+<p>An example for the connected excursion sets above is:</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sets.reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/continuous.html">continuous</a></span><span class="op">(</span><span class="va">res.reg</span>, geometry <span class="op">=</span> <span class="va">mesh</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sets.reg</span><span class="op">$</span><span class="va">M</span>,</span>
+<span>  col <span class="op">=</span> <span class="va">reg.col</span><span class="op">[</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sets.reg</span><span class="op">$</span><span class="va">M</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">8</span> <span class="op">+</span> <span class="fl">2</span><span class="op">]</span>, border <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">mesh</span><span class="op">$</span><span class="va">loc</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">mesh</span><span class="op">$</span><span class="va">loc</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">con0</span><span class="op">$</span><span class="va">map</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="excursions_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="480" style="display: block; margin: auto;">
+The regions in <code>sets.reg$M</code> are tagged by their number, so
+that for example <code>sets.reg$M["1"]</code> is the largest region.</p>
 </div>
 <div class="section level2">
 <h2 id="simultaneous-confidence-bands">Simultaneous confidence bands<a class="anchor" aria-label="anchor" href="#simultaneous-confidence-bands"></a>
@@ -293,7 +394,7 @@ what type of object should be generated. The options are currently
 simultaneous confidence bands for a Gaussian process
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>X</mi><mo stretchy="false" form="prefix">(</mo><mi>s</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">X(s)</annotation></semantics></math>.
 A basic call to the function looks like</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/simconf.html">simconf</a></span><span class="op">(</span><span class="va">alpha</span>, <span class="va">mu</span>, <span class="va">Q</span><span class="op">)</span></span></code></pre></div>
 <p>where <code>alpha</code> is the coverage probability, <code>mu</code>
 is the mean value vector for the process, and <code>Q</code> is the
@@ -334,7 +435,7 @@ it is larger than some value
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mi>α</mi></mrow><annotation encoding="application/x-tex">1-\alpha</annotation></semantics></math>,
 this option can save a lot of computation time.</p>
 <p>A basic call to the function looks like</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/gaussint.html">gaussint</a></span><span class="op">(</span><span class="va">mu</span>, <span class="va">Q</span>, <span class="va">a</span>, <span class="va">b</span><span class="op">)</span></span></code></pre></div>
 <p>where <code>mu</code> is the mean value vector, <code>Q</code> is the
 precision matrix, <code>a</code> is a vector of the lower limits in the
@@ -356,18 +457,18 @@ are useful for visualization. The function <code>tricontourmap</code>
 can be used for visualization of contour maps computed on triangulated
 meshes. The following code plots the posterior mean using the contour
 map we previously computed.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">set.sc</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tricontour.html">tricontourmap</a></span><span class="op">(</span><span class="va">mesh</span>,</span>
 <span>  z <span class="op">=</span> <span class="va">mu.post</span>,</span>
 <span>  levels <span class="op">=</span> <span class="va">res.con</span><span class="op">$</span><span class="va">u</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">set.sc</span><span class="op">$</span><span class="va">map</span>, col <span class="op">=</span> <span class="fu"><a href="../reference/contourmap.colors.html">contourmap.colors</a></span><span class="op">(</span><span class="va">res.con</span>, col <span class="op">=</span> <span class="va">cmap</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="excursions_files/figure-html/unnamed-chunk-10-1.png" class="r-plt" alt="" width="480" style="display: block; margin: auto;"></p>
+<p><img src="excursions_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="480" style="display: block; margin: auto;"></p>
 <p>Here <code>contourmap.colors</code> is used to find appropriate
 colors for each set in the contour map, based on the color map
 <code>cmap</code> that was defined using the <code>RColorBrewer</code>
 package. The estimated excursion set can be visualized as</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sets.exc</span><span class="op">$</span><span class="va">M</span><span class="op">[</span><span class="st">"1"</span><span class="op">]</span>,</span>
 <span>  col <span class="op">=</span> <span class="st">"red"</span>,</span>
 <span>  xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">mesh</span><span class="op">$</span><span class="va">loc</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span>,</span>
@@ -379,7 +480,7 @@ package. The estimated excursion set can be visualized as</p>
 <span>  edge.color <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/rgb.html" class="external-link">rgb</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="fl">0.5</span><span class="op">)</span>,</span>
 <span>  add <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><img src="excursions_files/figure-html/unnamed-chunk-11-1.png" class="r-plt" alt="" width="480" style="display: block; margin: auto;"></p>
+<p><img src="excursions_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="480" style="display: block; margin: auto;"></p>
 <p>The second <code>plot</code> command adds the mesh to the plot so
 that we can see how the set is interpolated by the
 <code>continuous</code> function. Finally, the interpolated excursion
@@ -387,7 +488,7 @@ function
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>F</mi><mi>u</mi><mo>+</mo></msubsup><mo stretchy="false" form="prefix">(</mo><mi mathvariant="normal">s</mi><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">F_u^+({\boldsymbol{\mathrm{s}}})</annotation></semantics></math>,
 can be plotted easily using the <code>fm_evaluator</code> function from
 the <code>INLA</code> package.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cmap.F</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu">brewer.pal</span><span class="op">(</span><span class="fl">9</span>, <span class="st">"Greens"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span>
 <span><span class="va">proj</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluator</a></span><span class="op">(</span><span class="va">sets.exc</span><span class="op">$</span><span class="va">F.geometry</span>, dims <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">200</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/image.html" class="external-link">image</a></span><span class="op">(</span><span class="va">proj</span><span class="op">$</span><span class="va">x</span>, <span class="va">proj</span><span class="op">$</span><span class="va">y</span>, <span class="fu"><a href="https://inlabru-org.github.io/fmesher/reference/fm_evaluate.html" class="external-link">fm_evaluate</a></span><span class="op">(</span><span class="va">proj</span>, field <span class="op">=</span> <span class="va">sets.exc</span><span class="op">$</span><span class="cn">F</span><span class="op">)</span>,</span>
@@ -395,7 +496,7 @@ the <code>INLA</code> package.</p>
 <span><span class="op">)</span></span>
 <span><span class="va">con</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tricontour.html">tricontourmap</a></span><span class="op">(</span><span class="va">mesh</span>, z <span class="op">=</span> <span class="va">mu.post</span>, levels <span class="op">=</span> <span class="fl">0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">con</span><span class="op">$</span><span class="va">map</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-<p><img src="excursions_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="480" style="display: block; margin: auto;"></p>
+<p><img src="excursions_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="480" style="display: block; margin: auto;"></p>
 <p>The final two lines computes the level zero contour curve and plots
 it in the same figure as the interpolated excursion function.</p>
 </div>

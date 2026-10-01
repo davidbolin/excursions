@@ -326,9 +326,56 @@ with the contour curve using the following commands.</p>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">con</span><span class="op">$</span><span class="va">map</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p><img src="inla_files/figure-html/unnamed-chunk-12-1.png" class="r-plt" alt="" width="700"></p>
+<div class="section level4">
+<h4 id="connected-excursion-regions">Connected excursion regions<a class="anchor" aria-label="anchor" href="#connected-excursion-regions"></a>
+</h4>
+<p>The excursion set is not necessarily connected, and we might instead
+be interested in connected regions that each, with probability at least
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>−</mo><mi>α</mi></mrow><annotation encoding="application/x-tex">1-\alpha</annotation></semantics></math>,
+received more than 7 mm of precipitation. These can be computed using
+<code>excursions.regions.inla</code>, which is the <code>INLA</code>
+version of <code>excursions.regions</code>, see the <a href="https://davidbolin.github.io/excursions/articles/excursions.html">getting
+started</a> vignette for details. The arguments are the same as for
+<code>excursions.inla</code>, except that we also need to specify which
+nodes are neighbours using the <code>graph</code> argument. Here we use
+the triangulation of the prediction lattice, which has one node for each
+location in the <code>"prd"</code> part of the stack. We also only
+compute regions with at least 10 nodes.</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/excursions.regions.inla.html">excursions.regions.inla</a></span><span class="op">(</span><span class="va">r</span>, <span class="va">stk</span>,</span>
+<span>  tag <span class="op">=</span> <span class="st">"prd"</span>, u <span class="op">=</span> <span class="fl">7</span>, u.link <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"&gt;"</span>, alpha <span class="op">=</span> <span class="fl">0.1</span>, method <span class="op">=</span> <span class="st">"QC"</span>,</span>
+<span>  graph <span class="op">=</span> <span class="va">submesh</span>, min.size <span class="op">=</span> <span class="fl">10</span>,</span>
+<span>  max.threads <span class="op">=</span> <span class="fl">2</span>, seed <span class="op">=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">reg</span><span class="op">$</span><span class="va">regions</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 97 45 23 18</span></span>
+<span><span class="va">reg</span><span class="op">$</span><span class="va">P</span></span>
+<span><span class="co">#&gt; [1] 0.9016428 0.9081087 0.9012864 0.9059150</span></span></code></pre></div>
+<p>The function returns the regions as indices of the nodes in the
+<code>"prd"</code> part of the stack, largest first, together with the
+joint excursion probability of each region. As for excursion sets, we
+can use <code>continuous</code> to obtain continuous domain versions of
+the regions, which we plot together with the contour curve for the level
+7 mm. Each region has its own colour.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">sets.reg</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/continuous.html">continuous</a></span><span class="op">(</span><span class="va">reg</span>, <span class="va">submesh</span><span class="op">)</span></span>
+<span><span class="va">reg.col</span> <span class="op">&lt;-</span> <span class="fu">brewer.pal</span><span class="op">(</span><span class="fl">8</span>, <span class="st">"Set1"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">sets.reg</span><span class="op">$</span><span class="va">M</span>,</span>
+<span>  col <span class="op">=</span> <span class="va">reg.col</span><span class="op">[</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sets.reg</span><span class="op">$</span><span class="va">M</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/Arithmetic.html" class="external-link">%%</a></span> <span class="fl">8</span> <span class="op">+</span> <span class="fl">1</span><span class="op">]</span>, border <span class="op">=</span> <span class="cn">NA</span>,</span>
+<span>  xlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">PRborder</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span><span class="op">)</span>, ylim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">PRborder</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">PRborder</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">con</span><span class="op">$</span><span class="va">contour</span>, add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
+<p><img src="inla_files/figure-html/unnamed-chunk-14-1.png" class="r-plt" alt="" width="576" style="display: block; margin: auto;">
+Each of the regions has a joint probability of at least
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.9</mn><annotation encoding="application/x-tex">0.9</annotation></semantics></math>
+of exceeding the level, whereas the probability statement for the
+excursion set is for the whole set jointly. The regions can therefore
+together cover more of the domain than the excursion set.</p>
 <p>To visualize the posterior mean using a contour map using the
 following commands</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cmap</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/grDevices/colorRamp.html" class="external-link">colorRampPalette</a></span><span class="op">(</span><span class="fu">brewer.pal</span><span class="op">(</span><span class="fl">9</span>, <span class="st">"YlGnBu"</span><span class="op">)</span><span class="op">)</span><span class="op">(</span><span class="fl">100</span><span class="op">)</span></span>
 <span><span class="va">lp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/contourmap.inla.html">contourmap.inla</a></span><span class="op">(</span><span class="va">r</span>,</span>
 <span>  stack <span class="op">=</span> <span class="va">stk</span>, tag <span class="op">=</span> <span class="st">"prd"</span>, n.levels <span class="op">=</span> <span class="fl">2</span>,</span>
@@ -336,7 +383,7 @@ following commands</p>
 <span><span class="op">)</span></span>
 <span><span class="va">tmap</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tricontour.html">tricontourmap</a></span><span class="op">(</span><span class="va">submesh</span>, z <span class="op">=</span> <span class="va">lp</span><span class="op">$</span><span class="va">meta</span><span class="op">$</span><span class="va">mu</span>, levels <span class="op">=</span> <span class="va">lp</span><span class="op">$</span><span class="va">meta</span><span class="op">$</span><span class="va">levels</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/plot.default.html" class="external-link">plot</a></span><span class="op">(</span><span class="va">tmap</span><span class="op">$</span><span class="va">map</span>, col <span class="op">=</span> <span class="fu"><a href="../reference/contourmap.colors.html">contourmap.colors</a></span><span class="op">(</span><span class="va">lp</span>, col <span class="op">=</span> <span class="va">cmap</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p><img src="inla_files/figure-html/unnamed-chunk-13-1.png" class="r-plt" alt="" width="700"></p>
+<p><img src="inla_files/figure-html/unnamed-chunk-15-1.png" class="r-plt" alt="" width="700"></p>
 <p>Here, the <code>contourmap.inla</code> computes the levels of the
 contour map and <code>tricontourmap</code> computes the contour map on
 the mesh. Finally, <code>contourmap.colors</code> is used to compute
@@ -347,7 +394,7 @@ the
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>P</mi><mn>2</mn></msub><annotation encoding="application/x-tex">P_2</annotation></semantics></math>
 quality measure for this contour map and for contour maps with one and
 three levels.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">lps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">lps</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/contourmap.inla.html">contourmap.inla</a></span><span class="op">(</span><span class="va">r</span>,</span>
@@ -365,8 +412,8 @@ three levels.</p>
 <span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                       P2</span></span>
 <span><span class="co">#&gt; n.level = 1 9.998710e-01</span></span>
-<span><span class="co">#&gt; n.level = 2 1.192345e-01</span></span>
-<span><span class="co">#&gt; n.level = 3 4.647492e-05</span></span>
+<span><span class="co">#&gt; n.level = 2 1.192330e-01</span></span>
+<span><span class="co">#&gt; n.level = 3 4.647203e-05</span></span>
 <span><span class="co">#&gt; n.level = 4 0.000000e+00</span></span></code></pre></div>
 <p>We see that using only one or two contours give very high
 credibility, whereas using four contours give a credibility that is
@@ -374,6 +421,7 @@ close to zero. The contour map with three contours has a credibility
 around
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0.2</mn><annotation encoding="application/x-tex">0.2</annotation></semantics></math>
 and seems to be a good compromise for this application.</p>
+</div>
 </div>
 </div>
 <div class="section level2 unnumbered">

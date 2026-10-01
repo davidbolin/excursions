@@ -179,10 +179,10 @@ print(data.frame(
   row.names = c("EB", "QC", "NI", "NIQC")
 ))
 #>        time
-#> EB    1.837
-#> QC    1.793
-#> NI   20.327
-#> NIQC 19.622
+#> EB    1.642
+#> QC    1.325
+#> NI   14.715
+#> NIQC 14.441
 ```
 
 We can see that the `EB` and `QC` methods have similar computation times
@@ -254,3 +254,68 @@ main = "NIQC"
 ```
 
 ![](inlabru_files/figure-html/unnamed-chunk-11-1.png)
+
+## Connected excursion regions
+
+The excursion set is not necessarily connected. To instead compute
+connected regions where the field, with probability at least
+$`1-\alpha`$, exceeds the level, we can use `excursions.regions.inla`,
+which is the `INLA` version of `excursions.regions`, see the [getting
+started](https://davidbolin.github.io/excursions/articles/excursions.html)
+vignette for details. The function first computes the largest connected
+region, then removes its nodes and computes the largest region in the
+remaining nodes, and so on, which gives a map of non-overlapping
+connected regions that each satisfy the probability requirement.
+
+The model is specified in the same way as for `excursions.inla`. In
+addition, the `graph` argument specifies which nodes are neighbours.
+Since the `"prd"` likelihood component contains one observation for each
+node of the mesh, in the same order, we can use the mesh as the graph.
+We only compute regions with at least 10 nodes.
+
+``` r
+
+reg_bru <- excursions.regions.inla(result_bru,
+  name = "APredictor",
+  ind = bru_index(result_bru, "prd"),
+  graph = mesh,
+  alpha = 0.1, u = 0,
+  method = "QC", type = ">",
+  min.size = 10,
+  prune.ind = TRUE,
+  max.threads = 2,
+  seed = 1
+)
+lengths(reg_bru$regions)
+#> [1] 63 41 33 32 19 13
+reg_bru$P
+#> [1] 0.9090262 0.9040699 0.9049945 0.9007310 0.9074650 0.9009801
+```
+
+As we used `prune.ind = TRUE`, the regions are given as indices of the
+mesh nodes. We compute continuous domain versions of the regions using
+`continuous`, and plot their outlines on top of the excursion function
+that we computed above, where each region has its own colour.
+
+``` r
+
+sets.reg <- continuous(reg_bru, mesh)
+reg.col <- brewer.pal(8, "Set1")
+image(proj$x, proj$y, fm_evaluate(proj, field = sets$F),
+  col = cmap.F, axes = FALSE, xlab = "", ylab = "", asp = 1,
+  main = "Connected regions"
+)
+plot(sets.reg$M,
+  border = reg.col[(as.numeric(names(sets.reg$M)) - 1) %% 8 + 1],
+  lwd = 2, add = TRUE
+)
+```
+
+![](inlabru_files/figure-html/unnamed-chunk-13-1.png) Each region
+individually has a joint probability of at least $`0.9`$ of exceeding
+the level, whereas the excursion set, and thereby the excursion
+function, is defined through the joint probability for the whole set. A
+region can therefore contain nodes where the excursion function is below
+$`0.9`$. For the same reason, two regions can be adjacent: their union
+is connected, but it does not satisfy the probability requirement
+jointly.

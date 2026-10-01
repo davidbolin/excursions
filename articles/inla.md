@@ -281,6 +281,60 @@ plot(con$map, add = TRUE)
 
 ![](inla_files/figure-html/unnamed-chunk-12-1.png)
 
+#### Connected excursion regions
+
+The excursion set is not necessarily connected, and we might instead be
+interested in connected regions that each, with probability at least
+$`1-\alpha`$, received more than 7 mm of precipitation. These can be
+computed using `excursions.regions.inla`, which is the `INLA` version of
+`excursions.regions`, see the [getting
+started](https://davidbolin.github.io/excursions/articles/excursions.html)
+vignette for details. The arguments are the same as for
+`excursions.inla`, except that we also need to specify which nodes are
+neighbours using the `graph` argument. Here we use the triangulation of
+the prediction lattice, which has one node for each location in the
+`"prd"` part of the stack. We also only compute regions with at least 10
+nodes.
+
+``` r
+
+reg <- excursions.regions.inla(r, stk,
+  tag = "prd", u = 7, u.link = TRUE,
+  type = ">", alpha = 0.1, method = "QC",
+  graph = submesh, min.size = 10,
+  max.threads = 2, seed = 1
+)
+lengths(reg$regions)
+#> [1] 97 45 23 18
+reg$P
+#> [1] 0.9016428 0.9081087 0.9012864 0.9059150
+```
+
+The function returns the regions as indices of the nodes in the `"prd"`
+part of the stack, largest first, together with the joint excursion
+probability of each region. As for excursion sets, we can use
+`continuous` to obtain continuous domain versions of the regions, which
+we plot together with the contour curve for the level 7 mm. Each region
+has its own colour.
+
+``` r
+
+sets.reg <- continuous(reg, submesh)
+reg.col <- brewer.pal(8, "Set1")
+plot(sets.reg$M,
+  col = reg.col[(as.numeric(names(sets.reg$M)) - 1) %% 8 + 1], border = NA,
+  xlim = range(PRborder[, 1]), ylim = range(PRborder[, 2])
+)
+lines(PRborder)
+plot(con$contour, add = TRUE)
+```
+
+![](inla_files/figure-html/unnamed-chunk-14-1.png) Each of the regions
+has a joint probability of at least $`0.9`$ of exceeding the level,
+whereas the probability statement for the excursion set is for the whole
+set jointly. The regions can therefore together cover more of the domain
+than the excursion set.
+
 To visualize the posterior mean using a contour map using the following
 commands
 
@@ -295,7 +349,7 @@ tmap <- tricontourmap(submesh, z = lp$meta$mu, levels = lp$meta$levels)
 plot(tmap$map, col = contourmap.colors(lp, col = cmap))
 ```
 
-![](inla_files/figure-html/unnamed-chunk-13-1.png)
+![](inla_files/figure-html/unnamed-chunk-15-1.png)
 
 Here, the `contourmap.inla` computes the levels of the contour map and
 `tricontourmap` computes the contour map on the mesh. Finally,
@@ -326,8 +380,8 @@ print(data.frame(
 ))
 #>                       P2
 #> n.level = 1 9.998710e-01
-#> n.level = 2 1.192345e-01
-#> n.level = 3 4.647492e-05
+#> n.level = 2 1.192330e-01
+#> n.level = 3 4.647203e-05
 #> n.level = 4 0.000000e+00
 ```
 

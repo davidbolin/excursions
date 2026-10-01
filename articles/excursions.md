@@ -147,6 +147,99 @@ this generality is that the only way of increasing the accuracy of the
 results is to increase the number of Monte Carlo samples that are
 provided to the function.
 
+## Connected excursion regions
+
+The excursion set $`E_{{u,\alpha}}^{{+}}`$ does not have to be
+connected, and it often consists of several pieces spread over the
+domain. In many applications, the interest is instead in connected
+regions, such as a single area where a pollutant exceeds a threshold.
+The function `excursions.regions` computes the largest connected region
+$`D`$ such that
+``` math
+P(X({\boldsymbol{\mathrm{s}}}) > u, {\boldsymbol{\mathrm{s}}} \in D) \geq 1 - \alpha.
+```
+The nodes of this region are then removed, and the search is repeated in
+the remaining nodes. This gives a map of non-overlapping connected
+regions, where each region individually satisfies the probability
+requirement. Note that the probability statement is for each region
+separately, and not for the union of the regions.
+
+A typical call to the function looks like
+
+``` r
+
+res.reg <- excursions.regions(
+  mu = mu.post, Q = Q.post, alpha = 0.1, type = ">", u = 0,
+  graph = mesh, min.size = 5, max.threads = 2, seed = exc.seed
+)
+lengths(res.reg$regions)
+#> [1] 13  8  8  7
+res.reg$P
+#> [1] 0.9127013 0.9464842 0.9082509 0.9199373
+```
+
+The arguments `mu`, `Q`, `alpha`, `u` and `type` are the same as for
+`excursions`, but only positive and negative excursion regions are
+supported. The argument `graph` defines which nodes are neighbours,
+either as a symmetric sparse matrix or as a mesh, in which case the
+edges of the mesh are used. If no graph is given, the non-zero elements
+of `Q` are used, which for the SPDE models typically also connects nodes
+that are two edges apart. The argument `min.size` gives the minimal
+number of nodes in a region. Every node with marginal probability at
+least $`1-\alpha`$ is a region of its own, so without `min.size` or
+`max.regions`, which limits the number of regions, the map covers all
+such nodes. The function returns the regions as node indices, largest
+first, together with their joint probabilities `P`, and a vector
+`labels` with the region of each node.
+
+A region can only contain nodes with marginal excursion probability at
+least $`1-\alpha`$, so the search is done within each connected
+component of these nodes. In each component, a region is grown from a
+start point, and the joint probabilities of all regions in the growth
+sequence are computed with the same sequential importance sampling
+method as in `excursions`. The start points are the local maxima of the
+marginal probabilities in the component, since the largest maximum does
+not always give the largest region. The argument `n.starts` sets how
+many local maxima are tried, and `min.prominence` can be used to only
+use maxima that are clearly separated from higher maxima, which reduces
+the computation time when the posterior mean is noisy. Finding the
+largest connected region is a hard combinatorial problem, so the regions
+are not guaranteed to be the largest possible ones, but the joint
+probability of each returned region is computed as in `excursions`.
+
+The following figure shows the excursion set computed by `excursions` to
+the left, and the connected regions to the right, where each region has
+its own colour.
+
+``` r
+
+con0 <- tricontourmap(mesh, z = mu.post, levels = 0)
+reg.col <- c("grey85", brewer.pal(8, "Set1"))
+par(mfrow = c(1, 2), mar = c(0, 0, 1.5, 0))
+plot(mesh$loc[, 1:2],
+  col = ifelse(res.exc$E == 1, "red", "grey85"), pch = 19, cex = 0.6,
+  asp = 1, axes = FALSE, xlab = "", ylab = "", main = "Excursion set"
+)
+plot(con0$map, add = TRUE)
+plot(mesh$loc[, 1:2],
+  col = ifelse(res.reg$labels == 0, "grey85",
+    reg.col[(res.reg$labels - 1) %% 8 + 2]
+  ),
+  pch = 19, cex = 0.6, asp = 1, axes = FALSE, xlab = "", ylab = "",
+  main = "Connected regions"
+)
+plot(con0$map, add = TRUE)
+```
+
+![](excursions_files/figure-html/unnamed-chunk-7-1.png)
+
+The function has a version `excursions.regions.inla` for models
+estimated using `INLA` or `inlabru`, which is described in the [`INLA`
+interface](https://davidbolin.github.io/excursions/articles/inla.html)
+and [`inlabru`
+interface](https://davidbolin.github.io/excursions/articles/inlabru.html)
+vignettes.
+
 ## Analysis of contour maps
 
 The main function for analysis of contour maps is `contourmap`. A basic
@@ -213,6 +306,22 @@ convex. A triangulation geometry is specified as an `fm_mesh_2d` object.
 Finally, an argument `output` can be used to specify what type of object
 should be generated. The options are currently `sp` which gives a
 `SpatialPolygons` object, and `inla` which gives an `fm_segm` object.
+
+An example for the connected excursion sets above is:
+
+``` r
+
+sets.reg <- continuous(res.reg, geometry = mesh)
+plot(sets.reg$M,
+  col = reg.col[(as.numeric(names(sets.reg$M)) - 1) %% 8 + 2], border = NA,
+  xlim = range(mesh$loc[, 1]), ylim = range(mesh$loc[, 2])
+)
+plot(con0$map, add = TRUE)
+```
+
+![](excursions_files/figure-html/unnamed-chunk-10-1.png) The regions in
+`sets.reg$M` are tagged by their number, so that for example
+`sets.reg$M["1"]` is the largest region.
 
 ## Simultaneous confidence bands
 
@@ -296,7 +405,7 @@ set.sc <- tricontourmap(mesh,
 plot(set.sc$map, col = contourmap.colors(res.con, col = cmap))
 ```
 
-![](excursions_files/figure-html/unnamed-chunk-10-1.png)
+![](excursions_files/figure-html/unnamed-chunk-13-1.png)
 
 Here `contourmap.colors` is used to find appropriate colors for each set
 in the contour map, based on the color map `cmap` that was defined using
@@ -318,7 +427,7 @@ plot(mesh,
 )
 ```
 
-![](excursions_files/figure-html/unnamed-chunk-11-1.png)
+![](excursions_files/figure-html/unnamed-chunk-14-1.png)
 
 The second `plot` command adds the mesh to the plot so that we can see
 how the set is interpolated by the `continuous` function. Finally, the
@@ -337,7 +446,7 @@ con <- tricontourmap(mesh, z = mu.post, levels = 0)
 plot(con$map, add = TRUE)
 ```
 
-![](excursions_files/figure-html/unnamed-chunk-12-1.png)
+![](excursions_files/figure-html/unnamed-chunk-15-1.png)
 
 The final two lines computes the level zero contour curve and plots it
 in the same figure as the interpolated excursion function.
