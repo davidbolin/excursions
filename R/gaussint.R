@@ -53,12 +53,23 @@
 #'   threads is at most `OMP_THREAD_LIMIT`, and is one if the package was built
 #'   without OpenMP.
 #' @param seed The random seed to use (optional).
+#' @param tol Target for the estimated error (optional). If `tol` is given, the
+#' number of iterations is chosen adaptively: the integral is first estimated
+#' with 1000 iterations, and iterations are then added until the estimated
+#' error is at most `tol`, using at most `n.iter` iterations in total. By
+#' default, `n.iter` iterations are always used.
+#' @param tol.level The probability level where the error is controlled if
+#' `tol` is given (optional). The error is then controlled for the sub-integral
+#' estimates where the estimates go below `tol.level`, which is useful when
+#' one is interested in where the sub-integrals pass a probability level. By
+#' default, the error of `P` is controlled.
 #'
 #' @return A list with elements
 #' \item{P }{Value of the integral.}
 #' \item{E }{Estimated error of the P estimate.}
 #' \item{Pv }{A vector with the estimates of all sub-integrals.}
 #' \item{Ev }{A vector with the estimated errors of the Pv estimates.}
+#' \item{n.iter }{The number of iterations that were used.}
 #' @export
 #' @details The function uses sequential importance sampling to estimate the
 #' Gaussian integral, and returns all computed sub-integrals. This means that if, for
@@ -77,6 +88,14 @@
 #' computational cost) with automatic handling of dimensions with limits `a=-Inf` and
 #' `b=Inf`, which do not affect the probability but affect the computation time
 #' if they are not handled separately.
+#'
+#' The estimated error is the standard error of the estimate, which decreases
+#' as one over the square root of the number of iterations. With `tol`, the
+#' iterations are added in batches, where each batch is sized to reach `tol`
+#' from the estimated error so far, and the estimates are averages over all
+#' batches. The number of iterations that is needed for a given accuracy
+#' depends strongly on the problem, and `tol` can therefore save a lot of
+#' computation time compared to a fixed number of iterations.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @references Bolin, D. and Lindgren, F. (2015) *Excursion and contour uncertainty regions for latent Gaussian models*, JRSS-series B, vol 77, no 1, pp 85-106.
 #'
@@ -100,7 +119,9 @@ gaussint <- function(mu,
                      use.reordering = c("natural", "sparsity", "limits"),
                      max.size,
                      max.threads = 0,
-                     seed) {
+                     seed,
+                     tol = NULL,
+                     tol.level = NULL) {
   if (missing(Q) && missing(Q.chol)) {
     stop("Must specify a precision matrix or its Cholesky factor")
   }
@@ -139,6 +160,18 @@ gaussint <- function(mu,
   }
 
   use.reordering <- match.arg(use.reordering)
+
+  if (!is.null(tol)) {
+    if (!is.numeric(tol) || length(tol) != 1 || is.na(tol) || tol <= 0) {
+      stop("tol must be a positive number.")
+    }
+  }
+  if (!is.null(tol.level)) {
+    if (!is.numeric(tol.level) || length(tol.level) != 1 || is.na(tol.level) ||
+      tol.level <= 0 || tol.level > 1) {
+      stop("tol.level must be a number in (0, 1].")
+    }
+  }
 
   if (!missing(ind) && !is.null(ind)) {
     ind <- private.ind.logical(ind, n)
@@ -242,13 +275,20 @@ gaussint <- function(mu,
   Pv <- Ev <- rep(0, dim(L)[1])
 
   opts <- c(n, n.iter, max.size, max.threads, seed_provided)
+  ## tol = 0 gives a single batch of n.iter samples, and the first batch has
+  ## 1000 samples otherwise
+  adapt <- c(
+    if (is.null(tol)) 0 else tol,
+    if (is.null(tol.level)) 0 else tol.level,
+    1000
+  )
 
   L_ipx <- private.sparse.get_ipx(L)
-  out <- .C("shapeInt",
-    Mp = as.integer(L_ipx$p), Mi = as.integer(L_ipx$i),
-    Mv = as.double(L_ipx$x), a = as.double(a), b = as.double(b),
-    opts = as.integer(opts), lim = as.double(lim),
-    Pv = as.double(Pv), Ev = as.double(Ev), seed_in = seed.in
+  out <- .Call("shapeIntCall",
+    as.integer(L_ipx$p), as.integer(L_ipx$i), as.double(L_ipx$x),
+    as.double(a), as.double(b), as.integer(opts), as.double(lim),
+    as.integer(seed.in), as.double(adapt),
+    PACKAGE = "excursions"
   )
 
   P <- out$Pv[1]
@@ -262,5 +302,5 @@ gaussint <- function(mu,
     out$Pv <- out$Pv[ireo]
     out$Ev <- out$Ev[ireo]
   }
-  return(list(Pv = out$Pv, Ev = out$Ev, P = P, E = E))
+  return(list(Pv = out$Pv, Ev = out$Ev, P = P, E = E, n.iter = out$K_used))
 }

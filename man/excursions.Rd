@@ -22,7 +22,9 @@ excursions(
   verbose = 0,
   max.threads = 0,
   seed,
-  prune.ind = FALSE
+  prune.ind = FALSE,
+  tol = NULL,
+  Qinv
 )
 }
 \arguments{
@@ -41,7 +43,7 @@ excursions(
 \item{'!='}{contour avoiding region}
 \item{'='}{contour credibility region}}}
 
-\item{n.iter}{Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 10000.}
+\item{n.iter}{Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 10000. If \code{tol} is given, this is the maximal number of iterations.}
 
 \item{Q.chol}{The Cholesky factor of the precision matrix (optional).}
 
@@ -74,6 +76,17 @@ without OpenMP.}
 
 \item{prune.ind}{If \code{TRUE} and \code{ind} is supplied, then the result object is pruned to
 contain only the active nodes specified by \code{ind}.}
+
+\item{tol}{Target for the estimated error of the excursion function where it
+passes \code{1 - alpha}, that is, at the boundary of the excursion set, or where
+it passes 0.5 if \code{alpha = 1} (optional). If \code{tol} is given, the number of iterations is chosen
+adaptively, using at most \code{n.iter} iterations, see \code{\link[=gaussint]{gaussint()}}. By
+default, \code{n.iter} iterations are always used.}
+
+\item{Qinv}{Covariances of the field on (at least) the sparsity pattern of
+\code{Q} (optional), as a sparse matrix that can store only one triangle, for
+example the selected inverse of \code{Q}. If \code{vars} is not given, it is
+computed from \code{Qinv}. See the details.}
 }
 \value{
 \code{excursions} returns an object of class "excurobj" with the following elements
@@ -84,7 +97,8 @@ contain only the active nodes specified by \code{ind}.}
 \item{rho}{Marginal excursion probabilities}
 \item{mean}{The mean \code{mu}.}
 \item{vars}{Marginal variances.}
-\item{meta}{A list containing various information about the calculation.}
+\item{meta}{A list containing various information about the calculation.
+\code{meta$n.iter.used} is the number of iterations that were used.}
 }
 \description{
 \code{excursions} is one of the main functions in the package with the same name.
@@ -95,7 +109,25 @@ package are given in the sections below.
 }
 \details{
 The estimation of the region is done using sequential importance sampling with
-\code{n.iter} samples. The procedure requires computing the marginal variances of
+\code{n.iter} samples, or with an adaptive number of samples if \code{tol} is given.
+The standard errors of the estimates of the excursion function are returned
+in \code{meta$Fe}. The number of samples that is needed for a given accuracy
+depends strongly on the problem and on \code{alpha}, and \code{tol} can therefore
+save a lot of computation time.
+
+The nodes are integrated in decreasing order of their marginal
+probabilities, and the integration stops when the probability goes below
+\code{1 - F.limit}. Only the nodes that are reached have to be in this order, and
+the other nodes are ordered to make the Cholesky factor sparse, which can
+make it much faster to compute. If the covariances of neighbouring nodes
+are available, the number of nodes that are reached is approximated from
+them, and the nodes are ordered accordingly. If the integration still does
+not stop among these nodes, more nodes are put in the order and the
+integration is repeated, so the results do not depend on the
+approximation. The covariances are available if \code{Qinv} is given, or if the
+variances are computed, since they are then computed together with the
+variances. If \code{vars} is given but not \code{Qinv}, all nodes that can be reached
+are put in the order of the marginal probabilities. The procedure requires computing the marginal variances of
 the field, which should be supplied if available. If not, they are computed using
 the Cholesky factor of the precision matrix. The cost of this step can therefore be
 reduced by supplying the Cholesky factor if it is available.

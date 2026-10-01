@@ -688,7 +688,6 @@ private.regions.graph <- function(graph, Q, n) {
 ## edges are added to the pattern of Q as explicit zeros, which puts them in
 ## the pattern of the Cholesky factor without changing Q.
 private.selected.inverse <- function(Q, G = NULL) {
-  n <- nrow(Q)
   Q <- private.as.dgCMatrix(Q)
   if (!is.null(G)) {
     Qt <- as(Q, "TsparseMatrix")
@@ -699,8 +698,24 @@ private.selected.inverse <- function(Q, G = NULL) {
     ), "CsparseMatrix")
   }
   ch <- Matrix::Cholesky(Q, LDL = FALSE, perm = TRUE, super = FALSE)
-  perm <- ch@perm + 1L
-  L <- as(ch, "CsparseMatrix")
+  private.selected.inverse.factor(as(ch, "CsparseMatrix"), ch@perm + 1L)
+}
+
+## Selected inverse from a Cholesky factor of Q, see
+## private.selected.inverse. L is the lower triangular factor of Q[perm, perm],
+## or of Q if perm is NULL. An upper triangular factor is transposed.
+private.selected.inverse.factor <- function(L, perm = NULL) {
+  L <- private.as.dtCMatrix(L)
+  if (L@uplo == "U") {
+    L <- t(L)
+  }
+  if (L@diag == "U") {
+    L <- as(L, "generalMatrix")
+  }
+  n <- nrow(L)
+  if (is.null(perm)) {
+    perm <- seq_len(n)
+  }
   z <- .Call("Qinv_selected", L@p, L@i, as.double(L@x),
     PACKAGE = "excursions"
   )

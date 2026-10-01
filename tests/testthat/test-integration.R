@@ -4,8 +4,8 @@ test_that("Integration L", {
     Q.chol = data$L, a = data$a, b = data$b,
     seed = data$seed, max.threads = 1
   )
-  expect_equal(prob1$P[1], 0.9680023, tolerance = 1e-7)
-  expect_equal(prob1$E[1], 5.914764e-06, tolerance = 1e-6)
+  expect_equal(prob1$P[1], 0.9680137913, tolerance = 1e-7)
+  expect_equal(prob1$E[1], 5.884186405e-06, tolerance = 1e-6)
 })
 
 test_that("Integration Q", {
@@ -14,8 +14,8 @@ test_that("Integration Q", {
     Q = data$Q, a = data$a, b = data$b,
     seed = data$seed, max.threads = 1
   )
-  expect_equal(prob1$P[1], 0.9680023, tolerance = 1e-7)
-  expect_equal(prob1$E[1], 5.914764e-06, tolerance = 1e-6)
+  expect_equal(prob1$P[1], 0.9680137913, tolerance = 1e-7)
+  expect_equal(prob1$E[1], 5.884186405e-06, tolerance = 1e-6)
 })
 
 test_that("Integration mu", {
@@ -25,8 +25,8 @@ test_that("Integration mu", {
     b = data$b + data$mu, seed = data$seed,
     max.threads = 1
   )
-  expect_equal(prob1$P[1], 0.9680023, tolerance = 1e-7)
-  expect_equal(prob1$E[1], 5.914764e-06, tolerance = 1e-6)
+  expect_equal(prob1$P[1], 0.9680137913, tolerance = 1e-7)
+  expect_equal(prob1$E[1], 5.884186405e-06, tolerance = 1e-6)
 })
 
 test_that("Integration limit", {
@@ -44,7 +44,7 @@ test_that("Integration limit", {
   )
 
   expect_equal(prob1$P[1], 0.0, tolerance = 1e-7)
-  expect_equal(prob2$P[1], 0.9680023, tolerance = 1e-6)
+  expect_equal(prob2$P[1], 0.9680137913, tolerance = 1e-6)
 })
 
 test_that("Integration reordering", {
@@ -54,7 +54,7 @@ test_that("Integration reordering", {
     b = data$b + data$mu, seed = data$seed,
     max.threads = 1, use.reordering = "sparsity"
   )
-  expect_equal(prob1$P[1], 0.9680023, tolerance = 1e-5)
+  expect_equal(prob1$P[1], 0.968014649, tolerance = 1e-5)
   expect_equal(prob1$E[1], 5.914764e-06, tolerance = 1e-5)
 })
 
@@ -270,20 +270,144 @@ test_that("Integration respects the OpenMP thread limits", {
   expect_identical(def1$r, ref1$r)
 })
 
-test_that("Integration with several threads agrees with one thread", {
+test_that("Integration does not depend on the number of threads", {
   skip_if_not(excursions:::private.openmp.info()[["openmp"]] == 1, "no OpenMP")
   d <- testdata.spde(10)
   a <- d$mu - 2.5
   b <- d$mu + 2.5
-  r1 <- gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = 1, n.iter = 4000)
-  r2 <- gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = 2, n.iter = 4000)
-  ## Different random streams, so equal up to the Monte Carlo error
-  expect_false(identical(r1$Pv, r2$Pv))
-  expect_lt(abs(r2$P - r1$P), 4 * sqrt(r1$E^2 + r2$E^2))
-  ok <- r1$Pv > 0 & r2$Pv > 0
-  expect_true(all(abs(r2$Pv[ok] - r1$Pv[ok]) < 4 * sqrt(r1$Ev[ok]^2 + r2$Ev[ok]^2) + 1e-12))
-  expect_identical(
-    gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = 2, n.iter = 4000),
-    r2
+  ## The random streams belong to chunks of samples that only depend on the
+  ## number of samples, so the results are the same for any number of threads
+  for (n.iter in c(1000, 4000, 10000)) {
+    r1 <- gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = 1, n.iter = n.iter)
+    for (threads in c(2, 3, 8)) {
+      expect_identical(
+        gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = threads, n.iter = n.iter),
+        r1
+      )
+    }
+  }
+  ## Also with lim, where the threads synchronise after groups of rows, and
+  ## with adaptive batches
+  r1 <- gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = 1, lim = 0.5)
+  r2 <- gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = 4, lim = 0.5)
+  expect_identical(r2, r1)
+  r1 <- gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = 1, tol = 2e-3)
+  r2 <- gaussint(Q = d$Q, a = a, b = b, seed = d$seed, max.threads = 4, tol = 2e-3)
+  expect_gt(r1$n.iter, 1000)
+  expect_identical(r2, r1)
+})
+
+test_that("Adaptive integration stops after the first batch for a large tol", {
+  data <- integration.testdata1()
+  prob1 <- gaussint(
+    Q = data$Q, a = data$a, b = data$b,
+    seed = data$seed, max.threads = 1, tol = 1
+  )
+  prob2 <- gaussint(
+    Q = data$Q, a = data$a, b = data$b,
+    seed = data$seed, max.threads = 1, n.iter = 1000
+  )
+  expect_equal(prob1$n.iter, 1000)
+  expect_identical(prob1$Pv, prob2$Pv)
+  expect_identical(prob1$Ev, prob2$Ev)
+})
+
+test_that("Integration without tol uses n.iter iterations", {
+  data <- integration.testdata1()
+  prob <- gaussint(
+    Q = data$Q, a = data$a, b = data$b,
+    seed = data$seed, max.threads = 1, n.iter = 2500
+  )
+  expect_equal(prob$n.iter, 2500)
+})
+
+test_that("Adaptive integration reaches tol", {
+  data <- integration.testdata1()
+  prob <- gaussint(
+    Q = data$Q, a = data$a, b = data$b,
+    seed = data$seed, max.threads = 1, tol = 1e-5
+  )
+  expect_gt(prob$n.iter, 1000)
+  expect_lt(prob$n.iter, 10000)
+  expect_lte(prob$E, 1e-5)
+  expect_equal(prob$P, 0.9680023, tolerance = 5e-5)
+})
+
+test_that("Adaptive integration uses at most n.iter iterations", {
+  data <- integration.testdata1()
+  prob1 <- gaussint(
+    Q = data$Q, a = data$a, b = data$b,
+    seed = data$seed, max.threads = 1, tol = 1e-12, n.iter = 5000
+  )
+  expect_equal(prob1$n.iter, 5000)
+  expect_gt(prob1$E, 1e-12)
+  prob2 <- gaussint(
+    Q = data$Q, a = data$a, b = data$b,
+    seed = data$seed, max.threads = 1, tol = 1e-12, n.iter = 500
+  )
+  expect_equal(prob2$n.iter, 500)
+})
+
+test_that("Adaptive integration controls the error at tol.level", {
+  data <- integration.testdata1()
+  ## P(x_i > 0, ..., x_n > 0) passes 0.5 between i = 6 and i = 7
+  args <- list(
+    Q = data$Q, mu = data$mu, a = rep(0, data$n), b = rep(Inf, data$n),
+    seed = data$seed, max.threads = 1
+  )
+  prob <- do.call(gaussint, c(args, list(
+    tol = 2e-4, tol.level = 0.5,
+    n.iter = 1e5
+  )))
+  i <- max(which(prob$Pv < 0.5))
+  expect_equal(i, 6)
+  expect_gt(prob$n.iter, 1000)
+  expect_lt(prob$n.iter, 1e5)
+  expect_lte(max(prob$Ev[i:(i + 1)]), 2e-4)
+  ## The estimates over several batches agree with a long run
+  ref <- do.call(gaussint, c(args, list(n.iter = 1e6)))
+  expect_lt(max(abs(prob$Pv - ref$Pv) / (prob$Ev + ref$Ev + 1e-12)), 5)
+})
+
+test_that("Adaptive integration is reproducible with a seed", {
+  data <- integration.testdata1()
+  for (threads in 1:2) {
+    args <- list(
+      Q = data$Q, mu = data$mu, a = rep(0, data$n), b = rep(Inf, data$n),
+      seed = data$seed, max.threads = threads, tol = 2e-4, tol.level = 0.5
+    )
+    prob1 <- do.call(gaussint, args)
+    prob2 <- do.call(gaussint, args)
+    expect_identical(prob1, prob2)
+  }
+})
+
+test_that("Adaptive integration with lim", {
+  data <- integration.testdata1()
+  prob1 <- gaussint(
+    Q = data$Q, a = data$a, b = data$b,
+    seed = data$seed, lim = 0.97, max.threads = 1, tol = 1e-5
+  )
+  prob2 <- gaussint(
+    Q = data$Q, a = data$a, b = data$b,
+    seed = data$seed, lim = 0.9, max.threads = 1, tol = 1e-5
+  )
+  expect_equal(prob1$P[1], 0.0)
+  expect_equal(prob2$P[1], 0.9680023, tolerance = 5e-5)
+})
+
+test_that("Integration checks tol and tol.level", {
+  data <- integration.testdata1()
+  expect_error(
+    gaussint(Q = data$Q, a = data$a, b = data$b, tol = 0),
+    "tol must be a positive number"
+  )
+  expect_error(
+    gaussint(Q = data$Q, a = data$a, b = data$b, tol = c(1, 2)),
+    "tol must be a positive number"
+  )
+  expect_error(
+    gaussint(Q = data$Q, a = data$a, b = data$b, tol = 1e-3, tol.level = 1.5),
+    "tol.level must be a number"
   )
 })

@@ -76,3 +76,25 @@ test_that("Variances give an error for a factor without a diagonal element", {
   )
   expect_error(excursions.variances(L = L), "diagonal")
 })
+
+test_that("Covariances from a sparse matrix with one or both triangles", {
+  S <- Matrix::sparseMatrix(i = c(1, 1, 2, 3), j = c(1, 3, 2, 3), x = c(2, 0.5, 3, 4), dims = c(3, 3))
+  cov <- excursions:::private.cov.from.matrix(S)
+  expect_equal(cov(c(1, 3, 1, 2), c(3, 1, 1, 1)), c(0.5, 0.5, 2, NA))
+  cov <- excursions:::private.cov.from.matrix(Matrix::forceSymmetric(S, "U"))
+  expect_equal(cov(c(1, 3, 2), c(3, 1, 2)), c(0.5, 0.5, 3))
+})
+
+test_that("Selected inverse from a Cholesky factor", {
+  d <- testdata.spde(8)
+  Q <- as(d$Q, "CsparseMatrix")
+  S <- solve(as.matrix(Q))
+  s1 <- excursions:::private.selected.inverse(Q)
+  s2 <- excursions:::private.selected.inverse.factor(chol(Q))
+  expect_equal(s1$vars, diag(S), tolerance = 1e-10)
+  expect_equal(s2$vars, diag(S), tolerance = 1e-10)
+  i <- c(1, 2, 9)
+  j <- c(2, 10, 10)
+  expect_equal(s1$cov(i, j), S[cbind(i, j)], tolerance = 1e-10)
+  expect_equal(s2$cov(i, j), S[cbind(i, j)], tolerance = 1e-10)
+})

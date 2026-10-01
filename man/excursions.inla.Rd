@@ -21,7 +21,8 @@ excursions.inla(
   max.threads = 0,
   compressed = TRUE,
   seed = NULL,
-  prune.ind = FALSE
+  prune.ind = FALSE,
+  tol = NULL
 )
 }
 \arguments{
@@ -71,7 +72,8 @@ data and is then transformed to the scale of the linear predictor (default FALSE
 }}
 
 \item{n.iter}{Number or iterations in the MC sampler that is used for
-approximating probabilities. The default value is 10000.}
+approximating probabilities. The default value is 10000. If \code{tol} is
+given, this is the maximal number of iterations.}
 
 \item{verbose}{Set to TRUE for verbose mode (optional).}
 
@@ -89,6 +91,11 @@ entire linear predictor is added internally (default TRUE).}
 
 \item{prune.ind}{If \code{TRUE} and \code{ind} is supplied, then the result object is pruned to
 contain only the active nodes specified by \code{ind}.}
+
+\item{tol}{Target for the estimated error of the excursion function at the
+boundary of the excursion set (optional). If \code{tol} is given, the number of
+iterations is chosen adaptively, using at most \code{n.iter} iterations, see
+\code{\link[=excursions]{excursions()}}.}
 }
 \value{
 \code{excursions.inla} returns an object of class "excurobj" with the

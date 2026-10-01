@@ -56,7 +56,8 @@
 #'      \item{'=' }{contour credibility function}
 #'  }
 #' @param n.iter Number or iterations in the MC sampler that is used for
-#' approximating probabilities. The default value is 10000.
+#' approximating probabilities. The default value is 10000. If `tol` is
+#' given, this is the maximal number of iterations.
 #' @param verbose Set to TRUE for verbose mode (optional).
 #' @param max.threads The number of threads that the program can use. The
 #'   default, 0, uses the default number of threads of OpenMP, which can be
@@ -69,6 +70,10 @@
 #' @param seed Random seed (optional).
 #' @param prune.ind If `TRUE` and `ind` is supplied, then the result object is pruned to
 #' contain only the active nodes specified by `ind`.
+#' @param tol Target for the estimated error of the excursion function at the
+#' boundary of the excursion set (optional). If `tol` is given, the number of
+#' iterations is chosen adaptively, using at most `n.iter` iterations, see
+#' [excursions()].
 #'
 #' @return `excursions.inla` returns an object of class "excurobj" with the
 #' following elements
@@ -192,7 +197,8 @@ excursions.inla <- function(result.inla,
                             max.threads = 0,
                             compressed = TRUE,
                             seed = NULL,
-                            prune.ind = FALSE) {
+                            prune.ind = FALSE,
+                            tol = NULL) {
   if (!requireNamespace("INLA", quietly = TRUE)) {
     stop("This function requires the INLA package (see www.r-inla.org/download-install)")
   }
@@ -307,8 +313,8 @@ excursions.inla <- function(result.inla,
     res <- excursions(
       alpha = alpha, u = 0, mu = config$mu - u.t, Q = config$Q,
       type = type, method = method, F.limit = F.limit,
-      vars = config$vars, rho = rho, ind = ind, n.iter = n.iter,
-      max.threads = max.threads, seed = seed
+      vars = config$vars, Qinv = config$Qinv, rho = rho, ind = ind,
+      n.iter = n.iter, max.threads = max.threads, seed = seed, tol = tol
     )
     F_ <- res$F[ind]
   } else if (method == "NI" || method == "NIQC") {
@@ -329,9 +335,9 @@ excursions.inla <- function(result.inla,
       res[[i]] <- excursions(
         alpha = alpha, u = 0, mu = conf.i$mu - u.t,
         Q = conf.i$Q, type = type, method = qc, rho = rho,
-        vars = conf.i$vars, ind = ind, n.iter = n.iter,
+        vars = conf.i$vars, Qinv = conf.i$Qinv, ind = ind, n.iter = n.iter,
         F.limit = F.limit, max.threads = max.threads,
-        seed = seed
+        seed = seed, tol = tol
       )
     }
 
@@ -406,10 +412,10 @@ excursions.inla <- function(result.inla,
       res[[i]] <- excursions(
         alpha = alpha, u = 0, mu = conf.i$mu - u.t,
         Q = conf.i$Q, type = type, method = "QC",
-        rho = pfam.i, vars = conf.i$vars,
+        rho = pfam.i, vars = conf.i$vars, Qinv = conf.i$Qinv,
         max.size = length(ind), reo = reo,
         F.limit = F.limit, n.iter = n.iter,
-        max.threads = max.threads, seed = seed
+        max.threads = max.threads, seed = seed, tol = tol
       )
     }
 

@@ -16,7 +16,9 @@ gaussint(
   use.reordering = c("natural", "sparsity", "limits"),
   max.size,
   max.threads = 0,
-  seed
+  seed,
+  tol = NULL,
+  tol.level = NULL
 )
 }
 \arguments{
@@ -58,6 +60,18 @@ threads is at most \code{OMP_THREAD_LIMIT}, and is one if the package was built
 without OpenMP.}
 
 \item{seed}{The random seed to use (optional).}
+
+\item{tol}{Target for the estimated error (optional). If \code{tol} is given, the
+number of iterations is chosen adaptively: the integral is first estimated
+with 1000 iterations, and iterations are then added until the estimated
+error is at most \code{tol}, using at most \code{n.iter} iterations in total. By
+default, \code{n.iter} iterations are always used.}
+
+\item{tol.level}{The probability level where the error is controlled if
+\code{tol} is given (optional). The error is then controlled for the sub-integral
+estimates where the estimates go below \code{tol.level}, which is useful when
+one is interested in where the sub-integrals pass a probability level. By
+default, the error of \code{P} is controlled.}
 }
 \value{
 A list with elements
@@ -65,6 +79,7 @@ A list with elements
 \item{E }{Estimated error of the P estimate.}
 \item{Pv }{A vector with the estimates of all sub-integrals.}
 \item{Ev }{A vector with the estimated errors of the Pv estimates.}
+\item{n.iter }{The number of iterations that were used.}
 }
 \description{
 \code{gaussint} is used for calculating \eqn{n}-dimensional Gaussian integrals
@@ -94,6 +109,14 @@ most appropriate since this combines sparisty (which improves accuracy and reduc
 computational cost) with automatic handling of dimensions with limits \code{a=-Inf} and
 \code{b=Inf}, which do not affect the probability but affect the computation time
 if they are not handled separately.
+
+The estimated error is the standard error of the estimate, which decreases
+as one over the square root of the number of iterations. With \code{tol}, the
+iterations are added in batches, where each batch is sized to reach \code{tol}
+from the estimated error so far, and the estimates are averages over all
+batches. The number of iterations that is needed for a given accuracy
+depends strongly on the problem, and \code{tol} can therefore save a lot of
+computation time compared to a fixed number of iterations.
 }
 \examples{
 ## Create mean and a tridiagonal precision matrix

@@ -195,12 +195,20 @@ private.mode.config <- function(result) {
 private.get.config <- function(result, i) {
   mu <- result$misc$configs$config[[i]]$mean
   Q <- forceSymmetric(result$misc$configs$config[[i]]$Q)
-  vars <- diag(result$misc$configs$config[[i]]$Qinv)
+  Qinv <- result$misc$configs$config[[i]]$Qinv
+  vars <- diag(Qinv)
   n.pred <- result$misc$configs$config[[i]]$n.predictor
   if (!is.null(n.pred)) {
-    ## Linear predictor added by inla.add.linearpredictor()
-    vars.joint <- excursions.variances(Q = Q)
-    vars <- c(vars.joint[seq_len(n.pred)], vars)
+    ## Linear predictor added by inla.add.linearpredictor(). The Qinv of INLA
+    ## is only for the latent field, so compute the selected inverse of the
+    ## joint precision, and keep its covariances on the pattern of Q.
+    sel <- private.selected.inverse(Q)
+    vars <- c(sel$vars[seq_len(n.pred)], vars)
+    Qt <- as(Matrix::triu(Q), "TsparseMatrix")
+    Qinv <- Matrix::sparseMatrix(
+      i = Qt@i + 1L, j = Qt@j + 1L,
+      x = sel$cov(Qt@i + 1L, Qt@j + 1L), dims = dim(Q)
+    )
   }
   m <- max(unlist(lapply(
     result$misc$configs$config,
@@ -208,7 +216,8 @@ private.get.config <- function(result, i) {
   )))
   lp <- result$misc$configs$config[[i]]$log.posterior - m
 
-  list(mu = mu, Q = Q, vars = vars, lp = lp)
+  ## Qinv has the covariances on (one triangle of) the pattern of Q
+  list(mu = mu, Q = Q, vars = vars, Qinv = Qinv, lp = lp)
 }
 
 ## Calculate the marginal probability for X_i>u or X_i<u.

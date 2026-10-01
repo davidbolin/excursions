@@ -138,7 +138,14 @@ excursions.marginals <- function(type, rho, vars, mu, u, QC = FALSE) {
 }
 
 
-excursions.permutation <- function(rho, ind, use.camd = TRUE, alpha, Q) {
+## The nodes with rho > 1 - alpha are candidates for the excursion set, and
+## are put last in the order of rho, so that they are integrated first. The
+## other nodes are ordered first for sparsity. With n.fixed, only the n.fixed
+## candidates with the largest rho are put last in the order of rho, and the
+## other candidates are ordered for sparsity with the other nodes, which gives
+## a sparser Cholesky factor. The sequential integration then has to stop
+## among the n.fixed nodes, see private.excursions.integrate.
+excursions.permutation <- function(rho, ind, use.camd = TRUE, alpha, Q, n.fixed = Inf) {
   if (!missing(ind) && !is.null(ind)) {
     rho[!private.ind.logical(ind, length(rho))] <- -1
   }
@@ -153,7 +160,7 @@ excursions.permutation <- function(rho, ind, use.camd = TRUE, alpha, Q) {
     i <- n
     # add nodes to lower bound
     cindr <- cind <- rep(0, n)
-    while (i > 0 && rho_sort[i] > 1 - alpha) {
+    while (i > 0 && rho_sort[i] > 1 - alpha && k < n.fixed) {
       cindr[i] <- k
       i <- i - 1
       k <- k + 1
@@ -170,6 +177,85 @@ excursions.permutation <- function(rho, ind, use.camd = TRUE, alpha, Q) {
     }
   }
   return(reo)
+}
+
+## Function that returns the covariances of pairs of nodes i and j from a
+## sparse matrix S with covariances, or NA for pairs that are not stored in S.
+## S can be symmetric or store only one triangle, as the Qinv of INLA.
+private.cov.from.matrix <- function(S) {
+  S <- as(S, "TsparseMatrix")
+  n <- nrow(S)
+  key <- pmin(S@i, S@j) * (n + 1) + pmax(S@i, S@j)
+  x <- S@x
+  function(i, j) {
+    x[match(pmin(i - 1, j - 1) * (n + 1) + pmax(i - 1, j - 1), key)]
+  }
+}
+
+## Approximation of the number of nodes that the sequential integration of
+## excursions() reaches before the probability goes below lim, from the
+## marginal probabilities and the covariances of neighbouring nodes. The nodes
+## with rho > lim are added in decreasing order of rho, and the probability
+## that all of the first k nodes are in their limits is approximated by the
+## product of the probabilities of each node conditionally on the neighbour
+## among the earlier nodes that gives the largest conditional probability.
+## Conditioning on a single neighbour gives a smaller probability than
+## conditioning on all earlier nodes for fields with positive correlations,
+## in particular for smooth fields and small lim, so the approximation is
+## evaluated at lim / margin. Returns the number of nodes up to and including
+## the first node where the approximation is below lim / margin, or NA if the
+## limits are not one sided for all candidates.
+##
+## a and b are the limits of the centred field, vars are the variances, cov a
+## function that returns covariances, see private.selected.inverse, and the
+## pairs of nodes are the entries of the sparse matrix Q.
+private.chain.reach <- function(rho, a, b, vars, cov, Q, lim, margin = 100) {
+  cand <- which(rho > lim)
+  K <- length(cand)
+  if (K == 0) {
+    return(0)
+  }
+  upper <- b[cand] == Inf
+  lower <- a[cand] == -Inf
+  if (any(upper == lower)) {
+    return(NA)
+  }
+  ord <- cand[order(rho[cand], decreasing = TRUE)]
+  n <- length(rho)
+  pos <- integer(n)
+  pos[ord] <- seq_len(K)
+  sd <- sqrt(vars)
+  ## The event of node i is s[i] * X_i / sd[i] > h[i]
+  s <- h <- numeric(n)
+  s[cand] <- ifelse(upper, 1, -1)
+  h[cand] <- ifelse(upper, a[cand], -b[cand]) / sd[cand]
+  p1 <- pnorm(-h)
+
+  Qt <- as(Q, "TsparseMatrix")
+  i <- Qt@i + 1L
+  j <- Qt@j + 1L
+  keep <- i < j & pos[i] > 0 & pos[j] > 0
+  i <- i[keep]
+  j <- j[keep]
+  r <- s[i] * s[j] * cov(i, j) / (sd[i] * sd[j])
+  ok <- !is.na(r)
+  i <- i[ok]
+  j <- j[ok]
+  r <- pmin(pmax(r[ok], -1), 1)
+  p2 <- .Call("regions_bvn_lower", -h[i], -h[j], r, PACKAGE = "excursions")
+  ## Probability of the later node conditionally on the earlier node
+  later <- ifelse(pos[i] > pos[j], i, j)
+  earlier <- ifelse(pos[i] > pos[j], j, i)
+  cond <- pmin(pmax(p2 / p1[earlier], 1e-300), 1)
+  best <- p1[ord]
+  if (length(cond) > 0) {
+    o <- order(pos[later], -cond)
+    first <- !duplicated(pos[later][o])
+    best[pos[later][o][first]] <- cond[o][first]
+  }
+  P <- exp(cumsum(log(pmax(best, 1e-300))))
+  below <- which(P < lim / margin)
+  if (length(below) == 0) K else below[1]
 }
 
 ## Constrained approximate minimum degree ordering of Q, where the nodes with
@@ -247,7 +333,8 @@ excursions.setlimits <- function(marg, vars, type, QC, u, mu) {
 
 
 
-excursions.call <- function(a, b, reo, Q, is.chol = FALSE, lim, K, max.size, n.threads, seed) {
+excursions.call <- function(a, b, reo, Q, is.chol = FALSE, lim, K, max.size, n.threads, seed,
+                            tol = NULL, tol.level = NULL) {
   if (is.chol && !identical(as.integer(reo), seq_len(length(reo)))) {
     ## The factor is for the original ordering, so form the precision matrix
     ## and factorise it in the integration order
@@ -265,14 +352,16 @@ excursions.call <- function(a, b, reo, Q, is.chol = FALSE, lim, K, max.size, n.t
     res <- gaussint(
       Q.chol = L, a = a.sort, b = b.sort, lim = lim,
       n.iter = K, max.size = max.size,
-      max.threads = n.threads, seed = seed
+      max.threads = n.threads, seed = seed,
+      tol = tol, tol.level = tol.level
     )
   } else {
     ## The integration order is the order of the factor
     res <- gaussint(
       Q.chol = Q, a = a, b = b, lim = lim, n.iter = K,
       max.size = max.size,
-      max.threads = n.threads, seed = seed
+      max.threads = n.threads, seed = seed,
+      tol = tol, tol.level = tol.level
     )
   }
   return(res)

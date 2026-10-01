@@ -5,8 +5,9 @@ test_that("Excursions, alpha = 1, type = >", {
     seed = data$seed, max.threads = 1
   )
   r <- c(
-    2.463175e-15, 1.030394e-09, 7.734328e-06, 0.002534894, 0.07579555,
-    0.4188056, 0.8192485, 0.9746894, 0.9984611, 0.9999625, 0.9999997
+    2.453585944e-15, 1.028039605e-09, 7.741444498e-06, 0.002538569057,
+    0.07582882438, 0.4188539218, 0.819121314, 0.9746501927, 0.9984674663,
+    0.9999620956, 0.9999996732
   )
   expect_equal(res$F, r, tolerance = 1e-7)
 })
@@ -18,8 +19,9 @@ test_that("Excursions, alpha = 1, type = <", {
     seed = data$seed, max.threads = 1
   )
   r <- c(
-    0.9999997, 0.9999619, 0.9984783, 0.9746628, 0.819054,
-    0.4196815, 0.07603522, 0.002548885, 7.762954e-06, 1.033062e-09, 2.47039e-15
+    0.9999996732, 0.9999622207, 0.9984746347, 0.9746765193, 0.8191915657,
+    0.4197256656, 0.07604785403, 0.002541501738, 7.755477415e-06,
+    1.029995247e-09, 2.461995094e-15
   )
   expect_equal(res$F, r, tolerance = 1e-7)
 })
@@ -31,9 +33,9 @@ test_that("Excursions, alpha = 1, type = =", {
     seed = data$seed, max.threads = 1
   )
   r <- c(
-    7.381175e-07, 8.137438e-05, 0.003200957, 0.05128127, 0.3331441,
-    0.6420603, 0.1815013, 0.02201733, 0.001153959, 2.520208e-05,
-    1.945911e-07
+    7.38117649e-07, 8.185870815e-05, 0.003203209453, 0.05128514472,
+    0.3325649633, 0.6421184302, 0.1810603749, 0.02201765987,
+    0.001159227166, 2.54498799e-05, 1.945910227e-07
   )
 
   expect_equal(res$F, r, tolerance = 1e-7)
@@ -46,8 +48,9 @@ test_that("Excursions, alpha = 1, type = !=", {
     seed = data$seed, max.threads = 1
   )
   r <- c(
-    0.9999993, 0.9999186, 0.996799, 0.9487187, 0.6668559, 0.3579397,
-    0.8184987, 0.9779827, 0.998846, 0.9999748, 0.9999998
+    0.9999992619, 0.9999181413, 0.9967967905, 0.9487148553, 0.6674350367,
+    0.3578815698, 0.8189396251, 0.9779823401, 0.9988407728, 0.9999745501,
+    0.9999998054
   )
 
   expect_equal(res$F, r, tolerance = 1e-7)
@@ -59,7 +62,10 @@ test_that("Excursions, alpha = 0.1, type = >", {
     alpha = 0.1, u = 0, mu = data$mu + 0.1, Q = data$Q, type = ">",
     seed = data$seed, max.threads = 1
   )
-  r <- c(0, 0, 0, 0, 0, 0, 0, 0.9801319, 0.9988921, 0.9999753, 0.9999998)
+  r <- c(
+    0, 0, 0, 0, 0, 0, 0, 0.9800983735, 0.9988969148, 0.9999750936,
+    0.9999998054
+  )
   res$F[is.na(res$F)] <- 0
   expect_equal(res$F, r, tolerance = 1e-7)
 })
@@ -72,7 +78,10 @@ test_that("Excursions, alpha = 0.1, type = <", {
   )
   ## Before the two nodes with the largest marginal probabilities were
   ## ordered by their probabilities, F[1] was smaller than F[2]
-  r <- c(0.9999995, 0.9999425, 0.9979041, 0.9679957, 0, 0, 0, 0, 0, 0, 0)
+  r <- c(
+    0.9999994565, 0.9999430285, 0.9978992647, 0.9680120958, 0, 0, 0, 0,
+    0, 0, 0
+  )
   res$F[is.na(res$F)] <- 0
   expect_equal(res$F, r, tolerance = 1e-7)
 })
@@ -84,8 +93,8 @@ test_that("Excursions, alpha = 0.1, type = =", {
     seed = data$seed, max.threads = 1
   )
   r <- c(
-    7.381175e-07, 8.137438e-05, 0.003200957, 0.05128127, 1, 1,
-    1, 0.02201733, 0.001153959, 2.520208e-05, 1.945911e-07
+    7.38117649e-07, 8.185870815e-05, 0.003203209453, 0.05128514472, 1, 1,
+    1, 0.02201765987, 0.001159227166, 2.54498799e-05, 1.945910227e-07
   )
   res$F[is.na(res$F)] <- 1
   expect_equal(res$F, r, tolerance = 1e-7)
@@ -98,8 +107,8 @@ test_that("Excursions, alpha = 0.1, type = !=", {
     seed = data$seed, max.threads = 1
   )
   r <- c(
-    0.9999993, 0.9999186, 0.996799, 0.9487187, 0, 0, 0,
-    0.9779827, 0.998846, 0.9999748, 0.9999998
+    0.9999992619, 0.9999181413, 0.9967967905, 0.9487148553, 0, 0, 0,
+    0.9779823401, 0.9988407728, 0.9999745501, 0.9999998054
   )
   res$F[is.na(res$F)] <- 0
   expect_equal(res$F, r, tolerance = 1e-7)
@@ -305,4 +314,132 @@ test_that("Constrained reordering with merged constraint sets", {
     cind[p[86:n]] <- 22:(21 + n - 85)
     expect_identical(excursions:::private.camd(d$Q, cind), camd(d$Q, cind))
   }
+})
+
+test_that("Excursions with adaptive number of iterations", {
+  data <- integration.testdata1()
+  res0 <- excursions(
+    alpha = 0.1, u = 0, mu = data$mu, Q = data$Q, type = ">",
+    seed = data$seed, max.threads = 1
+  )
+  res1 <- excursions(
+    alpha = 0.1, u = 0, mu = data$mu, Q = data$Q, type = ">",
+    seed = data$seed, max.threads = 1, tol = 1e-3
+  )
+  res2 <- excursions(
+    alpha = 0.1, u = 0, mu = data$mu, Q = data$Q, type = ">",
+    seed = data$seed, max.threads = 1, tol = 1e-4, n.iter = 1e5
+  )
+  expect_equal(res0$meta$n.iter.used, 10000)
+  expect_equal(res1$meta$n.iter.used, 1000)
+  expect_gt(res2$meta$n.iter.used, 1000)
+  expect_lt(res2$meta$n.iter.used, 1e5)
+  expect_equal(res1$E, res0$E)
+  expect_equal(res2$E, res0$E)
+  expect_equal(res1$F, res0$F, tolerance = 1e-3)
+  ## The error is controlled at the boundary of the excursion set
+  boundary <- which(res2$E == 1)[which.min(res2$F[res2$E == 1])]
+  expect_lte(res2$meta$Fe[boundary], 1e-4)
+})
+
+test_that("Excursions with adaptive number of iterations and alpha = 1", {
+  data <- integration.testdata1()
+  res <- excursions(
+    alpha = 1, u = 0, mu = data$mu, Q = data$Q, type = ">",
+    seed = data$seed, max.threads = 1, tol = 2e-4, n.iter = 1e5
+  )
+  r <- c(
+    2.463175e-15, 1.030394e-09, 7.734328e-06, 0.002534894, 0.07579555,
+    0.4188056, 0.8192485, 0.9746894, 0.9984611, 0.9999625, 0.9999997
+  )
+  expect_gt(res$meta$n.iter.used, 1000)
+  expect_lt(res$meta$n.iter.used, 1e5)
+  expect_equal(res$F, r, tolerance = 2e-3)
+  ## The error is controlled where F passes 0.5
+  expect_lte(max(res$meta$Fe[6:7]), 2e-4)
+})
+
+test_that("Excursions with covariances fixes fewer nodes and gives the same results", {
+  d <- testdata.spde(30)
+  Q <- as(d$Q, "CsparseMatrix")
+  sel <- excursions:::private.selected.inverse(Q)
+  Qt <- as(Matrix::triu(Q), "TsparseMatrix")
+  ## Upper triangle on the pattern of Q, as the Qinv of INLA
+  Qinv <- Matrix::sparseMatrix(
+    i = Qt@i + 1, j = Qt@j + 1,
+    x = sel$cov(Qt@i + 1, Qt@j + 1), dims = dim(Q)
+  )
+  for (F.limit in c(0.1, 0.99)) {
+    args <- list(
+      alpha = 0.1, u = 0, mu = d$mu, Q = Q, type = ">", F.limit = F.limit,
+      seed = d$seed, max.threads = 1, n.iter = 2000
+    )
+    ## All candidates in the order of rho
+    r0 <- do.call(excursions, c(args, list(vars = sel$vars)))
+    ## Covariances given, computed, or given as a symmetric matrix
+    r1 <- do.call(excursions, c(args, list(vars = sel$vars, Qinv = Qinv)))
+    r2 <- do.call(excursions, args)
+    r3 <- do.call(excursions, c(args, list(Qinv = Matrix::forceSymmetric(Qinv, "U"))))
+    for (r in list(r1, r2, r3)) {
+      expect_equal(r$F, r0$F, tolerance = 1e-10)
+      expect_identical(r$E, r0$E)
+    }
+    if (F.limit == 0.99) {
+      ## Fewer nodes are in the order of rho
+      expect_false(identical(r1$meta$reo, r0$meta$reo))
+    }
+  }
+  ## The approximation of the reach is below the number of candidates
+  marg <- excursions.marginals(type = ">", vars = sel$vars, mu = d$mu, u = 0)
+  lims <- excursions.setlimits(marg, sel$vars, ">", FALSE, 0, d$mu)
+  k <- excursions:::private.chain.reach(
+    marg$rho, lims$a, lims$b, sel$vars, sel$cov, Q, 0.01
+  )
+  expect_lt(k, sum(marg$rho > 0.01) / 2)
+  expect_gt(k, sum(!is.na(r0$F)) / 2)
+})
+
+test_that("Excursions adds nodes if the integration does not stop among the fixed nodes", {
+  d <- testdata.spde(20)
+  Q <- as(d$Q, "CsparseMatrix")
+  vars <- excursions.variances(Q = Q)
+  marg <- excursions.marginals(type = ">", vars = vars, mu = d$mu, u = 0)
+  lims <- excursions.setlimits(marg, vars, ">", FALSE, 0, d$mu)
+  run <- function(n.fixed) {
+    excursions:::private.excursions.integrate(lims$a, lims$b, marg$rho, Q,
+      is.chol = FALSE, F.limit = 0.99, m.size = d$n, n.fixed = n.fixed,
+      n.iter = 2000, max.threads = 1, seed = d$seed, tol = NULL,
+      tol.level = 0.9
+    )
+  }
+  r0 <- run(Inf)
+  r1 <- run(5)
+  expect_gt(r1$n.fixed, 5)
+  F0 <- F1 <- numeric(d$n)
+  F0[r0$reo] <- r0$res$Pv
+  F1[r1$reo] <- r1$res$Pv
+  expect_equal(F1, F0, tolerance = 1e-10)
+})
+
+test_that("Excursions with Q.chol computes the covariances from the factor", {
+  d <- testdata.spde(20)
+  args <- list(
+    alpha = 0.1, u = 0, mu = d$mu, type = ">", F.limit = 0.99,
+    seed = d$seed, max.threads = 1, n.iter = 2000
+  )
+  r0 <- do.call(excursions, c(args, list(Q = d$Q)))
+  r1 <- do.call(excursions, c(args, list(Q.chol = chol(d$Q))))
+  expect_equal(r1$F, r0$F, tolerance = 1e-8)
+  expect_identical(r1$E, r0$E)
+})
+
+test_that("Excursions checks Qinv", {
+  d <- testdata.spde(10)
+  expect_error(
+    excursions(
+      alpha = 0.1, u = 0, mu = d$mu, Q = d$Q, type = ">",
+      Qinv = Matrix::Diagonal(5)
+    ),
+    "Qinv must be a sparse matrix"
+  )
 })

@@ -1,5 +1,35 @@
 # Development version
 
+* New argument `tol` in `gaussint()`, `excursions()` and `excursions.inla()`
+  that chooses the number of iterations adaptively. The probabilities are
+  first estimated with 1000 iterations, and iterations are then added in
+  batches until the estimated error is at most `tol`, using at most `n.iter`
+  iterations. In `excursions()` the error is controlled at the boundary of
+  the excursion set, and in `gaussint()` the error of `P` is controlled, or
+  the error where the sub-integrals pass `tol.level`. The number of
+  iterations that is needed for a given accuracy varies a lot between
+  problems, and this can save a lot of computation time. The number of
+  iterations that were used is returned in `n.iter` from `gaussint()` and in
+  `meta$n.iter.used` from `excursions()`. 
+* The sequential importance sampler now splits the samples into chunks with
+  one random stream each, which are distributed dynamically over the threads,
+  and the threads only synchronise after groups of rows. This makes the
+  integration two to five times faster with many threads, and for a given
+  seed the results no longer depend on the number of threads. The results
+  for a given seed differ from earlier versions within the Monte Carlo
+  error.
+* `excursions()` now only puts the nodes that the sequential integration
+  reaches in the order of the marginal probabilities, and orders the other
+  nodes for sparsity, which makes the Cholesky factor much sparser and faster
+  to compute. The number of nodes that are reached is approximated from the
+  covariances of neighbouring nodes, and the integration is repeated with
+  more nodes if it does not stop among them, so the results are the same as
+  before up to rounding errors. The covariances are computed together with
+  the variances if `vars` is not given, can be given with the new argument
+  `Qinv`, and are taken from the INLA configurations in `excursions.inla()`.
+  This makes `excursions()` up to seven times faster for large problems, in
+  particular with `F.limit` close to 1, and the `NI` method of
+  `excursions.inla()` two to three times faster.
 * New function `excursions.regions()` that computes connected excursion
   regions. The first region is the largest connected region found where the
   field jointly exceeds the level with probability at least `1 - alpha`. Its
