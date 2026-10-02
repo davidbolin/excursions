@@ -411,3 +411,21 @@ test_that("Integration checks tol and tol.level", {
     "tol.level must be a number"
   )
 })
+
+test_that("Integration checks size.tol", {
+  data <- integration.testdata1()
+  expect_error(
+    gaussint(Q = data$Q, a = data$a, b = data$b, size.tol = 0, tol.level = 0.5),
+    "size.tol must be a positive number"
+  )
+  expect_error(
+    gaussint(Q = data$Q, a = data$a, b = data$b, size.tol = 0.01),
+    "size.tol requires tol.level"
+  )
+  ## tol takes precedence
+  prob <- gaussint(
+    Q = data$Q, a = data$a, b = data$b, seed = data$seed, max.threads = 1,
+    tol = 1, size.tol = 1e-8, tol.level = 0.5
+  )
+  expect_equal(prob$n.iter, 1000)
+})

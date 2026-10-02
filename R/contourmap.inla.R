@@ -52,7 +52,7 @@
 #' @param F.limit The limit value for the computation of the F function. F is
 #' set to NA for all nodes where F<1-F.limit. Default is F.limit = `alpha`.
 #' @param n.iter Number or iterations in the MC sampler that is used for
-#' calculating the quantities in `compute`. The default value is 10000.
+#' calculating the quantities in `compute`. The default value is 20000. If `size.tol` or `tol` is given, this is the maximal number of iterations.
 #' @param verbose Set to TRUE for verbose mode (optional)
 #' @param max.threads The number of threads that the program can use. The
 #'   default, 0, uses the default number of threads of OpenMP, which can be
@@ -68,6 +68,10 @@
 #' @param ... Additional arguments to the contour map function. See the
 #' documentation for `contourmap` for details.
 #'
+#' @param tol Target for the estimated errors of the Monte Carlo estimates
+#' (optional), see [contourmap()].
+#' @param size.tol Target for the estimated Monte Carlo error of the size of
+#' the contour avoiding set, relative to the size, see [contourmap()].
 #' @return `contourmap.inla` returns an object of class "excurobj" with the
 #' same elements as returned by `contourmap`.
 #' @note This function requires the `INLA` package, which is not a CRAN
@@ -188,12 +192,12 @@ contourmap.inla <- function(result.inla,
                             compute = list(F = TRUE, measures = NULL),
                             alpha,
                             F.limit,
-                            n.iter = 10000,
+                            n.iter = 20000,
                             verbose = FALSE,
                             max.threads = 0,
                             compressed = TRUE,
                             seed = NULL,
-                            ind, ...) {
+                            ind, tol = NULL, size.tol = 0.001, ...) {
   if (!requireNamespace("INLA", quietly = TRUE)) {
     stop(paste0(
       "This function requires the INLA package ",
@@ -349,7 +353,7 @@ contourmap.inla <- function(result.inla,
             mu = config$mu, Q = config$Q, a = limits$a,
             b = limits$b, ind = indices, use.reordering = "limits",
             n.iter = n.iter, seed = seed,
-            max.threads = max.threads
+            max.threads = max.threads, tol = tol
           )
           cm$P1 <- tmp$P[1]
           cm$P1.error <- tmp$E[1]
@@ -363,7 +367,7 @@ contourmap.inla <- function(result.inla,
           mu = config$mu, Q = config$Q, a = limits$a,
           b = limits$b, ind = indices, use.reordering = "limits",
           max.threads = max.threads,
-          n.iter = n.iter, seed = seed
+          n.iter = n.iter, seed = seed, tol = tol
         )
         cm$P2 <- tmp$P
         cm$P2.error <- tmp$E
@@ -374,7 +378,7 @@ contourmap.inla <- function(result.inla,
           vars = config$vars, ind = ind, alpha = alpha,
           F.limit = F.limit, rho = rho, n.iter = n.iter,
           max.threads = max.threads, seed = seed,
-          verbose = verbose, qc = qc
+          verbose = verbose, qc = qc, tol = tol, size.tol = size.tol
         )
         cm$P0 <- mean(p$F[ind])
         cm$F <- p$F

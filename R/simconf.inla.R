@@ -37,7 +37,7 @@
 #' \item{'NI' }{Numerical integration (Calculation based on the Gaussian mixture
 #' approximation of the posterior, as calculated by INLA).}}
 #' @param n.iter Number or iterations in the MC sampler that is used for approximating
-#' probabilities. The default value is 10000.
+#' probabilities. The default value is 10000. If `tol` is given, this is the maximal number of iterations.
 #' @param verbose Set to TRUE for verbose mode (optional).
 #' @param link Transform output to the scale of the data using the link function as defined in
 #' the model estimated with INLA (default FALSE).
@@ -53,6 +53,9 @@
 #' @param inla.sample Set to TRUE if inla.posterior.sample should be used for the MC
 #' integration.
 #'
+#' @param tol Target for the estimated errors of the probabilities that are
+#' computed to find the band (optional), see [simconf()]. It is not used when
+#' the band is computed from samples.
 #' @return An object of class "excurobj" with elements
 #' \item{a }{The lower bound.}
 #' \item{b }{The upper bound.}
@@ -113,7 +116,8 @@ simconf.inla <- function(result.inla,
                          max.threads = 0,
                          compressed = TRUE,
                          seed = NULL,
-                         inla.sample = TRUE) {
+                         inla.sample = TRUE,
+                         tol = NULL) {
   if (!requireNamespace("INLA", quietly = TRUE)) {
     stop("This function requires the INLA package (see www.r-inla.org/download-install)")
   }
@@ -175,7 +179,7 @@ simconf.inla <- function(result.inla,
     res <- simconf(
       alpha = alpha, mu = config$mu, Q = config$Q,
       vars = config$vars, n.iter = n.iter, ind = ind,
-      verbose = verbose, max.threads = max.threads, seed = seed
+      verbose = verbose, max.threads = max.threads, seed = seed, tol = tol
     )
     res$meta$call <- match.call()
     return(private.simconf.link(res, links, link))
@@ -268,7 +272,7 @@ simconf.inla <- function(result.inla,
       res <- simconf.mixture(
         alpha = alpha, mu = mu, Q = Q, vars = vars,
         w = w, n.iter = n.iter, ind = ind, verbose = verbose,
-        max.threads = max.threads, seed = seed
+        max.threads = max.threads, seed = seed, tol = tol
       )
       res$meta$call <- match.call()
       return(private.simconf.link(res, links, link))

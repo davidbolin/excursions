@@ -33,7 +33,7 @@
 #'     \item{'<'}{negative excursion region}
 #'     \item{'!='}{contour avoiding region}
 #'     \item{'='}{contour credibility region}}
-#' @param n.iter Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 10000. If `tol` is given, this is the maximal number of iterations.
+#' @param n.iter Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 20000. If `size.tol` or `tol` is given, this is the maximal number of iterations.
 #' @param Q.chol The Cholesky factor of the precision matrix (optional).
 #' @param F.limit The limit value for the computation of the F function. F is set to NA for all nodes where F<1-F.limit. Default is F.limit = `alpha`.
 #' @param vars Precomputed marginal variances (optional).
@@ -57,8 +57,19 @@
 #' @param tol Target for the estimated error of the excursion function where it
 #' passes `1 - alpha`, that is, at the boundary of the excursion set, or where
 #' it passes 0.5 if `alpha = 1` (optional). If `tol` is given, the number of iterations is chosen
-#' adaptively, using at most `n.iter` iterations, see [gaussint()]. By
-#' default, `n.iter` iterations are always used.
+#' adaptively, using at most `n.iter` iterations, see [gaussint()]. It takes
+#' precedence over `size.tol`.
+#' @param size.tol Target for the estimated Monte Carlo error of the size of
+#' the excursion set, relative to the size. The number of iterations is chosen
+#' adaptively, so that the estimated standard error of the number of nodes in
+#' the set is at most the largest of `size.tol` times the number and half a
+#' node, using at most `n.iter` iterations, see [gaussint()]. The default is
+#' 0.001. It is not used if `tol` is given or `alpha = 1`, and
+#' `size.tol = NULL` gives `n.iter` iterations. Only the error at the
+#' boundary of the set is controlled, so if the excursion function is also
+#' needed outside the set, with `F.limit` larger than `alpha`, its values there
+#' can have larger errors, see `meta$Fe`, and `tol` or `size.tol = NULL` can
+#' then be used instead.
 #' @param Qinv Covariances of the field on (at least) the sparsity pattern of
 #' `Q` (optional), as a sparse matrix that can store only one triangle, for
 #' example the selected inverse of `Q`. If `vars` is not given, it is
@@ -144,7 +155,7 @@ excursions <- function(alpha,
                        mu,
                        Q,
                        type,
-                       n.iter = 10000,
+                       n.iter = 20000,
                        Q.chol,
                        F.limit,
                        vars,
@@ -158,7 +169,8 @@ excursions <- function(alpha,
                        seed,
                        prune.ind = FALSE,
                        tol = NULL,
-                       Qinv) {
+                       Qinv,
+                       size.tol = 0.001) {
   if (method == "QC") {
     qc <- TRUE
   } else if (method == "EB") {
@@ -285,6 +297,10 @@ excursions <- function(alpha,
   }
   limits <- excursions.setlimits(marg, vars, type, QC = qc, u, mu)
   tol.level <- if (alpha < 1) 1 - alpha else 0.5
+  ## The size of the excursion set is only defined for alpha < 1
+  if (alpha >= 1) {
+    size.tol <- NULL
+  }
 
   if (missing(reo)) {
     if (verbose) {
@@ -309,7 +325,8 @@ excursions <- function(alpha,
     out <- private.excursions.integrate(limits$a, limits$b, rho.reo, Q,
       is.chol = is.chol, F.limit = F.limit, m.size = m.size,
       n.fixed = n.fixed, n.iter = n.iter, max.threads = max.threads,
-      seed = seed, tol = tol, tol.level = tol.level, verbose = verbose
+      seed = seed, tol = tol, tol.level = tol.level, size.tol = size.tol,
+      verbose = verbose
     )
     res <- out$res
     reo <- out$reo
@@ -319,7 +336,7 @@ excursions <- function(alpha,
       is.chol = is.chol,
       1 - F.limit, K = n.iter, max.size = m.size,
       n.threads = max.threads, seed = seed,
-      tol = tol, tol.level = tol.level
+      tol = tol, tol.level = tol.level, size.tol = size.tol
     )
   }
 
@@ -383,6 +400,8 @@ excursions <- function(alpha,
         alpha = alpha,
         n.iter = n.iter,
         n.iter.used = res$n.iter,
+        tol = tol,
+        size.tol = size.tol,
         method = method,
         ind = NULL,
         reo = reo,
@@ -408,6 +427,8 @@ excursions <- function(alpha,
         alpha = alpha,
         n.iter = n.iter,
         n.iter.used = res$n.iter,
+        tol = tol,
+        size.tol = size.tol,
         method = method,
         ind = ind,
         reo = reo,
@@ -446,7 +467,7 @@ excursions <- function(alpha,
 private.excursions.integrate <- function(a, b, rho, Q, is.chol, F.limit,
                                          m.size, n.fixed, n.iter,
                                          max.threads, seed, tol, tol.level,
-                                         verbose = 0) {
+                                         size.tol = NULL, verbose = 0) {
   n <- length(rho)
   n.cand <- sum(rho > 1 - F.limit)
   repeat {
@@ -461,7 +482,7 @@ private.excursions.integrate <- function(a, b, rho, Q, is.chol, F.limit,
       is.chol = is.chol,
       1 - F.limit, K = n.iter, max.size = min(m.size, n.fixed),
       n.threads = max.threads, seed = seed,
-      tol = tol, tol.level = tol.level
+      tol = tol, tol.level = tol.level, size.tol = size.tol
     )
     P.last <- if (is.finite(n.fixed)) res$Pv[n - n.fixed + 1] else 0
     if (P.last == 0) {

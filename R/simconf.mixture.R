@@ -29,7 +29,7 @@
 #' @param w A vector with the weights for each class in the mixture.
 #' @param ind Indices of the nodes that should be analyzed (optional).
 #' @param n.iter Number or iterations in the MC sampler that is used for
-#' approximating probabilities. The default value is 10000.
+#' approximating probabilities. The default value is 10000. If `tol` is given, this is the maximal number of iterations.
 #' @param vars A list with precomputed marginal variances for each class (optional).
 #' @param verbose Set to TRUE for verbose mode (optional).
 #' @param max.threads The number of threads that the program can use. The
@@ -41,6 +41,9 @@
 #' @param mix.samp If TRUE, the MC integration is done by directly sampling the mixture,
 #' otherwise sequential integration is used.
 #'
+#' @param tol Target for the estimated errors of the probabilities that are
+#' computed to find the band (optional), see [simconf()]. It is only used if
+#' `mix.samp = FALSE`.
 #' @return An object of class "excurobj" with elements
 #' \item{a }{The lower bound.}
 #' \item{b }{The upper bound.}
@@ -83,7 +86,8 @@ simconf.mixture <- function(alpha,
                             verbose = FALSE,
                             max.threads = 0,
                             seed = NULL,
-                            mix.samp = TRUE) {
+                            mix.samp = TRUE,
+                            tol = NULL) {
   if (missing(mu) || !is.list(mu)) {
     stop("Must provide list with mean values")
   } else {
@@ -264,7 +268,8 @@ simconf.mixture <- function(alpha,
       n.iter = n.iter,
       max.threads = max.threads,
       seed = seed,
-      verbose = verbose
+      verbose = verbose,
+      int.tol = tol
     )
 
     a <- Fmix_inv_vec(
@@ -292,6 +297,7 @@ simconf.mixture <- function(alpha,
     calculation = "simconf",
     alpha = alpha,
     n.iter = n.iter,
+    tol = tol,
     ind = ind,
     call = match.call()
   )

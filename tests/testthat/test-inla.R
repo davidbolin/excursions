@@ -181,3 +181,40 @@ test_that("Distribution functions of marginals", {
     excursions:::private.pmarginals(list(m), q[1])
   )
 })
+
+test_that("The INLA interfaces with an adaptive number of iterations", {
+  skip_on_cran()
+  local_exc_safe_inla()
+  data <- testdata.inla()
+  ## With a large tol, only the first batch of 1000 iterations is used
+  s0 <- simconf.inla(data$result, data$stack,
+    tag = "pred", method = "EB", alpha = 0.1, seed = data$seed,
+    max.threads = 1, n.iter = 1000
+  )
+  s1 <- simconf.inla(data$result, data$stack,
+    tag = "pred", method = "EB", alpha = 0.1, seed = data$seed,
+    max.threads = 1, n.iter = 10000, tol = 1
+  )
+  expect_identical(s1$a, s0$a)
+  c0 <- contourmap.inla(data$result, data$stack,
+    tag = "pred", n.levels = 2, alpha = 0.1, seed = data$seed,
+    max.threads = 1, n.iter = 1000, compute = list(F = TRUE)
+  )
+  c1 <- contourmap.inla(data$result, data$stack,
+    tag = "pred", n.levels = 2, alpha = 0.1, seed = data$seed,
+    max.threads = 1, n.iter = 10000, tol = 1, compute = list(F = TRUE)
+  )
+  expect_identical(c1$F, c0$F)
+  graph <- Matrix::bandSparse(data$n, k = 1, symmetric = TRUE)
+  g0 <- excursions.regions.inla(data$result, data$stack,
+    tag = "pred", method = "EB", alpha = 0.1, u = 0, type = ">",
+    graph = graph, seed = data$seed, max.threads = 1, n.iter = 1000
+  )
+  g1 <- excursions.regions.inla(data$result, data$stack,
+    tag = "pred", method = "EB", alpha = 0.1, u = 0, type = ">",
+    graph = graph, seed = data$seed, max.threads = 1, n.iter = 10000,
+    tol = 1
+  )
+  expect_identical(g1$regions, g0$regions)
+  expect_identical(g1$F, g0$F)
+})

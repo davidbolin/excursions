@@ -301,6 +301,18 @@ static inline void merge_moments(double & na, double & Sa, double & M2a,
  stops at the row where the estimate over all batches goes below lim. The
  number of samples that are used is returned in K_used.
 
+ With size_tol > 0 instead of tol, and level > 0, the target is the
+ standard error of the number k of rows, from the end, before the estimate
+ goes below level, relative to k, which for excursions() is the size of the
+ excursion set. It is the standard error of the estimate at the k-th row
+ divided by the slope of the estimates there, per row, which is estimated
+ from the max(3, k / 50) rows before it, since the rows after it may not be
+ computed. The target is at least half a row, since the row where the
+ estimate passes level is uncertain for any number of samples. If k = 0
+ there is no error, since the estimate for the first row is exact, and if
+ the error cannot be estimated, all K samples are used. The adaptive batches
+ have at most max_batch samples, which bounds the memory for the samples.
+
  The samples of a batch are split into chunks of consecutive samples, where
  each chunk draws from its own random stream, and the chunks are distributed
  dynamically over the threads. The samples of a chunk are stored contiguously,
@@ -323,7 +335,8 @@ static inline void merge_moments(double & na, double & Sa, double & M2a,
 */
 static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in,
                       const int * probe, const double * pa, const double * pb, double * Pp, double * Pe,
-                      double tol, double level, int K0, int * K_used){
+                      double tol, double level, int K0, int * K_used,
+                      double size_tol = 0.0){
 
   const int n = opts[0];
   const int K = opts[1];
@@ -400,7 +413,9 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
   bool nan_found = false;
   int nan_row = 0;
   long long K_tot = 0;
-  const bool adaptive = tol > 0;
+  const bool adaptive = tol > 0 || (size_tol > 0 && level > 0);
+  // The largest adaptive batch, see above
+  const long long max_batch = 10000;
   int Kb = adaptive ? min(K, max(K0, 1)) : K;
 
   while (Kb > 0) {
@@ -610,24 +625,50 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
       break;
     }
 
-    // Standard error at the target, from the end to the last computed row.
-    double se = 0.0, se_prev = 0.0;
-    for (int i = n-1; i >= lo && N[i] > 0; i--) {
-      const double Pi = S1[i]/N[i];
-      se_prev = se;
-      se = sqrt(max(S2[i], 0.0)) / N[i];
-      if (level > 0 && Pi < level) {
-        if (i < n-1) {
-          se = max(se, se_prev);
+    // The error relative to the target, where more samples are needed if it
+    // is larger than one.
+    double ratio;
+    if (tol > 0) {
+      // Standard error at the target, from the end to the last computed row.
+      double se = 0.0, se_prev = 0.0;
+      for (int i = n-1; i >= lo && N[i] > 0; i--) {
+        const double Pi = S1[i]/N[i];
+        se_prev = se;
+        se = sqrt(max(S2[i], 0.0)) / N[i];
+        if (level > 0 && Pi < level) {
+          if (i < n-1) {
+            se = max(se, se_prev);
+          }
+          break;
         }
-        break;
+      }
+      ratio = se / tol;
+    } else {
+      // Standard error of the number of rows before the estimate goes below
+      // level, relative to size_tol times the number. Row n - p is the p-th
+      // row from the end.
+      int k = 0;
+      for (int i = n-1; i >= lo && N[i] > 0 && S1[i] / N[i] >= level; i--) {
+        k++;
+      }
+      if (k == 0) {
+        ratio = 0.0;
+      } else {
+        const int w = max(3, (int) round(0.02 * k));
+        const int top = max(1, k - w);
+        const int ik = n - k, it = n - top;
+        const double slope = (top < k) ? (S1[it] / N[it] - S1[ik] / N[ik]) / (k - top) : 0.0;
+        const double se_k = sqrt(max(S2[ik], 0.0)) / N[ik];
+        ratio = (slope > 0) ? se_k / slope / max(size_tol * k, 0.5)
+                            : numeric_limits<double>::infinity();
       }
     }
-    if (se <= tol) {
+    if (ratio <= 1.0) {
       break;
     }
-    const double K_need = 1.1 * (double) K_tot * (se / tol) * (se / tol);
-    Kb = (int) min((double) (K - K_tot), max((double) K0, ceil(K_need - (double) K_tot)));
+    const double K_need = (ratio < 1e6) ? 1.1 * (double) K_tot * ratio * ratio : (double) K;
+    Kb = (int) min((double) min(K - K_tot, max_batch),
+                   max((double) K0, ceil(K_need - (double) K_tot)));
   }
 
   if (K_used != NULL) {
@@ -659,10 +700,11 @@ extern "C" void shapeInt(int * Mp, int * Mi, double * Mv, double * a,double * b,
 }
 
 /*
- shapeInt with adaptive number of samples, adapt = (tol, level, K0), see
- shape_int. It is called with .Call, which does not copy the arguments, so that
- the Cholesky factor is not copied. Returns list(Pv, Ev, K_used), where
- K_used is the number of samples that are used.
+ shapeInt with adaptive number of samples, adapt = (tol, level, K0) or
+ adapt = (tol, level, K0, size_tol), see shape_int. It is called with .Call,
+ which does not copy the arguments, so that the Cholesky factor is not
+ copied. Returns list(Pv, Ev, K_used), where K_used is the number of samples
+ that are used.
 */
 extern "C" SEXP shapeIntCall(SEXP Mp, SEXP Mi, SEXP Mv, SEXP a, SEXP b, SEXP opts, SEXP lim, SEXP seed_in, SEXP adapt){
   const int n = INTEGER(opts)[0];
@@ -681,7 +723,8 @@ extern "C" SEXP shapeIntCall(SEXP Mp, SEXP Mi, SEXP Mv, SEXP a, SEXP b, SEXP opt
   // shape_int only reads the inputs.
   shape_int(INTEGER(Mp), INTEGER(Mi), REAL(Mv), REAL(a), REAL(b), INTEGER(opts),
             REAL(lim), REAL(Pv), REAL(Ev), INTEGER(seed_in), NULL, NULL, NULL, NULL, NULL,
-            REAL(adapt)[0], REAL(adapt)[1], (int) REAL(adapt)[2], INTEGER(K_used));
+            REAL(adapt)[0], REAL(adapt)[1], (int) REAL(adapt)[2], INTEGER(K_used),
+            Rf_length(adapt) >= 4 ? REAL(adapt)[3] : 0.0);
   SEXP out = PROTECT(Rf_allocVector(VECSXP, 3));
   SET_VECTOR_ELT(out, 0, Pv);
   SET_VECTOR_ELT(out, 1, Ev);
@@ -695,10 +738,14 @@ extern "C" SEXP shapeIntCall(SEXP Mp, SEXP Mi, SEXP Mv, SEXP a, SEXP b, SEXP opt
   return out;
 }
 
+// shapeInt with probes, see shape_int, and with an adaptive number of
+// samples as in shapeIntCall, with adapt = (tol, level, K0, size_tol), where
+// K_used is the number of samples that are used.
 extern "C" void shapeIntProbe(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in,
-                              int * probe, double * pa, double * pb, double * Pp, double * Pe){
+                              int * probe, double * pa, double * pb, double * Pp, double * Pe,
+                              double * adapt, int * K_used){
   shape_int(Mp, Mi, Mv, a, b, opts, lim_in, Pv, Ev, seed_in, probe, pa, pb, Pp, Pe,
-            0.0, 0.0, 0, NULL);
+            adapt[0], adapt[1], (int) adapt[2], K_used, adapt[3]);
 }
 
 

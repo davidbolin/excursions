@@ -18,7 +18,8 @@ simconf.inla(
   max.threads = 0,
   compressed = TRUE,
   seed = NULL,
-  inla.sample = TRUE
+  inla.sample = TRUE,
+  tol = NULL
 )
 }
 \arguments{
@@ -46,7 +47,7 @@ argument specifies the indices for that part.}
 approximation of the posterior, as calculated by INLA).}}}
 
 \item{n.iter}{Number or iterations in the MC sampler that is used for approximating
-probabilities. The default value is 10000.}
+probabilities. The default value is 10000. If \code{tol} is given, this is the maximal number of iterations.}
 
 \item{verbose}{Set to TRUE for verbose mode (optional).}
 
@@ -67,6 +68,10 @@ entire linear predictor is added internally (default TRUE).}
 
 \item{inla.sample}{Set to TRUE if inla.posterior.sample should be used for the MC
 integration.}
+
+\item{tol}{Target for the estimated errors of the probabilities that are
+computed to find the band (optional), see \code{\link[=simconf]{simconf()}}. It is not used when
+the band is computed from samples.}
 }
 \value{
 An object of class "excurobj" with elements

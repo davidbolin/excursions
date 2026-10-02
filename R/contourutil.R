@@ -64,7 +64,7 @@ contourfunction.mc <- function(lp, mu, X, ind, alpha, verbose = FALSE) {
 contourfunction <- function(lp, mu, Q, vars, ind, alpha, n.iter = 10000,
                             F.limit, Q.chol, max.threads = 0,
                             seed = seed, verbose = FALSE,
-                            rho, qc = FALSE) {
+                            rho, qc = FALSE, tol = NULL, size.tol = NULL) {
   if (qc && missing(rho)) {
     stop("Must supply rho if QC method is used.")
   }
@@ -141,7 +141,10 @@ contourfunction <- function(lp, mu, Q, vars, ind, alpha, n.iter = 10000,
   res <- excursions.call(lim$a, lim$b, reo, Q,
     is.chol = is.chol,
     1 - F.limit, K = n.iter, max.size = m.size,
-    n.threads = max.threads, seed = seed
+    n.threads = max.threads, seed = seed,
+    tol = tol,
+    tol.level = if (!missing(alpha) && !is.null(alpha) && alpha < 1) 1 - alpha else 0.5,
+    size.tol = if (!missing(alpha) && !is.null(alpha) && alpha < 1) size.tol
   )
 
   n <- length(mu)
@@ -402,11 +405,11 @@ Pmeasure.bound <- function(lp, mu, vars, type, ind = NULL) {
 ## Function that calculates the P measure for a given contour map.
 Pmeasure <- function(lp, mu, Q, Q.chol, ind = NULL, type,
                      vars = vars, seed = NULL, n.iter = NULL,
-                     max.threads = 0) {
+                     max.threads = 0, tol = NULL) {
   if (type == 0) {
     res <- contourfunction(
       lp = lp, mu = mu, Q = Q, vars = vars, ind = ind,
-      max.threads = max.threads
+      max.threads = max.threads, tol = tol
     )
     p <- mean(res$F[ind])
   } else {
@@ -418,7 +421,7 @@ Pmeasure <- function(lp, mu, Q, Q.chol, ind = NULL, type,
       mu = mu, Q = Q, Q.chol = Q.chol, a = limits$a,
       b = limits$b, ind = ind, use.reordering = "limits",
       n.iter = n.iter, seed = seed,
-      max.threads = max.threads
+      max.threads = max.threads, tol = tol
     )
     p <- res$P[1]
   }

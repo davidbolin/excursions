@@ -15,12 +15,14 @@ contourmap.inla(
   compute = list(F = TRUE, measures = NULL),
   alpha,
   F.limit,
-  n.iter = 10000,
+  n.iter = 20000,
   verbose = FALSE,
   max.threads = 0,
   compressed = TRUE,
   seed = NULL,
   ind,
+  tol = NULL,
+  size.tol = 0.001,
   ...
 )
 }
@@ -67,7 +69,7 @@ probabilities ("P0-bound", "P1-bound", "P2-bound")}
 set to NA for all nodes where F<1-F.limit. Default is F.limit = \code{alpha}.}
 
 \item{n.iter}{Number or iterations in the MC sampler that is used for
-calculating the quantities in \code{compute}. The default value is 10000.}
+calculating the quantities in \code{compute}. The default value is 20000. If \code{size.tol} or \code{tol} is given, this is the maximal number of iterations.}
 
 \item{verbose}{Set to TRUE for verbose mode (optional)}
 
@@ -85,6 +87,12 @@ entire linear predictor is added internally (default TRUE).}
 
 \item{ind}{If only a part of a component should be used in the calculations,
 this argument specifies the indices for that part (optional).}
+
+\item{tol}{Target for the estimated errors of the Monte Carlo estimates
+(optional), see \code{\link[=contourmap]{contourmap()}}.}
+
+\item{size.tol}{Target for the estimated Monte Carlo error of the size of
+the contour avoiding set, relative to the size, see \code{\link[=contourmap]{contourmap()}}.}
 
 \item{...}{Additional arguments to the contour map function. See the
 documentation for \code{contourmap} for details.}

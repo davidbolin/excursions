@@ -63,6 +63,11 @@
 #' estimates where the estimates go below `tol.level`, which is useful when
 #' one is interested in where the sub-integrals pass a probability level. By
 #' default, the error of `P` is controlled.
+#' @param size.tol Target for the estimated error of the number of
+#' sub-integrals before the estimates go below `tol.level`, relative to the
+#' number (optional). If `size.tol` is given, and `tol` is not, the number of
+#' iterations is chosen adaptively as for `tol`, but with this target, see
+#' the details. It requires `tol.level`.
 #'
 #' @return A list with elements
 #' \item{P }{Value of the integral.}
@@ -96,6 +101,16 @@
 #' batches. The number of iterations that is needed for a given accuracy
 #' depends strongly on the problem, and `tol` can therefore save a lot of
 #' computation time compared to a fixed number of iterations.
+#'
+#' With `size.tol`, the target is instead the estimated error of the number
+#' of sub-integrals, from the last dimension, whose estimates are at least
+#' `tol.level`, relative to the number. This is the size of the excursion set
+#' in [excursions()]. The error is estimated by the error of the estimate
+#' where it goes below `tol.level`, divided by how fast the estimates
+#' decrease there. The target is at least half a sub-integral, since where
+#' the estimates pass `tol.level` is uncertain for any number of iterations.
+#' The batches of iterations after the first have at most 10000 iterations,
+#' which bounds the memory that is needed.
 #' @author David Bolin \email{davidbolin@@gmail.com}
 #' @references Bolin, D. and Lindgren, F. (2015) *Excursion and contour uncertainty regions for latent Gaussian models*, JRSS-series B, vol 77, no 1, pp 85-106.
 #'
@@ -121,7 +136,8 @@ gaussint <- function(mu,
                      max.threads = 0,
                      seed,
                      tol = NULL,
-                     tol.level = NULL) {
+                     tol.level = NULL,
+                     size.tol = NULL) {
   if (missing(Q) && missing(Q.chol)) {
     stop("Must specify a precision matrix or its Cholesky factor")
   }
@@ -164,6 +180,15 @@ gaussint <- function(mu,
   if (!is.null(tol)) {
     if (!is.numeric(tol) || length(tol) != 1 || is.na(tol) || tol <= 0) {
       stop("tol must be a positive number.")
+    }
+  }
+  if (!is.null(size.tol)) {
+    if (!is.numeric(size.tol) || length(size.tol) != 1 || is.na(size.tol) ||
+      size.tol <= 0) {
+      stop("size.tol must be a positive number.")
+    }
+    if (is.null(tol.level)) {
+      stop("size.tol requires tol.level.")
     }
   }
   if (!is.null(tol.level)) {
@@ -275,12 +300,13 @@ gaussint <- function(mu,
   Pv <- Ev <- rep(0, dim(L)[1])
 
   opts <- c(n, n.iter, max.size, max.threads, seed_provided)
-  ## tol = 0 gives a single batch of n.iter samples, and the first batch has
-  ## 1000 samples otherwise
+  ## tol = 0 and size.tol = 0 give a single batch of n.iter samples, and the
+  ## first batch has 1000 samples otherwise. tol takes precedence.
   adapt <- c(
     if (is.null(tol)) 0 else tol,
     if (is.null(tol.level)) 0 else tol.level,
-    1000
+    1000,
+    if (is.null(tol) && !is.null(size.tol)) size.tol else 0
   )
 
   L_ipx <- private.sparse.get_ipx(L)

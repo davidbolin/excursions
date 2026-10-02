@@ -237,3 +237,20 @@ test_that("Continuous domain regions", {
   sets.fm <- continuous(res, mesh, output = "fm")
   expect_equal(sort(unique(sets.fm$M$grp)), seq_along(res$regions))
 })
+
+test_that("excursions.regions with an adaptive number of iterations", {
+  data <- regions.testdata()
+  run <- function(...) {
+    excursions.regions(
+      alpha = 0.1, u = 0, mu = data$mu, Q = data$Q, type = ">",
+      seed = 1, max.threads = 1, ...
+    )
+  }
+  ## With a large tol, only the first batch of 1000 iterations is used, also
+  ## for the probes of the excursion function outside the regions
+  r0 <- run(n.iter = 1000)
+  r1 <- run(n.iter = 10000, tol = 1)
+  expect_identical(r1$regions, r0$regions)
+  expect_identical(r1$F, r0$F)
+  expect_equal(r1$meta$tol, 1)
+})

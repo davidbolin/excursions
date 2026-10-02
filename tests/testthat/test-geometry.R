@@ -109,7 +109,7 @@ test_that("Continuous excursion sets are unchanged", {
   lat <- fmesher::fm_lattice_2d(x = d$x, y = d$x)
   ex <- excursions(
     alpha = 0.1, u = 0.5, mu = d$mu, Q = d$Q, type = ">",
-    seed = d$seed, max.threads = 1, n.iter = 2000
+    seed = d$seed, max.threads = 1, n.iter = 2000, size.tol = NULL
   )
   for (method in c("step", "linear", "log")) {
     r <- continuous(ex, lat, method = method, output = "sp")

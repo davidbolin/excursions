@@ -5,13 +5,13 @@
 /* .C calls */
 extern void reordering(void *, void *, void *, void *, void *);
 extern void shapeInt(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
-extern void shapeIntProbe(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
+extern void shapeIntProbe(void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *, void *);
 extern void testRand(void *, void *, void *);
 
 static const R_CMethodDef CEntries[] = {
     {"reordering", (DL_FUNC) &reordering,  5},
     {"shapeInt",   (DL_FUNC) &shapeInt,   10},
-    {"shapeIntProbe", (DL_FUNC) &shapeIntProbe, 15},
+    {"shapeIntProbe", (DL_FUNC) &shapeIntProbe, 17},
     {"testRand",   (DL_FUNC) &testRand,    3},
     {NULL, NULL, 0}
 };

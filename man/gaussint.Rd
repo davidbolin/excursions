@@ -18,7 +18,8 @@ gaussint(
   max.threads = 0,
   seed,
   tol = NULL,
-  tol.level = NULL
+  tol.level = NULL,
+  size.tol = NULL
 )
 }
 \arguments{
@@ -72,6 +73,12 @@ default, \code{n.iter} iterations are always used.}
 estimates where the estimates go below \code{tol.level}, which is useful when
 one is interested in where the sub-integrals pass a probability level. By
 default, the error of \code{P} is controlled.}
+
+\item{size.tol}{Target for the estimated error of the number of
+sub-integrals before the estimates go below \code{tol.level}, relative to the
+number (optional). If \code{size.tol} is given, and \code{tol} is not, the number of
+iterations is chosen adaptively as for \code{tol}, but with this target, see
+the details. It requires \code{tol.level}.}
 }
 \value{
 A list with elements
@@ -117,6 +124,16 @@ from the estimated error so far, and the estimates are averages over all
 batches. The number of iterations that is needed for a given accuracy
 depends strongly on the problem, and \code{tol} can therefore save a lot of
 computation time compared to a fixed number of iterations.
+
+With \code{size.tol}, the target is instead the estimated error of the number
+of sub-integrals, from the last dimension, whose estimates are at least
+\code{tol.level}, relative to the number. This is the size of the excursion set
+in \code{\link[=excursions]{excursions()}}. The error is estimated by the error of the estimate
+where it goes below \code{tol.level}, divided by how fast the estimates
+decrease there. The target is at least half a sub-integral, since where
+the estimates pass \code{tol.level} is uncertain for any number of iterations.
+The batches of iterations after the first have at most 10000 iterations,
+which bounds the memory that is needed.
 }
 \examples{
 ## Create mean and a tridiagonal precision matrix

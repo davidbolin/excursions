@@ -54,7 +54,7 @@
 #' matrix, which for the linear predictor usually has no edges, so the graph
 #' should then be provided.
 #' @param n.iter Number or iterations in the MC sampler that is used for
-#' approximating probabilities. The default value is 10000.
+#' approximating probabilities. The default value is 20000. If `size.tol` or `tol` is given, this is the maximal number of iterations.
 #' @param max.regions The maximum number of regions to compute.
 #' @param min.size The minimum number of nodes of a region.
 #' @param growth How the regions are grown, see [excursions.regions()].
@@ -73,6 +73,10 @@
 #' is pruned to contain only the active nodes specified by `ind`, and the
 #' regions are given as indices within `ind`.
 #'
+#' @param tol Target for the estimated errors of the joint probabilities of
+#' the regions (optional), see [excursions.regions()].
+#' @param size.tol Target for the estimated Monte Carlo error of the size of
+#' each region, relative to the size, see [excursions.regions()].
 #' @return `excursions.regions.inla` returns a list with the elements
 #' \item{regions}{A list with the indices of the regions, largest first. The
 #' indices refer to the nodes of the component, or to the positions in `ind`
@@ -157,7 +161,7 @@ excursions.regions.inla <- function(result.inla,
                                     u.link = FALSE,
                                     type,
                                     graph,
-                                    n.iter = 10000,
+                                    n.iter = 20000,
                                     max.regions = Inf,
                                     min.size = 1,
                                     growth = c("bound", "rho"),
@@ -167,7 +171,9 @@ excursions.regions.inla <- function(result.inla,
                                     max.threads = 0,
                                     compressed = TRUE,
                                     seed = NULL,
-                                    prune.ind = FALSE) {
+                                    prune.ind = FALSE,
+                                    tol = NULL,
+                                    size.tol = 0.001) {
   if (!requireNamespace("INLA", quietly = TRUE)) {
     stop("This function requires the INLA package (see www.r-inla.org/download-install)")
   }
@@ -308,7 +314,8 @@ excursions.regions.inla <- function(result.inla,
     qc = method %in% c("QC", "NIQC"), rho = rho, G = G, ind = ind,
     n.iter = n.iter, max.regions = max.regions, min.size = min.size,
     growth = growth, n.starts = n.starts, min.prominence = min.prominence,
-    max.threads = max.threads, seed = seed, verbose = verbose
+    max.threads = max.threads, seed = seed, verbose = verbose, tol = tol,
+    size.tol = size.tol
   )
 
   ## Indices in the component, or in ind if the result is pruned
@@ -346,6 +353,8 @@ excursions.regions.inla <- function(result.inla,
       level.link = u.link,
       alpha = alpha,
       n.iter = n.iter,
+      tol = tol,
+      size.tol = size.tol,
       method = method,
       growth = growth,
       n.starts = n.starts,

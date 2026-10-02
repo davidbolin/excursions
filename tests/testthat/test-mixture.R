@@ -166,3 +166,16 @@ test_that("Mixture confidence bands are unchanged", {
     tolerance = 1e-8
   )
 })
+
+test_that("simconf.mixture with an adaptive number of iterations", {
+  d <- testdata.mixture()
+  args <- list(
+    alpha = 0.1, mu = d$mu, Q = d$Q, w = d$w, max.threads = 1,
+    seed = d$seed, mix.samp = FALSE
+  )
+  r0 <- do.call(simconf.mixture, c(args, list(n.iter = 1000)))
+  r1 <- do.call(simconf.mixture, c(args, list(n.iter = 10000, tol = 1)))
+  expect_identical(r1$a, r0$a)
+  expect_identical(r1$b, r0$b)
+  expect_equal(r1$meta$tol, 1)
+})

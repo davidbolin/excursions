@@ -52,7 +52,7 @@
 #' @param F.limit The limit value for the computation of the F function. F is
 #'   set to NA for all nodes where `F < 1-F.limit`. Default is `F.limit = alpha`.
 #' @param n.iter Number or iterations in the MC sampler that is used for
-#'   calculating the quantities in `compute`. The default value is 10000.
+#'   calculating the quantities in `compute`. The default value is 20000. If `size.tol` or `tol` is given, this is the maximal number of iterations.
 #' @param verbose Set to TRUE for verbose mode (optional).
 #' @param max.threads The number of threads that the program can use. The
 #'   default, 0, uses the default number of threads of OpenMP, which can be
@@ -61,6 +61,16 @@
 #'   without OpenMP.
 #' @param seed Random seed (optional).
 #'
+#' @param tol Target for the estimated errors of the Monte Carlo estimates
+#' (optional). If `tol` is given, the number of iterations is chosen
+#' adaptively, using at most `n.iter` iterations, see [gaussint()]. It takes precedence over `size.tol`.
+#' The error of the contour map function is controlled where it passes
+#' `1 - alpha` (or 0.5 if `alpha = 1`), and the errors of the P measures are
+#' controlled directly.
+#' @param size.tol Target for the estimated Monte Carlo error of the size of
+#' the contour avoiding set, relative to the size, for the contour map
+#' function, see [excursions()]. The default is 0.001. It is not used for
+#' the P measures.
 #' @return `contourmap` returns an object of class "excurobj" with the following elements
 #'     \item{u }{Contour levels used in the contour map.}
 #'     \item{n.levels }{The number of contours used.}
@@ -119,10 +129,12 @@ contourmap <- function(mu,
                        use.marginals = TRUE,
                        alpha,
                        F.limit,
-                       n.iter = 10000,
+                       n.iter = 20000,
                        verbose = FALSE,
                        max.threads = 0,
-                       seed = NULL) {
+                       seed = NULL,
+                       tol = NULL,
+                       size.tol = 0.001) {
   type <- match.arg(type)
 
   if (missing(alpha) || is.null(alpha)) {
@@ -252,7 +264,8 @@ contourmap <- function(mu,
             type = 1,
             seed = seed,
             n.iter = n.iter,
-            max.threads = max.threads
+            max.threads = max.threads,
+            tol = tol
           )
           lp$P1 <- tmp$P
           lp$P1.error <- tmp$E
@@ -270,7 +283,8 @@ contourmap <- function(mu,
           type = 2,
           seed = seed,
           n.iter = n.iter,
-          max.threads = max.threads
+          max.threads = max.threads,
+          tol = tol
         )
         lp$P2 <- tmp$P
         lp$P2.error <- tmp$E
@@ -281,7 +295,8 @@ contourmap <- function(mu,
           lp = lp, mu = mu, Q = Q, vars = vars, ind = ind,
           alpha = alpha, F.limit = F.limit,
           n.iter = n.iter, max.threads = max.threads,
-          seed = seed, verbose = verbose
+          seed = seed, verbose = verbose, tol = tol,
+          size.tol = size.tol
         )
         F.calculated <- TRUE
       } else if (measure[i] == "P0-bound") {
@@ -309,7 +324,8 @@ contourmap <- function(mu,
         lp = lp, mu = mu, Q = Q, vars = vars, ind = ind,
         alpha = alpha, F.limit = F.limit,
         n.iter = n.iter, max.threads = max.threads,
-        seed = seed, verbose = verbose
+        seed = seed, verbose = verbose, tol = tol,
+        size.tol = size.tol
       )
       F.calculated <- TRUE
     }
@@ -339,6 +355,8 @@ contourmap <- function(mu,
     type = "!=",
     contourmap.type = type,
     n.iter = n.iter,
+    tol = tol,
+    size.tol = size.tol,
     mu.range = range(mu[ind]),
     mu = mu[ind],
     ind = ind,

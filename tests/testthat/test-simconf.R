@@ -63,3 +63,19 @@ test_that("Simconf with integer and logical indices agree", {
   ## and wider than the marginal band
   expect_true(all(r.int$b - r.int$a > r.int$b.marginal - r.int$a.marginal))
 })
+
+test_that("simconf with an adaptive number of iterations", {
+  d <- testdata.spde(10)
+  args <- list(alpha = 0.1, mu = d$mu, Q = d$Q, seed = d$seed, max.threads = 1)
+  ## With a large tol, only the first batch of 1000 iterations is used
+  r0 <- do.call(simconf, c(args, list(n.iter = 1000)))
+  r1 <- do.call(simconf, c(args, list(n.iter = 10000, tol = 1)))
+  expect_identical(r1$a, r0$a)
+  expect_identical(r1$b, r0$b)
+  expect_equal(r1$meta$tol, 1)
+  ## With a small tol, the band is close to the one with many iterations
+  r2 <- do.call(simconf, c(args, list(n.iter = 10000, tol = 1e-3)))
+  r3 <- do.call(simconf, c(args, list(n.iter = 10000)))
+  expect_equal(r2$a, r3$a, tolerance = 0.02)
+  expect_equal(r2$b, r3$b, tolerance = 0.02)
+})

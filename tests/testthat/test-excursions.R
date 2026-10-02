@@ -2,7 +2,7 @@ test_that("Excursions, alpha = 1, type = >", {
   data <- integration.testdata1()
   res <- excursions(
     alpha = 1, u = 0, mu = data$mu, Q = data$Q, type = ">",
-    seed = data$seed, max.threads = 1
+    seed = data$seed, max.threads = 1, n.iter = 10000
   )
   r <- c(
     2.453585944e-15, 1.028039605e-09, 7.741444498e-06, 0.002538569057,
@@ -16,7 +16,7 @@ test_that("Excursions, alpha = 1, type = <", {
   data <- integration.testdata1()
   res <- excursions(
     alpha = 1, u = 0, mu = data$mu, Q = data$Q, type = "<",
-    seed = data$seed, max.threads = 1
+    seed = data$seed, max.threads = 1, n.iter = 10000
   )
   r <- c(
     0.9999996732, 0.9999622207, 0.9984746347, 0.9746765193, 0.8191915657,
@@ -30,7 +30,7 @@ test_that("Excursions, alpha = 1, type = =", {
   data <- integration.testdata1()
   res <- excursions(
     alpha = 1, u = 0, mu = data$mu + 0.1, Q = data$Q, type = "=",
-    seed = data$seed, max.threads = 1
+    seed = data$seed, max.threads = 1, n.iter = 10000
   )
   r <- c(
     7.38117649e-07, 8.185870815e-05, 0.003203209453, 0.05128514472,
@@ -45,7 +45,7 @@ test_that("Excursions, alpha = 1, type = !=", {
   data <- integration.testdata1()
   res <- excursions(
     alpha = 1, u = 0, mu = data$mu + 0.1, Q = data$Q, type = "!=",
-    seed = data$seed, max.threads = 1
+    seed = data$seed, max.threads = 1, n.iter = 10000
   )
   r <- c(
     0.9999992619, 0.9999181413, 0.9967967905, 0.9487148553, 0.6674350367,
@@ -60,7 +60,8 @@ test_that("Excursions, alpha = 0.1, type = >", {
   data <- integration.testdata1()
   res <- excursions(
     alpha = 0.1, u = 0, mu = data$mu + 0.1, Q = data$Q, type = ">",
-    seed = data$seed, max.threads = 1
+    seed = data$seed, max.threads = 1, size.tol = NULL,
+    n.iter = 10000
   )
   r <- c(
     0, 0, 0, 0, 0, 0, 0, 0.9800983735, 0.9988969148, 0.9999750936,
@@ -74,7 +75,8 @@ test_that("Excursions, alpha = 0.1, type = <", {
   data <- integration.testdata1()
   res <- excursions(
     alpha = 0.1, u = 0, mu = data$mu + 0.1, Q = data$Q, type = "<",
-    seed = data$seed, max.threads = 1
+    seed = data$seed, max.threads = 1, size.tol = NULL,
+    n.iter = 10000
   )
   ## Before the two nodes with the largest marginal probabilities were
   ## ordered by their probabilities, F[1] was smaller than F[2]
@@ -90,7 +92,8 @@ test_that("Excursions, alpha = 0.1, type = =", {
   data <- integration.testdata1()
   res <- excursions(
     alpha = 0.1, u = 0, mu = data$mu + 0.1, Q = data$Q, type = "=",
-    seed = data$seed, max.threads = 1
+    seed = data$seed, max.threads = 1, size.tol = NULL,
+    n.iter = 10000
   )
   r <- c(
     7.38117649e-07, 8.185870815e-05, 0.003203209453, 0.05128514472, 1, 1,
@@ -104,7 +107,8 @@ test_that("Excursions, alpha = 0.1, type = !=", {
   data <- integration.testdata1()
   res <- excursions(
     alpha = 0.1, u = 0, mu = data$mu + 0.1, Q = data$Q, type = "!=",
-    seed = data$seed, max.threads = 1
+    seed = data$seed, max.threads = 1, size.tol = NULL,
+    n.iter = 10000
   )
   r <- c(
     0.9999992619, 0.9999181413, 0.9967967905, 0.9487148553, 0, 0, 0,
@@ -196,12 +200,14 @@ test_that("Excursions, ind argument order", {
 
 
 test_that("Excursion sets are unchanged", {
+  ## With a fixed number of iterations
   d <- testdata.spde(10)
   tol <- 1e-8
   for (type in c(">", "<", "=", "!=")) {
     r <- excursions(
       alpha = 0.1, u = 0.5, mu = d$mu, Q = d$Q, type = type,
-      seed = d$seed, max.threads = 1, n.iter = 2000
+      seed = d$seed, max.threads = 1, n.iter = 2000,
+      size.tol = NULL
     )
     expect_equal(
       c(
@@ -214,7 +220,8 @@ test_that("Excursion sets are unchanged", {
   }
   r <- excursions(
     alpha = 0.1, u = 0.5, mu = d$mu, Q = d$Q, type = ">",
-    seed = d$seed, max.threads = 1, n.iter = 2000, ind = 20:80
+    seed = d$seed, max.threads = 1, n.iter = 2000,
+      size.tol = NULL, ind = 20:80
   )
   expect_equal(c(F = ref.summary(r$F), E = ref.summary(r$E)), REF$ex.ind,
     tolerance = tol
@@ -222,7 +229,8 @@ test_that("Excursion sets are unchanged", {
   rho <- pnorm(d$mu - 0.5, sd = 1.2 * sqrt(excursions.variances(Q = d$Q)))
   r <- excursions(
     alpha = 0.1, u = 0.5, mu = d$mu, Q = d$Q, type = ">",
-    seed = d$seed, max.threads = 1, n.iter = 2000, method = "QC", rho = rho
+    seed = d$seed, max.threads = 1, n.iter = 2000,
+      size.tol = NULL, method = "QC", rho = rho
   )
   expect_equal(c(F = ref.summary(r$F), E = ref.summary(r$E)), REF$ex.qc,
     tolerance = tol
@@ -320,7 +328,8 @@ test_that("Excursions with adaptive number of iterations", {
   data <- integration.testdata1()
   res0 <- excursions(
     alpha = 0.1, u = 0, mu = data$mu, Q = data$Q, type = ">",
-    seed = data$seed, max.threads = 1
+    seed = data$seed, max.threads = 1, size.tol = NULL,
+    n.iter = 10000
   )
   res1 <- excursions(
     alpha = 0.1, u = 0, mu = data$mu, Q = data$Q, type = ">",
@@ -468,4 +477,45 @@ test_that("The reach estimate allows nodes without limits", {
   expect_true(is.na(excursions:::private.chain.reach(
     marg$rho, lims$a, b, sel$vars, sel$cov, Q, 0.01
   )))
+})
+
+test_that("Excursions with size.tol", {
+  d <- testdata.spde(30)
+  args <- list(alpha = 0.1, u = -1, mu = d$mu, Q = d$Q, type = ">", seed = d$seed)
+  r.fixed <- do.call(excursions, c(args, list(size.tol = NULL, n.iter = 10000)))
+  expect_equal(r.fixed$meta$n.iter.used, 10000)
+  ## A large set needs fewer iterations for a target of 0.5%, and has almost
+  ## the same size
+  r <- do.call(excursions, c(args, list(size.tol = 0.005, n.iter = 10000)))
+  expect_gt(sum(r$E), 200)
+  expect_lt(r$meta$n.iter.used, 10000)
+  expect_lte(abs(sum(r$E) - sum(r.fixed$E)), 0.02 * sum(r.fixed$E))
+  ## The default is 0.1%, but at least half a node, with at most 20000
+  ## iterations, so this set uses more iterations
+  r <- do.call(excursions, args)
+  expect_equal(r$meta$size.tol, 0.001)
+  expect_gt(r$meta$n.iter.used, 10000)
+  expect_lte(r$meta$n.iter.used, 20000)
+  ## For a small set the target is half a node, and the size is close to
+  ## the one with many iterations
+  small <- list(alpha = 0.1, u = 1, mu = d$mu, Q = d$Q, type = ">", seed = d$seed)
+  r <- do.call(excursions, c(small, list(n.iter = 3000, size.tol = 0.005)))
+  r.many <- do.call(excursions, c(small, list(n.iter = 1e5, size.tol = NULL)))
+  expect_gt(sum(r$E), 0)
+  expect_lt(sum(r$E), 100)
+  expect_lte(r$meta$n.iter.used, 3000)
+  expect_lte(abs(sum(r$E) - sum(r.many$E)), 2)
+  ## An empty set is exact after the first batch
+  r <- excursions(
+    alpha = 0.1, u = 10, mu = d$mu, Q = d$Q, type = ">", seed = d$seed
+  )
+  expect_equal(sum(r$E), 0)
+  expect_equal(r$meta$n.iter.used, 1000)
+  ## Without a set, n.iter iterations are used
+  r <- excursions(
+    alpha = 1, u = 0, mu = d$mu, Q = d$Q, type = ">", seed = d$seed,
+    n.iter = 3000
+  )
+  expect_equal(r$meta$n.iter.used, 3000)
+  expect_null(r$meta$size.tol)
 })

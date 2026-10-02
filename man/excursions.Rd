@@ -10,7 +10,7 @@ excursions(
   mu,
   Q,
   type,
-  n.iter = 10000,
+  n.iter = 20000,
   Q.chol,
   F.limit,
   vars,
@@ -24,7 +24,8 @@ excursions(
   seed,
   prune.ind = FALSE,
   tol = NULL,
-  Qinv
+  Qinv,
+  size.tol = 0.001
 )
 }
 \arguments{
@@ -43,7 +44,7 @@ excursions(
 \item{'!='}{contour avoiding region}
 \item{'='}{contour credibility region}}}
 
-\item{n.iter}{Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 10000. If \code{tol} is given, this is the maximal number of iterations.}
+\item{n.iter}{Number or iterations in the MC sampler that is used for approximating probabilities. The default value is 20000. If \code{size.tol} or \code{tol} is given, this is the maximal number of iterations.}
 
 \item{Q.chol}{The Cholesky factor of the precision matrix (optional).}
 
@@ -80,13 +81,25 @@ contain only the active nodes specified by \code{ind}.}
 \item{tol}{Target for the estimated error of the excursion function where it
 passes \code{1 - alpha}, that is, at the boundary of the excursion set, or where
 it passes 0.5 if \code{alpha = 1} (optional). If \code{tol} is given, the number of iterations is chosen
-adaptively, using at most \code{n.iter} iterations, see \code{\link[=gaussint]{gaussint()}}. By
-default, \code{n.iter} iterations are always used.}
+adaptively, using at most \code{n.iter} iterations, see \code{\link[=gaussint]{gaussint()}}. It takes
+precedence over \code{size.tol}.}
 
 \item{Qinv}{Covariances of the field on (at least) the sparsity pattern of
 \code{Q} (optional), as a sparse matrix that can store only one triangle, for
 example the selected inverse of \code{Q}. If \code{vars} is not given, it is
 computed from \code{Qinv}. See the details.}
+
+\item{size.tol}{Target for the estimated Monte Carlo error of the size of
+the excursion set, relative to the size. The number of iterations is chosen
+adaptively, so that the estimated standard error of the number of nodes in
+the set is at most the largest of \code{size.tol} times the number and half a
+node, using at most \code{n.iter} iterations, see \code{\link[=gaussint]{gaussint()}}. The default is
+0.001. It is not used if \code{tol} is given or \code{alpha = 1}, and
+\code{size.tol = NULL} gives \code{n.iter} iterations. Only the error at the
+boundary of the set is controlled, so if the excursion function is also
+needed outside the set, with \code{F.limit} larger than \code{alpha}, its values there
+can have larger errors, see \code{meta$Fe}, and \code{tol} or \code{size.tol = NULL} can
+then be used instead.}
 }
 \value{
 \code{excursions} returns an object of class "excurobj" with the following elements

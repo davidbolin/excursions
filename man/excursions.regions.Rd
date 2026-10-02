@@ -11,7 +11,7 @@ excursions.regions(
   Q,
   type,
   graph,
-  n.iter = 10000,
+  n.iter = 20000,
   vars,
   rho,
   method = "EB",
@@ -23,7 +23,9 @@ excursions.regions(
   min.prominence = 0,
   max.threads = 0,
   seed,
-  verbose = 0
+  verbose = 0,
+  tol = NULL,
+  size.tol = 0.001
 )
 }
 \arguments{
@@ -45,7 +47,7 @@ which case the vertex graph of the mesh is used. The default is the
 graph of the non-zero elements of \code{Q}.}
 
 \item{n.iter}{Number or iterations in the MC sampler that is used for
-approximating probabilities. The default value is 10000.}
+approximating probabilities. The default value is 20000. If \code{size.tol} or \code{tol} is given, this is the maximal number of iterations.}
 
 \item{vars}{Precomputed marginal variances (optional).}
 
@@ -93,6 +95,15 @@ default, 0, uses the default number of threads of OpenMP.}
 \item{seed}{Random seed (optional).}
 
 \item{verbose}{Set to TRUE for verbose mode (optional).}
+
+\item{tol}{Target for the estimated errors of the joint probabilities of
+the regions where they pass \code{1 - alpha} (optional). If \code{tol} is given, the
+number of iterations is chosen adaptively, using at most \code{n.iter}
+iterations, see \code{\link[=gaussint]{gaussint()}}. It takes precedence over \code{size.tol}.}
+
+\item{size.tol}{Target for the estimated Monte Carlo error of the size of
+each region, relative to the size, when it is grown, see
+\code{\link[=excursions]{excursions()}}. The default is 0.001. It is not used if \code{tol} is given.}
 }
 \value{
 \code{excursions.regions} returns a list with the elements

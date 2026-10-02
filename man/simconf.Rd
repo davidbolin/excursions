@@ -14,7 +14,8 @@ simconf(
   ind = NULL,
   verbose = 0,
   max.threads = 0,
-  seed = NULL
+  seed = NULL,
+  tol = NULL
 )
 }
 \arguments{
@@ -25,7 +26,7 @@ simconf(
 \item{Q}{Precision matrix for the Gaussian distribution.}
 
 \item{n.iter}{Number or iterations in the MC sampler that is used for
-approximating probabilities. The default value is 10000.}
+approximating probabilities. The default value is 10000. If \code{tol} is given, this is the maximal number of iterations.}
 
 \item{Q.chol}{The Cholesky factor of the precision matrix (optional).}
 
@@ -42,6 +43,10 @@ threads is at most \code{OMP_THREAD_LIMIT}, and is one if the package was built
 without OpenMP.}
 
 \item{seed}{Random seed (optional).}
+
+\item{tol}{Target for the estimated errors of the probabilities that are
+computed to find the band (optional). If \code{tol} is given, the number of
+iterations is chosen adaptively, using at most \code{n.iter} iterations, see \code{\link[=gaussint]{gaussint()}}. By default, \code{n.iter} iterations are always used.}
 }
 \value{
 An object of class "excurobj" with elements

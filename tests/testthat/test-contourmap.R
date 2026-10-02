@@ -41,7 +41,7 @@ test_that("Contour maps are unchanged", {
   d <- testdata.spde(10)
   r <- contourmap(d$mu, d$Q,
     n.levels = 3, seed = d$seed, alpha = 0.1, max.threads = 1,
-    n.iter = 2000,
+    n.iter = 2000, size.tol = NULL,
     compute = list(F = TRUE, measures = c(
       "P0", "P1", "P2",
       "P0-bound", "P1-bound", "P2-bound"
@@ -98,4 +98,22 @@ test_that("Contour map function with a Cholesky factor matches the precision mat
     seed = d$seed, max.threads = 1, n.iter = 500
   )
   expect_equal(f.L$F, f.Q$F, tolerance = 1e-10)
+})
+
+test_that("contourmap with an adaptive number of iterations", {
+  d <- testdata.spde(10)
+  run <- function(...) {
+    contourmap(d$mu, d$Q,
+      n.levels = 2, alpha = 0.1,
+      compute = list(F = TRUE, measures = c("P1", "P2")),
+      seed = d$seed, max.threads = 1, ...
+    )
+  }
+  ## With a large tol, only the first batch of 1000 iterations is used
+  r0 <- run(n.iter = 1000)
+  r1 <- run(n.iter = 10000, tol = 1)
+  expect_identical(r1$F, r0$F)
+  expect_identical(r1$P1, r0$P1)
+  expect_identical(r1$P2, r0$P2)
+  expect_equal(r1$meta$tol, 1)
 })

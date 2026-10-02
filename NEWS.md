@@ -1,5 +1,23 @@
 # Development version
 
+* `excursions()`, `excursions.inla()`, `contourmap()`, `contourmap.inla()`,
+  `excursions.regions()` and `excursions.regions.inla()` have a new argument
+  `size.tol`, with default 0.001, which chooses the number of iterations so
+  that the estimated Monte Carlo error of the size of the excursion set (or
+  contour avoiding set, or region) is at most 0.1% of its size, but at least
+  half a node, using at most `n.iter` iterations. The default of `n.iter` is
+  increased from 10000 to 20000 for these functions. The error is estimated
+  from the error of the probability where it passes `1 - alpha`, and how fast
+  the probabilities decrease there. Large sets can therefore need fewer
+  iterations than before, and other sets more. `size.tol = NULL` gives the
+  earlier behaviour with `n.iter` iterations, and `tol` takes precedence. The
+  number of iterations that were used is in `meta$n.iter.used` of
+  `excursions()`. This changes the results for a given seed. The adaptive
+  batches have at most 10000 iterations, so the memory that is needed does
+  not increase.
+* `contourmap()`, `contourmap.inla()`, `simconf()`, `simconf.inla()`,
+  `simconf.mixture()`, `excursions.regions()` and `excursions.regions.inla()`
+  now also have the argument `tol`, see `excursions()`.
 * With the `QC` method, nodes with marginal probability one have no limits,
   and the approximation of the number of nodes that the integration reaches
   then gave up, so that all candidate nodes were put in the order of the

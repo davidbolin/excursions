@@ -16,7 +16,7 @@ excursions.regions.inla(
   u.link = FALSE,
   type,
   graph,
-  n.iter = 10000,
+  n.iter = 20000,
   max.regions = Inf,
   min.size = 1,
   growth = c("bound", "rho"),
@@ -26,7 +26,9 @@ excursions.regions.inla(
   max.threads = 0,
   compressed = TRUE,
   seed = NULL,
-  prune.ind = FALSE
+  prune.ind = FALSE,
+  tol = NULL,
+  size.tol = 0.001
 )
 }
 \arguments{
@@ -75,7 +77,7 @@ matrix, which for the linear predictor usually has no edges, so the graph
 should then be provided.}
 
 \item{n.iter}{Number or iterations in the MC sampler that is used for
-approximating probabilities. The default value is 10000.}
+approximating probabilities. The default value is 20000. If \code{size.tol} or \code{tol} is given, this is the maximal number of iterations.}
 
 \item{max.regions}{The maximum number of regions to compute.}
 
@@ -103,6 +105,12 @@ the entire linear predictor is added internally (default TRUE).}
 \item{prune.ind}{If \code{TRUE} and \code{ind} is supplied, then the result object
 is pruned to contain only the active nodes specified by \code{ind}, and the
 regions are given as indices within \code{ind}.}
+
+\item{tol}{Target for the estimated errors of the joint probabilities of
+the regions (optional), see \code{\link[=excursions.regions]{excursions.regions()}}.}
+
+\item{size.tol}{Target for the estimated Monte Carlo error of the size of
+each region, relative to the size, see \code{\link[=excursions.regions]{excursions.regions()}}.}
 }
 \value{
 \code{excursions.regions.inla} returns a list with the elements

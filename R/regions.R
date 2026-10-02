@@ -37,7 +37,7 @@
 #' which case the vertex graph of the mesh is used. The default is the
 #' graph of the non-zero elements of `Q`.
 #' @param n.iter Number or iterations in the MC sampler that is used for
-#' approximating probabilities. The default value is 10000.
+#' approximating probabilities. The default value is 20000. If `size.tol` or `tol` is given, this is the maximal number of iterations.
 #' @param vars Precomputed marginal variances (optional).
 #' @param rho Marginal excursion probabilities (optional).
 #' @param method Method for handling the latent Gaussian structure:
@@ -74,6 +74,13 @@
 #' @param seed Random seed (optional).
 #' @param verbose Set to TRUE for verbose mode (optional).
 #'
+#' @param tol Target for the estimated errors of the joint probabilities of
+#' the regions where they pass `1 - alpha` (optional). If `tol` is given, the
+#' number of iterations is chosen adaptively, using at most `n.iter`
+#' iterations, see [gaussint()]. It takes precedence over `size.tol`.
+#' @param size.tol Target for the estimated Monte Carlo error of the size of
+#' each region, relative to the size, when it is grown, see
+#' [excursions()]. The default is 0.001. It is not used if `tol` is given.
 #' @return `excursions.regions` returns a list with the elements
 #' \item{regions}{A list with the node indices of the regions, largest first.}
 #' \item{P}{The estimated joint excursion probability of each region.}
@@ -174,7 +181,7 @@ excursions.regions <- function(alpha,
                                Q,
                                type,
                                graph,
-                               n.iter = 10000,
+                               n.iter = 20000,
                                vars,
                                rho,
                                method = "EB",
@@ -186,7 +193,9 @@ excursions.regions <- function(alpha,
                                min.prominence = 0,
                                max.threads = 0,
                                seed,
-                               verbose = 0) {
+                               verbose = 0,
+                               tol = NULL,
+                               size.tol = 0.001) {
   growth <- match.arg(growth)
   if (method == "QC") {
     qc <- TRUE
@@ -249,7 +258,8 @@ excursions.regions <- function(alpha,
     weights = 1, type = type, qc = qc, rho = rho, G = G, ind = ind,
     n.iter = n.iter, max.regions = max.regions, min.size = min.size,
     growth = growth, n.starts = n.starts, min.prominence = min.prominence,
-    max.threads = max.threads, seed = seed, verbose = verbose
+    max.threads = max.threads, seed = seed, verbose = verbose, tol = tol,
+    size.tol = size.tol
   )
   out$meta <- list(
     calculation = "regions",
@@ -257,6 +267,8 @@ excursions.regions <- function(alpha,
     level = u,
     alpha = alpha,
     n.iter = n.iter,
+    tol = tol,
+    size.tol = size.tol,
     method = method,
     growth = growth,
     n.starts = n.starts,
@@ -277,7 +289,8 @@ excursions.regions <- function(alpha,
 ## of the mixture and the correlations of the first configuration.
 private.regions <- function(alpha, u, configs, weights, type, qc, rho, G, ind,
                             n.iter, max.regions, min.size, growth, n.starts,
-                            min.prominence, max.threads, seed, verbose) {
+                            min.prominence, max.threads, seed, verbose,
+                            tol = NULL, size.tol = NULL) {
   n <- length(configs[[1]]$mu)
   n.conf <- length(configs)
   weights <- weights / sum(weights)
@@ -415,7 +428,8 @@ private.regions <- function(alpha, u, configs, weights, type, qc, rho, G, ind,
       ## integration can stop there
       res <- excursions.call(a, b, reo, configs[[j]]$Q,
         lim = max(0, 1 - alpha / weights[j]), K = n.iter, max.size = K,
-        n.threads = max.threads, seed = seed
+        n.threads = max.threads, seed = seed,
+        tol = tol, tol.level = 1 - alpha, size.tol = size.tol
       )
       Pk <- Pk + weights[j] * res$Pv[n - seq_len(K) + 1]
       E2 <- E2 + (weights[j] * res$Ev[n - seq_len(K) + 1])^2
@@ -499,7 +513,8 @@ private.regions <- function(alpha, u, configs, weights, type, qc, rho, G, ind,
       res <- private.regions.probe.call(a, b,
         pa = configs[[j]]$limits$a, pb = configs[[j]]$limits$b,
         probe = is.probe, reo = reo, Q = configs[[j]]$Q, K = n.iter,
-        max.size = K + length(layer), n.threads = max.threads, seed = seed
+        max.size = K + length(layer), n.threads = max.threads, seed = seed,
+        tol = tol
       )
       Pl <- Pl + weights[j] * res$P[layer]
       E2 <- E2 + (weights[j] * res$E[layer])^2
@@ -745,7 +760,8 @@ private.selected.inverse.factor <- function(L, perm = NULL, max.threads = 0) {
 ## probe != 0 are probes, see shapeIntProbe. Returns the probabilities and
 ## standard errors of the probes in the original order.
 private.regions.probe.call <- function(a, b, pa, pb, probe, reo, Q, K,
-                                       max.size, n.threads, seed) {
+                                       max.size, n.threads, seed,
+                                       tol = NULL) {
   n <- length(a)
   L <- suppressWarnings(private.Cholesky(Q[reo, reo], perm = FALSE)$R)
   finite <- function(x) {
@@ -776,6 +792,11 @@ private.regions.probe.call <- function(a, b, pa, pb, probe, reo, Q, K,
     lim = as.double(0), Pv = double(n), Ev = double(n), seed_in = seed,
     probe = as.integer(probe[reo]), pa = as.double(pa),
     pb = as.double(pb), Pp = double(n), Pe = double(n),
+    ## As in gaussint, tol = 0 gives a single batch of K samples, and the
+    ## first batch has 1000 samples otherwise. The error of the probability
+    ## of the region is controlled, which bounds the errors of the probes.
+    adapt = as.double(c(if (is.null(tol)) 0 else tol, 0, 1000, 0)),
+    K_used = integer(1),
     PACKAGE = "excursions"
   )
   P <- E <- numeric(n)

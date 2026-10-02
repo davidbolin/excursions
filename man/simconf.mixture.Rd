@@ -15,7 +15,8 @@ simconf.mixture(
   verbose = FALSE,
   max.threads = 0,
   seed = NULL,
-  mix.samp = TRUE
+  mix.samp = TRUE,
+  tol = NULL
 )
 }
 \arguments{
@@ -30,7 +31,7 @@ simconf.mixture(
 \item{ind}{Indices of the nodes that should be analyzed (optional).}
 
 \item{n.iter}{Number or iterations in the MC sampler that is used for
-approximating probabilities. The default value is 10000.}
+approximating probabilities. The default value is 10000. If \code{tol} is given, this is the maximal number of iterations.}
 
 \item{vars}{A list with precomputed marginal variances for each class (optional).}
 
@@ -46,6 +47,10 @@ without OpenMP.}
 
 \item{mix.samp}{If TRUE, the MC integration is done by directly sampling the mixture,
 otherwise sequential integration is used.}
+
+\item{tol}{Target for the estimated errors of the probabilities that are
+computed to find the band (optional), see \code{\link[=simconf]{simconf()}}. It is only used if
+\code{mix.samp = FALSE}.}
 }
 \value{
 An object of class "excurobj" with elements

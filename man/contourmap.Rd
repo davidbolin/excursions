@@ -16,10 +16,12 @@ contourmap(
   use.marginals = TRUE,
   alpha,
   F.limit,
-  n.iter = 10000,
+  n.iter = 20000,
   verbose = FALSE,
   max.threads = 0,
-  seed = NULL
+  seed = NULL,
+  tol = NULL,
+  size.tol = 0.001
 )
 }
 \arguments{
@@ -66,7 +68,7 @@ P-optimal maps (default TRUE).}
 set to NA for all nodes where \code{F < 1-F.limit}. Default is \code{F.limit = alpha}.}
 
 \item{n.iter}{Number or iterations in the MC sampler that is used for
-calculating the quantities in \code{compute}. The default value is 10000.}
+calculating the quantities in \code{compute}. The default value is 20000. If \code{size.tol} or \code{tol} is given, this is the maximal number of iterations.}
 
 \item{verbose}{Set to TRUE for verbose mode (optional).}
 
@@ -77,6 +79,18 @@ threads is at most \code{OMP_THREAD_LIMIT}, and is one if the package was built
 without OpenMP.}
 
 \item{seed}{Random seed (optional).}
+
+\item{tol}{Target for the estimated errors of the Monte Carlo estimates
+(optional). If \code{tol} is given, the number of iterations is chosen
+adaptively, using at most \code{n.iter} iterations, see \code{\link[=gaussint]{gaussint()}}. It takes precedence over \code{size.tol}.
+The error of the contour map function is controlled where it passes
+\code{1 - alpha} (or 0.5 if \code{alpha = 1}), and the errors of the P measures are
+controlled directly.}
+
+\item{size.tol}{Target for the estimated Monte Carlo error of the size of
+the contour avoiding set, relative to the size, for the contour map
+function, see \code{\link[=excursions]{excursions()}}. The default is 0.001. It is not used for
+the P measures.}
 }
 \value{
 \code{contourmap} returns an object of class "excurobj" with the following elements

@@ -25,7 +25,7 @@
 #' @param mu Expectation vector for the Gaussian distribution.
 #' @param Q Precision matrix for the Gaussian distribution.
 #' @param n.iter Number or iterations in the MC sampler that is used for
-#' approximating probabilities. The default value is 10000.
+#' approximating probabilities. The default value is 10000. If `tol` is given, this is the maximal number of iterations.
 #' @param Q.chol The Cholesky factor of the precision matrix (optional).
 #' @param vars Precomputed marginal variances (optional).
 #' @param ind Indices of the nodes that should be analyzed (optional).
@@ -37,6 +37,9 @@
 #'   without OpenMP.
 #' @param seed Random seed (optional).
 #'
+#' @param tol Target for the estimated errors of the probabilities that are
+#' computed to find the band (optional). If `tol` is given, the number of
+#' iterations is chosen adaptively, using at most `n.iter` iterations, see [gaussint()]. By default, `n.iter` iterations are always used.
 #' @return An object of class "excurobj" with elements
 #' \item{a }{The lower bound.}
 #' \item{b }{The upper bound.}
@@ -83,7 +86,8 @@ simconf <- function(alpha,
                     ind = NULL,
                     verbose = 0,
                     max.threads = 0,
-                    seed = NULL) {
+                    seed = NULL,
+                    tol = NULL) {
   if (missing(mu)) {
     stop("Must specify mean value")
   } else {
@@ -131,7 +135,7 @@ simconf <- function(alpha,
     q <- qnorm(x / 100) * sd
     prob <- gaussint(
       a = -q, b = q, Q.chol = L, ind = ind, lim = 1 - 1.1 * alpha,
-      n.iter = n.iter, max.threads = max.threads, seed = seed
+      n.iter = n.iter, max.threads = max.threads, seed = seed, tol = tol
     )
     if (verbose) {
       cat(x, prob$P, "\n")
@@ -174,6 +178,7 @@ simconf <- function(alpha,
     calculation = "simconf",
     alpha = alpha,
     n.iter = n.iter,
+    tol = tol,
     ind = ind,
     call = match.call()
   )

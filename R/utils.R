@@ -369,7 +369,7 @@ excursions.setlimits <- function(marg, vars, type, QC, u, mu) {
 
 
 excursions.call <- function(a, b, reo, Q, is.chol = FALSE, lim, K, max.size, n.threads, seed,
-                            tol = NULL, tol.level = NULL) {
+                            tol = NULL, tol.level = NULL, size.tol = NULL) {
   if (is.chol && !identical(as.integer(reo), seq_len(length(reo)))) {
     ## The factor is for the original ordering, so form the precision matrix
     ## and factorise it in the integration order
@@ -388,7 +388,7 @@ excursions.call <- function(a, b, reo, Q, is.chol = FALSE, lim, K, max.size, n.t
       Q.chol = L, a = a.sort, b = b.sort, lim = lim,
       n.iter = K, max.size = max.size,
       max.threads = n.threads, seed = seed,
-      tol = tol, tol.level = tol.level
+      tol = tol, tol.level = tol.level, size.tol = size.tol
     )
   } else {
     ## The integration order is the order of the factor
@@ -396,7 +396,7 @@ excursions.call <- function(a, b, reo, Q, is.chol = FALSE, lim, K, max.size, n.t
       Q.chol = Q, a = a, b = b, lim = lim, n.iter = K,
       max.size = max.size,
       max.threads = n.threads, seed = seed,
-      tol = tol, tol.level = tol.level
+      tol = tol, tol.level = tol.level, size.tol = size.tol
     )
   }
   return(res)
@@ -596,7 +596,10 @@ fmix.opt <- function(x,
                      max.threads,
                      ind,
                      n.iter = 10000,
-                     seed = NULL) {
+                     seed = NULL,
+                     int.tol = NULL) {
+  ## int.tol is the tol of gaussint, which cannot be called tol since this
+  ## is the objective of optimize, which has an argument tol
   K <- dim(mu)[1]
   q.a <- Fmix_inv_vec(x / 2, mu = mu, sd = sd, w = w, br = limits)
   q.b <- Fmix_inv_vec(1 - x / 2, mu = mu, sd = sd, w = w, br = limits)
@@ -623,7 +626,8 @@ fmix.opt <- function(x,
       lim = max(0, lim),
       n.iter = n.iter,
       max.threads = max.threads,
-      seed = seed
+      seed = seed,
+      tol = int.tol
     )
     if (p$P == 0) {
       stopped <- 1
