@@ -246,18 +246,14 @@ excursions.regions.inla <- function(result.inla,
     stop("INLA result must be calculated using return.marginals.predictor=TRUE if excursion sets are to be calculated for the linear predictor.")
   }
   if (random.effect) {
-    rho.ind <- sapply(seq_along(ind), function(j) {
-      inla.get.marginal(ind.int[j],
-        u = u, result = result.inla,
-        effect.name = name, u.link = u.link, type = type
-      )
-    })
+    rho.ind <- inla.get.marginal(ind.int,
+      u = u, result = result.inla,
+      effect.name = name, u.link = u.link, type = type
+    )
   } else {
-    rho.ind <- sapply(seq_along(ind), function(j) {
-      inla.get.marginal(ind.original[j],
-        u = u, result = result.inla, u.link = u.link, type = type
-      )
-    })
+    rho.ind <- inla.get.marginal(ind.original,
+      u = u, result = result.inla, u.link = u.link, type = type
+    )
   }
   rho[ind] <- rho.ind
 

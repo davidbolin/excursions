@@ -121,6 +121,155 @@ static int chunk_size(int Kb) {
 }
 
 /*
+ The rows of R in a group of rows g, ..., ge of the sequential integration,
+ restricted to the columns k > g, which are the rows of x that are computed
+ before the group. If these are dense enough, they are stored as a dense
+ matrix W with the union U of their columns, so that their contributions to
+ the conditional means of all rows of the group are computed together, see
+ group_product. split[r] is the position in row i = g - r of R where the
+ columns k > g start, and the columns i < k <= g before it are added row by
+ row, since they are computed in the group.
+*/
+struct RowGroup {
+  bool dense = false;
+  int nU = 0;
+  int Bp = 0;                // number of rows rounded up to a multiple of 4
+  vector<int> split;
+  vector<int> U;
+  vector<size_t> off;        // offsets of the rows of U in the samples of a chunk
+  vector<double> W;          // W[(r / 4) * nU * 4 + u * 4 + r % 4]
+  vector<int> upos;          // position of a column in U, -1 if not in U
+
+  void build(int g, int ge, const vector<int> & rp, const vector<int> & ri,
+             const vector<double> & rv, int lo, int C) {
+    const int B = g - ge + 1;
+    split.resize(B);
+    U.clear();
+    size_t nnz = 0;
+    for (int r = 0; r < B; r++) {
+      const int i = g - r;
+      int q = rp[i];
+      while (q < rp[i + 1] && ri[q] <= g) {
+        q++;
+      }
+      split[r] = q;
+      for (; q < rp[i + 1]; q++) {
+        if (upos[ri[q]] < 0) {
+          upos[ri[q]] = 0;
+          U.push_back(ri[q]);
+        }
+      }
+      nnz += (size_t) (rp[i + 1] - split[r]);
+    }
+    nU = (int) U.size();
+    // The dense product does B * nU multiplications for nnz entries, and is
+    // several times faster for each multiplication than the sparse loop.
+    dense = B >= 4 && nU > 0 && (double) nnz >= 0.3 * (double) B * (double) nU;
+    if (dense) {
+      sort(U.begin(), U.end());
+      for (int u = 0; u < nU; u++) {
+        upos[U[u]] = u;
+      }
+      Bp = (B + 3) / 4 * 4;
+      W.assign((size_t) Bp * nU, 0.0);
+      off.resize(nU);
+      for (int u = 0; u < nU; u++) {
+        off[u] = (size_t) (U[u] - lo) * C;
+      }
+      for (int r = 0; r < B; r++) {
+        const int i = g - r;
+        for (int q = split[r]; q < rp[i + 1]; q++) {
+          W[(size_t) (r / 4) * nU * 4 + (size_t) upos[ri[q]] * 4 + r % 4] = rv[q];
+        }
+      }
+    }
+    for (int u = 0; u < nU; u++) {
+      upos[U[u]] = -1;
+    }
+  }
+};
+
+// Vectors of two doubles, with the vector extensions of GCC and Clang, which
+// are the SIMD registers of NEON and SSE2. The loads and stores do not
+// assume alignment.
+typedef double v2d __attribute__((vector_size(16)));
+static inline v2d load2(const double * p) {
+  v2d v;
+  memcpy(&v, p, sizeof v);
+  return v;
+}
+static inline void store2(double * p, v2d v) {
+  memcpy(p, &v, sizeof v);
+}
+
+/*
+ S[r * C + j] = sum_u W(r, u) x_{U[u]}[j] for the rows r < G.Bp of a group
+ and the samples j < m of the chunk with samples xc, see RowGroup. Each block
+ of four rows and eight samples is accumulated in sixteen vector registers,
+ so that each sample that is loaded is used for four rows. The registers are
+ written out explicitly, since compilers otherwise do not reliably keep the
+ sums in registers. The columns u are taken in blocks of kc, so that the
+ samples of a block are reused from the L1 cache for all rows, and the sums
+ are kept in S between the blocks.
+*/
+static void group_product(const RowGroup & G, const double * xc, int C, int m,
+                          double * __restrict S) {
+  const int nU = G.nU;
+  const int kc = 32;
+  const size_t * off = G.off.data();
+  for (int r = 0; r < G.Bp; r++) {
+    for (int j = 0; j < m; j++) {
+      S[(size_t) r * C + j] = 0.0;
+    }
+  }
+  const int m8 = m / 8 * 8;
+  for (int u0 = 0; u0 < nU; u0 += kc) {
+    const int u1 = min(nU, u0 + kc);
+    for (int jb = 0; jb < m8; jb += 8) {
+      for (int rb = 0; rb < G.Bp; rb += 4) {
+        const double * w = &G.W[(size_t) (rb / 4) * nU * 4];
+        double * S0 = &S[(size_t) rb * C + jb];
+        double * S1 = S0 + C;
+        double * S2 = S1 + C;
+        double * S3 = S2 + C;
+        v2d a00 = load2(S0), a01 = load2(S0 + 2), a02 = load2(S0 + 4), a03 = load2(S0 + 6);
+        v2d a10 = load2(S1), a11 = load2(S1 + 2), a12 = load2(S1 + 4), a13 = load2(S1 + 6);
+        v2d a20 = load2(S2), a21 = load2(S2 + 2), a22 = load2(S2 + 4), a23 = load2(S2 + 6);
+        v2d a30 = load2(S3), a31 = load2(S3 + 2), a32 = load2(S3 + 4), a33 = load2(S3 + 6);
+        for (int u = u0; u < u1; u++) {
+          const double * xu = xc + off[u] + jb;
+          const v2d x0 = load2(xu), x1 = load2(xu + 2), x2 = load2(xu + 4), x3 = load2(xu + 6);
+          const double w0 = w[4 * u], w1 = w[4 * u + 1], w2 = w[4 * u + 2], w3 = w[4 * u + 3];
+          a00 += w0 * x0; a01 += w0 * x1; a02 += w0 * x2; a03 += w0 * x3;
+          a10 += w1 * x0; a11 += w1 * x1; a12 += w1 * x2; a13 += w1 * x3;
+          a20 += w2 * x0; a21 += w2 * x1; a22 += w2 * x2; a23 += w2 * x3;
+          a30 += w3 * x0; a31 += w3 * x1; a32 += w3 * x2; a33 += w3 * x3;
+        }
+        store2(S0, a00); store2(S0 + 2, a01); store2(S0 + 4, a02); store2(S0 + 6, a03);
+        store2(S1, a10); store2(S1 + 2, a11); store2(S1 + 4, a12); store2(S1 + 6, a13);
+        store2(S2, a20); store2(S2 + 2, a21); store2(S2 + 4, a22); store2(S2 + 6, a23);
+        store2(S3, a30); store2(S3 + 2, a31); store2(S3 + 4, a32); store2(S3 + 6, a33);
+      }
+    }
+    // The samples after the last block of eight
+    if (m8 < m) {
+      for (int rb = 0; rb < G.Bp; rb += 4) {
+        const double * w = &G.W[(size_t) (rb / 4) * nU * 4];
+        for (int u = u0; u < u1; u++) {
+          const double * xu = xc + off[u];
+          for (int t = 0; t < 4; t++) {
+            const double wt = w[4 * u + t];
+            for (int j = m8; j < m; j++) {
+              S[(size_t) (rb + t) * C + j] += wt * xu[j];
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/*
  Sequential importance sampling for P(a < X < b), where X has precision
  Q = R^T R and R is upper triangular given in CSC format (Mp, Mi, Mv). The
  rows are integrated from the last to the first, and Pv[i] and Ev[i] are the
@@ -157,10 +306,13 @@ static int chunk_size(int Kb) {
  Since the samples of a chunk do not depend on the other chunks, the threads
  only synchronise after groups of rows, where the sums of the rows are added
  and the estimates are compared to lim. Rows after the row where the
- estimate goes below lim are computed but not used. The groups have one row
- for one thread, and grow from one row to max_group rows otherwise. The
- group sizes do not change the results, since the rows that are used are the
- same, and each batch uses new random streams.
+ estimate goes below lim are computed but not used. The groups grow from one
+ row to max_group rows, so that at most as many rows are wasted as have been
+ used. For the rows of a group, the contributions of the rows before the
+ group to the conditional means are computed together, see RowGroup, which
+ changes the order of the sums. The groups do not depend on the number of
+ threads, so the results do not either, and each batch uses new random
+ streams.
 */
 static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, int * opts, double * lim_in, double * Pv, double * Ev,int * seed_in,
                       const int * probe, const double * pa, const double * pb, double * Pp, double * Pe,
@@ -236,6 +388,8 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
   // Sums for each chunk and row of the group.
   const int max_group = 32;
   vector<double> cs1, cs2, cp1, cp2;
+  RowGroup grp;
+  grp.upos.assign(n, -1);
   bool nan_found = false;
   int nan_row = 0;
   long long K_tot = 0;
@@ -265,10 +419,12 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
     int g = n - 1;
     int B = 1;
     bool done = false;
+    grp.build(g, max(g - B + 1, lo), rp, ri, rv, lo, C);
 
     #pragma omp parallel num_threads(nP)
     {
       vector<double> s(C);
+      vector<double> Sg((size_t) max_group * C);
       while (!done && g >= lo) {
         const int ge = max(g - B + 1, lo);
 
@@ -277,6 +433,9 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
           const int m = min(C, Kb - c * C);
           double * xc = &x[(size_t) c * cstride];
           double * fc = &f[(size_t) c * C];
+          if (grp.dense) {
+            group_product(grp, xc, C, m, Sg.data());
+          }
           for (int i = g; i >= ge; i--) {
             double * xi = xc + (size_t) (i - lo) * C;
             const double ali = al[i];
@@ -286,14 +445,24 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
             const double pali = is_probe ? Lii * pa[i] : 0.0;
             const double pbli = is_probe ? Lii * pb[i] : 0.0;
 
-            // The conditional means, four rows of x at a time, which reads
-            // and writes s a quarter as often.
+            // The conditional means. For a dense group, the columns k > g
+            // are in Sg, and the other columns are added row by row.
             double * __restrict sp = s.data();
-            for (int j = 0; j < m; j++) {
-              sp[j] = 0.0;
-            }
             int q = rp[i];
-            const int q_end = rp[i + 1];
+            int q_end = rp[i + 1];
+            if (grp.dense) {
+              const double * Sr = &Sg[(size_t) (g - i) * C];
+              for (int j = 0; j < m; j++) {
+                sp[j] = Sr[j];
+              }
+              q_end = grp.split[g - i];
+            } else {
+              for (int j = 0; j < m; j++) {
+                sp[j] = 0.0;
+              }
+            }
+            // Four rows of x at a time, which reads and writes s a quarter
+            // as often.
             for (; q + 3 < q_end; q += 4) {
               const double v0 = rv[q], v1 = rv[q + 1], v2 = rv[q + 2], v3 = rv[q + 3];
               const double * __restrict x0 = xc + (size_t) (ri[q] - lo) * C;
@@ -406,8 +575,9 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
             }
           }
           g = ge - 1;
-          if (nP > 1) {
-            B = min(2 * B, max_group);
+          B = min(2 * B, max_group);
+          if (!done && g >= lo) {
+            grp.build(g, max(g - B + 1, lo), rp, ri, rv, lo, C);
           }
         }
       }

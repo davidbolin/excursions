@@ -220,37 +220,130 @@ private.get.config <- function(result, i) {
   list(mu = mu, Q = Q, vars = vars, Qinv = Qinv, lp = lp)
 }
 
-## Calculate the marginal probability for X_i>u or X_i<u.
+## The marginals of the nodes i of the linear predictor (with predictor ==
+## TRUE), the fitted values (with u.link), or the random effect effect.name.
+inla.get.marginals <- function(i, result, effect.name = NULL, u.link = FALSE) {
+  if (is.null(effect.name) && u.link) {
+    result$marginals.fitted.values[i]
+  } else if (is.null(effect.name)) {
+    result$marginals.linear.predictor[i]
+  } else {
+    result$marginals.random[[effect.name]][i]
+  }
+}
+
+## Calculate the marginal probabilities for X_i>u or X_i<u for the nodes i.
 ## Note that the index 'i' refers to a location in the linear
 ## predictor if predictor==TRUE, whereas it refers to a location
 ## in the random effect vector otherwise.
 inla.get.marginal <- function(i, u, result, effect.name = NULL, u.link, type) {
-  if (is.null(effect.name) && u.link) {
-    marg.p <- result$marginals.fitted.values[[i]]
-  } else if (is.null(effect.name)) {
-    # Calculate marginals using linear predictor
-    marg.p <- result$marginals.linear.predictor[[i]]
-  } else {
-    # Calculate marginals using a random effect
-    marg.p <- result$marginals.random[[effect.name]][[i]]
-  }
-
+  p <- private.pmarginals(inla.get.marginals(i, result, effect.name, u.link), u)
   if (type == "<") {
-    return(INLA::inla.pmarginal(u, marg.p))
+    p
   } else {
-    return(1 - INLA::inla.pmarginal(u, marg.p))
+    1 - p
   }
 }
 
-## Calculate the marginal probability for a<X_i<b.
-## The function returns c(P(X<a),P(X<b))
+## Calculate the marginal probabilities for a<X_i<b for the nodes i. Returns
+## the matrix with columns P(X_i<a) and P(X_i<b).
 inla.get.marginal.int <- function(i, a, b, result, effect.name = NULL) {
-  if (is.null(effect.name)) {
-    # Calculate marginals using linear predictor
-    marg.p <- result$marginals.linear.predictor[[i]]
-  } else {
-    # Calculate marginals using a random effect
-    marg.p <- result$marginals.random[[effect.name]][[i]]
+  m <- inla.get.marginals(i, result, effect.name)
+  cbind(private.pmarginals(m, a), private.pmarginals(m, b))
+}
+
+## The distribution functions of the marginals at q, which is recycled to the
+## number of marginals, where each marginal is a matrix or list with the
+## values x and the densities y. This computes the same as
+## INLA::inla.pmarginal(q[k], marginals[[k]]) for each k, which interpolates
+## the log density with a spline and integrates it numerically, but for all
+## marginals together, which is much faster. The log density is interpolated
+## by cubic Hermite polynomials, with the derivatives from the differences to
+## the neighbouring points, and these are integrated with Gauss-Legendre
+## quadrature in each interval. As for inla.pmarginal, the points with
+## negligible density are removed (see INLA:::inla.marginal.fix), the
+## distribution is normalised on the range of x, and q is truncated to it.
+private.pmarginals <- function(marginals, q) {
+  K <- length(marginals)
+  q <- rep_len(q, K)
+  eps <- .Machine$double.eps * 1000
+  xy <- lapply(marginals, function(m) {
+    if (is.matrix(m)) {
+      x <- m[, 1L]
+      y <- m[, 2L]
+    } else {
+      x <- m[["x"]]
+      y <- m[["y"]]
+    }
+    ok <- !is.na(y)
+    x <- x[ok]
+    y <- y[ok]
+    ok <- y > 0 & y / max(y) > eps
+    list(x = x[ok], y = y[ok])
+  })
+  len <- vapply(xy, function(m) length(m$x), 1L)
+  p <- numeric(K)
+  ## Gauss-Legendre nodes and weights on [0, 1]
+  gs <- c(-0.9061798459386640, -0.5384693101056831, 0, 0.5384693101056831, 0.9061798459386640)
+  gw <- c(0.2369268850561891, 0.4786286704993665, 0.5688888888888889, 0.4786286704993665, 0.2369268850561891)
+  gs <- (gs + 1) / 2
+  gw <- gw / 2
+  for (np in unique(len)) {
+    k <- which(len == np)
+    if (np < 2) {
+      ## A single point, as a point mass
+      x1 <- vapply(xy[k], function(m) if (np == 1) m$x else NA_real_, 0)
+      p[k] <- as.numeric(q[k] >= x1)
+      next
+    }
+    X <- matrix(unlist(lapply(xy[k], `[[`, "x")), ncol = np, byrow = TRUE)
+    Y <- log(matrix(unlist(lapply(xy[k], `[[`, "y")), ncol = np, byrow = TRUE))
+    nk <- length(k)
+    h <- X[, -1, drop = FALSE] - X[, -np, drop = FALSE]
+    d <- (Y[, -1, drop = FALSE] - Y[, -np, drop = FALSE]) / h
+    ## Derivatives of the log density at the points
+    D <- matrix(0, nk, np)
+    if (np == 2) {
+      D[, 1] <- D[, 2] <- d[, 1]
+    } else {
+      h1 <- h[, -(np - 1), drop = FALSE]
+      h2 <- h[, -1, drop = FALSE]
+      D[, 2:(np - 1)] <- (h2 * d[, -(np - 1), drop = FALSE] + h1 * d[, -1, drop = FALSE]) / (h1 + h2)
+      D[, 1] <- ((2 * h[, 1] + h[, 2]) * d[, 1] - h[, 1] * d[, 2]) / (h[, 1] + h[, 2])
+      D[, np] <- ((2 * h[, np - 1] + h[, np - 2]) * d[, np - 1] - h[, np - 1] * d[, np - 2]) /
+        (h[, np - 1] + h[, np - 2])
+    }
+    ## Integral of the density over [0, tau] of each interval, on the scale
+    ## of the interval, with the log density as a cubic Hermite polynomial
+    y0 <- Y[, -np, drop = FALSE]
+    y1 <- Y[, -1, drop = FALSE]
+    m0 <- D[, -np, drop = FALSE] * h
+    m1 <- D[, -1, drop = FALSE] * h
+    ## Subtract the maximum before exponentiating, for the tails
+    ymax <- apply(Y, 1, max)
+    seg <- function(tau) {
+      out <- 0
+      for (g in seq_along(gs)) {
+        t <- tau * gs[g]
+        lf <- (2 * t^3 - 3 * t^2 + 1) * y0 + (t^3 - 2 * t^2 + t) * m0 +
+          (-2 * t^3 + 3 * t^2) * y1 + (t^3 - t^2) * m1
+        out <- out + gw[g] * exp(lf - ymax)
+      }
+      out * tau * h
+    }
+    full <- seg(matrix(1, nk, np - 1))
+    total <- rowSums(full)
+    ## The interval of q, which is truncated to the range of x
+    qk <- pmin(pmax(q[k], X[, 1]), X[, np])
+    j <- pmin(rowSums(X <= qk), np - 1)
+    before <- full
+    before[col(before) >= j] <- 0
+    tau <- (qk - X[cbind(seq_len(nk), j)]) / h[cbind(seq_len(nk), j)]
+    T <- matrix(0, nk, np - 1)
+    T[cbind(seq_len(nk), j)] <- tau
+    part <- seg(T)
+    part[col(part) != j] <- 0
+    p[k] <- pmin(pmax((rowSums(before) + rowSums(part)) / total, 0), 1)
   }
-  INLA::inla.pmarginal(c(a, b), marg.p)
+  p
 }

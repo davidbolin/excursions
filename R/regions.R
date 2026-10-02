@@ -697,8 +697,11 @@ private.selected.inverse <- function(Q, G = NULL) {
       x = c(Qt@x, numeric(length(Gt@i))), Dim = dim(Q)
     ), "CsparseMatrix")
   }
-  ch <- Matrix::Cholesky(Q, LDL = FALSE, perm = TRUE, super = FALSE)
-  private.selected.inverse.factor(as(ch, "CsparseMatrix"), ch@perm + 1L)
+  ## CHOLMOD chooses the supernodal factorization if it is faster. Its
+  ## explicit zeros are kept, since they are part of the closed pattern that
+  ## the recursion for the selected inverse needs.
+  ch <- Matrix::Cholesky(Q, LDL = FALSE, perm = TRUE, super = NA)
+  private.selected.inverse.factor(private.factor.lower(ch), ch@perm + 1L)
 }
 
 ## Selected inverse from a Cholesky factor of Q, see

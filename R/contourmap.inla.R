@@ -320,24 +320,20 @@ contourmap.inla <- function(result.inla,
       # if QC, update limits
       if (method == "QC") {
         if (random.effect) {
-          rho.ind <- sapply(seq_along(ind), function(j) {
-            inla.get.marginal.int(ind.int[j],
-              a = limits$a[ind[j]],
-              b = limits$b[ind[j]],
-              result = result.inla,
-              effect.name = name
-            )
-          })
+          rho.ind <- inla.get.marginal.int(ind.int,
+            a = limits$a[ind],
+            b = limits$b[ind],
+            result = result.inla,
+            effect.name = name
+          )
         } else {
-          rho.ind <- sapply(seq_along(ind), function(j) {
-            inla.get.marginal.int(ind.original[j],
-              a = limits$a[ind[j]],
-              b = limits$b[ind[j]],
-              result = result.inla
-            )
-          })
+          rho.ind <- inla.get.marginal.int(ind.original,
+            a = limits$a[ind],
+            b = limits$b[ind],
+            result = result.inla
+          )
         }
-        rho[ind, ] <- t(rho.ind)
+        rho[ind, ] <- rho.ind
         limits$a <-
           config$mu + sqrt(config$vars) * qnorm(pmin(pmax(rho[, 1], 0), 1))
         limits$b <-

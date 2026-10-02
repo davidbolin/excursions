@@ -1,5 +1,17 @@
 # Development version
 
+* The Cholesky factorisations now let CHOLMOD choose the supernodal
+  factorisation (`super = NA`), which is much faster for the dense factors
+  in the integration order of `excursions()`.
+* The marginal probabilities in `excursions.inla()`, `contourmap.inla()` and
+  `excursions.regions.inla()` are computed for all nodes together instead of
+  with `INLA::inla.pmarginal()` for each node, which made up most of the
+  computation time of the `EB` method. The log densities are interpolated by
+  cubic Hermite polynomials and integrated with Gauss-Legendre quadrature. 
+* The sequential integration computes the contributions of the earlier rows
+  to the conditional means of a group of rows together, with a blocked
+  kernel that keeps the sums in vector registers, which makes the
+  integration up to twice as fast for dense problems.
 * New argument `tol` in `gaussint()`, `excursions()` and `excursions.inla()`
   that chooses the number of iterations adaptively. The probabilities are
   first estimated with 1000 iterations, and iterations are then added in

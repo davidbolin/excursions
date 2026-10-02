@@ -17,16 +17,37 @@
 
 
 ## Calculate upper triangular Cholesky decomposition, optionally with
-## permutation. All Matrix::Cholesky options are allowed.
+## permutation, with Q[reo, reo] = t(R) %*% R. Other Matrix::Cholesky options
+## are allowed. CHOLMOD chooses between the supernodal and the simplicial
+## factorization (super = NA), since the supernodal one is much faster for
+## dense factors, as in the integration order of excursions(). The explicit
+## zeros of a supernodal factor are dropped, since they only add work in the
+## integration.
 ## Returns list(R=dtCMatrix, reo=integer vector, ireo=integer vector)
-private.Cholesky <- function(A, ...) {
-  L <- expand(Matrix::Cholesky(private.as.dgCMatrix(A), ...))
+## The lower triangular factor of a Cholesky factorisation from
+## Matrix::Cholesky, with the explicit zeros of a supernodal factor in the
+## lower triangle, which are part of the pattern of the factor. A supernodal
+## factor is converted to a general matrix that also stores zeros above the
+## diagonal, and these are removed.
+private.factor.lower <- function(ch) {
+  L <- as(ch, "CsparseMatrix")
+  if (!is(L, "triangularMatrix")) {
+    L <- Matrix::tril(L)
+  }
+  L
+}
+
+private.Cholesky <- function(A, perm = TRUE, ...) {
+  ch <- Matrix::Cholesky(private.as.dgCMatrix(A),
+    perm = perm, LDL = FALSE,
+    super = NA, ...
+  )
   n <- nrow(A)
+  reo <- if (perm) ch@perm + 1L else seq_len(n)
   ireo <- integer(n)
-  ireo[L$P@perm] <- seq_len(n)
-  reo <- integer(n)
-  reo[ireo] <- seq_len(n)
-  list(R = private.as.dtCMatrixU(L$L), reo = reo, ireo = ireo)
+  ireo[reo] <- seq_len(n)
+  L <- Matrix::drop0(as(ch, "CsparseMatrix"))
+  list(R = private.as.dtCMatrixU(L), reo = reo, ireo = ireo)
 }
 
 
@@ -69,9 +90,11 @@ excursions.variances <- function(L, Q, max.threads = 0) {
     L <- private.as.dtCMatrix(L)
   } else {
     ## Keep the factor lower triangular, as the C code works on columns of L.
-    ch <- Matrix::Cholesky(private.as.dgCMatrix(Q), LDL = FALSE, perm = TRUE)
+    ## The explicit zeros of a supernodal factor are kept, since the
+    ## recursion for the inverse needs the closed pattern of the factor.
+    ch <- Matrix::Cholesky(private.as.dgCMatrix(Q), LDL = FALSE, perm = TRUE, super = NA)
     perm <- ch@perm + 1L
-    L <- as(ch, "CsparseMatrix")
+    L <- private.factor.lower(ch)
   }
   lower <- L@uplo == "L"
   if (L@diag == "U") {

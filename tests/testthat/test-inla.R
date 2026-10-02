@@ -21,21 +21,26 @@ test_that("Marginal probabilities of intervals", {
   skip_on_cran()
   local_exc_safe_inla()
   data <- testdata.inla()
-  for (i in c(1, 5)) {
-    marg <- data$result$marginals.linear.predictor[[i]]
-    expect_identical(
-      excursions:::inla.get.marginal.int(i, a = -1, b = 2, result = data$result),
-      c(INLA::inla.pmarginal(-1, marg), INLA::inla.pmarginal(2, marg))
-    )
-    marg <- data$result$marginals.random$ar[[i]]
-    expect_identical(
-      excursions:::inla.get.marginal.int(i,
-        a = -1, b = 2, result = data$result,
-        effect.name = "ar"
-      ),
-      c(INLA::inla.pmarginal(-1, marg), INLA::inla.pmarginal(2, marg))
-    )
+  ## The same as inla.pmarginal, up to its error from the numerical
+  ## integration with 2048 points
+  i <- c(1, 5)
+  ref <- function(margs) {
+    t(vapply(margs, function(m) {
+      c(INLA::inla.pmarginal(-1, m), INLA::inla.pmarginal(2, m))
+    }, numeric(2)))
   }
+  p <- excursions:::inla.get.marginal.int(i, a = -1, b = 2, result = data$result)
+  expect_equal(dim(p), c(2, 2))
+  expect_equal(p, ref(data$result$marginals.linear.predictor[i]),
+    tolerance = 2e-3, ignore_attr = TRUE
+  )
+  p <- excursions:::inla.get.marginal.int(i,
+    a = -1, b = 2, result = data$result,
+    effect.name = "ar"
+  )
+  expect_equal(p, ref(data$result$marginals.random$ar[i]),
+    tolerance = 2e-3, ignore_attr = TRUE
+  )
 })
 
 test_that("contourmap.inla with the QC method", {
@@ -65,7 +70,10 @@ test_that("excursions.inla with the iNIQC method refits the model", {
   from.refit <- logical(0)
   get.marginal <- excursions:::inla.get.marginal
   local_mocked_bindings(inla.get.marginal = function(i, u, result, ...) {
-    from.refit <<- c(from.refit, isTRUE(result$.args$control.mode$fixed))
+    from.refit <<- c(
+      from.refit,
+      rep(isTRUE(result$.args$control.mode$fixed), length(i))
+    )
     get.marginal(i, u = u, result = result, ...)
   })
   r.in <- excursions.inla(result, data$stack,
@@ -73,8 +81,8 @@ test_that("excursions.inla with the iNIQC method refits the model", {
     u = 0, type = ">", seed = data$seed, max.threads = 1
   )
   n.ind <- length(INLA::inla.stack.index(data$stack, "pred")$data)
-  ## One call per node for the marginals, and one per node and
-  ## configuration for the refits
+  ## The marginals of each node from the original fit, and from the refit
+  ## of each configuration
   expect_equal(sum(!from.refit), n.ind)
   expect_equal(sum(from.refit), 3 * n.ind)
 
@@ -134,4 +142,42 @@ test_that("simconf.inla", {
   expect_length(r.ind$a, length(ind))
   expect_true(all(r.ind$b - r.ind$a < r.eb$b[ind] - r.eb$a[ind]))
   expect_equal(r.ind$a.marginal, r.eb$a.marginal[ind], tolerance = 1e-10)
+})
+
+test_that("Distribution functions of marginals", {
+  ## Gaussian densities on grids like those of INLA, where the distribution
+  ## function, normalised on the range of the grid, is known
+  set.seed(1)
+  mu <- rnorm(20)
+  sd <- exp(rnorm(20, -1, 0.5))
+  margs <- lapply(seq_along(mu), function(k) {
+    x <- mu[k] + sd[k] * sort(c(qnorm(seq(0.001, 0.999, length.out = 40)), rnorm(3)))
+    cbind(x = x, y = dnorm(x, mu[k], sd[k]))
+  })
+  q <- mu + sd * rnorm(20)
+  lo <- vapply(margs, function(m) min(m[, 1]), 0)
+  hi <- vapply(margs, function(m) max(m[, 1]), 0)
+  exact <- (pnorm(pmin(pmax(q, lo), hi), mu, sd) - pnorm(lo, mu, sd)) /
+    (pnorm(hi, mu, sd) - pnorm(lo, mu, sd))
+  p <- excursions:::private.pmarginals(margs, q)
+  expect_equal(p, exact, tolerance = 1e-8)
+  ## Marginals as lists, and of different lengths
+  margs.l <- lapply(margs, function(m) list(x = m[, 1], y = m[, 2]))
+  margs.l[[3]] <- lapply(margs.l[[3]], function(v) v[-(1:5)])
+  p.l <- excursions:::private.pmarginals(margs.l, q)
+  expect_equal(p.l[-3], p[-3])
+  expect_equal(
+    p.l[3],
+    excursions:::private.pmarginals(margs.l[3], q[3])
+  )
+  ## q outside the range, and recycled
+  expect_equal(excursions:::private.pmarginals(margs, -100), rep(0, 20))
+  expect_equal(excursions:::private.pmarginals(margs, 100), rep(1, 20))
+  ## Points with negligible or missing densities are removed
+  m <- margs[[1]]
+  m2 <- rbind(m, c(max(m[, 1]) + 1, 0), c(max(m[, 1]) + 2, NA))
+  expect_equal(
+    excursions:::private.pmarginals(list(m2), q[1]),
+    excursions:::private.pmarginals(list(m), q[1])
+  )
 })
