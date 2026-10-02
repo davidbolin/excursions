@@ -20,7 +20,8 @@ simconf.inla(
   max.threads = 0,
   compressed = TRUE,
   seed = NULL,
-  inla.sample = TRUE
+  inla.sample = TRUE,
+  tol = NULL
 )
 ```
 
@@ -71,7 +72,8 @@ simconf.inla(
 - n.iter:
 
   Number or iterations in the MC sampler that is used for approximating
-  probabilities. The default value is 10000.
+  probabilities. The default value is 10000. If `tol` is given, this is
+  the maximal number of iterations.
 
 - verbose:
 
@@ -104,6 +106,13 @@ simconf.inla(
 
   Set to TRUE if inla.posterior.sample should be used for the MC
   integration.
+
+- tol:
+
+  Target for the estimated errors of the probabilities that are computed
+  to find the band (optional), see
+  [`simconf()`](https://davidbolin.github.io/excursions/reference/simconf.md).
+  It is not used when the band is computed from samples.
 
 ## Value
 

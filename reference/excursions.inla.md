@@ -18,13 +18,14 @@ excursions.inla(
   u,
   u.link = FALSE,
   type,
-  n.iter = 10000,
+  n.iter = 20000,
   verbose = 0,
   max.threads = 0,
   compressed = TRUE,
   seed = NULL,
   prune.ind = FALSE,
-  tol = NULL
+  tol = NULL,
+  size.tol = 0.001
 )
 ```
 
@@ -124,8 +125,8 @@ excursions.inla(
 - n.iter:
 
   Number or iterations in the MC sampler that is used for approximating
-  probabilities. The default value is 10000. If `tol` is given, this is
-  the maximal number of iterations.
+  probabilities. The default value is 20000. If `size.tol` or `tol` is
+  given, this is the maximal number of iterations.
 
 - verbose:
 
@@ -161,6 +162,13 @@ excursions.inla(
   number of iterations is chosen adaptively, using at most `n.iter`
   iterations, see
   [`excursions()`](https://davidbolin.github.io/excursions/reference/excursions.md).
+
+- size.tol:
+
+  Target for the estimated Monte Carlo error of the size of the
+  excursion set, relative to the size, see
+  [`excursions()`](https://davidbolin.github.io/excursions/reference/excursions.md).
+  The default is 0.001.
 
 ## Value
 

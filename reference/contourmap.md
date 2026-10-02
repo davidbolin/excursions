@@ -18,10 +18,12 @@ contourmap(
   use.marginals = TRUE,
   alpha,
   F.limit,
-  n.iter = 10000,
+  n.iter = 20000,
   verbose = FALSE,
   max.threads = 0,
-  seed = NULL
+  seed = NULL,
+  tol = NULL,
+  size.tol = 0.001
 )
 ```
 
@@ -114,7 +116,8 @@ contourmap(
 - n.iter:
 
   Number or iterations in the MC sampler that is used for calculating
-  the quantities in `compute`. The default value is 10000.
+  the quantities in `compute`. The default value is 20000. If `size.tol`
+  or `tol` is given, this is the maximal number of iterations.
 
 - verbose:
 
@@ -131,6 +134,24 @@ contourmap(
 - seed:
 
   Random seed (optional).
+
+- tol:
+
+  Target for the estimated errors of the Monte Carlo estimates
+  (optional). If `tol` is given, the number of iterations is chosen
+  adaptively, using at most `n.iter` iterations, see
+  [`gaussint()`](https://davidbolin.github.io/excursions/reference/gaussint.md).
+  It takes precedence over `size.tol`. The error of the contour map
+  function is controlled where it passes `1 - alpha` (or 0.5 if
+  `alpha = 1`), and the errors of the P measures are controlled
+  directly.
+
+- size.tol:
+
+  Target for the estimated Monte Carlo error of the size of the contour
+  avoiding set, relative to the size, for the contour map function, see
+  [`excursions()`](https://davidbolin.github.io/excursions/reference/excursions.md).
+  The default is 0.001. It is not used for the P measures.
 
 ## Value
 
@@ -227,5 +248,5 @@ plot(lp$map)
 
 # Display the quality measures
 cat(c(lp$P1, lp$P2))
-#> 0.9109411 0.4665119
+#> 0.910527 0.4664682
 ```

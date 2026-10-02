@@ -16,7 +16,7 @@ excursions(
   mu,
   Q,
   type,
-  n.iter = 10000,
+  n.iter = 20000,
   Q.chol,
   F.limit,
   vars,
@@ -30,7 +30,8 @@ excursions(
   seed,
   prune.ind = FALSE,
   tol = NULL,
-  Qinv
+  Qinv,
+  size.tol = 0.001
 )
 ```
 
@@ -75,8 +76,8 @@ excursions(
 - n.iter:
 
   Number or iterations in the MC sampler that is used for approximating
-  probabilities. The default value is 10000. If `tol` is given, this is
-  the maximal number of iterations.
+  probabilities. The default value is 20000. If `size.tol` or `tol` is
+  given, this is the maximal number of iterations.
 
 - Q.chol:
 
@@ -149,7 +150,7 @@ excursions(
   number of iterations is chosen adaptively, using at most `n.iter`
   iterations, see
   [`gaussint()`](https://davidbolin.github.io/excursions/reference/gaussint.md).
-  By default, `n.iter` iterations are always used.
+  It takes precedence over `size.tol`.
 
 - Qinv:
 
@@ -157,6 +158,21 @@ excursions(
   (optional), as a sparse matrix that can store only one triangle, for
   example the selected inverse of `Q`. If `vars` is not given, it is
   computed from `Qinv`. See the details.
+
+- size.tol:
+
+  Target for the estimated Monte Carlo error of the size of the
+  excursion set, relative to the size. The number of iterations is
+  chosen adaptively, so that the estimated standard error of the number
+  of nodes in the set is at most the largest of `size.tol` times the
+  number and half a node, using at most `n.iter` iterations, see
+  [`gaussint()`](https://davidbolin.github.io/excursions/reference/gaussint.md).
+  The default is 0.001. It is not used if `tol` is given or `alpha = 1`,
+  and `size.tol = NULL` gives `n.iter` iterations. Only the error at the
+  boundary of the set is controlled, so if the excursion function is
+  also needed outside the set, with `F.limit` larger than `alpha`, its
+  values there can have larger errors, see `meta$Fe`, and `tol` or
+  `size.tol = NULL` can then be used instead.
 
 ## Value
 

@@ -64,10 +64,12 @@ contour maps for Gaussian models.</p>
 <span>  use.marginals <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  <span class="va">alpha</span>,</span>
 <span>  <span class="va">F.limit</span>,</span>
-<span>  n.iter <span class="op">=</span> <span class="fl">10000</span>,</span>
+<span>  n.iter <span class="op">=</span> <span class="fl">20000</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  max.threads <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  seed <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  tol <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  size.tol <span class="op">=</span> <span class="fl">0.001</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -155,7 +157,7 @@ set to NA for all nodes where <code>F &lt; 1-F.limit</code>. Default is <code>F.
 
 <dt id="arg-n-iter">n.iter<a class="anchor" aria-label="anchor" href="#arg-n-iter"></a></dt>
 <dd><p>Number or iterations in the MC sampler that is used for
-calculating the quantities in <code>compute</code>. The default value is 10000.</p></dd>
+calculating the quantities in <code>compute</code>. The default value is 20000. If <code>size.tol</code> or <code>tol</code> is given, this is the maximal number of iterations.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -172,6 +174,22 @@ without OpenMP.</p></dd>
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p>Random seed (optional).</p></dd>
+
+
+<dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
+<dd><p>Target for the estimated errors of the Monte Carlo estimates
+(optional). If <code>tol</code> is given, the number of iterations is chosen
+adaptively, using at most <code>n.iter</code> iterations, see <code><a href="gaussint.html">gaussint()</a></code>. It takes precedence over <code>size.tol</code>.
+The error of the contour map function is controlled where it passes
+<code>1 - alpha</code> (or 0.5 if <code>alpha = 1</code>), and the errors of the P measures are
+controlled directly.</p></dd>
+
+
+<dt id="arg-size-tol">size.tol<a class="anchor" aria-label="anchor" href="#arg-size-tol"></a></dt>
+<dd><p>Target for the estimated Monte Carlo error of the size of
+the contour avoiding set, relative to the size, for the contour map
+function, see <code><a href="excursions.html">excursions()</a></code>. The default is 0.001. It is not used for
+the P measures.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -247,7 +265,7 @@ and the Gaussian distribution. What should be computed is specified using the
 <span class="r-plt img"><img src="contourmap-1.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span><span class="co"># Display the quality measures</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">lp</span><span class="op">$</span><span class="va">P1</span>, <span class="va">lp</span><span class="op">$</span><span class="va">P2</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 0.9109411 0.4665119</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 0.910527 0.4664682</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

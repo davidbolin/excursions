@@ -17,7 +17,8 @@ simconf(
   ind = NULL,
   verbose = 0,
   max.threads = 0,
-  seed = NULL
+  seed = NULL,
+  tol = NULL
 )
 ```
 
@@ -38,7 +39,8 @@ simconf(
 - n.iter:
 
   Number or iterations in the MC sampler that is used for approximating
-  probabilities. The default value is 10000.
+  probabilities. The default value is 10000. If `tol` is given, this is
+  the maximal number of iterations.
 
 - Q.chol:
 
@@ -67,6 +69,15 @@ simconf(
 - seed:
 
   Random seed (optional).
+
+- tol:
+
+  Target for the estimated errors of the probabilities that are computed
+  to find the band (optional). If `tol` is given, the number of
+  iterations is chosen adaptively, using at most `n.iter` iterations,
+  see
+  [`gaussint()`](https://davidbolin.github.io/excursions/reference/gaussint.md).
+  By default, `n.iter` iterations are always used.
 
 ## Value
 

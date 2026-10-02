@@ -84,7 +84,8 @@ all subintegrals are also returned.</p>
 <span>  max.threads <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  <span class="va">seed</span>,</span>
 <span>  tol <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  tol.level <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  tol.level <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  size.tol <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -175,6 +176,14 @@ estimates where the estimates go below <code>tol.level</code>, which is useful w
 one is interested in where the sub-integrals pass a probability level. By
 default, the error of <code>P</code> is controlled.</p></dd>
 
+
+<dt id="arg-size-tol">size.tol<a class="anchor" aria-label="anchor" href="#arg-size-tol"></a></dt>
+<dd><p>Target for the estimated error of the number of
+sub-integrals before the estimates go below <code>tol.level</code>, relative to the
+number (optional). If <code>size.tol</code> is given, and <code>tol</code> is not, the number of
+iterations is chosen adaptively as for <code>tol</code>, but with this target, see
+the details. It requires <code>tol.level</code>.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
@@ -219,6 +228,15 @@ from the estimated error so far, and the estimates are averages over all
 batches. The number of iterations that is needed for a given accuracy
 depends strongly on the problem, and <code>tol</code> can therefore save a lot of
 computation time compared to a fixed number of iterations.</p>
+<p>With <code>size.tol</code>, the target is instead the estimated error of the number
+of sub-integrals, from the last dimension, whose estimates are at least
+<code>tol.level</code>, relative to the number. This is the size of the excursion set
+in <code><a href="excursions.html">excursions()</a></code>. The error is estimated by the error of the estimate
+where it goes below <code>tol.level</code>, divided by how fast the estimates
+decrease there. The target is at least half a sub-integral, since where
+the estimates pass <code>tol.level</code> is uncertain for any number of iterations.
+The batches of iterations after the first have at most 10000 iterations,
+which bounds the memory that is needed.</p>
     </div>
     <div class="section level2">
     <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a></h2>

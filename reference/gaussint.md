@@ -26,7 +26,8 @@ gaussint(
   max.threads = 0,
   seed,
   tol = NULL,
-  tol.level = NULL
+  tol.level = NULL,
+  size.tol = NULL
 )
 ```
 
@@ -118,6 +119,14 @@ gaussint(
   when one is interested in where the sub-integrals pass a probability
   level. By default, the error of `P` is controlled.
 
+- size.tol:
+
+  Target for the estimated error of the number of sub-integrals before
+  the estimates go below `tol.level`, relative to the number (optional).
+  If `size.tol` is given, and `tol` is not, the number of iterations is
+  chosen adaptively as for `tol`, but with this target, see the details.
+  It requires `tol.level`.
+
 ## Value
 
 A list with elements
@@ -171,6 +180,18 @@ reach `tol` from the estimated error so far, and the estimates are
 averages over all batches. The number of iterations that is needed for a
 given accuracy depends strongly on the problem, and `tol` can therefore
 save a lot of computation time compared to a fixed number of iterations.
+
+With `size.tol`, the target is instead the estimated error of the number
+of sub-integrals, from the last dimension, whose estimates are at least
+`tol.level`, relative to the number. This is the size of the excursion
+set in
+[`excursions()`](https://davidbolin.github.io/excursions/reference/excursions.md).
+The error is estimated by the error of the estimate where it goes below
+`tol.level`, divided by how fast the estimates decrease there. The
+target is at least half a sub-integral, since where the estimates pass
+`tol.level` is uncertain for any number of iterations. The batches of
+iterations after the first have at most 10000 iterations, which bounds
+the memory that is needed.
 
 ## References
 

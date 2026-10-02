@@ -66,7 +66,8 @@ for latent Gaussian models estimated using <code>INLA</code>.</p>
 <span>  max.threads <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  compressed <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  inla.sample <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  inla.sample <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  tol <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -116,7 +117,7 @@ approximation of the posterior, as calculated by INLA).</p></dd>
 
 <dt id="arg-n-iter">n.iter<a class="anchor" aria-label="anchor" href="#arg-n-iter"></a></dt>
 <dd><p>Number or iterations in the MC sampler that is used for approximating
-probabilities. The default value is 10000.</p></dd>
+probabilities. The default value is 10000. If <code>tol</code> is given, this is the maximal number of iterations.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -149,6 +150,12 @@ entire linear predictor is added internally (default TRUE).</p></dd>
 <dt id="arg-inla-sample">inla.sample<a class="anchor" aria-label="anchor" href="#arg-inla-sample"></a></dt>
 <dd><p>Set to TRUE if inla.posterior.sample should be used for the MC
 integration.</p></dd>
+
+
+<dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
+<dd><p>Target for the estimated errors of the probabilities that are
+computed to find the band (optional), see <code><a href="simconf.html">simconf()</a></code>. It is not used when
+the band is computed from samples.</p></dd>
 
 </dl></div>
     <div class="section level2">

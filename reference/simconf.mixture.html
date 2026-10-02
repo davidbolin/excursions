@@ -72,7 +72,8 @@ The function returns upper and lower bounds \(a\) and \(b\) such that
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  max.threads <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  mix.samp <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  mix.samp <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  tol <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -102,7 +103,7 @@ The function returns upper and lower bounds \(a\) and \(b\) such that
 
 <dt id="arg-n-iter">n.iter<a class="anchor" aria-label="anchor" href="#arg-n-iter"></a></dt>
 <dd><p>Number or iterations in the MC sampler that is used for
-approximating probabilities. The default value is 10000.</p></dd>
+approximating probabilities. The default value is 10000. If <code>tol</code> is given, this is the maximal number of iterations.</p></dd>
 
 
 <dt id="arg-vars">vars<a class="anchor" aria-label="anchor" href="#arg-vars"></a></dt>
@@ -128,6 +129,12 @@ without OpenMP.</p></dd>
 <dt id="arg-mix-samp">mix.samp<a class="anchor" aria-label="anchor" href="#arg-mix-samp"></a></dt>
 <dd><p>If TRUE, the MC integration is done by directly sampling the mixture,
 otherwise sequential integration is used.</p></dd>
+
+
+<dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
+<dd><p>Target for the estimated errors of the probabilities that are
+computed to find the band (optional), see <code><a href="simconf.html">simconf()</a></code>. It is only used if
+<code>mix.samp = FALSE</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

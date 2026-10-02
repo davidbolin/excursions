@@ -178,11 +178,11 @@ print(data.frame(
   time = c(t.EB[3], t.QC[3], t.NI[3], t.NIQC[3]),
   row.names = c("EB", "QC", "NI", "NIQC")
 ))
-#>       time
-#> EB   0.346
-#> QC   0.335
-#> NI   9.650
-#> NIQC 9.150
+#>        time
+#> EB    0.320
+#> QC    0.538
+#> NI   11.691
+#> NIQC 10.344
 ```
 
 We can see that the `EB` and `QC` methods have similar computation times
@@ -287,9 +287,9 @@ reg_bru <- excursions.regions.inla(result_bru,
   seed = 1
 )
 lengths(reg_bru$regions)
-#> [1] 64 42 33 32 19 12
+#> [1] 64 41 33 31 19 12
 reg_bru$P
-#> [1] 0.9001422 0.9002958 0.9023588 0.9006453 0.9089636 0.9089201
+#> [1] 0.9002252 0.9031823 0.9023169 0.9081605 0.9106351 0.9062027
 ```
 
 As we used `prune.ind = TRUE`, the regions are given as indices of the

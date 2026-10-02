@@ -18,7 +18,7 @@ excursions.regions(
   Q,
   type,
   graph,
-  n.iter = 10000,
+  n.iter = 20000,
   vars,
   rho,
   method = "EB",
@@ -30,7 +30,9 @@ excursions.regions(
   min.prominence = 0,
   max.threads = 0,
   seed,
-  verbose = 0
+  verbose = 0,
+  tol = NULL,
+  size.tol = 0.001
 )
 ```
 
@@ -68,7 +70,8 @@ excursions.regions(
 - n.iter:
 
   Number or iterations in the MC sampler that is used for approximating
-  probabilities. The default value is 10000.
+  probabilities. The default value is 20000. If `size.tol` or `tol` is
+  given, this is the maximal number of iterations.
 
 - vars:
 
@@ -150,6 +153,22 @@ excursions.regions(
 - verbose:
 
   Set to TRUE for verbose mode (optional).
+
+- tol:
+
+  Target for the estimated errors of the joint probabilities of the
+  regions where they pass `1 - alpha` (optional). If `tol` is given, the
+  number of iterations is chosen adaptively, using at most `n.iter`
+  iterations, see
+  [`gaussint()`](https://davidbolin.github.io/excursions/reference/gaussint.md).
+  It takes precedence over `size.tol`.
+
+- size.tol:
+
+  Target for the estimated Monte Carlo error of the size of each region,
+  relative to the size, when it is grown, see
+  [`excursions()`](https://davidbolin.github.io/excursions/reference/excursions.md).
+  The default is 0.001. It is not used if `tol` is given.
 
 ## Value
 
@@ -293,7 +312,7 @@ res$regions
 #> [1] 37 38 39
 #> 
 res$P
-#> [1] 0.9219503 0.9347214
+#> [1] 0.9137107 0.9289390
 plot(x, mu, type = "l")
 points(x, mu, col = res$labels + 1, pch = 19)
 ```

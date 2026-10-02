@@ -64,7 +64,7 @@ or <code>inlabru</code>. See <code><a href="excursions.regions.html">excursions.
 <span>  u.link <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  <span class="va">type</span>,</span>
 <span>  <span class="va">graph</span>,</span>
-<span>  n.iter <span class="op">=</span> <span class="fl">10000</span>,</span>
+<span>  n.iter <span class="op">=</span> <span class="fl">20000</span>,</span>
 <span>  max.regions <span class="op">=</span> <span class="cn">Inf</span>,</span>
 <span>  min.size <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  growth <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bound"</span>, <span class="st">"rho"</span><span class="op">)</span>,</span>
@@ -74,7 +74,9 @@ or <code>inlabru</code>. See <code><a href="excursions.regions.html">excursions.
 <span>  max.threads <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  compressed <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  prune.ind <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  prune.ind <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  tol <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  size.tol <span class="op">=</span> <span class="fl">0.001</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -157,7 +159,7 @@ should then be provided.</p></dd>
 
 <dt id="arg-n-iter">n.iter<a class="anchor" aria-label="anchor" href="#arg-n-iter"></a></dt>
 <dd><p>Number or iterations in the MC sampler that is used for
-approximating probabilities. The default value is 10000.</p></dd>
+approximating probabilities. The default value is 20000. If <code>size.tol</code> or <code>tol</code> is given, this is the maximal number of iterations.</p></dd>
 
 
 <dt id="arg-max-regions">max.regions<a class="anchor" aria-label="anchor" href="#arg-max-regions"></a></dt>
@@ -205,6 +207,16 @@ the entire linear predictor is added internally (default TRUE).</p></dd>
 <dd><p>If <code>TRUE</code> and <code>ind</code> is supplied, then the result object
 is pruned to contain only the active nodes specified by <code>ind</code>, and the
 regions are given as indices within <code>ind</code>.</p></dd>
+
+
+<dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
+<dd><p>Target for the estimated errors of the joint probabilities of
+the regions (optional), see <code><a href="excursions.regions.html">excursions.regions()</a></code>.</p></dd>
+
+
+<dt id="arg-size-tol">size.tol<a class="anchor" aria-label="anchor" href="#arg-size-tol"></a></dt>
+<dd><p>Target for the estimated Monte Carlo error of the size of
+each region, relative to the size, see <code><a href="excursions.regions.html">excursions.regions()</a></code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

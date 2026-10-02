@@ -173,9 +173,9 @@ res.reg <- excursions.regions(
   graph = mesh, min.size = 5, max.threads = 2, seed = exc.seed
 )
 lengths(res.reg$regions)
-#> [1] 13  8  8  7
+#> [1] 13 10  8  6
 res.reg$P
-#> [1] 0.9126323 0.9455173 0.9074094 0.9214456
+#> [1] 0.9093339 0.9000570 0.9036359 0.9171421
 ```
 
 The arguments `mu`, `Q`, `alpha`, `u` and `type` are the same as for

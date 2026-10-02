@@ -65,7 +65,8 @@ and \(b\) such that \(P(a&lt;x&lt;b) = 1-\alpha\).</p>
 <span>  ind <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  max.threads <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  seed <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  tol <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -87,7 +88,7 @@ and \(b\) such that \(P(a&lt;x&lt;b) = 1-\alpha\).</p>
 
 <dt id="arg-n-iter">n.iter<a class="anchor" aria-label="anchor" href="#arg-n-iter"></a></dt>
 <dd><p>Number or iterations in the MC sampler that is used for
-approximating probabilities. The default value is 10000.</p></dd>
+approximating probabilities. The default value is 10000. If <code>tol</code> is given, this is the maximal number of iterations.</p></dd>
 
 
 <dt id="arg-q-chol">Q.chol<a class="anchor" aria-label="anchor" href="#arg-q-chol"></a></dt>
@@ -116,6 +117,12 @@ without OpenMP.</p></dd>
 
 <dt id="arg-seed">seed<a class="anchor" aria-label="anchor" href="#arg-seed"></a></dt>
 <dd><p>Random seed (optional).</p></dd>
+
+
+<dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
+<dd><p>Target for the estimated errors of the probabilities that are
+computed to find the band (optional). If <code>tol</code> is given, the number of
+iterations is chosen adaptively, using at most <code>n.iter</code> iterations, see <code><a href="gaussint.html">gaussint()</a></code>. By default, <code>n.iter</code> iterations are always used.</p></dd>
 
 </dl></div>
     <div class="section level2">

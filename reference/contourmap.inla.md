@@ -17,12 +17,14 @@ contourmap.inla(
   compute = list(F = TRUE, measures = NULL),
   alpha,
   F.limit,
-  n.iter = 10000,
+  n.iter = 20000,
   verbose = FALSE,
   max.threads = 0,
   compressed = TRUE,
   seed = NULL,
   ind,
+  tol = NULL,
+  size.tol = 0.001,
   ...
 )
 ```
@@ -104,7 +106,8 @@ contourmap.inla(
 - n.iter:
 
   Number or iterations in the MC sampler that is used for calculating
-  the quantities in `compute`. The default value is 10000.
+  the quantities in `compute`. The default value is 20000. If `size.tol`
+  or `tol` is given, this is the maximal number of iterations.
 
 - verbose:
 
@@ -132,6 +135,18 @@ contourmap.inla(
 
   If only a part of a component should be used in the calculations, this
   argument specifies the indices for that part (optional).
+
+- tol:
+
+  Target for the estimated errors of the Monte Carlo estimates
+  (optional), see
+  [`contourmap()`](https://davidbolin.github.io/excursions/reference/contourmap.md).
+
+- size.tol:
+
+  Target for the estimated Monte Carlo error of the size of the contour
+  avoiding set, relative to the size, see
+  [`contourmap()`](https://davidbolin.github.io/excursions/reference/contourmap.md).
 
 - ...:
 

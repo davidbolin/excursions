@@ -20,7 +20,8 @@ simconf.mixture(
   verbose = FALSE,
   max.threads = 0,
   seed = NULL,
-  mix.samp = TRUE
+  mix.samp = TRUE,
+  tol = NULL
 )
 ```
 
@@ -49,7 +50,8 @@ simconf.mixture(
 - n.iter:
 
   Number or iterations in the MC sampler that is used for approximating
-  probabilities. The default value is 10000.
+  probabilities. The default value is 10000. If `tol` is given, this is
+  the maximal number of iterations.
 
 - vars:
 
@@ -75,6 +77,13 @@ simconf.mixture(
 
   If TRUE, the MC integration is done by directly sampling the mixture,
   otherwise sequential integration is used.
+
+- tol:
+
+  Target for the estimated errors of the probabilities that are computed
+  to find the band (optional), see
+  [`simconf()`](https://davidbolin.github.io/excursions/reference/simconf.md).
+  It is only used if `mix.samp = FALSE`.
 
 ## Value
 

@@ -240,11 +240,11 @@ results.</p>
 <span>  time <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">t.EB</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="va">t.QC</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="va">t.NI</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>, <span class="va">t.NIQC</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span>,</span>
 <span>  row.names <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"EB"</span>, <span class="st">"QC"</span>, <span class="st">"NI"</span>, <span class="st">"NIQC"</span><span class="op">)</span></span>
 <span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       time</span></span>
-<span><span class="co">#&gt; EB   0.346</span></span>
-<span><span class="co">#&gt; QC   0.335</span></span>
-<span><span class="co">#&gt; NI   9.650</span></span>
-<span><span class="co">#&gt; NIQC 9.150</span></span></code></pre></div>
+<span><span class="co">#&gt;        time</span></span>
+<span><span class="co">#&gt; EB    0.320</span></span>
+<span><span class="co">#&gt; QC    0.538</span></span>
+<span><span class="co">#&gt; NI   11.691</span></span>
+<span><span class="co">#&gt; NIQC 10.344</span></span></code></pre></div>
 <p>We can see that the <code>EB</code> and <code>QC</code> methods have
 similar computation times and that <code>NI</code> and <code>NIQC</code>
 take longer. Let us now plot the corresponding sets, we start with the
@@ -330,9 +330,9 @@ graph. We only compute regions with at least 10 nodes.</p>
 <span>  seed <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">reg_bru</span><span class="op">$</span><span class="va">regions</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 64 42 33 32 19 12</span></span>
+<span><span class="co">#&gt; [1] 64 41 33 31 19 12</span></span>
 <span><span class="va">reg_bru</span><span class="op">$</span><span class="va">P</span></span>
-<span><span class="co">#&gt; [1] 0.9001422 0.9002958 0.9023588 0.9006453 0.9089636 0.9089201</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.9002252 0.9031823 0.9023169 0.9081605 0.9106351 0.9062027</span></span></code></pre></div>
 <p>As we used <code>prune.ind = TRUE</code>, the regions are given as
 indices of the mesh nodes. We compute continuous domain versions of the
 regions using <code>continuous</code>, and plot their outlines on top of

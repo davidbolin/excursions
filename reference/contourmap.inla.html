@@ -63,12 +63,14 @@ calculated using the INLA method.</p>
 <span>  compute <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>F <span class="op">=</span> <span class="cn">TRUE</span>, measures <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span>,</span>
 <span>  <span class="va">alpha</span>,</span>
 <span>  <span class="va">F.limit</span>,</span>
-<span>  n.iter <span class="op">=</span> <span class="fl">10000</span>,</span>
+<span>  n.iter <span class="op">=</span> <span class="fl">20000</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  max.threads <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  compressed <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">ind</span>,</span>
+<span>  tol <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  size.tol <span class="op">=</span> <span class="fl">0.001</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -148,7 +150,7 @@ set to NA for all nodes where F&lt;1-F.limit. Default is F.limit = <code>alpha</
 
 <dt id="arg-n-iter">n.iter<a class="anchor" aria-label="anchor" href="#arg-n-iter"></a></dt>
 <dd><p>Number or iterations in the MC sampler that is used for
-calculating the quantities in <code>compute</code>. The default value is 10000.</p></dd>
+calculating the quantities in <code>compute</code>. The default value is 20000. If <code>size.tol</code> or <code>tol</code> is given, this is the maximal number of iterations.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
@@ -176,6 +178,16 @@ entire linear predictor is added internally (default TRUE).</p></dd>
 <dt id="arg-ind">ind<a class="anchor" aria-label="anchor" href="#arg-ind"></a></dt>
 <dd><p>If only a part of a component should be used in the calculations,
 this argument specifies the indices for that part (optional).</p></dd>
+
+
+<dt id="arg-tol">tol<a class="anchor" aria-label="anchor" href="#arg-tol"></a></dt>
+<dd><p>Target for the estimated errors of the Monte Carlo estimates
+(optional), see <code><a href="contourmap.html">contourmap()</a></code>.</p></dd>
+
+
+<dt id="arg-size-tol">size.tol<a class="anchor" aria-label="anchor" href="#arg-size-tol"></a></dt>
+<dd><p>Target for the estimated Monte Carlo error of the size of
+the contour avoiding set, relative to the size, see <code><a href="contourmap.html">contourmap()</a></code>.</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>

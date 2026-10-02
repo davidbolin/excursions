@@ -20,7 +20,7 @@ excursions.regions.inla(
   u.link = FALSE,
   type,
   graph,
-  n.iter = 10000,
+  n.iter = 20000,
   max.regions = Inf,
   min.size = 1,
   growth = c("bound", "rho"),
@@ -30,7 +30,9 @@ excursions.regions.inla(
   max.threads = 0,
   compressed = TRUE,
   seed = NULL,
-  prune.ind = FALSE
+  prune.ind = FALSE,
+  tol = NULL,
+  size.tol = 0.001
 )
 ```
 
@@ -115,7 +117,8 @@ excursions.regions.inla(
 - n.iter:
 
   Number or iterations in the MC sampler that is used for approximating
-  probabilities. The default value is 10000.
+  probabilities. The default value is 20000. If `size.tol` or `tol` is
+  given, this is the maximal number of iterations.
 
 - max.regions:
 
@@ -166,6 +169,18 @@ excursions.regions.inla(
   If `TRUE` and `ind` is supplied, then the result object is pruned to
   contain only the active nodes specified by `ind`, and the regions are
   given as indices within `ind`.
+
+- tol:
+
+  Target for the estimated errors of the joint probabilities of the
+  regions (optional), see
+  [`excursions.regions()`](https://davidbolin.github.io/excursions/reference/excursions.regions.md).
+
+- size.tol:
+
+  Target for the estimated Monte Carlo error of the size of each region,
+  relative to the size, see
+  [`excursions.regions()`](https://davidbolin.github.io/excursions/reference/excursions.regions.md).
 
 ## Value
 
