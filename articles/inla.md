@@ -307,7 +307,7 @@ reg <- excursions.regions.inla(r, stk,
 lengths(reg$regions)
 #> [1] 96 45 22 18 10 10
 reg$P
-#> [1] 0.9002361 0.9105597 0.9053572 0.9081628 0.9081869 0.9012457
+#> [1] 0.9002359 0.9105595 0.9053570 0.9081626 0.9081868 0.9012454
 ```
 
 The function returns the regions as indices of the nodes in the `"prd"`
@@ -379,9 +379,9 @@ print(data.frame(
   )
 ))
 #>                       P2
-#> n.level = 1 9.999635e-01
-#> n.level = 2 1.155120e-01
-#> n.level = 3 3.444964e-06
+#> n.level = 1 9.999683e-01
+#> n.level = 2 1.136524e-01
+#> n.level = 3 7.682129e-08
 #> n.level = 4 0.000000e+00
 ```
 

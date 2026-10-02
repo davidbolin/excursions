@@ -68,8 +68,11 @@ symmetric positive definite matrix <code>Q</code>.</p>
 
 
 <dt id="arg-max-threads">max.threads<a class="anchor" aria-label="anchor" href="#arg-max-threads"></a></dt>
-<dd><p>Not used. The computation is sequential, and the argument is
-kept for backwards compatibility.</p></dd>
+<dd><p>The number of threads that the program can use. The
+default, 0, uses the default number of threads of OpenMP, which can be
+set with the environment variable <code>OMP_NUM_THREADS</code>. The number of
+threads is at most <code>OMP_THREAD_LIMIT</code>, and is one if the package was built
+without OpenMP. The results do not depend on the number of threads.</p></dd>
 
 </dl></div>
     <div class="section level2">

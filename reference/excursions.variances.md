@@ -21,8 +21,11 @@ excursions.variances(L, Q, max.threads = 0)
 
 - max.threads:
 
-  Not used. The computation is sequential, and the argument is kept for
-  backwards compatibility.
+  The number of threads that the program can use. The default, 0, uses
+  the default number of threads of OpenMP, which can be set with the
+  environment variable `OMP_NUM_THREADS`. The number of threads is at
+  most `OMP_THREAD_LIMIT`, and is one if the package was built without
+  OpenMP. The results do not depend on the number of threads.
 
 ## Value
 
