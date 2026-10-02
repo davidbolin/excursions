@@ -263,11 +263,47 @@ inla.get.marginal.int <- function(i, a, b, result, effect.name = NULL) {
 ## quadrature in each interval. As for inla.pmarginal, the points with
 ## negligible density are removed (see INLA:::inla.marginal.fix), the
 ## distribution is normalised on the range of x, and q is truncated to it.
+##
+## The marginals of INLA are usually matrices with the same number of rows,
+## which are then stacked at once, and only the marginals with points to
+## remove are handled one at a time.
 private.pmarginals <- function(marginals, q) {
   K <- length(marginals)
   q <- rep_len(q, K)
+  p <- numeric(K)
+  if (K == 0) {
+    return(p)
+  }
   eps <- .Machine$double.eps * 1000
-  xy <- lapply(marginals, function(m) {
+  rest <- seq_len(K)
+  len <- lengths(marginals, use.names = FALSE)
+  if (all(len == len[1]) && len[1] >= 4 && len[1] %% 2 == 0 &&
+    all(vapply(marginals, function(m) is.matrix(m) && ncol(m) == 2L, TRUE))) {
+    np <- len[1] / 2
+    A <- array(unlist(marginals, use.names = FALSE), c(np, 2L, K))
+    X <- t(A[, 1L, ])
+    Y <- t(A[, 2L, ])
+    if (K == 1) {
+      X <- matrix(X, 1)
+      Y <- matrix(Y, 1)
+    }
+    ## The marginals where no points have to be removed
+    ok <- !anyNA(Y)
+    ok <- if (ok) rowSums(!(Y > 0)) == 0 else !apply(is.na(Y) | !(Y > 0), 1, any)
+    ymax <- numeric(K)
+    ymax[ok] <- Y[ok, , drop = FALSE][cbind(seq_len(sum(ok)), max.col(Y[ok, , drop = FALSE], "first"))]
+    ok[ok] <- rowSums(Y[ok, , drop = FALSE] / ymax[ok] <= eps) == 0
+    if (any(ok)) {
+      p[ok] <- private.pmarginals.matrix(
+        X[ok, , drop = FALSE], log(Y[ok, , drop = FALSE]), q[ok]
+      )
+    }
+    rest <- which(!ok)
+  }
+  if (length(rest) == 0) {
+    return(p)
+  }
+  xy <- lapply(marginals[rest], function(m) {
     if (is.matrix(m)) {
       x <- m[, 1L]
       y <- m[, 2L]
@@ -282,68 +318,75 @@ private.pmarginals <- function(marginals, q) {
     list(x = x[ok], y = y[ok])
   })
   len <- vapply(xy, function(m) length(m$x), 1L)
-  p <- numeric(K)
-  ## Gauss-Legendre nodes and weights on [0, 1]
-  gs <- c(-0.9061798459386640, -0.5384693101056831, 0, 0.5384693101056831, 0.9061798459386640)
-  gw <- c(0.2369268850561891, 0.4786286704993665, 0.5688888888888889, 0.4786286704993665, 0.2369268850561891)
-  gs <- (gs + 1) / 2
-  gw <- gw / 2
   for (np in unique(len)) {
     k <- which(len == np)
     if (np < 2) {
       ## A single point, as a point mass
       x1 <- vapply(xy[k], function(m) if (np == 1) m$x else NA_real_, 0)
-      p[k] <- as.numeric(q[k] >= x1)
+      p[rest[k]] <- as.numeric(q[rest[k]] >= x1)
       next
     }
     X <- matrix(unlist(lapply(xy[k], `[[`, "x")), ncol = np, byrow = TRUE)
     Y <- log(matrix(unlist(lapply(xy[k], `[[`, "y")), ncol = np, byrow = TRUE))
-    nk <- length(k)
-    h <- X[, -1, drop = FALSE] - X[, -np, drop = FALSE]
-    d <- (Y[, -1, drop = FALSE] - Y[, -np, drop = FALSE]) / h
-    ## Derivatives of the log density at the points
-    D <- matrix(0, nk, np)
-    if (np == 2) {
-      D[, 1] <- D[, 2] <- d[, 1]
-    } else {
-      h1 <- h[, -(np - 1), drop = FALSE]
-      h2 <- h[, -1, drop = FALSE]
-      D[, 2:(np - 1)] <- (h2 * d[, -(np - 1), drop = FALSE] + h1 * d[, -1, drop = FALSE]) / (h1 + h2)
-      D[, 1] <- ((2 * h[, 1] + h[, 2]) * d[, 1] - h[, 1] * d[, 2]) / (h[, 1] + h[, 2])
-      D[, np] <- ((2 * h[, np - 1] + h[, np - 2]) * d[, np - 1] - h[, np - 1] * d[, np - 2]) /
-        (h[, np - 1] + h[, np - 2])
-    }
-    ## Integral of the density over [0, tau] of each interval, on the scale
-    ## of the interval, with the log density as a cubic Hermite polynomial
-    y0 <- Y[, -np, drop = FALSE]
-    y1 <- Y[, -1, drop = FALSE]
-    m0 <- D[, -np, drop = FALSE] * h
-    m1 <- D[, -1, drop = FALSE] * h
-    ## Subtract the maximum before exponentiating, for the tails
-    ymax <- apply(Y, 1, max)
-    seg <- function(tau) {
-      out <- 0
-      for (g in seq_along(gs)) {
-        t <- tau * gs[g]
-        lf <- (2 * t^3 - 3 * t^2 + 1) * y0 + (t^3 - 2 * t^2 + t) * m0 +
-          (-2 * t^3 + 3 * t^2) * y1 + (t^3 - t^2) * m1
-        out <- out + gw[g] * exp(lf - ymax)
-      }
-      out * tau * h
-    }
-    full <- seg(matrix(1, nk, np - 1))
-    total <- rowSums(full)
-    ## The interval of q, which is truncated to the range of x
-    qk <- pmin(pmax(q[k], X[, 1]), X[, np])
-    j <- pmin(rowSums(X <= qk), np - 1)
-    before <- full
-    before[col(before) >= j] <- 0
-    tau <- (qk - X[cbind(seq_len(nk), j)]) / h[cbind(seq_len(nk), j)]
-    T <- matrix(0, nk, np - 1)
-    T[cbind(seq_len(nk), j)] <- tau
-    part <- seg(T)
-    part[col(part) != j] <- 0
-    p[k] <- pmin(pmax((rowSums(before) + rowSums(part)) / total, 0), 1)
+    p[rest[k]] <- private.pmarginals.matrix(X, Y, q[rest[k]])
   }
   p
+}
+
+## private.pmarginals for marginals with the values in the rows of X, at least
+## two, and the log densities in the rows of Y.
+private.pmarginals.matrix <- function(X, Y, q) {
+  nk <- nrow(X)
+  np <- ncol(X)
+  ## Gauss-Legendre nodes and weights on [0, 1]
+  gs <- c(-0.9061798459386640, -0.5384693101056831, 0, 0.5384693101056831, 0.9061798459386640)
+  gw <- c(0.2369268850561891, 0.4786286704993665, 0.5688888888888889, 0.4786286704993665, 0.2369268850561891)
+  gs <- (gs + 1) / 2
+  gw <- gw / 2
+  h <- X[, -1, drop = FALSE] - X[, -np, drop = FALSE]
+  d <- (Y[, -1, drop = FALSE] - Y[, -np, drop = FALSE]) / h
+  ## Derivatives of the log density at the points
+  D <- matrix(0, nk, np)
+  if (np == 2) {
+    D[, 1] <- D[, 2] <- d[, 1]
+  } else {
+    h1 <- h[, -(np - 1), drop = FALSE]
+    h2 <- h[, -1, drop = FALSE]
+    D[, 2:(np - 1)] <- (h2 * d[, -(np - 1), drop = FALSE] + h1 * d[, -1, drop = FALSE]) / (h1 + h2)
+    D[, 1] <- ((2 * h[, 1] + h[, 2]) * d[, 1] - h[, 1] * d[, 2]) / (h[, 1] + h[, 2])
+    D[, np] <- ((2 * h[, np - 1] + h[, np - 2]) * d[, np - 1] - h[, np - 1] * d[, np - 2]) /
+      (h[, np - 1] + h[, np - 2])
+  }
+  ## The log density on [0, 1] of each interval is the cubic Hermite
+  ## polynomial with the values y0, y1 and the scaled derivatives m0, m1.
+  ## Subtract the maximum before exponentiating, for the tails.
+  ymax <- Y[cbind(seq_len(nk), max.col(Y, "first"))]
+  y0 <- Y[, -np, drop = FALSE] - ymax
+  y1 <- Y[, -1, drop = FALSE] - ymax
+  m0 <- D[, -np, drop = FALSE] * h
+  m1 <- D[, -1, drop = FALSE] * h
+  ## Integral over [0, tau] of each interval, on the scale of x
+  seg <- function(tau, y0, y1, m0, m1, h) {
+    out <- 0
+    for (g in seq_along(gs)) {
+      t <- tau * gs[g]
+      t2 <- t * t
+      t3 <- t2 * t
+      lf <- (2 * t3 - 3 * t2 + 1) * y0 + (t3 - 2 * t2 + t) * m0 +
+        (-2 * t3 + 3 * t2) * y1 + (t3 - t2) * m1
+      out <- out + gw[g] * exp(lf)
+    }
+    out * tau * h
+  }
+  full <- seg(1, y0, y1, m0, m1, h)
+  total <- rowSums(full)
+  ## The interval j of q, which is truncated to the range of x, the integral
+  ## of the intervals before it, and of the part of it before q
+  qk <- pmin(pmax(q, X[, 1]), X[, np])
+  j <- pmin(rowSums(X <= qk), np - 1)
+  before <- rowSums(full * (col(full) < j))
+  ij <- cbind(seq_len(nk), j)
+  tau <- (qk - X[ij]) / h[ij]
+  part <- seg(tau, y0[ij], y1[ij], m0[ij], m1[ij], h[ij])
+  pmin(pmax((before + part) / total, 0), 1)
 }

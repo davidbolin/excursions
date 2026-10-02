@@ -59,8 +59,11 @@ private.Cholesky <- function(A, perm = TRUE, ...) {
 #'
 #' @param L Cholesky factor of precision matrix.
 #' @param Q Precision matrix.
-#' @param max.threads Not used. The computation is sequential, and the argument is
-#' kept for backwards compatibility.
+#' @param max.threads The number of threads that the program can use. The
+#'   default, 0, uses the default number of threads of OpenMP, which can be
+#'   set with the environment variable `OMP_NUM_THREADS`. The number of
+#'   threads is at most `OMP_THREAD_LIMIT`, and is one if the package was built
+#'   without OpenMP. The results do not depend on the number of threads.
 #'
 #' @return A vector with the variances.
 #' @export
@@ -101,7 +104,10 @@ excursions.variances <- function(L, Q, max.threads = 0) {
     L <- as(L, "generalMatrix")
   }
 
-  variances <- .Call("Qinv", L@p, L@i, as.double(L@x), lower)
+  variances <- .Call("Qinv", L@p, L@i, as.double(L@x), lower,
+    as.integer(max.threads),
+    PACKAGE = "excursions"
+  )
 
   if (is.null(perm)) {
     variances
@@ -227,7 +233,8 @@ private.cov.from.matrix <- function(S) {
 ## in particular for smooth fields and small lim, so the approximation is
 ## evaluated at lim / margin. Returns the number of nodes up to and including
 ## the first node where the approximation is below lim / margin, or NA if the
-## limits are not one sided for all candidates.
+## limits of some candidate are finite on both sides. Candidates without
+## limits are always in them.
 ##
 ## a and b are the limits of the centred field, vars are the variances, cov a
 ## function that returns covariances, see private.selected.inverse, and the
@@ -240,7 +247,10 @@ private.chain.reach <- function(rho, a, b, vars, cov, Q, lim, margin = 100) {
   }
   upper <- b[cand] == Inf
   lower <- a[cand] == -Inf
-  if (any(upper == lower)) {
+  ## Nodes without limits, for example with marginal probability one in the
+  ## QC method, are always in their limits
+  free <- upper & lower
+  if (any(!upper & !lower)) {
     return(NA)
   }
   ord <- cand[order(rho[cand], decreasing = TRUE)]
@@ -251,13 +261,15 @@ private.chain.reach <- function(rho, a, b, vars, cov, Q, lim, margin = 100) {
   ## The event of node i is s[i] * X_i / sd[i] > h[i]
   s <- h <- numeric(n)
   s[cand] <- ifelse(upper, 1, -1)
-  h[cand] <- ifelse(upper, a[cand], -b[cand]) / sd[cand]
+  h[cand] <- ifelse(free, -Inf, ifelse(upper, a[cand], -b[cand]) / sd[cand])
   p1 <- pnorm(-h)
+  is.free <- logical(n)
+  is.free[cand] <- free
 
   Qt <- as(Q, "TsparseMatrix")
   i <- Qt@i + 1L
   j <- Qt@j + 1L
-  keep <- i < j & pos[i] > 0 & pos[j] > 0
+  keep <- i < j & pos[i] > 0 & pos[j] > 0 & !is.free[i] & !is.free[j]
   i <- i[keep]
   j <- j[keep]
   r <- s[i] * s[j] * cov(i, j) / (sd[i] * sd[j])

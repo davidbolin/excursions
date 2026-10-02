@@ -443,3 +443,29 @@ test_that("Excursions checks Qinv", {
     "Qinv must be a sparse matrix"
   )
 })
+
+test_that("The reach estimate allows nodes without limits", {
+  d <- testdata.spde(20)
+  Q <- as(d$Q, "CsparseMatrix")
+  sel <- excursions:::private.selected.inverse(Q)
+  marg <- excursions.marginals(type = ">", vars = sel$vars, mu = d$mu, u = 0)
+  lims <- excursions.setlimits(marg, sel$vars, ">", FALSE, 0, d$mu)
+  k0 <- excursions:::private.chain.reach(
+    marg$rho, lims$a, lims$b, sel$vars, sel$cov, Q, 0.01
+  )
+  ## Nodes with probability one have no limits, as in the QC method
+  top <- order(marg$rho, decreasing = TRUE)[1:10]
+  a <- lims$a
+  a[top] <- -Inf
+  k1 <- excursions:::private.chain.reach(
+    marg$rho, a, lims$b, sel$vars, sel$cov, Q, 0.01
+  )
+  expect_false(is.na(k1))
+  expect_gte(k1, k0)
+  ## Two sided limits are not supported
+  b <- lims$b
+  b[top[1]] <- 10
+  expect_true(is.na(excursions:::private.chain.reach(
+    marg$rho, lims$a, b, sel$vars, sel$cov, Q, 0.01
+  )))
+})

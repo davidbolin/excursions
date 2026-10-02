@@ -227,9 +227,9 @@ excursions <- function(alpha,
   }
   if (missing(vars)) {
     if (is.chol) {
-      sel <- private.selected.inverse.factor(Q)
+      sel <- private.selected.inverse.factor(Q, max.threads = max.threads)
     } else {
-      sel <- private.selected.inverse(Q)
+      sel <- private.selected.inverse(Q, max.threads = max.threads)
     }
     vars <- sel$vars
     cov <- sel$cov

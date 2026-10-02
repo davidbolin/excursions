@@ -11,8 +11,11 @@ excursions.variances(L, Q, max.threads = 0)
 
 \item{Q}{Precision matrix.}
 
-\item{max.threads}{Not used. The computation is sequential, and the argument is
-kept for backwards compatibility.}
+\item{max.threads}{The number of threads that the program can use. The
+default, 0, uses the default number of threads of OpenMP, which can be
+set with the environment variable \code{OMP_NUM_THREADS}. The number of
+threads is at most \code{OMP_THREAD_LIMIT}, and is one if the package was built
+without OpenMP. The results do not depend on the number of threads.}
 }
 \value{
 A vector with the variances.

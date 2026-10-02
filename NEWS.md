@@ -1,5 +1,14 @@
 # Development version
 
+* With the `QC` method, nodes with marginal probability one have no limits,
+  and the approximation of the number of nodes that the integration reaches
+  then gave up, so that all candidate nodes were put in the order of the
+  marginal probabilities. Such nodes are now treated as always being in
+  their limits, which makes `excursions.inla()` with `QC` as fast as with
+  `EB`.
+* The marginal variances and the selected inverse are now computed in parallel, 
+  over the subtrees of the elimination tree, and `max.threads` of 
+  `excursions.variances()` is now used. 
 * The Cholesky factorisations now let CHOLMOD choose the supernodal
   factorisation (`super = NA`), which is much faster for the dense factors
   in the integration order of `excursions()`.

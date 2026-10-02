@@ -288,7 +288,7 @@ private.regions <- function(alpha, u, configs, weights, type, qc, rho, G, ind,
     if (verbose) {
       cat("Calculate selected inverse\n")
     }
-    sel <- private.selected.inverse(configs[[1]]$Q, G)
+    sel <- private.selected.inverse(configs[[1]]$Q, G, max.threads = max.threads)
     if (is.null(configs[[1]]$vars)) {
       configs[[1]]$vars <- sel$vars
     }
@@ -687,12 +687,12 @@ private.regions.graph <- function(graph, Q, n) {
 ## the sparsity pattern of the Cholesky factor. If the graph G is given, its
 ## edges are added to the pattern of Q as explicit zeros, which puts them in
 ## the pattern of the Cholesky factor without changing Q.
-private.selected.inverse <- function(Q, G = NULL) {
+private.selected.inverse <- function(Q, G = NULL, max.threads = 0) {
   Q <- private.as.dgCMatrix(Q)
   if (!is.null(G)) {
     Qt <- as(Q, "TsparseMatrix")
     Gt <- as(private.as.dgCMatrix(G), "TsparseMatrix")
-    Q <- as(new("dgTMatrix",
+    Q <- as(methods::new("dgTMatrix",
       i = c(Qt@i, Gt@i), j = c(Qt@j, Gt@j),
       x = c(Qt@x, numeric(length(Gt@i))), Dim = dim(Q)
     ), "CsparseMatrix")
@@ -701,13 +701,16 @@ private.selected.inverse <- function(Q, G = NULL) {
   ## explicit zeros are kept, since they are part of the closed pattern that
   ## the recursion for the selected inverse needs.
   ch <- Matrix::Cholesky(Q, LDL = FALSE, perm = TRUE, super = NA)
-  private.selected.inverse.factor(private.factor.lower(ch), ch@perm + 1L)
+  private.selected.inverse.factor(private.factor.lower(ch), ch@perm + 1L,
+    max.threads = max.threads
+  )
 }
 
 ## Selected inverse from a Cholesky factor of Q, see
 ## private.selected.inverse. L is the lower triangular factor of Q[perm, perm],
-## or of Q if perm is NULL. An upper triangular factor is transposed.
-private.selected.inverse.factor <- function(L, perm = NULL) {
+## or of Q if perm is NULL. An upper triangular factor is transposed. The
+## recursion uses max.threads threads, see excursions.variances.
+private.selected.inverse.factor <- function(L, perm = NULL, max.threads = 0) {
   L <- private.as.dtCMatrix(L)
   if (L@uplo == "U") {
     L <- t(L)
@@ -720,6 +723,7 @@ private.selected.inverse.factor <- function(L, perm = NULL) {
     perm <- seq_len(n)
   }
   z <- .Call("Qinv_selected", L@p, L@i, as.double(L@x),
+    as.integer(max.threads),
     PACKAGE = "excursions"
   )
   vars <- numeric(n)

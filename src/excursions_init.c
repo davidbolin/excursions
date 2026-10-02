@@ -17,8 +17,8 @@ static const R_CMethodDef CEntries[] = {
 };
 
 /* .Call calls */
-extern SEXP Qinv(SEXP, SEXP, SEXP, SEXP);
-extern SEXP Qinv_selected(SEXP, SEXP, SEXP);
+extern SEXP Qinv(SEXP, SEXP, SEXP, SEXP, SEXP);
+extern SEXP Qinv_selected(SEXP, SEXP, SEXP, SEXP);
 extern SEXP excursions_openmp_info(void);
 extern SEXP shapeIntCall(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP regions_bvn_lower(SEXP, SEXP, SEXP);
@@ -27,8 +27,8 @@ extern SEXP regions_grow(SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP, SEXP);
 extern SEXP regions_prominence(SEXP, SEXP, SEXP, SEXP);
 
 static const R_CallMethodDef CallEntries[] = {
-    {"Qinv", (DL_FUNC) &Qinv, 4},
-    {"Qinv_selected", (DL_FUNC) &Qinv_selected, 3},
+    {"Qinv", (DL_FUNC) &Qinv, 5},
+    {"Qinv_selected", (DL_FUNC) &Qinv_selected, 4},
     {"excursions_openmp_info", (DL_FUNC) &excursions_openmp_info, 0},
     {"shapeIntCall", (DL_FUNC) &shapeIntCall, 9},
     {"regions_bvn_lower", (DL_FUNC) &regions_bvn_lower, 3},

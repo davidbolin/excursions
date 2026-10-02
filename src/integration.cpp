@@ -9,6 +9,7 @@
 #include <limits>
 #include <time.h>
 #include "gsl_fix.h"
+#include "threads.h"
 
 /* Needed on Linux: */
 #include <unistd.h>
@@ -31,22 +32,9 @@ extern "C"{
 #define used_with_openmp(X) (void)X
 using namespace std;
 
-// Number of threads to request for the parallel regions. With n_threads = 0
-// this is the OpenMP default, which respects OMP_NUM_THREADS, and otherwise
-// n_threads, at most the number of processors. In both cases it is at most
-// OMP_THREAD_LIMIT. The runtime may still give fewer threads, so the parallel
-// regions must use the size of the team they get. The number of threads is
-// requested with num_threads() rather than omp_set_num_threads(), which would
-// change the default for later calls and for other packages.
+// See excursions_threads in threads.h.
 static int setup_threads(int n_threads) {
-  used_with_openmp(n_threads);
-  #ifdef _OPENMP
-    int nP = (n_threads <= 0) ? omp_get_max_threads() : min(n_threads, omp_get_num_procs());
-    nP = min(nP, omp_get_thread_limit());
-    return max(nP, 1);
-  #else
-    return 1;
-  #endif
+  return excursions_threads(n_threads);
 }
 
 // Summary of the OpenMP support, for checking the installation: whether the
@@ -269,6 +257,25 @@ static void group_product(const RowGroup & G, const double * xc, int C, int m,
   }
 }
 
+// Merge the sum Sb and the sum of squared deviations from the mean M2b of nb
+// values into those of na values.
+static inline void merge_moments(double & na, double & Sa, double & M2a,
+                                 double nb, double Sb, double M2b) {
+  if (nb <= 0) {
+    return;
+  }
+  if (na <= 0) {
+    na = nb;
+    Sa = Sb;
+    M2a = M2b;
+    return;
+  }
+  const double delta = Sb / nb - Sa / na;
+  M2a += M2b + delta * delta * na * nb / (na + nb);
+  Sa += Sb;
+  na += nb;
+}
+
 /*
  Sequential importance sampling for P(a < X < b), where X has precision
  Q = R^T R and R is upper triangular given in CSC format (Mp, Mi, Mv). The
@@ -375,8 +382,8 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
   const int nP = setup_threads(n_threads);
   setup_seed(seed_provided, seed_in);
 
-  // Sums over the samples of all batches, and the number of samples, for
-  // each row.
+  // Sums over the samples of all batches, the sums of squared deviations
+  // from the mean (S2 and PS2), and the number of samples, for each row.
   vector<double> S1(n, 0.0), S2(n, 0.0), PS1(n, 0.0), PS2(n, 0.0), N(n, 0.0);
   // The samples x are not initialised: row i only reads the rows k > i, which
   // are written first, and the memory of the rows that are never reached is
@@ -385,7 +392,7 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
   size_t x_size = 0;
   vector<double> f;
   vector<RngStream> rng;
-  // Sums for each chunk and row of the group.
+  // Sums and sums of squared deviations for each chunk and row of the group.
   const int max_group = 32;
   vector<double> cs1, cs2, cp1, cp2;
   RowGroup grp;
@@ -423,7 +430,7 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
 
     #pragma omp parallel num_threads(nP)
     {
-      vector<double> s(C);
+      vector<double> s(C), pf(C);
       vector<double> Sg((size_t) max_group * C);
       while (!done && g >= lo) {
         const int ge = max(g - B + 1, lo);
@@ -481,7 +488,7 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
               }
             }
 
-            double fsum = 0.0, fsum2 = 0.0, psum = 0.0, psum2 = 0.0;
+            double fsum = 0.0, psum = 0.0;
             for (int j = 0; j < m; j++) {
               double ai, bi, c_, d, rtmp = 0;
 
@@ -491,8 +498,8 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
                 const double pd = (pbli == numeric_limits<double>::infinity()) ? 1.0 :
                   gsl_cdf_ugaussian_P(pbli + s[j]);
                 const double fp = fc[j] * max(pd - pc, 0.0);
+                pf[j] = fp;
                 psum += fp;
-                psum2 += fp * fp;
               }
 
               if (ali == -numeric_limits<double>::infinity()){
@@ -524,7 +531,6 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
 
               fc[j] = fc[j]*(d-c_);
               fsum += fc[j];
-              fsum2 += fc[j]*fc[j];
 
               if (d-c_<1e-12) { //no weight is given to this sample
                 xi[j] = 0; //just set x to zero
@@ -537,30 +543,42 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
                 xi[j] = 0;
               }
             }
+            // The squared deviations from the mean of the chunk
+            double fm2 = 0.0, pm2 = 0.0;
+            const double fmean = fsum / m;
+            for (int j = 0; j < m; j++) {
+              fm2 += (fc[j] - fmean) * (fc[j] - fmean);
+            }
+            if (is_probe) {
+              const double pmean = psum / m;
+              for (int j = 0; j < m; j++) {
+                pm2 += (pf[j] - pmean) * (pf[j] - pmean);
+              }
+            }
             const size_t k = (size_t) c * max_group + (g - i);
             cs1[k] = fsum;
-            cs2[k] = fsum2;
+            cs2[k] = fm2;
             cp1[k] = psum;
-            cp2[k] = psum2;
+            cp2[k] = pm2;
           }
         }
 
         #pragma omp single
         {
           for (int i = g; i >= ge; i--) {
-            double fsum = 0.0, fsum2 = 0.0, psum = 0.0, psum2 = 0.0;
+            double fn = 0.0, fsum = 0.0, fm2 = 0.0;
+            double pn = 0.0, psum = 0.0, pm2 = 0.0;
             for (int c = 0; c < nC; c++) {
               const size_t k = (size_t) c * max_group + (g - i);
-              fsum += cs1[k];
-              fsum2 += cs2[k];
-              psum += cp1[k];
-              psum2 += cp2[k];
+              const double mc = min(C, Kb - c * C);
+              merge_moments(fn, fsum, fm2, mc, cs1[k], cs2[k]);
+              merge_moments(pn, psum, pm2, mc, cp1[k], cp2[k]);
             }
-            S1[i] += fsum;
-            S2[i] += fsum2;
-            PS1[i] += psum;
-            PS2[i] += psum2;
-            N[i] += Kb;
+            double Ni = N[i];
+            merge_moments(Ni, S1[i], S2[i], fn, fsum, fm2);
+            Ni = N[i];
+            merge_moments(Ni, PS1[i], PS2[i], pn, psum, pm2);
+            N[i] = Ni;
 
             const double Pi = S1[i]/N[i];
             if (Pi!=Pi) {
@@ -597,7 +615,7 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
     for (int i = n-1; i >= lo && N[i] > 0; i--) {
       const double Pi = S1[i]/N[i];
       se_prev = se;
-      se = sqrt(max((S2[i]-S1[i]*S1[i]/N[i])/N[i]/N[i],0));
+      se = sqrt(max(S2[i], 0.0)) / N[i];
       if (level > 0 && Pi < level) {
         if (i < n-1) {
           se = max(se, se_prev);
@@ -619,7 +637,7 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
   for (int i = n-1; i >= lo && N[i] > 0; i--) {
     if (probe != NULL && probe[i]) {
       Pp[i] = PS1[i] / N[i];
-      Pe[i] = sqrt(max((PS2[i] - PS1[i] * PS1[i] / N[i]) / N[i] / N[i], 0.0));
+      Pe[i] = sqrt(max(PS2[i], 0.0)) / N[i];
     }
     if (nan_found && i == nan_row) {
       Rprintf("%d Estimated probability is nan, stopping estimation\n",i);
@@ -630,7 +648,7 @@ static void shape_int(int * Mp, int * Mi, double * Mv, double * a,double * b, in
       break;
     }
     Pv[i] = Pi;
-    Ev[i] = sqrt(max((S2[i]-S1[i]*S1[i]/N[i])/N[i]/N[i],0));
+    Ev[i] = sqrt(max(S2[i], 0.0)) / N[i];
   }
 
 }

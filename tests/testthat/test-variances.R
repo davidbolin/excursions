@@ -98,3 +98,34 @@ test_that("Selected inverse from a Cholesky factor", {
   expect_equal(s1$cov(i, j), S[cbind(i, j)], tolerance = 1e-10)
   expect_equal(s2$cov(i, j), S[cbind(i, j)], tolerance = 1e-10)
 })
+
+test_that("Selected inverse in parallel", {
+  skip_if_not(excursions:::private.openmp.info()[["openmp"]] == 1, "no OpenMP")
+  ## Large enough for several tasks, and with a supernodal factor
+  d <- testdata.spde(60)
+  Q <- as(d$Q, "CsparseMatrix")
+  ch <- Matrix::Cholesky(Q, LDL = FALSE, perm = TRUE, super = NA)
+  L <- excursions:::private.factor.lower(ch)
+  z1 <- .Call("Qinv_selected", L@p, L@i, as.double(L@x), 1L, PACKAGE = "excursions")
+  for (threads in c(2L, 3L, 8L)) {
+    z <- .Call("Qinv_selected", L@p, L@i, as.double(L@x), threads,
+      PACKAGE = "excursions"
+    )
+    expect_identical(z, z1)
+  }
+  v1 <- excursions.variances(Q = Q, max.threads = 1)
+  expect_identical(excursions.variances(Q = Q, max.threads = 4), v1)
+  ## Against the inverse of Q, also for an upper triangular factor
+  S <- solve(as.matrix(Q))
+  expect_equal(v1, diag(S), tolerance = 1e-10)
+  expect_equal(
+    excursions.variances(L = chol(Q[ch@perm + 1, ch@perm + 1]), max.threads = 4),
+    diag(S)[ch@perm + 1],
+    tolerance = 1e-10
+  )
+  sel <- excursions:::private.selected.inverse(Q, max.threads = 4)
+  Gt <- as(Matrix::triu(Q != 0), "TsparseMatrix")
+  expect_equal(sel$cov(Gt@i + 1, Gt@j + 1), S[cbind(Gt@i + 1, Gt@j + 1)],
+    tolerance = 1e-10
+  )
+})
